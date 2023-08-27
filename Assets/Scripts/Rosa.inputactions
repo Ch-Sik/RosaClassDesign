@@ -2,7 +2,7 @@
     "name": "Rosa",
     "maps": [
         {
-            "name": "Player",
+            "name": "PlayerWalk",
             "id": "7d360251-86b3-4cd1-aafc-f63e9cb03af2",
             "actions": [
                 {
@@ -207,6 +207,62 @@
                     "processors": "",
                     "groups": "",
                     "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "PlayerDefault",
+            "id": "d700bab1-4899-4bb1-9c40-d875a07963bb",
+            "actions": [
+                {
+                    "name": "Pause",
+                    "type": "Button",
+                    "id": "ada02475-4162-49f2-9d7a-95ed84d07eb1",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "f40a342c-458b-454b-9372-20fa7bf6d2fa",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Dialogue",
+            "id": "d3f2b287-bc83-4bda-b633-bcf4bba57f4c",
+            "actions": [
+                {
+                    "name": "Next",
+                    "type": "Button",
+                    "id": "ad71f989-e926-4f65-87ae-d5c8cfdaab8f",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "3952f2a9-a94e-430c-9fe8-383cffe3f2e4",
+                    "path": "<Keyboard>/anyKey",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Next",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -723,34 +779,6 @@
                     "processors": "",
                     "groups": "XR",
                     "action": "TrackedDeviceOrientation",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                }
-            ]
-        },
-        {
-            "name": "Global",
-            "id": "d700bab1-4899-4bb1-9c40-d875a07963bb",
-            "actions": [
-                {
-                    "name": "Pause",
-                    "type": "Button",
-                    "id": "ada02475-4162-49f2-9d7a-95ed84d07eb1",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                }
-            ],
-            "bindings": [
-                {
-                    "name": "",
-                    "id": "f40a342c-458b-454b-9372-20fa7bf6d2fa",
-                    "path": "<Keyboard>/escape",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Pause",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
