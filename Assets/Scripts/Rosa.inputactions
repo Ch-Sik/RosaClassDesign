@@ -6,7 +6,7 @@
             "id": "7d360251-86b3-4cd1-aafc-f63e9cb03af2",
             "actions": [
                 {
-                    "name": "Move",
+                    "name": "Walk",
                     "type": "Value",
                     "id": "b5e348bb-3826-42c3-834f-fa93c47bf8ec",
                     "expectedControlType": "Vector2",
@@ -31,6 +31,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Attack",
+                    "type": "Button",
+                    "id": "b41a0bac-5b64-4a19-8953-072f5a090d54",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -41,7 +50,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -52,7 +61,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -63,7 +72,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -74,7 +83,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -85,7 +94,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -96,7 +105,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -107,7 +116,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -118,7 +127,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -129,7 +138,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -140,7 +149,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -151,7 +160,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "XR",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -162,7 +171,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Joystick",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -209,6 +218,73 @@
                     "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d5c460b7-7c2b-453e-b8f8-259d0ec3951e",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "PlayerClimb",
+            "id": "1980a56c-c9bf-4b5d-bc52-d0b5da32a22f",
+            "actions": [
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "38bcc982-bc29-4e29-9cf8-e99f22dfbd01",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "e9fd9831-63af-4a7d-a1a6-bcf598408857",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "New action",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "PlayerMonkey",
+            "id": "c7a2f2fe-d8f9-422d-9fbd-d29657c32070",
+            "actions": [
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "54f04187-7fed-402a-a114-109b1c5f002a",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d58220a1-12ff-4edf-9781-e906aab8ac0d",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "New action",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },
@@ -224,6 +300,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Aim",
+                    "type": "Value",
+                    "id": "7edaf206-0fff-4b1f-9cbe-22daacff5740",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -235,6 +320,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "aa19e1f7-f9a7-41c1-a699-aa408d5082f8",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Aim",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

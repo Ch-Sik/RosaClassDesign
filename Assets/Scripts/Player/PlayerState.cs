@@ -8,6 +8,10 @@ using UnityEngine;
 /// </summary>
 public class PlayerState : MonoBehaviour
 {
+    // 컴포넌트 참조
+    private PlayerStateUI stateUI;
+
+    // states
     private int maxHP;
     private int attackDmg;
     private int[] magicLevel;    // 0이면 안배움, 1이면 기본, 2이면 업그레이드 상태
@@ -16,11 +20,12 @@ public class PlayerState : MonoBehaviour
 
     public void Init(/*int maxHP, int attackDmg, bool[] plantMagicUnlock ...*/)
     {
-
+        // HP, 공격력 등의 값 초기화하기
+        stateUI = PlayerStateUI.Instance;
     }
 
     public void Heal(int amount) { }
-    public void Damage(int amount) { }
+    public void TakeDamage(int amount) { }
     public void SetAttackDmg() { }
     public void UpgradePlantMagic(PlantMagicCode magicCode) { } // 획득 및 업그레이드
 }

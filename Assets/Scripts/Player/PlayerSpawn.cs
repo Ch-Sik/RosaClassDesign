@@ -14,6 +14,6 @@ public class PlayerSpawn : MonoBehaviour
     void SpawnPlayer(Vector2 position)
     {
         var playerObject = GameObject.Instantiate(playerPrefab, position, Quaternion.identity);
-        InputManager.GetInstance().player = playerObject.GetComponent<PlayerRef>();
+        CameraFollow.Instance.Init();
     }
 }

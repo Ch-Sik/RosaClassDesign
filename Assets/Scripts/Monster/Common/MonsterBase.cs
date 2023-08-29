@@ -4,15 +4,26 @@ using UnityEngine;
 
 public class MonsterBase : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField] private int maxHP;
+    private int currentHP;
+
+    private void Start()
+    {
+        currentHP = maxHP;
+    }
+
+    void TakeDamage()
     {
         
     }
 
-    // Update is called once per frame
-    void Update()
+    void Die()
     {
-        
+
+    }
+
+    void DropItems()
+    {
+
     }
 }

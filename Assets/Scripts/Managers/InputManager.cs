@@ -5,82 +5,110 @@ using UnityEngine.InputSystem;
 
 public enum InputState
 {
-    PLAYERMOVE,
     UICONTROL,
+    DIALOGUE,
+    PLAYER_WALK,
+    PLAYER_CLIMB,
+    PLAYER_MONKEY,
     IGNORE /* 레어 아이템 획득 연출 등 잠시동안 모든 입력이 무시되어야 하는 경우.
             * IGNORE 상태는 오래 유지하지 말 것. */
 }
 
 /// <summary>
-/// Unity에서 제공하는 InputManager를 사용하기 편하게 InputState로 추상화합니다.
-/// InputState에 해당하는 InputActionMap들만 활성화하고 나머지는 비활성화합니다.
-/// 
+/// Unity에서 제공하는 Input System를 사용하기 편하게 InputState로 추상화.
+/// 현재의 InputState에 해당하는 InputActionMap들만 활성화하고 나머지는 비활성화함.
+/// 이를 통해 Player를 참조하지 않고도, UI 상태에서 Player input을 block할 수 있음.
 /// </summary>
 public class InputManager : MonoBehaviour
 {
     // 싱글톤
-    static InputManager instance;
+    private static InputManager _instance;
+    public static InputManager Instance { get { return _instance; } }
 
-    // 컴포넌트
-    public PlayerRef player { get { return player; } set { player = value; playerMove = value.Move; } }
-    public PlayerMove playerMove;
-    public PlayerInput unityPlayerInput;
-
-    // 에셋
-    [SerializeField] InputActionAsset inputActions;
-    private InputActionMap playerInputActions;
-    private InputActionMap uiInputActions;
+    // InputAction Asset
+    public InputActionAsset _inputAsset;
+    // InputActionMap
+    private InputActionMap uiActionMap;
+    private InputActionMap dialogueActionMap;
+    private InputActionMap playerWalkActionMap;
+    private InputActionMap playerCLIMBActionMap;
+    private InputActionMap playerMonkeyActionMap;
+    private InputActionMap playerDefaultActionMap;
     
     // 상태
     [ContextMenuItem("switch inputState", "Test")]
     public InputState state;
 
-
-    public static InputManager GetInstance() { return instance; }
-
     private void Awake()
     {
-        instance = this;
+        _instance = this;
+        InitInput();
     }
 
-    private void Start()
+    private void InitInput()
     {
-        // InputActionAsset에서 ActionMap(Action 묶음) 찾기
-        playerInputActions = inputActions.FindActionMap("Player");
-        uiInputActions = inputActions.FindActionMap("UI");
+        // Find Action Maps
+        uiActionMap = _inputAsset.FindActionMap("UI");
+        dialogueActionMap = _inputAsset.FindActionMap("Dialogue");
+        playerWalkActionMap = _inputAsset.FindActionMap("PlayerWalk");
+        playerCLIMBActionMap = _inputAsset.FindActionMap("PlayerClimb");
+        playerMonkeyActionMap = _inputAsset.FindActionMap("PlayerMonkey");
+        playerDefaultActionMap = _inputAsset.FindActionMap("PlayerDefault");
+
+        // 모두 비활성화하고 PlayerWalk와 PlayerDefault만 활성화
+        _inputAsset.Disable();
+        _inputAsset.FindActionMap("PlayerWalk").Enable();
+        _inputAsset.FindActionMap("PlayerDefault").Enable();
+
+        // 테스트: UI 상태에선 Attack action이 없어서 1회성임에 주의할 것
+        _inputAsset.FindAction("Attack").performed += Test;
     }
 
-    void ChangeInputState(InputState newState)
+    // 테스트: 마우스 클릭하면 PLAYERWALK -> UI 전환.
+    public void Test(InputAction.CallbackContext context)
     {
-        Debug.Log("ChangeInputState");
-        if (state == newState) return;
-        if(state == InputState.PLAYERMOVE)
-        {
-        //    playerMove.OnMove(Vector2.zero); // inputVector가 (1,0) 따위에서 업데이트 안되는 현상 방지
-        }
-        state = newState;
-
-        if (state == InputState.PLAYERMOVE)
-        {
-            //unityPlayerInput.SwitchCurrentActionMap("Player");   // Player 액션맵은 활성화하고 나머지는 비활성화
-            // 참고: CurrentActionMap은 PlayerInput 컴포넌트가 혼자 가지고 있는 개념임. ActionMapAsset 자체는 변하지 않음.
-            playerInputActions.Enable();   
-            uiInputActions.Disable();        
-        }
-        else if (state == InputState.UICONTROL)
-        {
-            //unityPlayerInput.SwitchCurrentActionMap("UI");
-            playerInputActions.Disable();   // 액션맵의 활성화/비활성화를 수동으로 설정할 수도 있음.
-            uiInputActions.Enable();        // 이 방식의 경우 2개 이상의 액션맵을 동시에 활성화 가능
-        }
-    }
-
-    public void Test()
-    {
-        if (state == InputState.PLAYERMOVE)
+        if (state == InputState.PLAYER_WALK)
             ChangeInputState(InputState.UICONTROL);
         else
-            ChangeInputState(InputState.PLAYERMOVE);
+            ChangeInputState(InputState.PLAYER_WALK);
+    }
+
+    public void ChangeInputState(InputState newState)
+    {
+        if (state == newState) return;
+
+        state = newState;
+        Debug.Log("ChangeInputState");
+
+        switch (state)
+        {
+            case InputState.UICONTROL:
+                _inputAsset.Disable();      // 모두 비활성화하고,
+                uiActionMap.Enable();       // 'UI' action map에 해당하는 action들만 활성화하기
+                break;
+            case InputState.DIALOGUE:
+                _inputAsset.Disable();
+                dialogueActionMap.Enable();
+                break;
+            case InputState.PLAYER_WALK:
+                _inputAsset.Disable();
+                playerWalkActionMap.Enable();
+                playerDefaultActionMap.Enable();
+                break;
+            case InputState.PLAYER_CLIMB:
+                _inputAsset.Disable();
+                playerCLIMBActionMap.Enable();
+                playerDefaultActionMap.Enable();
+                break;
+            case InputState.PLAYER_MONKEY:
+                _inputAsset.Disable();
+                playerMonkeyActionMap.Enable();
+                playerDefaultActionMap.Enable();
+                break;
+            case InputState.IGNORE:
+                _inputAsset.Disable();
+                break;
+        }
     }
 }
 

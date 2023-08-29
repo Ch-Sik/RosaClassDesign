@@ -29,20 +29,25 @@
 Player 모듈 관련
 
 * Player의 move와 attack은 일단 하나로 합쳐놓음. 서로 영향을 많이 받는데 시작부터 분리하는 것보단 일단 하나로 뭉치고 나중에 너무 비대해지면 그 때 가르는 게 좋을 것 같다고 판단함.
+  * 특히 '이동 공격'이 가능해야할지 아직 안정했으므로
 
-* PlayerMove는 InputManager.OnMove() -> PlayerMove.inputVector -> PlayerMove.Update()로 전달되는 구조. 특정 상황에서 velocity가 (0,0)이 되어야 하는 부분은 Update 내부에서 플래그를 사용하여 판단 및 업데이트하고 inputVector 필드는 건들지 않도록 하기. 
 
 
 
 입력 관련
 
 * 플레이어 입력과 UI 입력이 동시에 수행되지 않도록 하는 것은 InputActionMap을 활성화/비활성화하는 것으로 구현함.
-
-* 플레이어 입력을 담당하는 InputAction 들은 PlayerInput 컴포넌트(내장)를 통해 게임에 적용됨.
-  * PlayerInput 컴포넌트는 Player 오브젝트의 최상단에 위치, Broadcast Messages 방식을 사용 -> Player나 그 자식오브젝트들 안에서 OnMove, OnAttack 등의 함수를 구현하기만 하면 됨.
-    * Broadcast Message는 MonoBehaviour 기능 중 하나로, Hierarchy 상의 자식 오브젝트들에게 (자신 포함) 메시지를 보내는 것. Send Message는 자식 오브젝트 말고 자기 자신만 해당.
+* 플레이어 입력을 담당하는 InputAction 들은 Actions Asset 참조 방식을 사용함
+  * [공식 문서](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.6/manual/Workflows.html)에서 제시하는 workflow들 중 3번째 방식에 해당
+  
+* Dialogue 입력은 UI와 분리함.
+  * 대화 이벤트 진행 중에도 일시정지할 수 있다는 가능성 때문에 분리
+    * 일시정지 메뉴 UI 조작하려다가 그와 동시에 '아무키를 눌러 다음 대화로 진행' 해버릴까봐
 
 * UI 입력을 담당하는 InputAction 들은 EventSystem 오브젝트 상의 InputSystemUIInputModule 컴포넌트(내장)를 통해 게임에 적용됨.
+  * 그냥 기본 설정 그대로 둔 것에 불과함.
+  * 혹시나 키보드를 통해 UI 조작을 가능하게 하려는 경우 상호작용 가능한 UI 관련 컴포넌트들 (Button, Slider 등)의 Navigation 항목만 잘 설정해주면 됨.
+
 
 
 

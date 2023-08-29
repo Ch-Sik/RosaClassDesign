@@ -2,20 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 플레이어 체력 등 GamePlay 타임동안 항상 보이는 UI 담당
+/// </summary>
 public class PlayerStateUI : MonoBehaviour
 {
     // 싱글턴
-    static PlayerStateUI instance;
-    int currentHP;      // 체력의 증가/감소 중 어느쪽인지 판단해서 올바른 연출을 하기 위해 기존 체력값 보관
-
-    public static PlayerStateUI GetInstance() { return instance; }
+    private static PlayerStateUI _instance = null;
+    public static PlayerStateUI Instance { get { return _instance; } }
 
     private void Awake()
     {
-        instance = this;
+        _instance = this;
     }
 
-    void UpdateUI()
+    public void AddHPUI()
+    {
+
+    }
+
+    public void RemoveHPUI()
     {
 
     }
