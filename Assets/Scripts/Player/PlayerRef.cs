@@ -7,22 +7,50 @@ using UnityEngine;
 /// </summary>
 public class PlayerRef : MonoBehaviour
 {
-    static PlayerRef instance;
-
+    // 싱글턴
+    private static PlayerRef _instance;
+    public static PlayerRef Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<PlayerRef>();
+                if (_instance == null)
+                {
+                    GameObject obj = new GameObject();
+                    _instance = obj.AddComponent<PlayerRef>();
+                }
+            }
+            return _instance;
+        }
+    }
     public PlayerState State;
-    public PlayerMove Move;
+    public PlayerController Controller;
+    public PlayerMovement Move;
     public PlayerMagic Magic;
+    public PlayerCombat combat;
     public PlayerAnimation Animation;
     public PlayerSpawn LastSpawned;
 
+    public Rigidbody2D rb;
+    public BoxCollider2D col;
+    public Animator anim;
 
     private void Awake()
     {
         if(instance == null)
             instance = this;
         if(State == null) State = GetComponent<PlayerState>();
-        if(Move == null) Move = GetComponent<PlayerMove>();
+        if(Controller == null) Controller = GetComponent<PlayerController>();
+        if(Move == null) Move = GetComponent<PlayerMovement>();
         if(Magic == null) Magic = GetComponent<PlayerMagic>();
+        if(combat == null) combat = GetComponent<PlayerCombat>();
         if(Animation == null) Animation = GetComponent<PlayerAnimation>();
+        if(sound == null) sound = GetComponent<PlayerSound>();
+
+        if(rb == null) rb = GetComponent<Rigidbody2D>();
+        if(col == null) col = GetComponent<BoxCollider2D>();
+        if(anim == null) anim = GetComponent<Animator>();
     }
 }

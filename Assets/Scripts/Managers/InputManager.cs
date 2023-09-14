@@ -7,7 +7,12 @@ public enum InputState
 {
     PLAYERMOVE,
     UICONTROL,
-    IGNORE /* 레어 아이템 획득 연출 등 잠시동안 모든 입력이 무시되어야 하는 경우.
+    DIALOGUE,
+    PLAYER_WALK,
+    PLAYER_CLIMB,
+    PLAYER_MONKEY,
+    IGNORE /* 레어 아이템 획득 연출 등 잠시동안 모든 입력이 무시되어야 하는 경우
+            * .
             * IGNORE 상태는 오래 유지하지 말 것. */
 }
 
@@ -21,15 +26,15 @@ public class InputManager : MonoBehaviour
     // 싱글톤
     static InputManager instance;
 
-    // 컴포넌트
-    public PlayerRef player { get { return player; } set { player = value; playerMove = value.Move; } }
-    public PlayerMove playerMove;
-    public PlayerInput unityPlayerInput;
-
-    // 에셋
-    [SerializeField] InputActionAsset inputActions;
-    private InputActionMap playerInputActions;
-    private InputActionMap uiInputActions;
+    // InputAction Asset
+    public InputActionAsset _inputAsset;
+    // InputActionMap
+    public InputActionMap uiActionMap;
+    public InputActionMap dialogueActionMap;
+    public InputActionMap playerWalkActionMap;
+    public InputActionMap playerCLIMBActionMap;
+    public InputActionMap playerMonkeyActionMap;
+    public InputActionMap playerDefaultActionMap;
     
     // 상태
     [ContextMenuItem("switch inputState", "Test")]
@@ -50,15 +55,12 @@ public class InputManager : MonoBehaviour
         uiInputActions = inputActions.FindActionMap("UI");
     }
 
-    void ChangeInputState(InputState newState)
-    {
-        Debug.Log("ChangeInputState");
-        if (state == newState) return;
-        if(state == InputState.PLAYERMOVE)
-        {
-        //    playerMove.OnMove(Vector2.zero); // inputVector가 (1,0) 따위에서 업데이트 안되는 현상 방지
-        }
-        state = newState;
+        // 모두 비활성화하고 PlayerWalk와 PlayerDefault만 활성화
+        _inputAsset.Disable();
+        _inputAsset.FindActionMap("PlayerWalk").Enable();
+        _inputAsset.FindActionMap("PlayerDefault").Enable();
+
+    }
 
         if (state == InputState.PLAYERMOVE)
         {

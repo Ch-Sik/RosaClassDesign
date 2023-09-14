@@ -2284,10 +2284,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6920f67e30baa914ab690320eeee715e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerMove: {fileID: 1957915402}
-  unityPlayerInput: {fileID: 1957915403}
-  inputActions: {fileID: -944628639613478452, guid: d4de120757f938d49b71c5a160e782a8, type: 3}
-  state: 0
+  _inputAsset: {fileID: -944628639613478452, guid: d4de120757f938d49b71c5a160e782a8, type: 3}
+  uiActionMap:
+    m_Name: Ui
+    m_Id: ef38da97-2162-45a3-9dce-234cfb5a0a2f
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  dialogueActionMap:
+    m_Name: Dialogue
+    m_Id: 8a441c72-d809-43b5-956c-b39d789a4fcf
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  playerWalkActionMap:
+    m_Name: Player Walk
+    m_Id: 2d22db4e-e064-4ba2-a986-865d29c800d8
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  playerCLIMBActionMap:
+    m_Name: Player CLIMB
+    m_Id: 357e0585-6445-4986-a180-152cc2a4a551
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  playerMonkeyActionMap:
+    m_Name: Player Monkey
+    m_Id: f7d6c101-c1f6-4dca-a809-144eaccf5161
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  playerDefaultActionMap:
+    m_Name: Player Default
+    m_Id: 6b61311b-612d-434a-8e06-4376c5eb5418
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  state: 2
 --- !u!4 &2070646358
 Transform:
   m_ObjectHideFlags: 0
