@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -26,6 +27,32 @@ public class InputManager : MonoBehaviour
     // 싱글톤
     static InputManager instance;
 
+    public static InputManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindObjectOfType<InputManager>();
+                if (instance == null)
+                {
+                    GameObject obj = new GameObject();
+                    instance = obj.AddComponent<InputManager>();
+                }
+            }
+            return instance;
+        }
+    }
+
+    // 컴포넌트
+    public PlayerRef player { get { return player; } set { player = value; playerMove = value.Move; } }
+    public PlayerMovement playerMove;
+    public PlayerInput unityPlayerInput;
+
+    // 에셋
+    //[SerializeField] InputActionAsset inputActions;
+    private InputActionMap playerInputActions;
+    private InputActionMap uiInputActions;
     // InputAction Asset
     public InputActionAsset _inputAsset;
     // InputActionMap
@@ -50,10 +77,13 @@ public class InputManager : MonoBehaviour
 
     private void Start()
     {
-        // InputActionAsset에서 ActionMap(Action 묶음) 찾기
-        playerInputActions = inputActions.FindActionMap("Player");
-        uiInputActions = inputActions.FindActionMap("UI");
-    }
+        // Find Action Maps
+        uiActionMap = _inputAsset.FindActionMap("UI");
+        dialogueActionMap = _inputAsset.FindActionMap("Dialogue");
+        playerWalkActionMap = _inputAsset.FindActionMap("PlayerWalk");
+        playerCLIMBActionMap = _inputAsset.FindActionMap("PlayerClimb");
+        playerMonkeyActionMap = _inputAsset.FindActionMap("PlayerMonkey");
+        playerDefaultActionMap = _inputAsset.FindActionMap("PlayerDefault");
 
         // 모두 비활성화하고 PlayerWalk와 PlayerDefault만 활성화
         _inputAsset.Disable();
@@ -62,18 +92,42 @@ public class InputManager : MonoBehaviour
 
     }
 
-        if (state == InputState.PLAYERMOVE)
+    public void ChangeInputState(InputState newState)
+    {
+        Debug.Log("ChangeInputState");
+        if (state == newState) return;
+        state = newState;
+
+        switch (state)
         {
-            //unityPlayerInput.SwitchCurrentActionMap("Player");   // Player 액션맵은 활성화하고 나머지는 비활성화
-            // 참고: CurrentActionMap은 PlayerInput 컴포넌트가 혼자 가지고 있는 개념임. ActionMapAsset 자체는 변하지 않음.
-            playerInputActions.Enable();   
-            uiInputActions.Disable();        
-        }
-        else if (state == InputState.UICONTROL)
-        {
-            //unityPlayerInput.SwitchCurrentActionMap("UI");
-            playerInputActions.Disable();   // 액션맵의 활성화/비활성화를 수동으로 설정할 수도 있음.
-            uiInputActions.Enable();        // 이 방식의 경우 2개 이상의 액션맵을 동시에 활성화 가능
+            case InputState.PLAYER_WALK:
+                _inputAsset.Disable();
+                playerDefaultActionMap.Enable();
+                playerWalkActionMap.Enable();
+                break;
+            case InputState.PLAYER_CLIMB:
+                _inputAsset.Disable();
+                playerDefaultActionMap.Enable();
+                playerCLIMBActionMap.Enable();
+                break;
+            case InputState.PLAYER_MONKEY:
+                _inputAsset.Disable();
+                playerDefaultActionMap.Enable();
+                playerMonkeyActionMap.Enable();
+                break;
+            case InputState.DIALOGUE:
+                _inputAsset.Disable();
+                playerDefaultActionMap.Enable();
+                dialogueActionMap.Enable();
+                break;
+            case InputState.IGNORE:
+                _inputAsset.Disable();
+                playerDefaultActionMap.Enable();
+                uiActionMap.Enable();
+                break;
+            case InputState.UICONTROL:
+                _inputAsset.Disable();
+                break;
         }
     }
 

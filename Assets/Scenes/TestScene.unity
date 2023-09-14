@@ -123,82 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &70368557
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 70368561}
-  - component: {fileID: 70368560}
-  - component: {fileID: 70368559}
-  - component: {fileID: 70368558}
-  m_Layer: 0
-  m_Name: GameManager (1)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &70368558
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 70368557}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 740c954a72572f443b68aafc7e3eba4a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &70368559
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 70368557}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c66ac6e51f3f8224b97f101065dd1a33, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &70368560
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 70368557}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b302ab9d0e53e54482658867225c8b8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MEMO: "\uC804\uC5ED \uCC38\uC870\uAC00 \uD544\uC694\uD55C \uACF3\uC5D0\uC11C \uC2F1\uAE00\uD1A4
-    \uD328\uD134\uC744 \uC0AC\uC6A9\uD558\uB2C8 GameManager\uAC00 \uB808\uD37C\uB7F0\uC2A4\uB97C
-    \uAD73\uC774 \uBAA8\uC544\uB458 \uD544\uC694\uB294 \uC5C6\uC5B4\uC9D0\nGameManager\uB294
-    \uAC8C\uC784 \uC2DC\uC791 \uC2DC\uC758 \uCD08\uAE30\uD654 / \uAC01 \uAC1D\uCCB4\uC758
-    \uB77C\uC774\uD504\uC0AC\uC774\uD074 \uAD00\uB9AC \uB4F1\uC758 \uC5ED\uD560\uC744
-    \uB2F4\uB2F9\uD558\uB294 \uAC78\uB85C."
---- !u!4 &70368561
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 70368557}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.6352153, y: -1.7324302, z: 3386.8374}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &84483706
 GameObject:
   m_ObjectHideFlags: 0
@@ -208,7 +132,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 84483709}
-  - component: {fileID: 84483708}
   - component: {fileID: 84483707}
   m_Layer: 0
   m_Name: InputManager
@@ -229,6 +152,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6920f67e30baa914ab690320eeee715e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerMove: {fileID: 0}
+  unityPlayerInput: {fileID: 0}
+  inputActions: {fileID: -944628639613478452, guid: d4de120757f938d49b71c5a160e782a8, type: 3}
   _inputAsset: {fileID: -944628639613478452, guid: d4de120757f938d49b71c5a160e782a8, type: 3}
   uiActionMap:
     m_Name: Ui
@@ -267,23 +193,6 @@ MonoBehaviour:
     m_Actions: []
     m_Bindings: []
   state: 2
---- !u!114 &84483708
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 84483706}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b302ab9d0e53e54482658867225c8b8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MEMO: "\uC785\uB825\uACFC \uAD00\uB828\uB41C \uBAA8\uB4E0 \uCEF4\uD3EC\uB10C\uD2B8\uB294
-    InputActionAsset\uC744 \uCC38\uC870\uD55C\uB2E4.\n\uC785\uB825 \uAD00\uB828 \uB514\uBC84\uAE45\uD560
-    \uB54C Project \uCC3D->'Find References in Scene'\uC73C\uB85C \uC52C\uC5D0\uC11C
-    '\uC785\uB825\uACFC \uC5F0\uAD00\uB41C \uBD80\uBD84'\uC744 \uBAA8\uB450 \uCC3E\uAE30
-    \uAC00\uB2A5."
 --- !u!4 &84483709
 Transform:
   m_ObjectHideFlags: 0
@@ -888,7 +797,7 @@ MonoBehaviour:
   Magic: {fileID: 0}
   combat: {fileID: 0}
   Animation: {fileID: 0}
-  sound: {fileID: 0}
+  LastSpawned: {fileID: 0}
   rb: {fileID: 0}
   col: {fileID: 0}
   anim: {fileID: 0}

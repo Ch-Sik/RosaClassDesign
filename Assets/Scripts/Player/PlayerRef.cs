@@ -39,15 +39,14 @@ public class PlayerRef : MonoBehaviour
 
     private void Awake()
     {
-        if(instance == null)
-            instance = this;
+        if(Instance == null)
+            _instance = this;
         if(State == null) State = GetComponent<PlayerState>();
         if(Controller == null) Controller = GetComponent<PlayerController>();
         if(Move == null) Move = GetComponent<PlayerMovement>();
         if(Magic == null) Magic = GetComponent<PlayerMagic>();
         if(combat == null) combat = GetComponent<PlayerCombat>();
         if(Animation == null) Animation = GetComponent<PlayerAnimation>();
-        if(sound == null) sound = GetComponent<PlayerSound>();
 
         if(rb == null) rb = GetComponent<Rigidbody2D>();
         if(col == null) col = GetComponent<BoxCollider2D>();
