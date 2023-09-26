@@ -59,18 +59,6 @@ public class InputManager : MonoBehaviour
         _inputAsset.Disable();
         _inputAsset.FindActionMap("PlayerWalk").Enable();
         _inputAsset.FindActionMap("PlayerDefault").Enable();
-
-        // 테스트: UI 상태에선 Attack action이 없어서 1회성임에 주의할 것
-        _inputAsset.FindAction("Attack").performed += Test;
-    }
-
-    // 테스트: 마우스 클릭하면 PLAYERWALK -> UI 전환.
-    public void Test(InputAction.CallbackContext context)
-    {
-        if (state == InputState.PLAYER_WALK)
-            ChangeInputState(InputState.UICONTROL);
-        else
-            ChangeInputState(InputState.PLAYER_WALK);
     }
 
     public void ChangeInputState(InputState newState)
