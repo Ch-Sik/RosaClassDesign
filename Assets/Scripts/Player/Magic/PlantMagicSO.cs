@@ -9,4 +9,5 @@ public class PlantMagicSO : ScriptableObject
     public Sprite icon;
     public Sprite previewSprite;
     public MagicCastType castType;
+    public GameObject prefab;
 }

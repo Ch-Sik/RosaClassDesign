@@ -14,7 +14,9 @@ public class PlayerMagic : MonoBehaviour
     [SerializeField, ReadOnly]
     private bool isPreviewOn = false;
     [SerializeField, ReadOnly]
-    private Vector3 magicPos;
+    private Vector3? magicPos;          // null이라면 현재 조준하고 있는 위치가 유효하지 않다는 뜻
+    [SerializeField, ReadOnly]
+    private TerrainType terrainType;    // 벽에 시전 가능한 녀석일 경우 좌/우 어느쪽인지, 아무데나 시전 가능한 녀석일 경우 상/하/좌/우 어느쪽인지
 
     [Space(10), Header("시전 관련")]
     [SerializeField, Tooltip("시전 위치 미리보기 오브젝트")]
@@ -37,16 +39,16 @@ public class PlayerMagic : MonoBehaviour
         RegisterInputActions();
     }
 
-    void RegisterInputActions()
+    private void RegisterInputActions()
     {
         inputInstance = InputManager.Instance;
         IAMagicReady = inputInstance._inputAsset.FindAction("MagicReady");
         IAMagicExecute = inputInstance._inputAsset.FindAction("MagicExecute");
         IAMagicCancel = inputInstance._inputAsset.FindAction("MagicCancel");
 
-        IAMagicReady.performed += PrepareCast;
-        IAMagicExecute.performed += DoCast;
-        IAMagicCancel.performed += CancelCast;
+        IAMagicReady.performed += OnMagicReady;
+        IAMagicExecute.performed += OnMagicExecute;
+        IAMagicCancel.performed += OnMagicCancel;
 
         IAMagicExecute.Disable();
         IAMagicCancel.Disable();
@@ -56,14 +58,14 @@ public class PlayerMagic : MonoBehaviour
     /// 마법 시전 키를 처음 눌렀을 때.
     /// 현재 선택된 마법이 유효한지 검사하고, 미리보기 켜기.
     /// </summary>
-    void PrepareCast(InputAction.CallbackContext context)
+    private void OnMagicReady(InputAction.CallbackContext context)
     {
         // TODO: PlayerState와 연동하여 현재 선택된 마법이 유효한지 확인하기
         IAMagicReady.Disable();
         IAMagicExecute.Enable();
         IAMagicCancel.Enable();
 
-        Debug.LogWarning("식물 마법 시전 준비");
+        Debug.Log("식물 마법 시전 준비");
 
         ShowPreview();
     }
@@ -71,21 +73,37 @@ public class PlayerMagic : MonoBehaviour
     /// <summary>
     /// Prepare Cast 상태에서 클릭했을 경우 미리보기로 보여준 위치에 실제로 마법을 시전하기.
     /// </summary>
-    void DoCast(InputAction.CallbackContext context)
+    private void OnMagicExecute(InputAction.CallbackContext context)
     {
+        if(magicPos == null)
+        {
+            Debug.Log("식물마법 시전 실패: 잘못된 위치 지정");
+            return;
+        }
         IAMagicReady.Enable();
         IAMagicExecute.Disable();
         IAMagicCancel .Disable();
 
-        Debug.LogWarning("식물마법 시전!!!!!!!");
+        Debug.Log($"식물마법 시전\n 종류: {currentSelectedMagic.name}\n 지형타입: {terrainType}");
+        DoMagic();
 
         HidePreview();
+    }
+
+    private void DoMagic()
+    {
+        if(currentSelectedMagic.prefab == null)
+        {
+            Debug.LogError($"{currentSelectedMagic.name}: 식물마법 프리팹이 지정되지 않음!");
+            return;
+        }
+        Instantiate(currentSelectedMagic.prefab, (Vector3)magicPos, Quaternion.identity);
     }
 
     /// <summary>
     /// Prepare Cast 상태에서 우클릭했을 경우 마법 시전을 취소하기
     /// </summary>
-    void CancelCast(InputAction.CallbackContext context)
+    private void OnMagicCancel(InputAction.CallbackContext context)
     {
         IAMagicReady.Enable();
         IAMagicExecute.Disable();
@@ -100,7 +118,7 @@ public class PlayerMagic : MonoBehaviour
     /// 미리보기 ON
     /// </summary>
     [ContextMenu("Set Preview ON")]
-    void ShowPreview()
+    private void ShowPreview()
     {
         isPreviewOn = true;
     }
@@ -109,7 +127,7 @@ public class PlayerMagic : MonoBehaviour
     /// 미리보기 OFF
     /// </summary>
     [ContextMenu("Set Preview OFF")]
-    void HidePreview()
+    private void HidePreview()
     {
         isPreviewOn = false;
         previewObject.SetActive(false);
@@ -118,7 +136,7 @@ public class PlayerMagic : MonoBehaviour
     /// <summary>
     /// 미리보기 Update
     /// </summary>
-    void UpdatePreview()
+    private void UpdatePreview()
     {
         // 마우스 위치 가져오기
         Vector2 mouseScreenPos2 = InputManager.Instance._inputAsset.FindAction("Aim").ReadValue<Vector2>();
@@ -140,6 +158,7 @@ public class PlayerMagic : MonoBehaviour
                 previewable = true;
                 minDistance = hitTemp.distance;
                 hitResult = hitTemp;
+                terrainType = TerrainType.Floor;
             }
         }
         if(castType == MagicCastType.WALL_ONLY || castType == MagicCastType.EVERYWHERE)
@@ -149,12 +168,14 @@ public class PlayerMagic : MonoBehaviour
                 previewable = true;
                 minDistance = hitTemp.distance;
                 hitResult = hitTemp;
+                terrainType = TerrainType.Wall_facing_right;
             }
             if (RaycastTerrain(mouseWorldPosition, TerrainType.Wall_facing_left, out hitTemp) && hitTemp.distance < minDistance)
             {
                 previewable = true;
                 minDistance = hitTemp.distance;
                 hitResult = hitTemp;
+                terrainType = TerrainType.Wall_facing_left;
             }
         }
         if (castType == MagicCastType.CEIL_ONLY || castType == MagicCastType.EVERYWHERE)
@@ -164,6 +185,7 @@ public class PlayerMagic : MonoBehaviour
                 previewable = true;
                 minDistance = hitTemp.distance;
                 hitResult = hitTemp;
+                terrainType = TerrainType.Ceil;
             }
         }
 
@@ -172,10 +194,12 @@ public class PlayerMagic : MonoBehaviour
         {
             previewObject.SetActive(true);
             previewObject.transform.position = hitResult.point;
+            magicPos = hitResult.point;
         }
         else
         {
             previewObject.SetActive(false);
+            magicPos = null;
         }
     }
 
