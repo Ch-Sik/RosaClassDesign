@@ -212,29 +212,20 @@ public class PlayerMagic : MonoBehaviour
         }
 
         // 마우스가 지형 바깥에 있을 경우
-        // 물리 시뮬레이션이 아닌 Raycast의 경우 includeLayer가 제대로 적용되지 않아 2번에 걸쳐 Layer 검사 수행해야 함.
-        frontResult = Physics2D.Raycast(origin, rayDir, castDistOutside, LayerMask.GetMask("Terrain"));
+        frontResult = Physics2D.Raycast(origin, rayDir, castDistOutside, LayerMask.GetMask(layerName));
         if (frontResult.collider != null)
         {
-            int layerTest = frontResult.collider.includeLayers.value & LayerMask.GetMask(layerName);
-            if (layerTest != 0)
-            {
-                succeed = true;
-                result = frontResult;
-            }
+            succeed = true;
+            result = frontResult;
         }
         // 마우스가 지형 안쪽에 있을 경우
-        backResult = Physics2D.Raycast(origin, -rayDir, castDistInside, LayerMask.GetMask("Terrain"));
+        backResult = Physics2D.Raycast(origin, -rayDir, castDistInside, LayerMask.GetMask(layerName));
         if (backResult.collider != null)
         {
-            int layerTest = backResult.collider.includeLayers.value & LayerMask.GetMask(layerName);
-            if (layerTest != 0)
+            if (result.collider == null || result.distance > backResult.distance)
             {
-                if (result.collider == null || result.distance > backResult.distance)
-                {
-                    succeed = true;
-                    result = backResult;
-                }
+                succeed = true;
+                result = backResult;
             }
         }
 
