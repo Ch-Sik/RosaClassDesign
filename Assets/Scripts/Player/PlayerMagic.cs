@@ -38,6 +38,7 @@ public class PlayerMagic : MonoBehaviour
     private InputAction IAMagicExecute;
     private InputAction IAMagicCancel;
 
+    private EdgeCollider2D edgeCollider;    // 현재 시전하고자 하는 지형의 콜라이더
     private RaycastHit2D hitfail = new RaycastHit2D(); // RaycastTerrain() 함수 최적화
 
 
@@ -105,6 +106,7 @@ public class PlayerMagic : MonoBehaviour
             Debug.LogError($"{currentSelectedMagic.name}: 식물마법 프리팹이 지정되지 않음!");
             return;
         }
+
         if(currentSelectedMagic.castType == MagicCastType.EVERYWHERE)
         {
             // 천장-벽-바닥 아무데나 설치가능한 경우
@@ -122,6 +124,13 @@ public class PlayerMagic : MonoBehaviour
             }
         }
 
+        // 담쟁이 덩굴의 경우 추가적인 정보 전달이 필요
+        if(currentSelectedMagic.code == PlantMagicCode.IVY)
+        {
+            magicInstance.GetComponent<MagicIvy>().Init(edgeCollider);
+        }
+
+        // 오브젝트 풀 관리: 동시에 유지 가능한 오브젝트는 최대 1개
         if (spawnedObject[(int)currentSelectedMagic.code] != null)
         {
             // TODO: 기존에 설치된 식물이 자연스럽게 사라지는 것 연출
@@ -183,6 +192,7 @@ public class PlayerMagic : MonoBehaviour
                 minDistance = hitTemp.distance;
                 hitResult = hitTemp;
                 terrainType = TerrainType.Floor;
+                edgeCollider = (EdgeCollider2D)(hitTemp.collider);
             }
         }
         if(castType == MagicCastType.WALL_ONLY || castType == MagicCastType.EVERYWHERE)
@@ -193,6 +203,7 @@ public class PlayerMagic : MonoBehaviour
                 minDistance = hitTemp.distance;
                 hitResult = hitTemp;
                 terrainType = TerrainType.Wall_facing_right;
+                edgeCollider = (EdgeCollider2D)(hitTemp.collider);
             }
             if (RaycastTerrain(mouseWorldPosition, TerrainType.Wall_facing_left, out hitTemp) && hitTemp.distance < minDistance)
             {
@@ -200,6 +211,7 @@ public class PlayerMagic : MonoBehaviour
                 minDistance = hitTemp.distance;
                 hitResult = hitTemp;
                 terrainType = TerrainType.Wall_facing_left;
+                edgeCollider = (EdgeCollider2D)(hitTemp.collider);
             }
         }
         if (castType == MagicCastType.CEIL_ONLY || castType == MagicCastType.EVERYWHERE)
@@ -210,11 +222,12 @@ public class PlayerMagic : MonoBehaviour
                 minDistance = hitTemp.distance;
                 hitResult = hitTemp;
                 terrainType = TerrainType.Ceil;
+                edgeCollider = (EdgeCollider2D)(hitTemp.collider);
             }
         }
 
         // 해당 위치에 프리뷰 표시하기
-        if(previewable)
+        if (previewable)
         {
             previewObject.SetActive(true);
             previewObject.transform.position = hitResult.point;
