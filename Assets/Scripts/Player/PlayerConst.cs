@@ -51,3 +51,26 @@ public enum TerrainType
     /// <summary> 왼쪽을 보고 있는 벽 </summary>
     Wall_facing_left,
 }
+
+public static class TerrainTypeExtend
+{
+    /// <summary>
+    /// 60분법의 각도로 변환. 위를 바라보는 상태를 0도 기준으로 반시계방향.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static float toAngle(this TerrainType value)
+    {
+        switch(value)
+        {
+            case TerrainType.Wall_facing_left:
+                return 90f;
+            case TerrainType.Ceil:
+                return 180f;
+            case TerrainType.Wall_facing_right:
+                return 270f;
+            default:   //case TerrainType.Floor:
+                return 0f;
+        }
+    }
+}

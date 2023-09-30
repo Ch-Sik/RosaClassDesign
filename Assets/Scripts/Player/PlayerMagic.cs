@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SubsystemsImplementation;
 
 /// <summary>
 /// 식물 마법 시전을 담당하는 컴포넌트
@@ -25,6 +28,10 @@ public class PlayerMagic : MonoBehaviour
     private float castDistOutside = 1.5f;
     [SerializeField, Tooltip("지형 안쪽으로 어느정도까지 파고들어도 시전 가능한 것으로 판단할지?")]
     private float castDistInside = 0.5f;
+
+    [Space(10), Header("스폰된 오브젝트")]
+    [SerializeField, ReadOnly]
+    private GameObject[] spawnedObject = new GameObject[8];
 
     private InputManager inputInstance;
     private InputAction IAMagicReady;
@@ -92,12 +99,35 @@ public class PlayerMagic : MonoBehaviour
 
     private void DoMagic()
     {
-        if(currentSelectedMagic.prefab == null)
+        GameObject magicInstance;
+        if (currentSelectedMagic.prefab == null)
         {
             Debug.LogError($"{currentSelectedMagic.name}: 식물마법 프리팹이 지정되지 않음!");
             return;
         }
-        Instantiate(currentSelectedMagic.prefab, (Vector3)magicPos, Quaternion.identity);
+        if(currentSelectedMagic.castType == MagicCastType.EVERYWHERE)
+        {
+            // 천장-벽-바닥 아무데나 설치가능한 경우
+            // '지형과 수직인 방향'을 가르키기 위해 '회전'을 사용
+            magicInstance = Instantiate(currentSelectedMagic.prefab, (Vector3)magicPos, Quaternion.Euler(0, 0, terrainType.toAngle()));
+        }
+        else
+        {
+            // 그 외의 경우 '지형과 수직인 방향'을 가르키기 위해 '좌우 대칭'을 사용
+            magicInstance = Instantiate(currentSelectedMagic.prefab, (Vector3)magicPos, Quaternion.identity);
+            // wall_facing_left는 기본 형태, wall_facing_right가 반전된 형태
+            if(terrainType == TerrainType.Wall_facing_right)
+            {
+                magicInstance.transform.localScale = Vector3.Scale(magicInstance.transform.localScale,  new Vector3(-1, 1, 1));
+            }
+        }
+
+        if (spawnedObject[(int)currentSelectedMagic.code] != null)
+        {
+            // TODO: 기존에 설치된 식물이 자연스럽게 사라지는 것 연출
+            Destroy(spawnedObject[(int)currentSelectedMagic.code], 1f);
+        }
+        spawnedObject[(int)currentSelectedMagic.code] = magicInstance;
     }
 
     /// <summary>
@@ -114,18 +144,14 @@ public class PlayerMagic : MonoBehaviour
         HidePreview();
     }
 
-    /// <summary>
-    /// 미리보기 ON
-    /// </summary>
+    /// <summary> 미리보기 ON </summary>
     [ContextMenu("Set Preview ON")]
     private void ShowPreview()
     {
         isPreviewOn = true;
     }
 
-    /// <summary>
-    /// 미리보기 OFF
-    /// </summary>
+    /// <summary> 미리보기 OFF </summary>
     [ContextMenu("Set Preview OFF")]
     private void HidePreview()
     {
@@ -133,9 +159,7 @@ public class PlayerMagic : MonoBehaviour
         previewObject.SetActive(false);
     }
 
-    /// <summary>
-    /// 미리보기 Update
-    /// </summary>
+    /// <summary> 미리보기 Update </summary>
     private void UpdatePreview()
     {
         // 마우스 위치 가져오기
@@ -204,7 +228,9 @@ public class PlayerMagic : MonoBehaviour
     }
 
     /// <summary>
-    /// Raycast를 수행하고 layer 검사까지 수행한다. 성공하면 true, 실패하면 false 반환.
+    /// 적합한 layer를 선택하여 Raycast를 수행, 마우스 위치와 가까운 '지형 테두리'를 찾는다. 
+    /// castDist_inside/outside로 지정된 범위 내에서만 찾는다.
+    /// 성공하면 true, 실패하면 false 반환.
     /// </summary>
     private bool RaycastTerrain(Vector2 origin, TerrainType tType, out RaycastHit2D result)
     {
