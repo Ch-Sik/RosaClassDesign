@@ -8,7 +8,9 @@ public class MagicIvy : MonoBehaviour
     [SerializeField]
     private EdgeCollider2D edgeCol;
     [SerializeField]
-    private SpriteRenderer sprite;
+    private SpriteRenderer spriteUp;
+    [SerializeField]
+    private SpriteRenderer spriteDown;
     [Tooltip("덩굴이 성장할 때의 틱 속도")]
     public float tickTime = 0.1f;
     [Tooltip("덩굴 성장 속도 (유닛/초)")]
@@ -16,7 +18,6 @@ public class MagicIvy : MonoBehaviour
     [Tooltip("덩굴 스프라이트가 벽과 떨어진 정도 (만약 음수면 벽을 파고들어감)")]
     public float offset;
 
-    private LR side;
     private float bottomY, topY;
     private float vinePerTick;
     private WaitForSeconds tick;
@@ -35,15 +36,15 @@ public class MagicIvy : MonoBehaviour
         if (wallEdge.gameObject.layer == LayerMask.NameToLayer("Wall_left"))
         {
             Debug.Log("오른쪽에서 왼쪽을 보는 벽");
-            side = LR.LEFT;
             // 좌우 반전은 PlayerMagic::DoMagic에서 이미 되었으니, 위치 조절만 해주면 됨
-            sprite.gameObject.transform.position -= new Vector3(offset, 0, 0);
+            spriteUp.gameObject.transform.position -= new Vector3(offset, 0, 0);
+            spriteDown.gameObject.transform.position -= new Vector3(offset, 0, 0);
         }
         else
         {
             Debug.Log("왼쪽에서 오른쪽을 보는 벽");
-            side = LR.RIGHT;
-            sprite.gameObject.transform.position += new Vector3(offset, 0, 0);
+            spriteUp.gameObject.transform.position += new Vector3(offset, 0, 0);
+            spriteDown.gameObject.transform.position += new Vector3(offset, 0, 0);
         }
 
         // 숫자 계산
@@ -70,22 +71,14 @@ public class MagicIvy : MonoBehaviour
             edgeCol.points = points;
 
             // 스프라이트 업데이트 (콜라이더와 동기화)
-            sprite.size = new Vector2(sprite.size.x, points[0].y - points[1].y);
-            sprite.gameObject.transform.position =
-                new Vector3(sprite.gameObject.transform.position.x,
-                            transform.position.y + (points[0].y + points[1].y) / 2,
-                            sprite.gameObject.transform.position.z);
+            spriteUp.size = new Vector2(spriteUp.size.x, cursor);
             yield return tick;
         }
         points = edgeCol.points;
         points[0] = new Vector2(0, topY - gameObject.transform.position.y);
         edgeCol.points = points;
 
-        sprite.size = new Vector2(sprite.size.x, points[0].y - points[1].y);
-        sprite.gameObject.transform.position =
-            new Vector3(sprite.gameObject.transform.position.x,
-                        transform.position.y + (points[0].y + points[1].y) / 2,
-                        sprite.gameObject.transform.position.z);
+        spriteUp.size = new Vector2(spriteUp.size.x, points[0].y);
     }
 
     IEnumerator GrowVineDownway()
@@ -101,24 +94,17 @@ public class MagicIvy : MonoBehaviour
             edgeCol.points = points;
 
             // 스프라이트 업데이트 (콜라이더와 동기화)
-            sprite.size = new Vector2(sprite.size.x, points[0].y - points[1].y);
-            sprite.gameObject.transform.position =
-                new Vector3(sprite.gameObject.transform.position.x,
-                            transform.position.y + (points[0].y + points[1].y) / 2,
-                            sprite.gameObject.transform.position.z);
+            spriteDown.size = new Vector2(spriteDown.size.x, -cursor);
             yield return tick;
         }
         points = edgeCol.points;
         points[1] = new Vector2(0, bottomY - gameObject.transform.position.y);
         edgeCol.points = points;
 
-        sprite.size = new Vector2(sprite.size.x, points[0].y - points[1].y);
-        sprite.gameObject.transform.position =
-            new Vector3(sprite.gameObject.transform.position.x,
-                        transform.position.y + (points[0].y + points[1].y) / 2,
-                        sprite.gameObject.transform.position.z);
+        spriteDown.size = new Vector2(spriteDown.size.x, -points[1].y);
     }
     
+    // TODO: Destroy/OnDestroy 대신 별도의 함수를 사용하여 '사라지는 연출' 구현
     private void OnDestroy()
     {
         StopAllCoroutines();
