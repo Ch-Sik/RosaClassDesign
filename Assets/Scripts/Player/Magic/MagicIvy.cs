@@ -11,12 +11,12 @@ public class MagicIvy : MonoBehaviour
     private SpriteRenderer spriteUp;
     [SerializeField]
     private SpriteRenderer spriteDown;
-    [Tooltip("덩굴이 성장할 때의 틱 속도")]
-    public float tickTime = 0.1f;
-    [Tooltip("덩굴 성장 속도 (유닛/초)")]
-    public float vineSpeed = 1f;
-    [Tooltip("덩굴 스프라이트가 벽과 떨어진 정도 (만약 음수면 벽을 파고들어감)")]
-    public float offset;
+    [SerializeField, Tooltip("덩굴이 성장할 때의 틱 속도")]
+    private float tickTime = 0.1f;
+    [SerializeField, Tooltip("덩굴 성장 속도 (유닛/초)")]
+    private float vineSpeed = 1f;
+    [SerializeField, Tooltip("덩굴 스프라이트가 벽과 떨어진 정도 (만약 음수면 벽을 파고들어감)")]
+    private float offset;
 
     private float bottomY, topY;
     private float vinePerTick;
@@ -62,6 +62,7 @@ public class MagicIvy : MonoBehaviour
     {
         float cursor = 0f;
         Vector2[] points;
+        // cursor가 나타내는 y좌표가 topY를 넘기 직전까지
         while(gameObject.transform.position.y + cursor + vinePerTick < topY)
         {
             // 엣지콜라이더 업데이트
@@ -74,6 +75,7 @@ public class MagicIvy : MonoBehaviour
             spriteUp.size = new Vector2(spriteUp.size.x, cursor);
             yield return tick;
         }
+        // 마지막으로 콜라이더 및 스프라이트를 topY로 맞춰줌
         points = edgeCol.points;
         points[0] = new Vector2(0, topY - gameObject.transform.position.y);
         edgeCol.points = points;
@@ -85,6 +87,7 @@ public class MagicIvy : MonoBehaviour
     {
         float cursor = 0f;
         Vector2[] points;
+        // cursor가 나타내는 y좌표가 topY를 넘기 직전까지
         while (gameObject.transform.position.y + cursor - vinePerTick > bottomY)
         {
             // 엣지콜라이더 업데이트
@@ -97,6 +100,7 @@ public class MagicIvy : MonoBehaviour
             spriteDown.size = new Vector2(spriteDown.size.x, -cursor);
             yield return tick;
         }
+        // 마지막으로 콜라이더 및 스프라이트를 topY로 맞춰줌
         points = edgeCol.points;
         points[1] = new Vector2(0, bottomY - gameObject.transform.position.y);
         edgeCol.points = points;
