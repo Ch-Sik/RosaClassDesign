@@ -11,10 +11,11 @@ public class MagicIvy : MonoBehaviour
     private SpriteRenderer spriteUp;
     [SerializeField]
     private SpriteRenderer spriteDown;
+
     [SerializeField, Tooltip("덩굴이 성장할 때의 틱 속도")]
     private float tickTime = 0.1f;
     [SerializeField, Tooltip("덩굴 성장 속도 (유닛/초)")]
-    private float vineSpeed = 1f;
+    private float growSpeed = 1f;
     [SerializeField, Tooltip("덩굴 스프라이트가 벽과 떨어진 정도 (만약 음수면 벽을 파고들어감)")]
     private float offset;
 
@@ -48,7 +49,7 @@ public class MagicIvy : MonoBehaviour
         }
 
         // 숫자 계산
-        vinePerTick = tickTime * vineSpeed;
+        vinePerTick = tickTime * growSpeed;
 
         // 최적화
         tick = new WaitForSeconds(tickTime);
@@ -62,22 +63,22 @@ public class MagicIvy : MonoBehaviour
     {
         float cursor = 0f;
         Vector2[] points;
-        // cursor가 나타내는 y좌표가 topY를 넘기 직전까지
-        while(gameObject.transform.position.y + cursor + vinePerTick < topY)
+        // 위쪽 한계점에 도달하기 직전까지 vinePerTick만큼씩 성장
+        while (transform.position.y + cursor + vinePerTick < topY)
         {
             // 엣지콜라이더 업데이트
             cursor += vinePerTick;
             points = edgeCol.points;
             points[0] = new Vector2(0, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
             edgeCol.points = points;
-
             // 스프라이트 업데이트 (콜라이더와 동기화)
             spriteUp.size = new Vector2(spriteUp.size.x, cursor);
+
             yield return tick;
         }
-        // 마지막으로 콜라이더 및 스프라이트를 topY로 맞춰줌
+        // 마지막으로 위쪽 한계점까지 성장
         points = edgeCol.points;
-        points[0] = new Vector2(0, topY - gameObject.transform.position.y);
+        points[0] = new Vector2(0, topY - transform.position.y);
         edgeCol.points = points;
 
         spriteUp.size = new Vector2(spriteUp.size.x, points[0].y);
@@ -87,22 +88,23 @@ public class MagicIvy : MonoBehaviour
     {
         float cursor = 0f;
         Vector2[] points;
-        // cursor가 나타내는 y좌표가 topY를 넘기 직전까지
-        while (gameObject.transform.position.y + cursor - vinePerTick > bottomY)
+        // 아래쪽 한계점에 도달하기 직전까지 vinePerTick만큼씩 성장
+        while (transform.position.y + cursor - vinePerTick > bottomY)
         {
             // 엣지콜라이더 업데이트
             cursor -= vinePerTick;
             points = edgeCol.points;
             points[1] = new Vector2(0, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
             edgeCol.points = points;
-
             // 스프라이트 업데이트 (콜라이더와 동기화)
+            // 스프라이트가 Yflip 되어있으므로 아래로 자라더라도 size.y는 양수여야 함
             spriteDown.size = new Vector2(spriteDown.size.x, -cursor);
+
             yield return tick;
         }
-        // 마지막으로 콜라이더 및 스프라이트를 topY로 맞춰줌
+        // 마지막으로 아래쪽 한계점까지 성장
         points = edgeCol.points;
-        points[1] = new Vector2(0, bottomY - gameObject.transform.position.y);
+        points[1] = new Vector2(0, bottomY - transform.position.y);
         edgeCol.points = points;
 
         spriteDown.size = new Vector2(spriteDown.size.x, -points[1].y);

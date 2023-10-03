@@ -124,10 +124,14 @@ public class PlayerMagic : MonoBehaviour
             }
         }
 
-        // 담쟁이 덩굴의 경우 추가적인 정보 전달이 필요
+        // 담쟁이 덩굴과 맹그로브의 경우 추가적인 정보 전달이 필요
         if(currentSelectedMagic.code == PlantMagicCode.IVY)
         {
             magicInstance.GetComponent<MagicIvy>().Init(edgeCollider);
+        }
+        if(currentSelectedMagic.code == PlantMagicCode.MANGROVE)
+        {
+            magicInstance.GetComponent<MagicMangrove>().Init(edgeCollider);
         }
 
         // 오브젝트 풀 관리: 동시에 유지 가능한 오브젝트는 최대 1개
