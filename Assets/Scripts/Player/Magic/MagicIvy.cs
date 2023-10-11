@@ -28,8 +28,8 @@ public class MagicIvy : MonoBehaviour
         // 전달받은 EdgeCollider2D의 위쪽 점과 아래쪽 점 좌표를 가져옴
         float y1 = wallEdge.gameObject.transform.position.y;
         float y2 = y1;
-        y1 += wallEdge.points[0].y;
-        y2 += wallEdge.points[wallEdge.pointCount-1].y;
+        y1 += wallEdge.points[0].y * wallEdge.transform.lossyScale.y;
+        y2 += wallEdge.points[wallEdge.pointCount-1].y * wallEdge.transform.lossyScale.y;
         bottomY = Mathf.Min(y1, y2);
         topY = Mathf.Max(y2, y1);
 

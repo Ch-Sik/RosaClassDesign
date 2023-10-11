@@ -29,13 +29,13 @@ public class MagicMangrove : MonoBehaviour
     private WaitForSeconds tick;
     
 
-    public void Init(EdgeCollider2D wallEdge)
+    public void Init(EdgeCollider2D ceilEdge)
     {
         // 전달받은 EdgeCollider2D의 왼쪽 점과 오른쪽 점 좌표를 가져옴
-        float x1 = wallEdge.gameObject.transform.position.x;
+        float x1 = ceilEdge.gameObject.transform.position.x;
         float x2 = x1;
-        x1 += wallEdge.points[0].x;
-        x2 += wallEdge.points[wallEdge.pointCount - 1].x;
+        x1 += ceilEdge.points[0].x * ceilEdge.transform.lossyScale.x;
+        x2 += ceilEdge.points[ceilEdge.pointCount - 1].x * ceilEdge.transform.lossyScale.x;
         leftendX = Mathf.Min(x1, x2);
         rightendX = Mathf.Max(x1, x2);
 

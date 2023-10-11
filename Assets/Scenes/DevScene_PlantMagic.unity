@@ -741,7 +741,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 2.4213333, y: 8}
+  m_Size: {x: 2, y: 8}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -1003,7 +1003,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1409230344}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.69, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1045,8 +1045,8 @@ EdgeCollider2D:
   m_Offset: {x: 0, y: 0}
   m_EdgeRadius: 0
   m_Points:
-  - {x: -2.5, y: 4}
-  - {x: -2.5, y: -4}
+  - {x: 1, y: 4}
+  - {x: 1, y: -4}
   m_AdjacentStartPoint: {x: 0, y: 0}
   m_AdjacentEndPoint: {x: 0, y: 0}
   m_UseAdjacentStartPoint: 0
@@ -1084,7 +1084,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e161333bce389cc439b8cb062e081f90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentSelectedMagic: {fileID: 11400000, guid: 863ede92bc9ece6488ab624ab330c67b, type: 2}
+  currentSelectedMagic: {fileID: 11400000, guid: b36015cd9e63c274a865031d5db35edd, type: 2}
   isPreviewOn: 0
   terrainType: 0
   previewObject: {fileID: 1401773024}
