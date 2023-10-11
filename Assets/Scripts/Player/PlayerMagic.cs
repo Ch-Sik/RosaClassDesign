@@ -266,7 +266,7 @@ public class PlayerMagic : MonoBehaviour
                 break;
             case TerrainType.Floor:
                 rayDir = Vector2.down;
-                layerName = "Floor";
+                layerName = "Ground";
                 break;
             case TerrainType.Wall_facing_right:
                 rayDir = Vector2.left;
