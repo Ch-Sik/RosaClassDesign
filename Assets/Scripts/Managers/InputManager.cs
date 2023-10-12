@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,7 +11,8 @@ public enum InputState
     PLAYER_WALK,
     PLAYER_CLIMB,
     PLAYER_MONKEY,
-    IGNORE /* 레어 아이템 획득 연출 등 잠시동안 모든 입력이 무시되어야 하는 경우.
+    IGNORE /* 레어 아이템 획득 연출 등 잠시동안 모든 입력이 무시되어야 하는 경우
+            * .
             * IGNORE 상태는 오래 유지하지 말 것. */
 }
 
@@ -25,15 +27,41 @@ public class InputManager : MonoBehaviour
     private static InputManager _instance;
     public static InputManager Instance { get { return _instance; } }
 
+    public static InputManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindObjectOfType<InputManager>();
+                if (instance == null)
+                {
+                    GameObject obj = new GameObject();
+                    instance = obj.AddComponent<InputManager>();
+                }
+            }
+            return instance;
+        }
+    }
+
+    // 컴포넌트
+    public PlayerRef player { get { return player; } set { player = value; playerMove = value.Move; } }
+    public PlayerMovement playerMove;
+    public PlayerInput unityPlayerInput;
+
+    // 에셋
+    //[SerializeField] InputActionAsset inputActions;
+    private InputActionMap playerInputActions;
+    private InputActionMap uiInputActions;
     // InputAction Asset
     public InputActionAsset _inputAsset;
     // InputActionMap
-    private InputActionMap uiActionMap;
-    private InputActionMap dialogueActionMap;
-    private InputActionMap playerWalkActionMap;
-    private InputActionMap playerCLIMBActionMap;
-    private InputActionMap playerMonkeyActionMap;
-    private InputActionMap playerDefaultActionMap;
+    public InputActionMap uiActionMap;
+    public InputActionMap dialogueActionMap;
+    public InputActionMap playerWalkActionMap;
+    public InputActionMap playerCLIMBActionMap;
+    public InputActionMap playerMonkeyActionMap;
+    public InputActionMap playerDefaultActionMap;
     
     // 상태
     [ContextMenuItem("switch inputState", "Test")]
@@ -64,39 +92,48 @@ public class InputManager : MonoBehaviour
     public void ChangeInputState(InputState newState)
     {
         if (state == newState) return;
-
         state = newState;
         Debug.Log("ChangeInputState");
 
         switch (state)
         {
-            case InputState.UICONTROL:
-                _inputAsset.Disable();      // 모두 비활성화하고,
-                uiActionMap.Enable();       // 'UI' action map에 해당하는 action들만 활성화하기
-                break;
-            case InputState.DIALOGUE:
-                _inputAsset.Disable();
-                dialogueActionMap.Enable();
-                break;
             case InputState.PLAYER_WALK:
                 _inputAsset.Disable();
-                playerWalkActionMap.Enable();
                 playerDefaultActionMap.Enable();
+                playerWalkActionMap.Enable();
                 break;
             case InputState.PLAYER_CLIMB:
                 _inputAsset.Disable();
-                playerCLIMBActionMap.Enable();
                 playerDefaultActionMap.Enable();
+                playerCLIMBActionMap.Enable();
                 break;
             case InputState.PLAYER_MONKEY:
                 _inputAsset.Disable();
-                playerMonkeyActionMap.Enable();
                 playerDefaultActionMap.Enable();
+                playerMonkeyActionMap.Enable();
+                break;
+            case InputState.DIALOGUE:
+                _inputAsset.Disable();
+                playerDefaultActionMap.Enable();
+                dialogueActionMap.Enable();
                 break;
             case InputState.IGNORE:
                 _inputAsset.Disable();
+                playerDefaultActionMap.Enable();
+                uiActionMap.Enable();
+                break;
+            case InputState.UICONTROL:
+                _inputAsset.Disable();
                 break;
         }
+    }
+
+    public void Test()
+    {
+        if (state == InputState.PLAYERMOVE)
+            ChangeInputState(InputState.UICONTROL);
+        else
+            ChangeInputState(InputState.PLAYERMOVE);
     }
 }
 
