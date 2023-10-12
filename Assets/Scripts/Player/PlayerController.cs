@@ -68,6 +68,7 @@ public class PlayerController : MonoBehaviour
 
         //Climb 상태 바인딩
         inputManager.playerCLIMBActionMap.FindAction("Walk").performed += OnClimbMove;
+        inputManager.playerCLIMBActionMap.FindAction("Walk").canceled += OnCancelClimbMove;
         inputManager.playerCLIMBActionMap.FindAction("Jump").performed += OnClimbJump;
         inputManager.playerCLIMBActionMap.FindAction("Jump").canceled += OnCancelJump;
 
@@ -146,6 +147,13 @@ public class PlayerController : MonoBehaviour
     {
         moveVector = context.ReadValue<Vector2>();
         // 벽에 붙어있을 경우 기어오르기/내리기
+        playerMove.Climb(moveVector);
+    }
+
+    public void OnCancelClimbMove(InputAction.CallbackContext context)
+    {
+        moveVector = context.ReadValue<Vector2>();
+        // 무브 캔슬
         playerMove.Climb(moveVector);
     }
 

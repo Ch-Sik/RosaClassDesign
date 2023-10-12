@@ -41,7 +41,12 @@ public class PlayerRef : MonoBehaviour
     {
         if(Instance == null)
             _instance = this;
-        if(State == null) State = GetComponent<PlayerState>();
+        else if (_instance != this)
+        {
+            Debug.LogError("Multiple PlayerRef instances found. There should be only one PlayerRef component.");
+            return;
+        }
+        if (State == null) State = GetComponent<PlayerState>();
         if(Controller == null) Controller = GetComponent<PlayerController>();
         if(Move == null) Move = GetComponent<PlayerMovement>();
         if(Magic == null) Magic = GetComponent<PlayerMagic>();

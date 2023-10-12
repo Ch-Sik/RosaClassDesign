@@ -253,7 +253,7 @@ public class PlayerMovement : MonoBehaviour
     {
         isWallJumping = true;
         UnstickFromWall();
-        playerAnim.SetTrigger("JumpTrigger");
+        //playerAnim.SetTrigger("JumpTrigger");
         playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
 
         float xDirection = facingDirection.isRIGHT() ? -1 : 1;  // 보고 있는 방향의 반대방향으로 점프
@@ -401,7 +401,7 @@ public class PlayerMovement : MonoBehaviour
             {
 
                 StickToWall();
-                playerAnim.SetTrigger("ClimbTrigger");
+                //playerAnim.SetTrigger("ClimbTrigger");
             }
 
         }
@@ -447,7 +447,7 @@ public class PlayerMovement : MonoBehaviour
     bool DetectWall()
     {
         if (isDoingHooking && !isHitHookingTarget) return false;
-
+        if ((moveVector.x == -1 && facingDirection == LR.RIGHT) || (moveVector.x == 1 && facingDirection == LR.LEFT)) return false;
         Vector2 detectPointTop = (Vector2)transform.position
                             + new Vector2((facingDirection.isRIGHT() ? 0.4f : -0.4f), 0.5f);
         Vector2 detectPointBot = detectPointTop
