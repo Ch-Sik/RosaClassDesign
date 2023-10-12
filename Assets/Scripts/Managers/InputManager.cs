@@ -24,8 +24,8 @@ public enum InputState
 public class InputManager : MonoBehaviour
 {
     // 싱글톤
-    private static InputManager _instance;
-    public static InputManager Instance { get { return _instance; } }
+    private static InputManager instance;
+    //public static InputManager Instance { get { return _instance; } }
 
     public static InputManager Instance
     {
@@ -69,7 +69,7 @@ public class InputManager : MonoBehaviour
 
     private void Awake()
     {
-        _instance = this;
+        instance = this;
         InitInput();
     }
 
@@ -128,6 +128,7 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    /*
     public void Test()
     {
         if (state == InputState.PLAYERMOVE)
@@ -135,5 +136,6 @@ public class InputManager : MonoBehaviour
         else
             ChangeInputState(InputState.PLAYERMOVE);
     }
+    */
 }
 

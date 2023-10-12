@@ -76,6 +76,7 @@ public static class TerrainTypeExtend
         }
     }
 }
+/*
 public enum LR { LEFT, RIGHT }
 
 public static class EnumExtensions
@@ -89,3 +90,4 @@ public static class EnumExtensions
         return dir == LR.RIGHT;
     }
 }
+*/
