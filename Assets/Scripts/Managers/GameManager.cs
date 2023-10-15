@@ -4,13 +4,37 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    // 싱글톤
-    static GameManager instance;
-    public static GameManager GetInstance() { return instance; }
+
+    private static GameManager instance;
+
+    public static GameManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindObjectOfType<GameManager>();
+                if (instance == null)
+                {
+                    GameObject go = new GameObject("GameManager");
+                    instance = go.AddComponent<GameManager>();
+                    DontDestroyOnLoad(go);
+                }
+            }
+            return instance;
+        }
+    }
 
     private void Awake()
     {
-        instance = this;
-    }
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
+        instance = this;
+
+        DontDestroyOnLoad(gameObject);
+    }
 }

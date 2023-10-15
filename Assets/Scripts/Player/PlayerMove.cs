@@ -48,7 +48,7 @@ public class PlayerMove : MonoBehaviour
             case PlayerMoveState.WALK:
                 InputManager.Instance.ChangeInputState(InputState.PLAYER_WALK);
                 break;
-            case PlayerMoveState.CLIMB:
+            case PlayerMoveState.CLIMBING:
                 InputManager.Instance.ChangeInputState(InputState.PLAYER_CLIMB);
                 break;
             case PlayerMoveState.MONKEY:
