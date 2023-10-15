@@ -93,10 +93,11 @@ public class ColliderSetter : MonoBehaviour
         GameObject[] all = scene.GetRootGameObjects();
         foreach (GameObject go in all)
         {
-            ColliderSetter cs = go.GetComponentInChildren<ColliderSetter>();
-            if (cs != null)
+            ColliderSetter[] colliderSetters = go.GetComponentsInChildren<ColliderSetter>();
+            if (colliderSetters.Length != 0)
             {
-                cs.AddColliderAsSet();
+                foreach(var cs in colliderSetters)
+                    cs.AddColliderAsSet();
             }
         }
     }
@@ -171,10 +172,11 @@ public class ColliderSetter : MonoBehaviour
         GameObject[] all = scene.GetRootGameObjects();
         foreach (GameObject go in all)
         {
-            ColliderSetter cs = go.GetComponentInChildren<ColliderSetter>();
-            if (cs != null)
+            ColliderSetter[] colliderSetters = go.GetComponentsInChildren<ColliderSetter>();
+            if (colliderSetters.Length != 0)
             {
-                cs.removeThis();
+                foreach (var cs in colliderSetters)
+                    cs.removeThis();
             }
         }
     }
