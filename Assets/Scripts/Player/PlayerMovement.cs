@@ -70,6 +70,12 @@ public class PlayerMovement : MonoBehaviour
     LayerMask groundLayer;      // NameToLayer가 constructor에서 호출 불가능하여 InitFields에서 초기화
     LayerMask climbableLayer;
     float gravityScale = 2.8f;
+    
+    // 범위 지정
+    private Vector2 detectWallTop = new Vector2(0.0f, 0.5f);
+    private Vector2 detectWallBot = new Vector2(0.6f, -0.7f);
+    private Vector2 detectWallEndTop = new Vector2(0.0f, 0.5f);
+    private Vector2 detectWallEndBot = new Vector2(0.6f, 0.0f);
 
     // 코루틴
     private Coroutine hookCoroutine; // 후크 중 코루틴
@@ -448,11 +454,11 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isDoingHooking && !isHitHookingTarget) return false;
         if ((moveVector.x == -1 && facingDirection == LR.RIGHT) || (moveVector.x == 1 && facingDirection == LR.LEFT)) return false;
-        Vector2 detectPointTop = (Vector2)transform.position
-                            + new Vector2((facingDirection.isRIGHT() ? 0.4f : -0.4f), 0.5f);
-        Vector2 detectPointBot = detectPointTop
-                            + new Vector2((facingDirection.isRIGHT() ? 0.2f : -0.2f), -1.2f);
-        Collider2D[] hitWall = Physics2D.OverlapAreaAll(detectPointTop, detectPointBot);
+        Vector2 pointTop = (Vector2)transform.position
+                            + Vector2.Scale(detectWallTop, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1)); 
+        Vector2 pointBot = (Vector2)transform.position
+                            + Vector2.Scale(detectWallBot, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
+        Collider2D[] hitWall = Physics2D.OverlapAreaAll(pointTop, pointBot);
         // OverlapArea가 clibableLayer로 지정하였을 때 항상 null을 리턴하는 문제가 있어 아래와 같이 구현함.
         foreach (var i in hitWall)
         {
@@ -464,11 +470,11 @@ public class PlayerMovement : MonoBehaviour
 
     bool CheckWallEnd()
     {
-        Vector2 detectPointTop = (Vector2)transform.position
-                            + new Vector2((facingDirection.isRIGHT() ? 0.4f : -0.4f), 0.5f);
-        Vector2 detectPointBot = detectPointTop
-                            + new Vector2((facingDirection.isRIGHT() ? 0.2f : -0.2f), -0.5f);
-        Collider2D[] hitWall = Physics2D.OverlapAreaAll(detectPointTop, detectPointBot);
+        Vector2 pointTop = (Vector2)transform.position
+                            + Vector2.Scale(detectWallEndTop, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
+        Vector2 pointBot = (Vector2)transform.position
+                            + Vector2.Scale(detectWallEndBot, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
+        Collider2D[] hitWall = Physics2D.OverlapAreaAll(pointTop, pointBot);
         foreach (var i in hitWall)
         {
             if (i.gameObject.layer == climbableLayer)
@@ -513,13 +519,14 @@ public class PlayerMovement : MonoBehaviour
     private void OnDrawGizmos()
     {
         Vector2 detectPointTop = (Vector2)transform.position
-                            + new Vector2((facingDirection.isRIGHT() ? 0.4f : -0.4f), 0.5f);
-        Vector2 detectPointBot = detectPointTop
-                            + new Vector2((facingDirection.isRIGHT() ? 0.4f : -0.4f), -1.2f);
+                            + Vector2.Scale(detectWallTop, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
+        Vector2 detectPointBot = (Vector2)transform.position
+                            + Vector2.Scale(detectWallBot, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
         Vector2 detectPointTopWall = (Vector2)transform.position
-                            + new Vector2((facingDirection.isRIGHT() ? 0.4f : -0.4f), 0.5f);
-        Vector2 detectPointBotWall = detectPointTop
-                            + new Vector2((facingDirection.isRIGHT() ? 0.4f : -0.4f), -0.5f);
+                            + Vector2.Scale(detectWallEndTop, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
+        Vector2 detectPointBotWall = (Vector2)transform.position
+                            + Vector2.Scale(detectWallEndBot, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
+        Gizmos.color = Color.red;
         Gizmos.DrawWireCube((detectPointTop + detectPointBot) / 2, detectPointTop - detectPointBot);
         Gizmos.DrawWireCube((detectPointTopWall + detectPointBotWall) / 2, detectPointTopWall - detectPointBotWall);
     }
