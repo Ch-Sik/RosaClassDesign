@@ -7,6 +7,6 @@ using UnityEngine;
 /// </summary>
 public class DropItem : MonoBehaviour
 {
-    SOItem itemData;
-    int quantity;
+    public ItemCode code;
+    [Min(1)] public int quantity = 1;
 }

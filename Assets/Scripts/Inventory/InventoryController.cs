@@ -9,8 +9,35 @@ using UnityEngine;
 /// Inventory 클래스와 InventoryUI 클래스를 총괄하며, 아이템을 추가하고 뺄 수 있는 클래스
 /// </summary>
 
+//InventoryController가 굳이 싱글턴일 이유는 없다. 나중에 싱글턴으로 객체리퍼를 담아놔도 좋을 것이지만, 테스트를 위해 싱글턴 처리했다.
 public class InventoryController : MonoBehaviour
 {
+    private static InventoryController instance;
+    public static InventoryController Instance
+    {
+        get
+        {
+            if (null == instance)
+            {
+                return null;
+            }
+            return instance;
+        }
+    }
+
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            //DontDestroyOnLoad(this.gameObject);
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
+    }
+
     //인벤토리 UI 스크립트
     public InventoryUI inventoryUI;
     //아이템 획득 알림 스크립트
