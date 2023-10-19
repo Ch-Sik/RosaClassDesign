@@ -9,16 +9,29 @@ public class PlayerCombat : MonoBehaviour
 {
     public bool showGizmo = false;
 
+    Sequence attack;
+    public GameObject attackEntity;
+    public AttackObject attackObject;
+    public bool isAttack = false;
+
+    [Header("CombatOptions")]
+    public LayerMask attackableObjects;
+    public LayerMask butterfly;
+
     [Header("Combat Properties")]
-    public GameObject attackObject;
     public float attackDistance;
     public float attackTime;
-    public bool isAttack = false;
     public float attackCooltime;
 
     public float angle;
     [HideInInspector] public Vector2 mouse;
     public Vector2 direction;
+
+    private void Start()
+    {
+        attackObject = attackEntity.GetComponent<AttackObject>();
+        attackObject.Init(this, attackableObjects, butterfly);
+    }
 
     private void Update()
     {
@@ -42,16 +55,29 @@ public class PlayerCombat : MonoBehaviour
 
         SetData();
 
-        Sequence attack = DOTween.Sequence()
+        attack = DOTween.Sequence()
         .AppendCallback(() =>
         {
             OnStartAttack();
-            attackObject.transform.rotation = Quaternion.Euler(0f, 0f, angle);
-
+            attackEntity.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            attackObject.StartAttack();
         })
-        .Append(attackObject.transform.DOLocalMove(attackDistance * direction, attackTime))
-        .AppendCallback(() => attackObject.transform.localPosition = Vector2.zero)
-        .OnComplete(() => OnEndAttack());
+        .Append(attackEntity.transform.DOLocalMove(attackDistance * direction, attackTime))
+        .AppendCallback(() => attackEntity.transform.localPosition = Vector2.zero)
+        .OnComplete(() =>
+        {
+            attackObject.EndAttack();
+            OnEndAttack();
+        });
+    }
+
+    [Button]
+    public void StopAttack()
+    {
+        attack.Pause();
+        attackEntity.transform.localPosition = Vector2.zero;
+        attackObject.EndAttack();
+        OnEndAttack();
     }
 
     private void OnStartAttack()
@@ -63,7 +89,12 @@ public class PlayerCombat : MonoBehaviour
     private void OnEndAttack()
     {
         isAttack = false;
+        //쿨타임은 여기 넣자.
         Debug.Log("End Attack");
+    }
+
+    public void CombatCalcultor(GameObject target)
+    { 
     }
 
     private void OnDrawGizmos()
