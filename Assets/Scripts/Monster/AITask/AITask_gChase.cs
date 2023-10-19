@@ -65,6 +65,9 @@ public class AITask_gChase : MonoBehaviour
         {
             ThisTask.Succeed();
             StopMoving();
+            // 마지막에 방향 확실히 설정
+            if((enemy.transform.position - transform.position).toLR() != transform.localScale.toLR())
+                flip();
             return;
         }
 

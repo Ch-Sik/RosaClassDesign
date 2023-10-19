@@ -156,8 +156,16 @@ public class AITask_gPatrollGoAndStop : MonoBehaviour
     [Task]
     private void PatrollWait()
     {
+        // 피격당한 상황일 때 Fail -> SetNextDest로 인해 뒤돌아버리는 것 방지
+        bool isHitt;
+        if (blackboard.TryGet(BBK.isHitt, out isHitt) && isHitt)
+        {
+            ThisTask.Fail();
+            StopMoving();
+            return;
+        }
         // BT 파일 재활용을 위해 PatrollWait 함수를 남겨두지만
-        // 이 함수는 아무것도 하지 않음
+        // 이 함수는 실질적으로 아무것도 하지 않음
         ThisTask.Succeed();
     }
 

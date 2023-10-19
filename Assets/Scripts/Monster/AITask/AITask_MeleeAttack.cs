@@ -7,12 +7,12 @@ using UnityEditor.Experimental.GraphView;
 public class AITask_MeleeAttack : MonoBehaviour
 {
     [SerializeField]
-    private Blackboard blackboard;
+    protected Blackboard blackboard;
 
     [SerializeField, Tooltip("공격 '시전' 사거리. 실제 공격이 닿는 거리와는 별개임에 주의")]
     private float attackRange = 2.0f;
 
-    private void Start()
+    protected virtual void Start()
     {
         if (blackboard == null)
         {
@@ -23,7 +23,7 @@ public class AITask_MeleeAttack : MonoBehaviour
     }
 
     [Task]
-    private void IsEnemyCloseEnough()
+    protected void IsEnemyCloseEnough()
     {
         GameObject enemy;
         if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
