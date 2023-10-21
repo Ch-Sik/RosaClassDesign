@@ -43,6 +43,7 @@ public class AttackObject : MonoBehaviour
         //나비와 충돌한다면,
         if ((butterfly.value & 1 << collision.gameObject.layer) > 0)
         {
+            Debug.Log("나비와 충돌됨");
             //PlayerCombat에 RideButterFly함수를 실행시키며, 나비의 부모 데이터를 전달한다.
             //나비의 충돌포인트는 나비 자체에 있으나, 나비 프리팹은 웨이포인트 통솔을 위한 부모오브젝트에서 스크립트를 조절하기 때문
             playerCombat.RideButterFly(collision.transform.parent.GetComponent<ButterFly>());

@@ -41,6 +41,9 @@ public class ButterFly : MonoBehaviour
     [Button]
     public void ButterFlyAct(Transform player)
     {
+        if (onWayTracking)
+            return;
+
         tracking = DOTween.Sequence()
         //DOPath 이전에 기본적 세팅 //tracking 여부를 true로 설정하고, 플레이어를 나비에 태운다.
         .AppendCallback(() =>
@@ -70,8 +73,8 @@ public class ButterFly : MonoBehaviour
     public void ResetTracking()
     {
         StopTracking();
-        butterFly.position = waypoints[0];
         UnRide();
+        butterFly.position = waypoints[0];
         onWayTracking = false;
     }
 
