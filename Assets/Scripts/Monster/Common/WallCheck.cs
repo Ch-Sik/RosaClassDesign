@@ -32,7 +32,8 @@ public class WallCheck : MonoBehaviour
         if (overlappingCollider <= 0)
         {
             isStuckAtWall = true;
-            blackboard.Set(BBK.StuckAtCliff, isStuckAtWall);
+            blackboard.Set(BBK.StuckAtWall, isStuckAtWall);
+            // Debug.Log($"isStuckAtWall: {isStuckAtWall}");
         }
         overlappingCollider++;
     }
@@ -43,7 +44,8 @@ public class WallCheck : MonoBehaviour
         if (overlappingCollider <= 0)
         {
             isStuckAtWall = false;
-            blackboard.Set(BBK.StuckAtCliff, isStuckAtWall);
+            blackboard.Set(BBK.StuckAtWall, isStuckAtWall);
+            // Debug.Log($"isStuckAtWall: {isStuckAtWall}");
         }
         if (overlappingCollider < 0)     // 오류 감지
         {

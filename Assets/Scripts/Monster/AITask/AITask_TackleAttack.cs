@@ -6,28 +6,44 @@ using UnityEditor.Experimental.GraphView;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 
+[RequireComponent(typeof(MonsterDamageObject))]
 public class Attack_TackleAttack : MonoBehaviour
 {
     [SerializeField]
     protected Blackboard blackboard;
     [SerializeField]
     private new Rigidbody2D rigidbody;
+    [SerializeField]
+    MonsterDamageObject damageComponent;
 
+    [Header("공격 관련")]
+    [SerializeField, Tooltip("돌진 패턴 공격력")]
+    private int tackleAttackPower;
+    [SerializeField, Tooltip("돌진 도중에 슈퍼아머")]
+    private bool superArmourOnTackle;
     [SerializeField, Tooltip("돌진 속도")]
     private float tackleSpeed;
+
+    [Header("타이밍 관련")]
     [SerializeField, Tooltip("돌진 준비 시간(선딜레이)")]
     private float prepareDuration;
     [SerializeField, Tooltip("돌진 유지 시간")]
     private float tackleDuration;
     [SerializeField, Tooltip("돌진 후 대기 시간(후딜레이)")]
     private float recoveryDuration;
-    [SerializeField, Tooltip("돌진 도중에 슈퍼아머")]
-    private bool superArmourOnTackle;
+
+    [Header("스턴 관련")]
+    [SerializeField, Tooltip("돌진 중 벽에 박았을 때 스턴 활성화")]
+    private bool wallStunEnabled;
+    [SerializeField, Tooltip("돌진 중 벽에 박았을 떄 스턴 시간")]
+    private float wallStunDuration;
 
     private Timer prepareTimer = null;
     private Timer tackleTimer = null;
     private Timer recoveryTimer = null;
+    private Timer stunTimer = null;
     private LR tackleDir;
+    private int defaultCollideDamage;    // 몸체 충돌 판정이 기본적으로 가지고 있던 데미지
 
 
     private void Start()
@@ -44,14 +60,23 @@ public class Attack_TackleAttack : MonoBehaviour
             if (rigidbody == null)
                 Debug.LogError($"{gameObject.name}: Rigidbody2D를 찾을 수 없음!");
         }
+        if(damageComponent == null)
+        {
+            damageComponent = GetComponent<MonsterDamageObject>();
+            if(damageComponent == null)
+                Debug.LogError($"{gameObject.name}: damageComponent를 찾을 수 없음!");
+        }
+        defaultCollideDamage = damageComponent.damage;
     }
 
     [Task]
     private void Attack()
     {
-        // 피격 정보 가져오기
+        // 블랙보드에서 피격 정보 & 벽에 박음 정보 가져오기
         bool isHitt;
         blackboard.TryGet(BBK.isHitt, out isHitt);
+        bool isStuckAtWall;
+        blackboard.TryGet(BBK.StuckAtWall, out isStuckAtWall);
         if (prepareTimer == null || prepareTimer.duration < prepareDuration)
         {
             // 피격 시 행동 중지
@@ -69,6 +94,32 @@ public class Attack_TackleAttack : MonoBehaviour
             {
                 Fail();
                 return;
+            }
+            // DoAttack을 해야할 타이밍에 벽에 박았을 경우 스턴
+            if(wallStunEnabled && isStuckAtWall)
+            {
+                // 스턴 첫 프레임
+                if(stunTimer == null)   
+                {
+                    stunTimer = Timer.StartTimer();
+                    blackboard.Set(BBK.isStunned, true);    // 애니메이션을 위한 블랙보드 설정
+                    Debug.Log("벽에다 대가리 꽁!!!");
+                }
+                // 스턴 중간 프레임
+                else if(stunTimer.duration < wallStunDuration)
+                {
+                    ThisTask.debugInfo = $"stun: {wallStunDuration - stunTimer.duration}";
+                    return;
+                }
+                // 스턴 마지막 프레임
+                else  
+                {
+                    stunTimer = null;
+                    blackboard.Set(BBK.isStunned, false);
+                    // Debug.Log("스턴 끝");
+                    Succeed();
+                    return;
+                }
             }
             DoAttack();
         }
@@ -100,25 +151,31 @@ public class Attack_TackleAttack : MonoBehaviour
 
     private void DoAttack()
     {
+        // DoAttack이 실행되는 첫 프레임
         if (tackleTimer == null)
         {
+            // 공격력 설정
+            damageComponent.damage = tackleAttackPower;
+            // 타이머 설정
             tackleTimer = Timer.StartTimer();
         }
         // 디버그 출력
-        ThisTask.debugInfo = tackleTimer.duration.ToString();
+        ThisTask.debugInfo = $"돌진: {tackleTimer.duration}";
 
         // 실제 돌진 수행
         Vector2 velocity = tackleDir.toVector2() * tackleSpeed;
         velocity.y = rigidbody.velocity.y;
         rigidbody.velocity = velocity;
 
-        ThisTask.debugInfo = $"돌진: {tackleTimer.duration}";
     }
 
     private void AttackRecovery()
     {
         if(recoveryTimer == null)
         {
+            // 공격력 되돌리기
+            damageComponent.damage = defaultCollideDamage;
+            // 타이머 설정
             recoveryTimer = Timer.StartTimer();
         }
         /*

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -9,6 +10,8 @@ using UnityEngine;
 /// </summary>
 public class Blackboard : MonoBehaviour
 {
+    public List<string> dictPreview;
+
     // item type이 object라서 Inspector에서 볼 수 없음 ㅜㅜ
     private Dictionary<string, object> dict;
 
@@ -25,6 +28,8 @@ public class Blackboard : MonoBehaviour
         }
         else
             dict.Add(key, value);
+
+        dictPreview = dict.Keys.ToList();
     }
 
     /// <summary>
