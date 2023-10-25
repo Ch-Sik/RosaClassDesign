@@ -13,6 +13,13 @@ public class CameraFollow : MonoBehaviour
     private Camera _camera;
     private PlayerRef _player;
 
+    private Vector3 zOffset = new Vector3(0, 0, -10);
+
+    private void Start()
+    {
+        Init();
+    }
+
     public void Init()
     {
         _camera = GetComponent<Camera>();
@@ -21,6 +28,6 @@ public class CameraFollow : MonoBehaviour
 
     private void Update()
     {
-        
+        transform.position = _player.transform.position + zOffset;
     }
 }
