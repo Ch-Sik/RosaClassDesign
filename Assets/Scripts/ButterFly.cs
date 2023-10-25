@@ -89,6 +89,8 @@ public class ButterFly : MonoBehaviour
         butterFly.GetComponent<Collider2D>().enabled = false;   //나비와의 재충돌을 대비해 콜라이더를 끈다.
         savedGravity = PlayerRef.Instance.rb.gravityScale;
         PlayerRef.Instance.rb.gravityScale = 0;
+        // 낙하 or 상승 중일 떄 velocityY가 남아있는 것을 고려하여 속도를 초기화시킨다.
+        PlayerRef.Instance.rb.velocity = Vector2.zero;
     }
 
     //나비에 내릴 때, (이름은 추후 생각해보기)
