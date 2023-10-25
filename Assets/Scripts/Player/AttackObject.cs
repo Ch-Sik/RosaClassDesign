@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.U2D.Aseprite;
 using UnityEngine;
+using UnityEngine.Animations;
 
 /// <summary>
 /// 공격을 판정하기 위한 투사체를 위한 스크립트입니다.
@@ -32,10 +33,16 @@ public class AttackObject : MonoBehaviour
     }
 
     //공격 시작 시 콜라이더 활성화
-    public void StartAttack() { col.enabled = true; }
+    public void StartAttack()
+    {
+        col.enabled = true;
+    }
 
     //공격 종료 후 콜라이더 비활성화
-    public void EndAttack() { col.enabled = false; }
+    public void EndAttack()
+    {
+        col.enabled = false;
+    }
 
     //충돌 감지
     public void OnTriggerEnter2D(Collider2D collision)

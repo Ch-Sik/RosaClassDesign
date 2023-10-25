@@ -4,6 +4,7 @@ using Sirenix.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Timeline;
 
 /// <summary>
 /// 나비의 웨이포인트들과 데이터들을 다루기 위한 프리팹 스크립트입니다.
@@ -23,6 +24,8 @@ public class ButterFly : MonoBehaviour
     public Transform waypointMoules;                    //웨이포인트점들의 부모 오브젝트
 
     Transform rider;                                    //현재 나비를 탄 대상의 트랜스폼
+
+    float savedGravity = 0f;
 
     //시작과 동시에 waypoint를 연산하고, 거리데이터를 산출한다.
     private void Start()
@@ -84,6 +87,8 @@ public class ButterFly : MonoBehaviour
         rider = player;                                         //탑승자 데이터를 저장한다.
         player.SetParent(butterFly);                            //플레이어를 자식으로 설정해준다.
         butterFly.GetComponent<Collider2D>().enabled = false;   //나비와의 재충돌을 대비해 콜라이더를 끈다.
+        savedGravity = PlayerRef.Instance.rb.gravityScale;
+        PlayerRef.Instance.rb.gravityScale = 0;
     }
 
     //나비에 내릴 때, (이름은 추후 생각해보기)
@@ -91,6 +96,7 @@ public class ButterFly : MonoBehaviour
     {
         rider.SetParent(null);                                  //탑승자를 내린다.
         butterFly.GetComponent<Collider2D>().enabled = true;    //나비의 재활성화
+        PlayerRef.Instance.rb.gravityScale = savedGravity;
     }
 
     //자식데이터를 토대로 Vector3배열을 만든다.

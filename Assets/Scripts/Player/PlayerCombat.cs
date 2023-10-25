@@ -40,6 +40,7 @@ public class PlayerCombat : MonoBehaviour
 
     private void Update()
     {
+
         //테스트용 추후엔 Update를 사용할 일이 없다.
         if (Input.GetMouseButtonDown(0))
         {
@@ -53,6 +54,8 @@ public class PlayerCombat : MonoBehaviour
         mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);                                            //마우스의 월드 좌표 반환
         angle = Mathf.Atan2(mouse.y - transform.position.y, mouse.x - transform.position.x) * Mathf.Rad2Deg;    //해당 좌표 데이터를 기반으로 각도 얻음
         direction = new Vector2(mouse.x - transform.position.x, mouse.y - transform.position.y).normalized;     //해당 좌표 데이터를 기반으로 방향벡터 얻음
+        if (transform.lossyScale.x < 0)
+            direction = new Vector2(-1 * direction.x, direction.y);
     }
 
     //공격 함수
@@ -75,7 +78,7 @@ public class PlayerCombat : MonoBehaviour
             attackObject.StartAttack();
         })
         //얻은 방향벡터로 공격한다.
-        .Append(attackEntity.transform.DOLocalMove(attackDistance * direction, attackTime))
+        .Append(attackEntity.transform.DOLocalMove(attackDistance * direction, attackTime).SetRelative(true))
         //공격이 끝난다면, 공격판정체의 위치를 초기화시켜 회수한다.
         .AppendCallback(() => attackEntity.transform.localPosition = Vector2.zero)
         //시퀀스가 끝나며, 공격끝 이벤트와 함께 공격판정체의 충돌체를 끈다.
