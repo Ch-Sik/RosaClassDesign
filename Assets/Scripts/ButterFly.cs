@@ -57,7 +57,7 @@ public class ButterFly : MonoBehaviour
         //플레이어의 위치를 나비의 위치로 0.3초 동안 이동시킨다.
         .Append(player.DOMove(butterFly.position, 0.3f))
         //나비의 자식으로 플레이어가 있기에, 나비를 이동시키며 플레이어를 동시에 이동시킨다. 이때 나비는 waypoints를 순차적으로 방문한다.
-        .Append(butterFly.DOPath(waypoints, distance / 3))
+        .Append(butterFly.DOPath(waypoints, distance / 10))  // 속도 버프
         //DOPath 완료후 세팅 // tracking 여부를 false로 설정하고, 트래킹을 초기화 하며, 플레이어를 내리게한다.
         .AppendCallback(() =>
         {
