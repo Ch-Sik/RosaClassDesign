@@ -45,9 +45,8 @@ public class InputManager : MonoBehaviour
     }
 
     // 컴포넌트
-    public PlayerRef player { get { return player; } set { player = value; playerMove = value.Move; } }
-    public PlayerMovement playerMove;
-    public PlayerInput unityPlayerInput;
+    // public PlayerRef player { get { return player; } set { player = value; playerMove = value.Move; } }
+    // public PlayerMovement playerMove;
 
     // 에셋
     //[SerializeField] InputActionAsset inputActions;
