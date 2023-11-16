@@ -154,7 +154,7 @@ public class PlayerController : MonoBehaviour
     {
         moveVector = context.ReadValue<Vector2>();
         // 무브 캔슬
-        playerMove.Climb(moveVector);
+        playerMove.StopClimb(moveVector);
     }
 
     public void OnCancelJump(InputAction.CallbackContext context)

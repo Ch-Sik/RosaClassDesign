@@ -5159,6 +5159,18 @@ PrefabInstance:
       propertyPath: m_Offset.y
       value: -0.75
       objectReference: {fileID: 0}
+    - target: {fileID: 2057387464850298031, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
+      propertyPath: maxClimbTime
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2057387464850298031, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
+      propertyPath: wallJumpPower.x
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2057387464850298031, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
+      propertyPath: wallJumpPower.y
+      value: 12
+      objectReference: {fileID: 0}
     - target: {fileID: 3115691681920552347, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
       propertyPath: m_Name
       value: Player
@@ -5253,7 +5265,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4934138474744927776, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
       propertyPath: m_SpriteTilingProperty.newSize.x
-      value: 0.75
+      value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 4934138474744927776, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
       propertyPath: m_SpriteTilingProperty.newSize.y
@@ -11487,7 +11499,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1063722233323340405, guid: e4a905a3494fcfe4ba41f04ad2d4ebcf, type: 3}
       propertyPath: m_RootOrder
-      value: 6
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1063722233323340405, guid: e4a905a3494fcfe4ba41f04ad2d4ebcf, type: 3}
       propertyPath: m_LocalPosition.x
