@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 /// <summary>
@@ -12,11 +13,13 @@ public class PlayerState : MonoBehaviour
     private PlayerStateUI stateUI;
 
     // states
-    private int maxHP;
-    private int attackDmg;
-    private int[] magicLevel;    // 0이면 안배움, 1이면 기본, 2이면 업그레이드 상태
+    [SerializeField] private int maxHP;
+    [SerializeField] private int currentHP;
+    [SerializeField] private int attackDmg;
+    [SerializeField] private int[] magicLevel;    // 0이면 안배움, 1이면 기본, 2이면 업그레이드 상태
 
-    private int currentHP;
+    // states getter
+    public int AttackDmg { get { return attackDmg; } }
 
     public void Init(/*int maxHP, int attackDmg, bool[] plantMagicUnlock ...*/)
     {
@@ -26,6 +29,5 @@ public class PlayerState : MonoBehaviour
 
     public void Heal(int amount) { }
     public void TakeDamage(int amount) { }
-    public void SetAttackDmg() { }
     public void UpgradePlantMagic(PlantMagicCode magicCode) { } // 획득 및 업그레이드
 }

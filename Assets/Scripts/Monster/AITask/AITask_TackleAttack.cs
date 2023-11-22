@@ -4,7 +4,7 @@ using UnityEngine;
 using Panda;
 
 [RequireComponent(typeof(MonsterDamageObject))]
-public class Attack_TackleAttack : MonoBehaviour
+public class AITask_TackleAttack : MonoBehaviour
 {
     [SerializeField]
     protected Blackboard blackboard;

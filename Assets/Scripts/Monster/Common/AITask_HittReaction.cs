@@ -6,17 +6,11 @@ using Panda;
 /// <summary>
 /// 몬스터의 피격 담당
 /// </summary>
-public class MonsterHitt : MonoBehaviour
+public class AITask_HittReaction : MonoBehaviour
 {
     [SerializeField]
     private Blackboard blackboard;
-    [SerializeField]
-    private MonsterState state;
 
-    [SerializeField, Tooltip("true면 공격에 맞아도 체력 닳지 않음")]
-    private bool isInvincible;
-    [SerializeField, Tooltip("true면 공격에 맞아도 AI 행동이 중단되지 않음")]
-    private bool isSuperArmor;
     [SerializeField]
     private float hittReactionTime;    // 피격 리액션 유지 시간
 
@@ -30,45 +24,25 @@ public class MonsterHitt : MonoBehaviour
             if (blackboard == null)
                 Debug.LogError($"{gameObject.name}: Blackboard를 찾을 수 없음!");
         }
-        if (state == null)
-        {
-            state = GetComponent<MonsterState>();
-            if (state == null)
-                Debug.LogError($"{gameObject.name}: MonsterState를 찾을 수 없음!");
-        }
-    }
-
-    /// <summary>
-    /// player Attack에서 호출되어 데미지와 피격 리액션을 처리하는 함수
-    /// </summary>
-    /// <param name="Damage">데미지 수치</param>
-    public void Hitt(int Damage)
-    {
-        blackboard.Set("Hitt", true);
-        if (!isInvincible)
-        {
-            state.TakeDamage(Damage);
-        }
-        if (!isSuperArmor)
-        {
-
-        }
     }
 
     [Task]
     public void IsHitt()
     {
         bool hitResult;
-        if(!blackboard.TryGet("Hitt", out hitResult))
+        if(!blackboard.TryGet(BBK.isHitt, out hitResult))
         {
+            Debug.Log("IsHitt? NO");
             ThisTask.Fail();
         }
         if (hitResult == true)
         {
+            Debug.Log("IsHitt? YES");
             ThisTask.Succeed();
         }
         else
         {
+            Debug.Log("IsHitt? NO");
             ThisTask.Fail();
         }
     }
@@ -79,9 +53,10 @@ public class MonsterHitt : MonoBehaviour
     [Task]
     public void HittReaction()
     {
+        Debug.Log("HittReaction");
         if (hittReactionTimer == null)
         {
-            hittReactionTimer = Timer.StartTimer(hittReactionTime);
+            hittReactionTimer = Timer.StartTimer();
             ThisTask.debugInfo = $"t: {hittReactionTime - hittReactionTimer.duration}";
             return;
         }
@@ -90,15 +65,5 @@ public class MonsterHitt : MonoBehaviour
             hittReactionTimer = null;
             ThisTask.Succeed();
         }
-    }
-
-    public void SetInvincible(bool value)
-    {
-        isInvincible = value;
-    }
-
-    public void SetSuperArmor(bool value)
-    {
-        isSuperArmor = value;
     }
 }

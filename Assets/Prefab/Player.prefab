@@ -159,7 +159,7 @@ Transform:
   - {fileID: 6143808154357301308}
   - {fileID: 3720588161586707496}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7725802082029578169
 MonoBehaviour:
@@ -349,6 +349,7 @@ MonoBehaviour:
   wallJumpEnabled: 1
   wallJumpPower: {x: 3, y: 10}
   minWallJumpDuration: 0.2
+  maxClimbTime: 0
   rb: {fileID: 0}
   col: {fileID: 0}
   playerControl: {fileID: 0}
@@ -395,7 +396,7 @@ MonoBehaviour:
   isAttack: 0
   attackableObjects:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8388608
   butterfly:
     serializedVersion: 2
     m_Bits: 4194304
@@ -417,6 +418,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da0e3e5c4656a734aa1ad619b01a85b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHP: 0
+  currentHP: 0
+  attackDmg: 1
+  magicLevel: 
 --- !u!95 &6625557471976807241
 Animator:
   serializedVersion: 5
