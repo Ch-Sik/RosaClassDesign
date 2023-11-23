@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Hittable : MonoBehaviour
 {
-    public virtual void GetHitt(int damage)
+    public virtual void GetHitt(int damage, float attackAngle)
     {
         Debug.LogWarning("virtual method NOT OVERRIDED!\n");
     }

@@ -50,7 +50,7 @@ public class AttackObject : MonoBehaviour
         if ((layer_attackable & 1 << collision.gameObject.layer) != 0)
         {
             Debug.Log($"플레이어 공격: {collision.gameObject.name}");
-            collision.GetComponent<Hittable>().GetHitt(PlayerRef.Instance.State.AttackDmg);
+            collision.GetComponent<Hittable>().GetHitt(PlayerRef.Instance.State.AttackDmg, playerCombat.angle);
             playerCombat.StopAttack();
         }
 

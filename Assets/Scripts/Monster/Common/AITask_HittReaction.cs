@@ -53,7 +53,6 @@ public class AITask_HittReaction : MonoBehaviour
     [Task]
     public void HittReaction()
     {
-        Debug.Log("HittReaction");
         if (hittReactionTimer == null)
         {
             hittReactionTimer = Timer.StartTimer();
