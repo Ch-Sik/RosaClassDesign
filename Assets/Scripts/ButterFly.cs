@@ -51,6 +51,7 @@ public class ButterFly : MonoBehaviour
         //DOPath 이전에 기본적 세팅 //tracking 여부를 true로 설정하고, 플레이어를 나비에 태운다.
         .AppendCallback(() =>
         {
+            PlayerRef.Instance.combat.isFly = true;
             onWayTracking = true;
             Ride(player);
         })
@@ -62,7 +63,6 @@ public class ButterFly : MonoBehaviour
         .AppendCallback(() =>
         {
             ResetTracking();
-            onWayTracking = false;
         });
     }
 
@@ -79,6 +79,7 @@ public class ButterFly : MonoBehaviour
         UnRide();
         butterFly.position = waypoints[0];
         onWayTracking = false;
+        PlayerRef.Instance.combat.isFly = false;
     }
 
     //나비에 탈 때, 

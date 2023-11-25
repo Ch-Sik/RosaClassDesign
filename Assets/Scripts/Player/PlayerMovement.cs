@@ -531,6 +531,9 @@ public class PlayerMovement : MonoBehaviour
 
     void Flip()
     {
+        if (PlayerRef.Instance.combat.isAttack)
+            return;
+
         // 플레이어가 바라보는 방향을 전환
         if (facingDirection.isLEFT()) facingDirection = LR.RIGHT;
         else facingDirection = LR.LEFT;
