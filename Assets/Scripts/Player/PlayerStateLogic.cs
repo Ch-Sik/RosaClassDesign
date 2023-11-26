@@ -85,7 +85,7 @@ public class PlayerStateLogic : MonoBehaviour
         if (logic.state == state)
             return;
 
-        Debug.Log("State 전환 : " + state);
+        // Debug.Log("State 전환 : " + state);
         switch (state)
         {
             case State.INTERACTION:
