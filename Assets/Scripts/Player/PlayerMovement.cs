@@ -35,6 +35,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] Vector2 wallJumpPower;
     [Tooltip("벽 점프 최소시간")]
     [SerializeField] float minWallJumpDuration; // 기존 boomerangTime
+    [Tooltip("반대를 보고 벽에 메달리는 시간")]
+    [SerializeField] float maxClimbTime;
 
     // 컴포넌트 레퍼런스
     [ReadOnly, SerializeField] Rigidbody2D rb;
@@ -54,6 +56,7 @@ public class PlayerMovement : MonoBehaviour
     // 타이머
     [ReadOnly, SerializeField] private Timer jumpTimer;                 // 최소 점프 시간을 위한 타이머
     [ReadOnly, SerializeField] private Timer jumpBufferTimer;           // 점프 선입력 타이머
+    [ReadOnly, SerializeField] private Timer climbTimer;                // 반대방향 입력후 벽에 메달림 유지 타이머
 
     // 플래그
     [ReadOnly, SerializeField] public bool isFacingWall = false;
@@ -127,7 +130,11 @@ public class PlayerMovement : MonoBehaviour
     void UpdateFlags()
     {
         isFacingWall = DetectWall();
-        if (isFacingWall) { isWallClimbingTop = CheckWallEnd(); }
+        if (isFacingWall) 
+        { 
+            isWallClimbingTop = CheckWallEnd();
+            isFalling = false;
+        }
     }
 
     /// <summary>
@@ -145,7 +152,7 @@ public class PlayerMovement : MonoBehaviour
                 if (isFacingWall == false)
                 {
                     // TODO: 이 부분을 벽 위 지면에 올라가는 것으로 대체
-                    UnstickFromWall();
+                    //UnstickFromWall();
                 }
             }
             else
@@ -185,15 +192,44 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     /// <param name="inputVector"></param>
     internal void Climb(Vector2 inputVector)
-    {
+    {        
         Debug.Log("Climbing");
         if (!DetectWall())
         {
             // TODO: 지면으로 올라가기 구현
-            UnstickFromWall();
+            
         }
         moveVector = inputVector;       // 벽 점프 등을 위해 x축 방향 필터링하지 않음.
+        if(moveVector.x != 0)
+        {
+            if (!DetectWall())
+            {
+                Debug.Log("start Timer");
+                climbTimer = Timer.StartTimer();
+            }
+        }
+        
+
     }
+
+    internal void StopClimb(Vector2 inputVector)
+    {
+        if (moveVector.x != 0)
+        {
+            if(!DetectWall())
+            {
+                Debug.Log("TimerCheck: " + climbTimer.duration);
+                if (climbTimer.duration > maxClimbTime)
+                {
+                    UnstickFromWall();
+                    Flip();
+                    isFalling = true;
+                }
+            }
+        }
+        moveVector = inputVector;
+    }
+
 
     internal void JumpUp()
     {
@@ -261,9 +297,19 @@ public class PlayerMovement : MonoBehaviour
         //playerAnim.SetTrigger("JumpTrigger");
         playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
 
-        float xDirection = facingDirection.isRIGHT() ? -1 : 1;  // 보고 있는 방향의 반대방향으로 점프
-        rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
-        Flip();
+        if(!isFalling)
+        {
+            float xDirection = facingDirection.isRIGHT() ? -1 : 1;  // 보고 있는 방향의 반대방향으로 점프
+            rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
+            Flip();
+        }
+        else
+        {
+            float xDirection = facingDirection.isRIGHT() ? 1 : -1;  // 보고 있는 방향으로 점프
+            rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
+        }
+
+        
 
         StartCoroutine(ReserveFinishWallJump());
 
@@ -325,6 +371,7 @@ public class PlayerMovement : MonoBehaviour
     {
         playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
         rb.gravityScale = this.gravityScale;
+        
     }
 
     /// <summary>
@@ -484,6 +531,9 @@ public class PlayerMovement : MonoBehaviour
 
     void Flip()
     {
+        if (PlayerRef.Instance.combat.isAttack)
+            return;
+
         // 플레이어가 바라보는 방향을 전환
         if (facingDirection.isLEFT()) facingDirection = LR.RIGHT;
         else facingDirection = LR.LEFT;

@@ -19,15 +19,15 @@ public class PlayerMagic : MonoBehaviour
     [SerializeField, ReadOnly]
     private Vector3? magicPos;          // null이라면 현재 조준하고 있는 위치가 유효하지 않다는 뜻
     [SerializeField, ReadOnly]
-    private TerrainType terrainType;    // 벽에 시전 가능한 녀석일 경우 좌/우 어느쪽인지, 아무데나 시전 가능한 녀석일 경우 상/하/좌/우 어느쪽인지
+    private TerrainType terrainType;    // 설치하려는 곳이 천장/벽/바닥 어느쪽인지
+    [SerializeField, ReadOnly]
+    private LR wallLR;                  // 벽일 경우, 왼쪽을 바라보는 벽인지, 오른쪽을 바라보는 벽인지
 
     [Space(10), Header("시전 관련")]
     [SerializeField, Tooltip("시전 위치 미리보기 오브젝트")]
     private GameObject previewObject;
-    [SerializeField, Tooltip("지형 바깥쪽으로 얼마나 떨어져있어도 시전 가능한 것으로 판단할지?")]
-    private float castDistOutside = 1.5f;
-    [SerializeField, Tooltip("지형 안쪽으로 어느정도까지 파고들어도 시전 가능한 것으로 판단할지?")]
-    private float castDistInside = 0.5f;
+    [SerializeField, Tooltip("지형 경계면과 마우스가 얼마나 떨어져있어도 시전 가능한 것으로 판단할지?")]
+    private float castDist = 1.5f;
 
     [Space(10), Header("스폰된 오브젝트")]
     [SerializeField, ReadOnly]
@@ -38,7 +38,7 @@ public class PlayerMagic : MonoBehaviour
     private InputAction IAMagicExecute;
     private InputAction IAMagicCancel;
 
-    private EdgeCollider2D edgeCollider;    // 현재 시전하고자 하는 지형의 콜라이더
+    private Collider2D collider;    // 현재 시전하고자 하는 지형의 콜라이더
     private RaycastHit2D hitfail = new RaycastHit2D(); // RaycastTerrain() 함수 최적화
 
 
@@ -83,14 +83,14 @@ public class PlayerMagic : MonoBehaviour
     /// </summary>
     private void OnMagicExecute(InputAction.CallbackContext context)
     {
-        if(magicPos == null)
+        if (magicPos == null)
         {
             Debug.Log("식물마법 시전 실패: 잘못된 위치 지정");
             return;
         }
         IAMagicReady.Enable();
         IAMagicExecute.Disable();
-        IAMagicCancel .Disable();
+        IAMagicCancel.Disable();
 
         Debug.Log($"식물마법 시전\n 종류: {currentSelectedMagic.name}\n 지형타입: {terrainType}");
         DoMagic();
@@ -107,31 +107,36 @@ public class PlayerMagic : MonoBehaviour
             return;
         }
 
-        if(currentSelectedMagic.castType == MagicCastType.EVERYWHERE)
+        if (currentSelectedMagic.castType == MagicCastType.EVERYWHERE)
         {
             // 천장-벽-바닥 아무데나 설치가능한 경우
             // '지형과 수직인 방향'을 가르키기 위해 '회전'을 사용
-            magicInstance = Instantiate(currentSelectedMagic.prefab, (Vector3)magicPos, Quaternion.Euler(0, 0, terrainType.toAngle()));
+            float rotation;
+            switch(terrainType)
+            {
+                case TerrainType.Ceil: rotation = 180f; break;
+                case TerrainType.Floor: rotation = 0f; break;
+                default:        // case TerrainType.Wall: 
+                    rotation = wallLR.isRIGHT()?270f:90f; break;
+            }
+            magicInstance = Instantiate(currentSelectedMagic.prefab, (Vector3)magicPos, Quaternion.Euler(0, 0, rotation));
         }
         else
         {
             // 그 외의 경우 '지형과 수직인 방향'을 가르키기 위해 '좌우 대칭'을 사용
             magicInstance = Instantiate(currentSelectedMagic.prefab, (Vector3)magicPos, Quaternion.identity);
             // wall_facing_left는 기본 형태, wall_facing_right가 반전된 형태
-            if(terrainType == TerrainType.Wall_facing_right)
+            if (wallLR.isRIGHT())
             {
-                magicInstance.transform.localScale = Vector3.Scale(magicInstance.transform.localScale,  new Vector3(-1, 1, 1));
+                magicInstance.transform.localScale = Vector3.Scale(magicInstance.transform.localScale, new Vector3(-1, 1, 1));
             }
         }
 
-        // 담쟁이 덩굴과 맹그로브의 경우 추가적인 정보 전달이 필요
-        if(currentSelectedMagic.code == PlantMagicCode.IVY)
+        // 담쟁이 덩굴의 경우 추가적인 정보 전달이 필요
+        if (currentSelectedMagic.code == PlantMagicCode.IVY)
         {
-            magicInstance.GetComponent<MagicIvy>().Init(edgeCollider);
-        }
-        if(currentSelectedMagic.code == PlantMagicCode.MANGROVE)
-        {
-            magicInstance.GetComponent<MagicMangrove>().Init(edgeCollider);
+            Debug.Log($"{collider}");
+            magicInstance.GetComponent<MagicIvy>().Init((Vector2)magicPos, collider);
         }
 
         // 오브젝트 풀 관리: 동시에 유지 가능한 오브젝트는 최대 1개
@@ -190,32 +195,28 @@ public class PlayerMagic : MonoBehaviour
         RaycastHit2D hitTemp;
         if (castType == MagicCastType.GROUND_ONLY || castType == MagicCastType.EVERYWHERE)
         {
-            if(RaycastTerrain(mouseWorldPosition, TerrainType.Floor, out hitTemp) && hitTemp.distance < minDistance)
+            if (RaycastTerrain(mouseWorldPosition, TerrainType.Floor, out hitTemp) && hitTemp.distance < minDistance)
             {
                 previewable = true;
                 minDistance = hitTemp.distance;
                 hitResult = hitTemp;
                 terrainType = TerrainType.Floor;
-                edgeCollider = (EdgeCollider2D)(hitTemp.collider);
+                collider = hitResult.collider;
             }
         }
-        if(castType == MagicCastType.WALL_ONLY || castType == MagicCastType.EVERYWHERE)
+        if (castType == MagicCastType.WALL_ONLY || castType == MagicCastType.EVERYWHERE)
         {
-            if (RaycastTerrain(mouseWorldPosition, TerrainType.Wall_facing_right, out hitTemp) && hitTemp.distance < minDistance)
+            if (RaycastTerrain(mouseWorldPosition, TerrainType.Wall, out hitTemp) && hitTemp.distance < minDistance)
             {
                 previewable = true;
                 minDistance = hitTemp.distance;
                 hitResult = hitTemp;
-                terrainType = TerrainType.Wall_facing_right;
-                edgeCollider = (EdgeCollider2D)(hitTemp.collider);
-            }
-            if (RaycastTerrain(mouseWorldPosition, TerrainType.Wall_facing_left, out hitTemp) && hitTemp.distance < minDistance)
-            {
-                previewable = true;
-                minDistance = hitTemp.distance;
-                hitResult = hitTemp;
-                terrainType = TerrainType.Wall_facing_left;
-                edgeCollider = (EdgeCollider2D)(hitTemp.collider);
+                terrainType = TerrainType.Wall;
+                collider = hitResult.collider;
+                if (collider.ClosestPoint(mouseWorldPosition).x < 0)
+                {
+
+                }
             }
         }
         if (castType == MagicCastType.CEIL_ONLY || castType == MagicCastType.EVERYWHERE)
@@ -226,7 +227,7 @@ public class PlayerMagic : MonoBehaviour
                 minDistance = hitTemp.distance;
                 hitResult = hitTemp;
                 terrainType = TerrainType.Ceil;
-                edgeCollider = (EdgeCollider2D)(hitTemp.collider);
+                collider = hitResult.collider;
             }
         }
 
@@ -245,48 +246,47 @@ public class PlayerMagic : MonoBehaviour
     }
 
     /// <summary>
-    /// 적합한 layer를 선택하여 Raycast를 수행, 마우스 위치와 가까운 '지형 테두리'를 찾는다. 
+    /// Raycast를 수행, 마우스 위치와 가까운 '지형 테두리'를 찾는다. 
     /// castDist_inside/outside로 지정된 범위 내에서만 찾는다.
     /// 성공하면 true, 실패하면 false 반환.
     /// </summary>
     private bool RaycastTerrain(Vector2 origin, TerrainType tType, out RaycastHit2D result)
     {
         bool succeed = false;
-        Vector2 rayDir;
-        string layerName;
-        RaycastHit2D frontResult, backResult;
 
         result = hitfail;
 
-        switch(tType)
+        switch (tType)
         {
             case TerrainType.Ceil:
-                rayDir = Vector2.up;    // raydir는 기본적으로 마우스가 지형 바깥쪽에 있다고 생각하고 설정.
-                layerName = "Ceil";
-                break;
             case TerrainType.Floor:
-                rayDir = Vector2.down;
-                layerName = "Ground";
+                succeed = RaycastBothInAndOut(origin, Vector2.up, out result);  // raydir는 기본적으로 마우스가 지형 바깥쪽에 있다고 생각하고 설정.
                 break;
-            case TerrainType.Wall_facing_right:
-                rayDir = Vector2.left;
-                layerName = "Wall_right";
-                break;
-            default: // case TerrainType.Wall_facing_left:
-                rayDir = Vector2.right;
-                layerName = "Wall_left";
+            default: // case TerrainType.Wall:
+                succeed = RaycastBothInAndOut(origin, Vector2.right, out result);
                 break;
         }
+        return succeed;
+    }
+
+    private bool RaycastBothInAndOut(Vector2 origin, Vector2 rayDir, out RaycastHit2D result)
+    {
+        RaycastHit2D frontResult, backResult;
+        string layerName = "Ground";
+        bool succeed = false;
+
+        // out으로 선언된 파라미터는 return되기 전 무조건 할당되어야 함
+        result = hitfail;
 
         // 마우스가 지형 바깥에 있을 경우
-        frontResult = Physics2D.Raycast(origin, rayDir, castDistOutside, LayerMask.GetMask(layerName));
+        frontResult = Physics2D.Raycast(origin, rayDir, castDist, LayerMask.GetMask(layerName));
         if (frontResult.collider != null)
         {
             succeed = true;
             result = frontResult;
         }
         // 마우스가 지형 안쪽에 있을 경우
-        backResult = Physics2D.Raycast(origin, -rayDir, castDistInside, LayerMask.GetMask(layerName));
+        backResult = Physics2D.Raycast(origin, -rayDir, castDist, LayerMask.GetMask(layerName));
         if (backResult.collider != null)
         {
             if (result.collider == null || result.distance > backResult.distance)
