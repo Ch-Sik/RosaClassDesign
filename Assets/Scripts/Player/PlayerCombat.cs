@@ -17,6 +17,7 @@ public class PlayerCombat : MonoBehaviour
     public GameObject attackEntity;         //공격을 위한 AttackObject의 게임오브젝트
     public AttackObject attackObject;       //공격 이벤트를 위한 AttackObject
     public bool isAttack = false;           //공격중이라면 true, 아니라면 false;
+    public bool isFly = false;              //나비를 타고 있다면 true, 아니라면 false;
 
     [Header("CombatOptions")]
     public LayerMask attackableObjects;     //공격가능한 대상 레이어 마스크
@@ -36,16 +37,6 @@ public class PlayerCombat : MonoBehaviour
     {
         attackObject = attackEntity.GetComponent<AttackObject>();
         attackObject.Init(this, attackableObjects, butterfly);
-    }
-
-    private void Update()
-    {
-
-        //테스트용 추후엔 Update를 사용할 일이 없다.
-        if (Input.GetMouseButtonDown(0))
-        {
-            Attack();
-        }
     }
 
     //SetData는 호출되면, 현재의 마우스 위치를 토대로 각도와 방향벡터 Data를 Set해준다.
@@ -122,6 +113,9 @@ public class PlayerCombat : MonoBehaviour
     //AttackObject가 나비에 닿을 경우, 해당 나비데이터를 PlayerCombat에 전달해주고, 그 데이터를 나비에 전달하기 위한 함수
     public void RideButterFly(ButterFly butterFly)
     {
+        if (isFly)
+            return;
+
         StopAttack();
         butterFly.ButterFlyAct(transform);
     }
