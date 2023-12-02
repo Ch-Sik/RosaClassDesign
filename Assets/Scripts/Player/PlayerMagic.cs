@@ -271,28 +271,57 @@ public class PlayerMagic : MonoBehaviour
 
     private bool RaycastBothInAndOut(Vector2 origin, Vector2 rayDir, out RaycastHit2D result)
     {
+        TilemapManager map = TilemapManager.Instance;
         RaycastHit2D frontResult, backResult;
+        Vector3 cellWorldPosition;
         string layerName = "Ground";
         bool succeed = false;
+        bool isInside;      // 디버깅용
 
         // out으로 선언된 파라미터는 return되기 전 무조건 할당되어야 함
         result = hitfail;
 
-        // 마우스가 지형 바깥에 있을 경우
+        // 지형 경계면이 마우스보다 오른쪽/위쪽에 있을 경우
         frontResult = Physics2D.Raycast(origin, rayDir, castDist, LayerMask.GetMask(layerName));
         if (frontResult.collider != null)
         {
-            succeed = true;
-            result = frontResult;
+            if(Physics2D.OverlapPoint(origin, LayerMask.GetMask(layerName)) != null)    // 마우스가 지형 안쪽인 경우
+            {
+                isInside = true;
+                cellWorldPosition = frontResult.point - 0.1f * rayDir;
+            }
+            else                                                // 마우스각 지형 바깥쪽인 경우
+            {
+                isInside = false;
+                cellWorldPosition = frontResult.point + 0.1f * rayDir;
+            }
+            if (map.GetTileDataByWorldPosition(cellWorldPosition).magicAllowed)     // 5 + 0.000이 4 또는 5 둘 다로 처리될 수 있는 애매함을 회피
+            {
+                succeed = true;
+                result = frontResult;
+            }
         }
-        // 마우스가 지형 안쪽에 있을 경우
+        // 지형 경계면이 마우스보다 왼쪽/아래쪽에 있을 경우
         backResult = Physics2D.Raycast(origin, -rayDir, castDist, LayerMask.GetMask(layerName));
         if (backResult.collider != null)
         {
-            if (result.collider == null || result.distance > backResult.distance)
+            if (Physics2D.OverlapPoint(origin, LayerMask.GetMask(layerName)) != null)    // 마우스가 지형 안쪽인 경우
             {
-                succeed = true;
-                result = backResult;
+                isInside = true;
+                cellWorldPosition = backResult.point + 0.1f * rayDir;
+            }
+            else                                                // 마우스각 지형 바깥쪽인 경우
+            {
+                isInside = false;
+                cellWorldPosition = backResult.point - 0.1f * rayDir;
+            }
+            if (map.GetTileDataByWorldPosition(cellWorldPosition).magicAllowed)
+            {
+                if (result.collider == null || result.distance > backResult.distance)
+                {
+                    succeed = true;
+                    result = backResult;
+                }
             }
         }
 
