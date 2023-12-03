@@ -26,11 +26,11 @@ public class MagicIvy : MonoBehaviour
 
     private LR wallDirection;   // 현재 담쟁이가 자라는 벽이 바라보는 방향
 
-    public void Init(Vector2 magicPos, Collider2D colliderComposite)
+    public void Init(Vector2 magicPos)
     {
         // 필드 값 세팅
         if(edgeCol == null) edgeCol = GetComponent<EdgeCollider2D>();
-        tilemap = colliderComposite.gameObject.GetComponentInChildren<Tilemap>(); // composite collider 사용한다고 가정
+        tilemap = TilemapManager.Instance.map;
 
         // 오른쪽 벽에 부딪혔는지 왼쪽 벽에 부딪혔는지 판단
         // 6 + 0.0000...가 5로 판단될지 6으로 판단될지에 대한 불확실성을 피하기 위해 0.5의 오프셋 설정

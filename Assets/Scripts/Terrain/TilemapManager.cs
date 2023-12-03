@@ -45,7 +45,7 @@ public class TilemapManager : SerializedMonoBehaviour
         TileBase selectedTile = map.GetTile(tilePosition);
         if(selectedTile == null)
         {
-            Debug.LogWarning($"그 위치에는 타일이 존재하지 않습니다\n위치: {tilePosition}");
+            Debug.LogError($"그 위치에는 타일이 존재하지 않습니다\n위치: {tilePosition}");
             return null;
         }
         try
@@ -61,6 +61,15 @@ public class TilemapManager : SerializedMonoBehaviour
 
     public TileData GetTileDataByWorldPosition(Vector3 worldPosition)
     {
-        return GetTileDataByCellPosition(map.WorldToCell(worldPosition));
+        TileData result =  GetTileDataByCellPosition(map.WorldToCell(worldPosition));
+        if(result == null)
+        {
+            Debug.LogError($"그 위치: {worldPosition}");
+        }
+        else if(!result.magicAllowed)
+        {
+            Debug.Log("그곳은 식물마법을 설치 불가능한 지형");
+        }
+        return result;
     }
 }
