@@ -9,9 +9,9 @@ using UnityEngine;
 /// 나비의 웨이포인트들과 데이터들을 다루기 위한 프리팹 스크립트입니다.
 /// </summary>
 
-public class ButterFly : MonoBehaviour
+public class Butterfly : MonoBehaviour
 {
-    public bool interactable = true;                    //나비장에 갇혀있는 경우 플레이어 공격과 상호작용할 수 없음.
+    public bool isCaged = false;                    //나비장에 갇혀있는 경우 플레이어 공격과 상호작용할 수 없음.
 
     public bool showGizmo = true;                       //기즈모 표기 유무
     public Color gizmoColor = Color.red;                //라인 구분을 위한 기즈모 컬러 세팅
@@ -21,10 +21,9 @@ public class ButterFly : MonoBehaviour
     [ShowInInspector] private float distance;           //웨이포인트 점을 따라 갈 때의 거리
 
     private Sequence tracking;                          //트래킹 시퀀스
-    public Transform butterFly;                         //움직일 나비를 받아올 트랜스폼 오브젝트
-    public Transform waypointMoules;                    //웨이포인트점들의 부모 오브젝트
+    public Transform waypointsTransform;                //웨이포인트점들의 부모 오브젝트
 
-    Transform rider;                                    //현재 나비를 탄 대상의 트랜스폼
+    Transform riderTF;                                  //현재 나비를 탄 대상의 트랜스폼
 
     float savedGravity = 0f;
 
@@ -32,6 +31,7 @@ public class ButterFly : MonoBehaviour
     private void Start()
     {
         SetData();
+        InitPosition();
     }
 
     //나비가 날기위한 waypoint와 거리 데이터를 산출한다.
@@ -39,6 +39,12 @@ public class ButterFly : MonoBehaviour
     {
         PathsToVector3Array();
         DistanceCalcultor();
+    }
+
+    private void InitPosition()
+    {
+        if(!isCaged)
+            transform.position = waypoints[0];
     }
 
     //나비가 날게 되는 핵심 코드
@@ -57,9 +63,9 @@ public class ButterFly : MonoBehaviour
             Ride(player);
         })
         //플레이어의 위치를 나비의 위치로 0.3초 동안 이동시킨다.
-        .Append(player.DOMove(butterFly.position, 0.3f))
+        .Append(player.DOMove(transform.position, 0.3f))
         //나비의 자식으로 플레이어가 있기에, 나비를 이동시키며 플레이어를 동시에 이동시킨다. 이때 나비는 waypoints를 순차적으로 방문한다.
-        .Append(butterFly.DOPath(waypoints, distance / 10))  // 속도 버프
+        .Append(transform.DOPath(waypoints, distance / 10))  // 속도 버프
         //DOPath 완료후 세팅 // tracking 여부를 false로 설정하고, 트래킹을 초기화 하며, 플레이어를 내리게한다.
         .AppendCallback(() =>
         {
@@ -78,17 +84,17 @@ public class ButterFly : MonoBehaviour
     {
         StopTracking();
         UnRide();
-        butterFly.position = waypoints[0];
+        transform.position = waypoints[0];
         onWayTracking = false;
         PlayerRef.Instance.combat.isFly = false;
     }
 
     //나비에 탈 때, 
-    public void Ride(Transform player)
+    public void Ride(Transform playerTF)
     {
-        rider = player;                                         //탑승자 데이터를 저장한다.
-        player.SetParent(butterFly);                            //플레이어를 자식으로 설정해준다.
-        butterFly.GetComponent<Collider2D>().enabled = false;   //나비와의 재충돌을 대비해 콜라이더를 끈다.
+        riderTF = playerTF;                                         //탑승자 데이터를 저장한다.
+        playerTF.SetParent(transform);                            //플레이어를 자식으로 설정해준다.
+        transform.GetComponent<Collider2D>().enabled = false;   //나비와의 재충돌을 대비해 콜라이더를 끈다.
         savedGravity = PlayerRef.Instance.rb.gravityScale;
         PlayerRef.Instance.rb.gravityScale = 0;
         // 낙하 or 상승 중일 떄 velocityY가 남아있는 것을 고려하여 속도를 초기화시킨다.
@@ -98,22 +104,20 @@ public class ButterFly : MonoBehaviour
     //나비에 내릴 때, (이름은 추후 생각해보기)
     public void UnRide()
     {
-        rider.SetParent(null);                                  //탑승자를 내린다.
-        butterFly.GetComponent<Collider2D>().enabled = true;    //나비의 재활성화
+        riderTF.SetParent(null);                                  //탑승자를 내린다.
+        transform.GetComponent<Collider2D>().enabled = true;    //나비의 재활성화
         PlayerRef.Instance.rb.gravityScale = savedGravity;
     }
 
     //자식데이터를 토대로 Vector3배열을 만든다.
     private void PathsToVector3Array()
     {
-        int count = waypointMoules.childCount;          //Waypoint 자식의 개수
+        int count = waypointsTransform.childCount;          //Waypoint 자식의 개수
 
-        waypoints = new Vector3[count];             //나비의 위치도 포함하기 위하여 count + 1을 넣는다.
-
-        // waypoints[0] = butterFly.position;              //0번 Vector는 당연히 나비의 위치이다.
+        waypoints = new Vector3[count];
 
         for (int i = 0; i < count; i++)                 //자식을 순회하며 waypoint를 설정해준다.
-            waypoints[i] = waypointMoules.GetChild(i).position;
+            waypoints[i] = waypointsTransform.GetChild(i).position;
     }
 
     //waypoints의 각점을 비교하여 최종 거리를 산출한다.
@@ -138,7 +142,7 @@ public class ButterFly : MonoBehaviour
         if (waypoints != null && waypoints.Length > 1)
         {
             Gizmos.color = Color.gray;
-            Gizmos.DrawLine(butterFly.transform.position, waypoints[0]);
+            Gizmos.DrawLine(transform.position, waypoints[0]);
 
             Gizmos.color = gizmoColor;
             for (int i = 0; i < waypoints.Length - 1; i++)

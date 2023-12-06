@@ -160,7 +160,6 @@ public class PlayerMovement : MonoBehaviour
                 if (!isDoingHooking) // 후크 중일경우 좌 우 입력 값 무시
                 {
                     rb.velocity = new Vector2(moveVector.x * moveSpeed, rb.velocity.y);
-                    Debug.Log(moveVector);
                 }
                 if ((moveVector.x > 0 && facingDirection.isLEFT())
                 || (moveVector.x < 0 && facingDirection.isRIGHT()))
