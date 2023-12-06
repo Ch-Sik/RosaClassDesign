@@ -4,7 +4,6 @@ using Sirenix.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Timeline;
 
 /// <summary>
 /// 나비의 웨이포인트들과 데이터들을 다루기 위한 프리팹 스크립트입니다.
@@ -12,6 +11,8 @@ using UnityEngine.Timeline;
 
 public class ButterFly : MonoBehaviour
 {
+    public bool interactable = true;                    //나비장에 갇혀있는 경우 플레이어 공격과 상호작용할 수 없음.
+
     public bool showGizmo = true;                       //기즈모 표기 유무
     public Color gizmoColor = Color.red;                //라인 구분을 위한 기즈모 컬러 세팅
     [ShowInInspector] bool onWayTracking = false;       //waytacking을 하고 있는가?
@@ -107,12 +108,12 @@ public class ButterFly : MonoBehaviour
     {
         int count = waypointMoules.childCount;          //Waypoint 자식의 개수
 
-        waypoints = new Vector3[count + 1];             //나비의 위치도 포함하기 위하여 count + 1을 넣는다.
+        waypoints = new Vector3[count];             //나비의 위치도 포함하기 위하여 count + 1을 넣는다.
 
-        waypoints[0] = butterFly.position;              //0번 Vector는 당연히 나비의 위치이다.
+        // waypoints[0] = butterFly.position;              //0번 Vector는 당연히 나비의 위치이다.
 
         for (int i = 0; i < count; i++)                 //자식을 순회하며 waypoint를 설정해준다.
-            waypoints[i + 1] = waypointMoules.GetChild(i).position;
+            waypoints[i] = waypointMoules.GetChild(i).position;
     }
 
     //waypoints의 각점을 비교하여 최종 거리를 산출한다.
@@ -134,10 +135,12 @@ public class ButterFly : MonoBehaviour
 
         SetData();
 
-        Gizmos.color = gizmoColor;
         if (waypoints != null && waypoints.Length > 1)
         {
+            Gizmos.color = Color.gray;
             Gizmos.DrawLine(butterFly.transform.position, waypoints[0]);
+
+            Gizmos.color = gizmoColor;
             for (int i = 0; i < waypoints.Length - 1; i++)
             {
                 Gizmos.DrawLine(waypoints[i], waypoints[i + 1]);
