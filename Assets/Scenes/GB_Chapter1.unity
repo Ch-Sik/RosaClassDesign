@@ -2973,6 +2973,7 @@ GameObject:
   - component: {fileID: 1524889343}
   - component: {fileID: 1524889345}
   - component: {fileID: 1524889344}
+  - component: {fileID: 1524889346}
   m_Layer: 10
   m_Name: Terrain Block
   m_TagString: Untagged
@@ -3029,7 +3030,7 @@ CompositeCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
-  m_GeometryType: 0
+  m_GeometryType: 1
   m_GenerationType: 0
   m_EdgeRadius: 0
   m_ColliderPaths:
@@ -3086,6 +3087,35 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &1524889346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1524889342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea402f386b4afac47ae89ae3278af4d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: dataFromTiles
+      Entry: 6
+      Data: 
+  map: {fileID: 734186885}
+  tileDatas:
+  - {fileID: 11400000, guid: 01114e4d723c7a04b8d1df30a97f568f, type: 2}
+  - {fileID: 11400000, guid: 37db6ff988b51c44bb8e712b5efa87a9, type: 2}
+  defaultTileData: {fileID: 11400000, guid: 01114e4d723c7a04b8d1df30a97f568f, type: 2}
 --- !u!1001 &1588290531
 PrefabInstance:
   m_ObjectHideFlags: 0
