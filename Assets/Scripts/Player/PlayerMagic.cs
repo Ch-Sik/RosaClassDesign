@@ -43,19 +43,22 @@ public class PlayerMagic : MonoBehaviour
     [SerializeField, ReadOnly]
     private Vector3 debug_targetTilePosition;
 
-    private const string layerString = "Ground";
+    private const string layerStringGround = "Ground";
+    private const string layerStringCurtain = "HiddenRoom";
 
     private InputManager inputInstance;
     private InputAction IAMagicReady;
     private InputAction IAMagicExecute;
     private InputAction IAMagicCancel;
-    private int layermask;
+    private int layerGround;
+    private int layerCurtain;
 
 
 
     private void Start()
     {
-        layermask = LayerMask.GetMask(layerString);
+        layerGround = LayerMask.GetMask(layerStringGround);
+        layerCurtain = LayerMask.GetMask(layerStringCurtain);
         RegisterInputActions();
     }
 
@@ -274,21 +277,21 @@ public class PlayerMagic : MonoBehaviour
     private Vector2? RaycastGround(Vector2 origin)
     {
         Vector2 rayHitWorldPosition, cellWorldPosition;
-        Collider2D terrainCollider = Physics2D.OverlapPoint(origin, layermask);
+        Collider2D overlapTest = Physics2D.OverlapPoint(origin, layerGround);
 
-        if (terrainCollider != null)    // 마우스가 지형 안쪽인 경우
+        if (overlapTest != null)    // 마우스가 지형 안쪽인 경우
         {
             debug_isMouseInTerrain = true;
             // 지형 바깥쪽으로 castDist만큼 뻗어도 지형 안쪽일 경우 '너무' 안쪽인 것으로 판정
-            terrainCollider = Physics2D.OverlapPoint(origin + new Vector2(0, castDist), layermask);
-            if (terrainCollider != null)
+            overlapTest = Physics2D.OverlapPoint(origin + new Vector2(0, castDist), layerGround | layerCurtain);
+            if (overlapTest != null)
             {
                 return null;
             }
             // 그게 아니라면 레이캐스팅해서 위치 선정
             else
             {
-                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(0, castDist), Vector2.down, castDist, layermask);
+                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(0, castDist), Vector2.down, castDist, layerGround);
                 if (result.collider != null)
                 {
                     rayHitWorldPosition = result.point;
@@ -304,8 +307,15 @@ public class PlayerMagic : MonoBehaviour
         }
         else                // 마우스가 지형 바깥쪽인 경우
         {
+            overlapTest = Physics2D.OverlapPoint(origin, layerCurtain);
+            if (overlapTest != null)
+            {
+                Debug.Log("뒤에 숨겨진 공간이 있어 식물 마법을 시전할 수 없음");
+                return null;
+            }
+
             debug_isMouseInTerrain = false;
-            RaycastHit2D result = Physics2D.Raycast(origin, Vector2.down, castDist, layermask);
+            RaycastHit2D result = Physics2D.Raycast(origin, Vector2.down, castDist, layerGround);
             if(result.collider != null)
             {
                 rayHitWorldPosition = result.point;
@@ -328,20 +338,20 @@ public class PlayerMagic : MonoBehaviour
     private Vector2? RaycastCeil(Vector2 origin)
     {
         Vector2 rayHitWorldPosition, cellWorldPosition;
-        Collider2D terrainCollider = Physics2D.OverlapPoint(origin, layermask);
+        Collider2D overlapTest = Physics2D.OverlapPoint(origin, layerGround);
 
-        if (terrainCollider != null)    // 마우스가 지형 안쪽인 경우
+        if (overlapTest != null)    // 마우스가 지형 안쪽인 경우
         {
             // 지형 바깥쪽으로 castDist만큼 뻗어도 지형 안쪽일 경우 '너무' 안쪽인 것으로 판정
-            terrainCollider = Physics2D.OverlapPoint(origin + new Vector2(0, -castDist), layermask);
-            if (terrainCollider != null)
+            overlapTest = Physics2D.OverlapPoint(origin + new Vector2(0, -castDist), layerGround | layerCurtain);
+            if (overlapTest != null)
             {
                 return null;
             }
             // 그게 아니라면 레이캐스팅해서 위치 선정
             else
             {
-                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(0, -castDist), Vector2.up, castDist, layermask);
+                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(0, -castDist), Vector2.up, castDist, layerGround);
                 if (result.collider != null)
                 {
                     rayHitWorldPosition = result.point;
@@ -357,7 +367,14 @@ public class PlayerMagic : MonoBehaviour
         }
         else                // 마우스가 지형 바깥쪽인 경우
         {
-            RaycastHit2D result = Physics2D.Raycast(origin, Vector2.up, castDist, layermask);
+            overlapTest = Physics2D.OverlapPoint(origin, layerCurtain);
+            if (overlapTest != null)
+            {
+                Debug.Log("뒤에 숨겨진 공간이 있어 식물 마법을 시전할 수 없음");
+                return null;
+            }
+
+            RaycastHit2D result = Physics2D.Raycast(origin, Vector2.up, castDist, layerGround);
             if (result.collider != null)
             {
                 rayHitWorldPosition = result.point;
@@ -383,19 +400,19 @@ public class PlayerMagic : MonoBehaviour
     private Vector2? RaycastWall(Vector2 origin)
     {
         Vector2 rayHitWorldPosition = Vector2.zero, cellWorldPosition = Vector2.zero;
-        Collider2D terrainCollider = Physics2D.OverlapPoint(origin, layermask);
+        Collider2D overlapTest = Physics2D.OverlapPoint(origin, layerGround);
 
-        if (terrainCollider != null)    // 마우스가 지형 안쪽인 경우
+        if (overlapTest != null)    // 마우스가 지형 안쪽인 경우
         {
-            Collider2D leftOverlapResult, rightOverlapResult;
-            leftOverlapResult = Physics2D.OverlapPoint(origin + new Vector2(-castDist, 0), layermask);
-            rightOverlapResult = Physics2D.OverlapPoint(origin + new Vector2(castDist, 0), layermask);
+            Collider2D leftOverlapTest, rightOverlapTest;
+            leftOverlapTest = Physics2D.OverlapPoint(origin + new Vector2(-castDist, 0), layerGround | layerCurtain);
+            rightOverlapTest = Physics2D.OverlapPoint(origin + new Vector2(castDist, 0), layerGround | layerCurtain);
             // 지형 바깥쪽으로 castDist만큼 뻗어도 지형 안쪽일 경우 '너무' 안쪽인 것으로 판정
-            if (leftOverlapResult != null && rightOverlapResult != null)
+            if (leftOverlapTest != null && rightOverlapTest != null)
             {
                 return null;
             }
-            else if(leftOverlapResult == null && rightOverlapResult == null)
+            else if(leftOverlapTest == null && rightOverlapTest == null)
             {
                 // TODO: 이 부분에 더 좋은 방법 없을지 고민해보기
                 Debug.LogWarning("벽이 너무 얇음! 식물 마법 위치 선정에 오류 발생");
@@ -403,9 +420,9 @@ public class PlayerMagic : MonoBehaviour
             }
             // 그게 아니라면 레이캐스팅해서 위치 선정
             // 왼쪽을 바라보는 벽인 경우
-            else if (leftOverlapResult == null)
+            else if (leftOverlapTest == null)
             {
-                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(-castDist, 0), Vector2.right, castDist, layermask);
+                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(-castDist, 0), Vector2.right, castDist, layerGround);
                 if (result.collider != null)
                 {
                     rayHitWorldPosition = result.point;
@@ -421,7 +438,7 @@ public class PlayerMagic : MonoBehaviour
             // 오른쪽을 바라보는 벽인 경우
             else // if(rightOverlapResult == null)
             {
-                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(castDist, 0), Vector2.left, castDist, layermask);
+                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(castDist, 0), Vector2.left, castDist, layerGround);
                 if (result.collider != null)
                 {
                     rayHitWorldPosition = result.point;
@@ -437,8 +454,15 @@ public class PlayerMagic : MonoBehaviour
         }
         else                // 마우스가 지형 바깥쪽인 경우
         {
+            overlapTest = Physics2D.OverlapPoint(origin, layerCurtain);
+            if(overlapTest != null)
+            {
+                Debug.Log("뒤에 숨겨진 공간이 있어 식물 마법을 시전할 수 없음");
+                return null;
+            }
+
             float distance = float.PositiveInfinity;
-            RaycastHit2D leftResult = Physics2D.Raycast(origin, Vector2.left, castDist, layermask);
+            RaycastHit2D leftResult = Physics2D.Raycast(origin, Vector2.left, castDist, layerGround);
             if (leftResult.collider != null)
             {
                 wallLR = LR.LEFT;
@@ -446,7 +470,7 @@ public class PlayerMagic : MonoBehaviour
                 rayHitWorldPosition = leftResult.point;
                 cellWorldPosition = leftResult.point + 0.1f * Vector2.left;
             }
-            RaycastHit2D rightResult = Physics2D.Raycast(origin, Vector2.right, castDist, layermask);
+            RaycastHit2D rightResult = Physics2D.Raycast(origin, Vector2.right, castDist, layerGround);
             if (rightResult.collider != null && rightResult.distance < distance)
             {
                 wallLR = LR.RIGHT;

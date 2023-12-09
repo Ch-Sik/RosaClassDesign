@@ -47,6 +47,7 @@ public class HiddenRoomCurtain : MonoBehaviour
             StopCoroutine(fade);
         }
         fade = StartCoroutine(FadeOut());
+
         IEnumerator FadeOut()
         {
             for (; alphaStep >= 0; alphaStep--)
@@ -57,29 +58,30 @@ public class HiddenRoomCurtain : MonoBehaviour
                 }
                 yield return fadeTick;
             }
+            Destroy(gameObject);
         }
     }
 
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (!collision.CompareTag("Player"))
-        { return; }
+    //private void OnTriggerExit2D(Collider2D collision)
+    //{
+    //    if (!collision.CompareTag("Player"))
+    //    { return; }
 
-        if (fade != null)
-        {
-            StopCoroutine(fade);
-        }
-        fade = StartCoroutine(FadeIn());
-        IEnumerator FadeIn()
-        {
-            for (; alphaStep <= fadeStep; alphaStep++)
-            {
-                foreach (Vector3Int point in curtainArea.allPositionsWithin)
-                {
-                    tilemap.SetColor(point, new Color(1, 1, 1, alphaStep / (float)fadeStep));
-                }
-                yield return fadeTick;
-            }
-        }
-    }
+    //    if (fade != null)
+    //    {
+    //        StopCoroutine(fade);
+    //    }
+    //    fade = StartCoroutine(FadeIn());
+    //    IEnumerator FadeIn()
+    //    {
+    //        for (; alphaStep <= fadeStep; alphaStep++)
+    //        {
+    //            foreach (Vector3Int point in curtainArea.allPositionsWithin)
+    //            {
+    //                tilemap.SetColor(point, new Color(1, 1, 1, alphaStep / (float)fadeStep));
+    //            }
+    //            yield return fadeTick;
+    //        }
+    //    }
+    //}
 }
