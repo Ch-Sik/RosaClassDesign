@@ -8,7 +8,7 @@ public class MagicIvy : MonoBehaviour
     [SerializeField]
     private EdgeCollider2D edgeCol;     // 0번 점이 위, 1번 점이 아래
     [SerializeField]
-    private Tilemap tilemap;
+    private TilemapManager tileMng;
     [SerializeField]
     private Vector3Int originCellPos;   // 담쟁이가 설치된 타일 위치
 
@@ -22,15 +22,16 @@ public class MagicIvy : MonoBehaviour
     [SerializeField, Tooltip("덩굴 스프라이트가 벽과 떨어진 정도 (만약 음수면 벽을 파고들어감)")]
     private float offset;
 
+    private Tilemap tilemap;
     private WaitForSeconds tick;
-
     private LR wallDirection;   // 현재 담쟁이가 자라는 벽이 바라보는 방향
 
     public void Init(Vector2 magicPos)
     {
         // 필드 값 세팅
         if(edgeCol == null) edgeCol = GetComponent<EdgeCollider2D>();
-        tilemap = TilemapManager.Instance.map;
+        if(tileMng == null) tileMng = TilemapManager.Instance;
+        tilemap = tileMng.map;
 
         // 오른쪽 벽에 부딪혔는지 왼쪽 벽에 부딪혔는지 판단
         // 6 + 0.0000...가 5로 판단될지 6으로 판단될지에 대한 불확실성을 피하기 위해 0.5의 오프셋 설정
@@ -61,85 +62,83 @@ public class MagicIvy : MonoBehaviour
 
     IEnumerator GrowVineUpway()
     {
-        int cursor = 0;
-        Vector2[] points;
+        int dist = 0;
+        Vector2[] colliderPoints;
 
         while(true)
         {
             // 한칸씩 위쪽으로 가면서 타일 검사
-            cursor++;
+            dist++;
 
-            TileBase innerTile = tilemap.GetTile(originCellPos 
-                    + new Vector3Int(wallDirection.isRIGHT()? -1 : 0, cursor, 0)
-                    );
-            TileBase outerTile = tilemap.GetTile(originCellPos
-                    + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, cursor, 0)
-                    );
+            Vector3Int innerPos = originCellPos + new Vector3Int(wallDirection.isRIGHT() ? -1 : 0, dist, 0);
+            Vector3Int outerPos = originCellPos + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, dist, 0);
 
-            if ((bool)innerTile & !(bool)outerTile)
+            TileBase innerTile = tilemap.GetTile(innerPos);
+            TileBase outerTile = tilemap.GetTile(outerPos);
+
+            if ((bool)innerTile && !(bool)outerTile && tileMng.GetTileDataByCellPosition(innerPos).magicAllowed)
             {
-                points = edgeCol.points;
-                points[0] = new Vector2(0, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
-                edgeCol.points = points;
+                colliderPoints = edgeCol.points;
+                colliderPoints[0] = new Vector2(0, dist);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
+                edgeCol.points = colliderPoints;
                 // 스프라이트 업데이트 (콜라이더와 동기화)
-                spriteUp.size = new Vector2(spriteUp.size.x, cursor);
+                spriteUp.size = new Vector2(spriteUp.size.x, dist);
             }
             else
             {
-                cursor--;
+                dist--;
                 break;
             }
             yield return tick;
         }
 
         // 마지막으로 끝까지 성장
-        points = edgeCol.points;
-        points[0] = new Vector2(0, cursor + 0.5f);
-        edgeCol.points = points;
+        colliderPoints = edgeCol.points;
+        colliderPoints[0] = new Vector2(0, dist + 0.5f);
+        edgeCol.points = colliderPoints;
         // 스프라이트 업데이트 (콜라이더와 동기화)
-        spriteUp.size = new Vector2(spriteUp.size.x, cursor + 0.5f);
+        spriteUp.size = new Vector2(spriteUp.size.x, dist + 0.5f);
     }
 
     IEnumerator GrowVineDownway()
     {
-        int cursor = 0;
-        Vector2[] points;
+        int dist = 0;
+        Vector2[] colliderPoints;
 
         // 한칸씩 위쪽으로 가면서 프로브
         while (true)
         {
             // 한칸씩 아래쪽으로 가면서 타일 검사
-            cursor--;
+            dist--;
 
-            TileBase innerTile = tilemap.GetTile(originCellPos
-                    + new Vector3Int(wallDirection.isRIGHT() ? -1 : 0, cursor, 0)
-                    );
-            TileBase outerTile = tilemap.GetTile(originCellPos
-                    + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, cursor, 0)
-                    );
+            Vector3Int innerPos = originCellPos + new Vector3Int(wallDirection.isRIGHT() ? -1 : 0, dist, 0);
+            Vector3Int outerPos = originCellPos + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, dist, 0);
 
-            if ((bool)innerTile & !(bool)outerTile)
+            TileBase innerTile = tilemap.GetTile(innerPos);
+            TileBase outerTile = tilemap.GetTile(outerPos);
+
+            if ((bool)innerTile && !(bool)outerTile && tileMng.GetTileDataByCellPosition(innerPos).magicAllowed)
             {
-                points = edgeCol.points;
-                points[1] = new Vector2(0, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
-                edgeCol.points = points;
+                colliderPoints = edgeCol.points;
+                colliderPoints[1] = new Vector2(0, dist);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
+                edgeCol.points = colliderPoints;
                 // 스프라이트 업데이트 (콜라이더와 동기화)
-                spriteDown.size = new Vector2(spriteDown.size.x, -cursor);
+                spriteDown.size = new Vector2(spriteDown.size.x, -dist);
             }
             else
             {
-                cursor++;
+                dist++;
                 break;
             }
             yield return tick;
         }
 
         // 마지막으로 끝까지 성장
-        points = edgeCol.points;
-        points[1] = new Vector2(0, cursor - 0.5f);
-        edgeCol.points = points;
+        colliderPoints = edgeCol.points;
+        colliderPoints[1] = new Vector2(0, dist - 0.5f);
+        edgeCol.points = colliderPoints;
         // 스프라이트 업데이트 (콜라이더와 동기화)
-        spriteDown.size = new Vector2(spriteDown.size.x, -(cursor - 0.5f));
+        spriteDown.size = new Vector2(spriteDown.size.x, -(dist - 0.5f));
     }
     
     // TODO: Destroy/OnDestroy 대신 별도의 함수를 사용하여 '사라지는 연출' 구현
