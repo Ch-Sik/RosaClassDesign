@@ -7,6 +7,7 @@ public class HiddenRoomCurtain : MonoBehaviour
 {
     public float fadeTime = 0.5f;
     public int fadeStep = 10;
+    public bool destroyOnReveal = false;
 
     private Tilemap tilemap;
     private BoundsInt curtainArea;
@@ -58,30 +59,34 @@ public class HiddenRoomCurtain : MonoBehaviour
                 }
                 yield return fadeTick;
             }
-            Destroy(gameObject);
+            if(destroyOnReveal)
+                Destroy(gameObject);
         }
     }
 
-    //private void OnTriggerExit2D(Collider2D collision)
-    //{
-    //    if (!collision.CompareTag("Player"))
-    //    { return; }
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (destroyOnReveal)
+            return;     // 한번 밝혀지면 그대로 유지되어야 하는 경우, fadeIn을 굳이 하지 않음.
 
-    //    if (fade != null)
-    //    {
-    //        StopCoroutine(fade);
-    //    }
-    //    fade = StartCoroutine(FadeIn());
-    //    IEnumerator FadeIn()
-    //    {
-    //        for (; alphaStep <= fadeStep; alphaStep++)
-    //        {
-    //            foreach (Vector3Int point in curtainArea.allPositionsWithin)
-    //            {
-    //                tilemap.SetColor(point, new Color(1, 1, 1, alphaStep / (float)fadeStep));
-    //            }
-    //            yield return fadeTick;
-    //        }
-    //    }
-    //}
+        if (!collision.CompareTag("Player"))
+        { return; }
+
+        if (fade != null)
+        {
+            StopCoroutine(fade);
+        }
+        fade = StartCoroutine(FadeIn());
+        IEnumerator FadeIn()
+        {
+            for (; alphaStep <= fadeStep; alphaStep++)
+            {
+                foreach (Vector3Int point in curtainArea.allPositionsWithin)
+                {
+                    tilemap.SetColor(point, new Color(1, 1, 1, alphaStep / (float)fadeStep));
+                }
+                yield return fadeTick;
+            }
+        }
+    }
 }
