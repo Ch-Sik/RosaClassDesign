@@ -206,11 +206,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   edgeCol: {fileID: 1740112074270076679}
   tilemap: {fileID: 0}
+  originCellPos: {x: 0, y: 0, z: 0}
   spriteUp: {fileID: 2165564126396332894}
   spriteDown: {fileID: 4990997790893516628}
   tickTime: 0.1
-  growSpeed: 4
   offset: 0.15
+  layerGround:
+    serializedVersion: 2
+    m_Bits: 1024
+  layerCurtain:
+    serializedVersion: 2
+    m_Bits: 2048
 --- !u!1 &7975079613714601279
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,5 +1,7 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -8,7 +10,7 @@ public class MagicIvy : MonoBehaviour
     [SerializeField]
     private EdgeCollider2D edgeCol;     // 0번 점이 위, 1번 점이 아래
     [SerializeField]
-    private Tilemap tilemap;
+    private TilemapManager tilemapManager;
     [SerializeField]
     private Vector3Int originCellPos;   // 담쟁이가 설치된 타일 위치
 
@@ -22,20 +24,25 @@ public class MagicIvy : MonoBehaviour
     [SerializeField, Tooltip("덩굴 스프라이트가 벽과 떨어진 정도 (만약 음수면 벽을 파고들어감)")]
     private float offset;
 
-    private WaitForSeconds tick;
+    [SerializeField]
+    private LayerMask layerGround;
+    [SerializeField]
+    private LayerMask layerCurtain;
 
     private LR wallDirection;   // 현재 담쟁이가 자라는 벽이 바라보는 방향
+
+    private WaitForSeconds tick;
 
     public void Init(Vector2 magicPos)
     {
         // 필드 값 세팅
         if(edgeCol == null) edgeCol = GetComponent<EdgeCollider2D>();
-        tilemap = TilemapManager.Instance.map;
+        tilemapManager = TilemapManager.Instance;
 
         // 오른쪽 벽에 부딪혔는지 왼쪽 벽에 부딪혔는지 판단
-        // 6 + 0.0000...가 5로 판단될지 6으로 판단될지에 대한 불확실성을 피하기 위해 0.5의 오프셋 설정
-        originCellPos = tilemap.WorldToCell(magicPos + new Vector2(0.5f, 0));   
-        if (tilemap.GetTile(originCellPos)) 
+        // 0.5의 오프셋을 주어서 오른쪽 셀 검사
+        originCellPos = tilemapManager.map.WorldToCell(magicPos + new Vector2(0.5f, 0));   
+        if(TilemapManager.Instance.GetTileExist(originCellPos))
         {
             wallDirection = LR.LEFT;
             Debug.Log("왼쪽 보는 벽에 담쟁이 설치");
@@ -49,7 +56,7 @@ public class MagicIvy : MonoBehaviour
         // y축 방향 위치 보정
         magicPos.y = Mathf.Round(magicPos.y - 0.5f) + 0.5f;
         transform.position = magicPos;
-        originCellPos = tilemap.WorldToCell(magicPos + new Vector2(0.5f, 0));
+        originCellPos = tilemapManager.map.WorldToCell(magicPos + new Vector2(0.5f, 0));
 
         // 최적화
         tick = new WaitForSeconds(tickTime);
@@ -69,17 +76,17 @@ public class MagicIvy : MonoBehaviour
             // 한칸씩 위쪽으로 가면서 타일 검사
             cursor++;
 
-            TileBase innerTile = tilemap.GetTile(originCellPos 
-                    + new Vector3Int(wallDirection.isRIGHT()? -1 : 0, cursor, 0)
+            TileData innerTile = tilemapManager.GetTileDataByCellPosition(originCellPos
+                    + new Vector3Int(wallDirection.isRIGHT() ? -1 : 0, cursor, 0)
                     );
-            TileBase outerTile = tilemap.GetTile(originCellPos
+            TileData outerTile = tilemapManager.GetTileDataByCellPosition(originCellPos
                     + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, cursor, 0)
                     );
 
-            if ((bool)innerTile & !(bool)outerTile)
+            if (innerTile != null && outerTile == null && innerTile.magicAllowed == true)
             {
                 points = edgeCol.points;
-                points[0] = new Vector2(0, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
+                points[0] = new Vector2(-offset, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
                 edgeCol.points = points;
                 // 스프라이트 업데이트 (콜라이더와 동기화)
                 spriteUp.size = new Vector2(spriteUp.size.x, cursor);
@@ -94,7 +101,7 @@ public class MagicIvy : MonoBehaviour
 
         // 마지막으로 끝까지 성장
         points = edgeCol.points;
-        points[0] = new Vector2(0, cursor + 0.5f);
+        points[0] = new Vector2(-offset, cursor + 0.5f);
         edgeCol.points = points;
         // 스프라이트 업데이트 (콜라이더와 동기화)
         spriteUp.size = new Vector2(spriteUp.size.x, cursor + 0.5f);
@@ -111,17 +118,17 @@ public class MagicIvy : MonoBehaviour
             // 한칸씩 아래쪽으로 가면서 타일 검사
             cursor--;
 
-            TileBase innerTile = tilemap.GetTile(originCellPos
+            TileData innerTile = tilemapManager.GetTileDataByCellPosition(originCellPos
                     + new Vector3Int(wallDirection.isRIGHT() ? -1 : 0, cursor, 0)
                     );
-            TileBase outerTile = tilemap.GetTile(originCellPos
+            TileData outerTile = tilemapManager.GetTileDataByCellPosition(originCellPos
                     + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, cursor, 0)
                     );
 
-            if ((bool)innerTile & !(bool)outerTile)
+            if (innerTile != null && outerTile == null && innerTile.magicAllowed == true)
             {
                 points = edgeCol.points;
-                points[1] = new Vector2(0, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
+                points[1] = new Vector2(-offset, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
                 edgeCol.points = points;
                 // 스프라이트 업데이트 (콜라이더와 동기화)
                 spriteDown.size = new Vector2(spriteDown.size.x, -cursor);
@@ -136,7 +143,7 @@ public class MagicIvy : MonoBehaviour
 
         // 마지막으로 끝까지 성장
         points = edgeCol.points;
-        points[1] = new Vector2(0, cursor - 0.5f);
+        points[1] = new Vector2(-offset, cursor - 0.5f);
         edgeCol.points = points;
         // 스프라이트 업데이트 (콜라이더와 동기화)
         spriteDown.size = new Vector2(spriteDown.size.x, -(cursor - 0.5f));
