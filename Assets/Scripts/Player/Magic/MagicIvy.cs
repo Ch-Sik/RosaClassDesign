@@ -24,11 +24,6 @@ public class MagicIvy : MonoBehaviour
     [SerializeField, Tooltip("덩굴 스프라이트가 벽과 떨어진 정도 (만약 음수면 벽을 파고들어감)")]
     private float offset;
 
-    [SerializeField]
-    private LayerMask layerGround;
-    [SerializeField]
-    private LayerMask layerCurtain;
-
     private LR wallDirection;   // 현재 담쟁이가 자라는 벽이 바라보는 방향
 
     private WaitForSeconds tick;

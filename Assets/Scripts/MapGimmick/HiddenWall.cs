@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class HiddenRoomCurtain : MonoBehaviour
+public class HiddenWall : MonoBehaviour
 {
     [ReadOnly]
     public bool revealed = false;
@@ -14,7 +14,7 @@ public class HiddenRoomCurtain : MonoBehaviour
     public int fadeStep = 10;
 
     private Tilemap tilemap;
-    private BoundsInt curtainArea;
+    private BoundsInt hiddenWallArea;
 
     Coroutine fade = null;
     WaitForSeconds fadeTick = null;       // 코루틴 최적화
@@ -29,11 +29,11 @@ public class HiddenRoomCurtain : MonoBehaviour
         Vector3Int boundsMin = Vector3Int.FloorToInt(col.bounds.min);
         Vector3Int boundsMax = Vector3Int.CeilToInt(col.bounds.max + new Vector3(0, 0, 1));
         // ↑↑ (boundsMax-boundsMin)의 xyz중 하나이상이 0이면 allPositionsWithin이 동작하지 않음. 
-        curtainArea = new BoundsInt(boundsMin, boundsMax - boundsMin);
+        hiddenWallArea = new BoundsInt(boundsMin, boundsMax - boundsMin);
 
         fadeTick = new WaitForSeconds(fadeTime / fadeStep);
 
-        foreach (Vector3Int point in curtainArea.allPositionsWithin)
+        foreach (Vector3Int point in hiddenWallArea.allPositionsWithin)
         {
             // 타일 컬러 고정 플래그 해제. 타일 컬러 변경을 위해 필요.
             tilemap.SetTileFlags(point, TileFlags.None);
@@ -61,12 +61,13 @@ public class HiddenRoomCurtain : MonoBehaviour
             col.enabled = false;
             for (int i=fadeStep; i>= 0; i--)
             {
-                foreach (Vector3Int point in curtainArea.allPositionsWithin)
+                foreach (Vector3Int point in hiddenWallArea.allPositionsWithin)
                 {
                     tilemap.SetColor(point, new Color(1, 1, 1, i / (float)fadeStep));
                 }
                 yield return fadeTick;
             }
+            Destroy(gameObject);
         }
     }
 }
