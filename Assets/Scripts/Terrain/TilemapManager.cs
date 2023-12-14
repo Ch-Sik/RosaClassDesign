@@ -35,18 +35,20 @@ public class TilemapManager : SerializedMonoBehaviour
         }
     }
 
-    private void Start()
+    public TileData GetTileDataByCellPosition(Vector3Int cellPosition)
     {
+        Vector3 cellOffset = new Vector3(0.5f, 0.5f);
 
-    }
-
-    public TileData GetTileDataByCellPosition(Vector3Int tilePosition)
-    {
-        TileBase selectedTile = map.GetTile(tilePosition);
+        TileBase selectedTile = map.GetTile(cellPosition);
         if(selectedTile == null)
         {
-            Debug.LogError($"그 위치에는 타일이 존재하지 않습니다\n위치: {tilePosition}");
-            return null;
+            // Debug.LogWarning($"그 위치에는 타일이 존재하지 않습니다\n위치: {tilePosition}");
+            Collider2D hiddenRoomCurtain = Physics2D.OverlapPoint((Vector3)cellPosition + cellOffset, LayerMask.GetMask("HiddenRoom"));
+            if(hiddenRoomCurtain != null)
+            {
+                selectedTile = hiddenRoomCurtain.gameObject.GetComponent<Tilemap>().GetTile(cellPosition);
+            }
+            else return null;
         }
         try
         {
@@ -54,22 +56,51 @@ public class TilemapManager : SerializedMonoBehaviour
         }
         catch(KeyNotFoundException)     // 혹시라도 타일데이터 설정을 빼먹은 경우
         {
-            // Debug.LogWarning($"타일 데이터가 설정되어있지 않음! 기본 설정을 사용합니다\n위치: {tilePosition}");
+            Debug.LogWarning($"타일 데이터가 설정되어있지 않음! 기본 설정을 사용합니다\n위치: {cellPosition}");
             return defaultTileData;
         }
     }
 
     public TileData GetTileDataByWorldPosition(Vector3 worldPosition)
     {
-        TileData result =  GetTileDataByCellPosition(map.WorldToCell(worldPosition));
-        if(result == null)
+        return GetTileDataByCellPosition(map.WorldToCell(worldPosition));
+    }
+
+    public TileData GetTileDataByTileBase(TileBase tile)
+    {
+        TileData result;
+        try
         {
-            Debug.LogError($"그 위치: {worldPosition}");
+            result = dataFromTiles[tile];
         }
-        else if(!result.magicAllowed)
+        catch(KeyNotFoundException)
         {
-            Debug.Log("그곳은 식물마법을 설치 불가능한 지형");
+            Debug.LogWarning($"타일 데이터가 설정되어있지 않음! 기본 설정을 사용합니다\n타일: {tile}");
+            return defaultTileData;
         }
         return result;
+    }
+
+    public bool GetTileExist(Vector3Int cellPosition)
+    {
+        Vector3 cellOffset = new Vector3(0.5f, 0.5f);
+
+        TileBase selectedTile = map.GetTile(cellPosition);
+        if(selectedTile != null) return true;
+        Collider2D hiddenRoomCurtain = Physics2D.OverlapPoint((Vector3)cellPosition + cellOffset, LayerMask.GetMask("HiddenRoom"));
+        if (hiddenRoomCurtain != null)
+            return true;
+        else 
+            return false;
+    }
+
+    public bool GetTilePlantable(Vector3Int cellPosition)
+    {
+        TileData td = GetTileDataByCellPosition(cellPosition);
+        if (td == null)
+        {
+            Debug.LogError("해당 위치에 타일이 존재하지 않음");
+        }
+        return td.magicAllowed;
     }
 }

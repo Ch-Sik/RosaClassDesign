@@ -5,6 +5,17 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SubsystemsImplementation;
+using UnityEngine.Tilemaps;
+using UnityEngine.UIElements;
+using static UnityEngine.UI.Image;
+
+public struct TerrainCastHit
+{
+    public Vector2 worldPos;
+    public Vector3Int cellPos;
+}
+
+
 
 /// <summary>
 /// 식물 마법 시전을 담당하는 컴포넌트
@@ -19,9 +30,9 @@ public class PlayerMagic : MonoBehaviour
     [SerializeField, ReadOnly]
     private Vector3? magicPos;          // null이라면 현재 조준하고 있는 위치가 유효하지 않다는 뜻
     [SerializeField, ReadOnly]
-    private TerrainType terrainType;    // 설치하려는 곳이 천장/벽/바닥 어느쪽인지
+    private int targetTerrainType;      // 0-바닥, 1-왼쪽을 보는 벽, 2-오른쪽을 보는 벽, 3-천장
     [SerializeField, ReadOnly]
-    private LR wallLR;                  // 벽일 경우, 왼쪽을 바라보는 벽인지, 오른쪽을 바라보는 벽인지
+    private LR wallLR;                  // 벽일 경우, 왼쪽을 보는 벽인지, 오른쪽을 보는 벽인지
 
     [Space(10), Header("시전 관련")]
     [SerializeField, Tooltip("시전 위치 미리보기 오브젝트")]
@@ -36,26 +47,31 @@ public class PlayerMagic : MonoBehaviour
     [Space(10), Header("디버깅용")]
     [SerializeField, ReadOnly]
     private bool debug_isMouseInTerrain;
-    [SerializeField, ReadOnly]
-    private Vector3 debug_mousePosition;
-    [SerializeField, ReadOnly]
-    private Vector3 debug_raycastPosition;
-    [SerializeField, ReadOnly]
-    private Vector3 debug_targetTilePosition;
 
-    private const string layerString = "Ground";
+    private const string layerStringGround = "Ground";
+    private const string layerStringCurtain = "HiddenRoom";
+
+    // 4방향 검사용 상수들
+    private int[] cTerrainFlag = { 0x01, 0x06, 0x06, 0x08 };
+    private Vector2[] cDirections = { Vector2.up, Vector2.left, Vector2.right, Vector2.down };
+    private const int GROUND = 0;
+    private const int LWALL = 1;
+    private const int RWALL = 2;
+    private const int CEIL = 3;
 
     private InputManager inputInstance;
     private InputAction IAMagicReady;
     private InputAction IAMagicExecute;
     private InputAction IAMagicCancel;
-    private int layermask;
+    private int layerGround;
+    private int layerCurtain;
 
 
 
     private void Start()
     {
-        layermask = LayerMask.GetMask(layerString);
+        layerGround = LayerMask.GetMask(layerStringGround);
+        layerCurtain = LayerMask.GetMask(layerStringCurtain);
         RegisterInputActions();
     }
 
@@ -111,9 +127,10 @@ public class PlayerMagic : MonoBehaviour
         IAMagicExecute.Disable();
         IAMagicCancel.Disable();
 
-        Debug.Log($"식물마법 시전\n 종류: {currentSelectedMagic.name}\n 지형타입: {terrainType}");
-        DoMagic();
 
+        Debug.Log($"식물마법 시전\n 종류: {currentSelectedMagic.name}\n 지형타입: {targetTerrainType}");
+
+        DoMagic();
         HidePreview();
     }
 
@@ -126,8 +143,6 @@ public class PlayerMagic : MonoBehaviour
     }
 
 
-
-
     private void DoMagic()
     {
         GameObject magicInstance;
@@ -137,17 +152,19 @@ public class PlayerMagic : MonoBehaviour
             return;
         }
 
+        // 회전 계산 및 식물 오브젝트 소환
         if (currentSelectedMagic.castType == MagicCastType.EVERYWHERE)
         {
             // 천장-벽-바닥 아무데나 설치가능한 경우
             // '지형과 수직인 방향'을 가르키기 위해 '회전'을 사용
             float rotation;
-            switch(terrainType)
+            switch(targetTerrainType)
             {
-                case TerrainType.Ceil: rotation = 180f; break;
-                case TerrainType.Floor: rotation = 0f; break;
-                default:        // case TerrainType.Wall: 
-                    rotation = wallLR.isRIGHT()?270f:90f; break;
+                case GROUND: rotation = 0f;     break;
+                case LWALL: rotation = 90f;     break;
+                case RWALL: rotation = 270f;    break;
+                default: //case CEIL:
+                            rotation = 180f;    break;
             }
             magicInstance = Instantiate(currentSelectedMagic.prefab, (Vector3)magicPos, Quaternion.Euler(0, 0, rotation));
         }
@@ -156,7 +173,7 @@ public class PlayerMagic : MonoBehaviour
             // 그 외의 경우 '지형과 수직인 방향'을 가르키기 위해 '좌우 대칭'을 사용
             magicInstance = Instantiate(currentSelectedMagic.prefab, (Vector3)magicPos, Quaternion.identity);
             // wall_facing_left는 기본 형태, wall_facing_right가 반전된 형태
-            if (wallLR.isRIGHT())
+            if (targetTerrainType == RWALL)
             {
                 magicInstance.transform.localScale = Vector3.Scale(magicInstance.transform.localScale, new Vector3(-1, 1, 1));
             }
@@ -210,267 +227,136 @@ public class PlayerMagic : MonoBehaviour
         Vector2 mouseScreenPos2 = InputManager.Instance._inputAsset.FindAction("Aim").ReadValue<Vector2>();
         float zDistance = transform.position.z - Camera.main.transform.position.z; // 플레이어와 카메라의 z좌표 차이
         Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPos2.x, mouseScreenPos2.y, zDistance));
-        debug_mousePosition = mouseWorldPosition;
 
         // 식물 마법 종류에 따라 캐스팅 방향 판단하기
+        int castFlag = 0;
         MagicCastType castType = currentSelectedMagic.castType;
-
-        // 마우스 위치로부터 가장 가까운 캐스팅 위치 가져오기
-        bool previewable = false;
-        float minDistance = float.PositiveInfinity;     // '가장 가까운' 것 판별용
-        Vector2 previewPoint = Vector2.zero;
-        Vector2? castPoint = null;                      // 임시 변수
-        if (castType == MagicCastType.GROUND_ONLY || castType == MagicCastType.EVERYWHERE)
+        switch(castType)
         {
-            castPoint = RaycastGround(mouseWorldPosition);
-            if (castPoint != null && Vector2.Distance((Vector2)castPoint, mouseWorldPosition) < minDistance)
-            {
-                previewable = true;
-                previewPoint = (Vector2)castPoint;
-                minDistance = Vector2.Distance((Vector2)castPoint, mouseWorldPosition);
-                terrainType = TerrainType.Floor;
-            }
-        }
-        if (castType == MagicCastType.WALL_ONLY || castType == MagicCastType.EVERYWHERE)
-        {
-            castPoint = RaycastWall(mouseWorldPosition);
-            if (castPoint != null && Vector2.Distance((Vector2)castPoint, mouseWorldPosition) < minDistance)
-            {
-                previewable = true;
-                previewPoint = (Vector2)castPoint;
-                minDistance = Vector2.Distance((Vector2)castPoint, mouseWorldPosition);
-                terrainType = TerrainType.Wall;
-            }
-        }
-        if (castType == MagicCastType.CEIL_ONLY || castType == MagicCastType.EVERYWHERE)
-        {
-            castPoint = RaycastCeil(mouseWorldPosition);
-            if (castPoint != null && Vector2.Distance((Vector2)castPoint, mouseWorldPosition) < minDistance)
-            {
-                previewable = true;
-                previewPoint = (Vector2)castPoint;
-                minDistance = Vector2.Distance((Vector2)castPoint, mouseWorldPosition);
-                terrainType = TerrainType.Ceil;
-            }
+            case MagicCastType.GROUND_ONLY:
+                castFlag = cTerrainFlag[0];     break;
+            case MagicCastType.WALL_ONLY:
+                castFlag = cTerrainFlag[1];     break;
+            case MagicCastType.CEIL_ONLY: 
+                castFlag = cTerrainFlag[3];     break;
+            default:        // case MagicCastType.EVERYWHERE:
+                castFlag = cTerrainFlag[0] | cTerrainFlag[1] | cTerrainFlag[3]; break; 
         }
 
-        // 해당 위치에 프리뷰 표시하기
-        if (previewable)
+        // 마우스가 지형 안쪽인지 바깥쪽인지 파악하고 마우스 위치로부터 가장 가까운 캐스팅 위치 가져오기
+        Collider2D col = Physics2D.OverlapPoint(mouseWorldPosition, layerGround | layerCurtain);
+        TerrainCastHit? terrainHit = null;
+        if(col != null)
         {
-            previewObject.SetActive(true);
-            previewObject.transform.position = previewPoint;
-            magicPos = previewPoint;
+            terrainHit = FindTerrainPointFromInside(mouseWorldPosition, castFlag);
         }
         else
         {
-            previewObject.SetActive(false);
+            terrainHit = FindTerrainPointFromOutside(mouseWorldPosition, castFlag);
+        }
+
+        // 성공적으로 지형 위치를 가져왔다면 해당 위치에 프리뷰 표시하기
+        if(terrainHit != null)
+        {
+            magicPos = ((TerrainCastHit)terrainHit).worldPos;
+            previewObject.SetActive(true);
+            previewObject.transform.position = (Vector3)magicPos;
+        }
+        // 아니면 프리뷰 숨기기
+        else
+        {
             magicPos = null;
+            previewObject.SetActive(false);
         }
     }
 
-
-
-
-    private Vector2? RaycastGround(Vector2 origin)
+    private TerrainCastHit? FindTerrainPointFromInside(Vector2 mousePosition, int castFlag)
     {
-        Vector2 rayHitWorldPosition, cellWorldPosition;
-        Collider2D terrainCollider = Physics2D.OverlapPoint(origin, layermask);
+        // 가장 '마우스에 가까운' 지점을 찾을 때 쓰는 임시 변수. 최적화를 위해 sqr를 사용.
+        float minDistance = float.MaxValue, tmpDistance;
+        Vector3Int tmpCellPos;
 
-        if (terrainCollider != null)    // 마우스가 지형 안쪽인 경우
+        // overlap test & raycast용 임시 변수
+        Collider2D overlapResult;                      
+        RaycastHit2D raycastResult;
+
+        // 결과 저장용
+        TerrainCastHit result = new TerrainCastHit();
+
+        // 4방향으로 검사
+        for (int i = 0; i < 4; i++)
         {
-            debug_isMouseInTerrain = true;
-            // 지형 바깥쪽으로 castDist만큼 뻗어도 지형 안쪽일 경우 '너무' 안쪽인 것으로 판정
-            terrainCollider = Physics2D.OverlapPoint(origin + new Vector2(0, castDist), layermask);
-            if (terrainCollider != null)
+            // 해당 방향으로 지형 검사를 해야 하는지 플래그 확인
+            if ((castFlag & 1<<i) != 0)
             {
-                return null;
-            }
-            // 그게 아니라면 레이캐스팅해서 위치 선정
-            else
-            {
-                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(0, castDist), Vector2.down, castDist, layermask);
-                if (result.collider != null)
+                // 지형 바깥쪽 방향으로 castDist만큼 뻗어도 지형 안쪽일 경우 '너무' 안쪽인 것으로 판정
+                overlapResult = Physics2D.OverlapPoint(mousePosition + cDirections[i], layerGround | layerCurtain);
+                if (overlapResult == null)
                 {
-                    rayHitWorldPosition = result.point;
-                    cellWorldPosition = result.point + 0.1f * Vector2.down;
-                }
-                else    
-                {
-                    // 정상적인 상태에서는 논리적으로 이쪽 루틴에 진입하는 것은 불가능
-                    Debug.LogError("식물 마법 위치 선정에 논리적 결함 발생");
-                    return null;
+                    // 지형 바깥쪽 지점에서 안쪽 방향으로 raycast
+                    raycastResult = Physics2D.Raycast(mousePosition + cDirections[i], -cDirections[i], castDist, layerGround | layerCurtain);
+                    tmpDistance = (raycastResult.point - mousePosition).SqrMagnitude();
+                    if (raycastResult.collider != null && tmpDistance < minDistance)
+                    {
+                        tmpCellPos = Vector3Int.FloorToInt(raycastResult.point - 0.1f * cDirections[i]);
+                        // 마지막으로 식물 설치가능한 지형인지 파악
+                        bool plantable = TilemapManager.Instance.GetTilePlantable(tmpCellPos);
+                        if (plantable)
+                        {
+                            minDistance = tmpDistance;
+                            targetTerrainType = i;
+                            result.worldPos = raycastResult.point;
+                            result.cellPos = tmpCellPos;
+                        }
+                    }
                 }
             }
         }
-        else                // 마우스가 지형 바깥쪽인 경우
-        {
-            debug_isMouseInTerrain = false;
-            RaycastHit2D result = Physics2D.Raycast(origin, Vector2.down, castDist, layermask);
-            if(result.collider != null)
-            {
-                rayHitWorldPosition = result.point;
-                cellWorldPosition = result.point + 0.1f * Vector2.down;
-            }
-            else return null;
-        }
 
-        debug_raycastPosition = rayHitWorldPosition;
-        debug_targetTilePosition = cellWorldPosition;
-        TileData tileData = TilemapManager.Instance.GetTileDataByWorldPosition(cellWorldPosition);
-        if (!tileData.magicAllowed)
-        {
+        if (minDistance <= castDist) 
+            return result;
+        else 
             return null;
-        }
-
-        return rayHitWorldPosition;
     }
 
-    private Vector2? RaycastCeil(Vector2 origin)
+    private TerrainCastHit? FindTerrainPointFromOutside(Vector2 mousePosition, int castFlag)
     {
-        Vector2 rayHitWorldPosition, cellWorldPosition;
-        Collider2D terrainCollider = Physics2D.OverlapPoint(origin, layermask);
+        // 가장 '마우스에 가까운' 지점을 찾을 때 쓰는 임시 변수. 최적화를 위해 sqr를 사용.
+        float minDistance = float.MaxValue;
+        Vector3Int tmpCellPos;
 
-        if (terrainCollider != null)    // 마우스가 지형 안쪽인 경우
+        // overlap test & raycast용 임시 변수
+        RaycastHit2D raycastResult;
+
+        // 결과 저장용
+        TerrainCastHit result = new TerrainCastHit();
+
+        // 4방향으로 검사
+        for (int i = 0; i < 4; i++)
         {
-            // 지형 바깥쪽으로 castDist만큼 뻗어도 지형 안쪽일 경우 '너무' 안쪽인 것으로 판정
-            terrainCollider = Physics2D.OverlapPoint(origin + new Vector2(0, -castDist), layermask);
-            if (terrainCollider != null)
+            // 해당 방향으로 지형 검사를 해야 하는지 플래그 확인
+            if ((castFlag & 1<<i) != 0)
             {
-                return null;
-            }
-            // 그게 아니라면 레이캐스팅해서 위치 선정
-            else
-            {
-                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(0, -castDist), Vector2.up, castDist, layermask);
-                if (result.collider != null)
+                // 레이 캐스팅 수행
+                raycastResult = Physics2D.Raycast(mousePosition, -cDirections[i], castDist, layerGround | layerCurtain);
+                if (raycastResult.collider != null && raycastResult.distance < minDistance)
                 {
-                    rayHitWorldPosition = result.point;
-                    cellWorldPosition = result.point + 0.1f * Vector2.up;
-                }
-                else
-                {
-                    // 정상적인 상태에서는 논리적으로 이쪽 루틴에 진입하는 것은 불가능
-                    Debug.LogError("식물 마법 위치 선정에 논리적 결함 발생");
-                    return null;
+                    tmpCellPos = Vector3Int.FloorToInt(raycastResult.point - 0.1f * cDirections[i]);
+                    // 마지막으로 식물 설치가능한 지형인지 파악
+                    bool plantable = TilemapManager.Instance.GetTilePlantable(tmpCellPos);
+                    if (plantable)
+                    {
+                        minDistance = raycastResult.distance;
+                        targetTerrainType = i;
+                        result.worldPos = raycastResult.point;
+                        result.cellPos = tmpCellPos;
+                    }
                 }
             }
         }
-        else                // 마우스가 지형 바깥쪽인 경우
-        {
-            RaycastHit2D result = Physics2D.Raycast(origin, Vector2.up, castDist, layermask);
-            if (result.collider != null)
-            {
-                rayHitWorldPosition = result.point;
-                cellWorldPosition = result.point + 0.1f * Vector2.up;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        debug_raycastPosition = rayHitWorldPosition;
-        debug_targetTilePosition = cellWorldPosition;
-        TileData tileData = TilemapManager.Instance.GetTileDataByWorldPosition(cellWorldPosition);
-        if (!tileData.magicAllowed)
-        {
+        if (minDistance < castDist)
+            return result;
+        else
             return null;
-        }
-
-        return rayHitWorldPosition;
     }
-
-    private Vector2? RaycastWall(Vector2 origin)
-    {
-        Vector2 rayHitWorldPosition = Vector2.zero, cellWorldPosition = Vector2.zero;
-        Collider2D terrainCollider = Physics2D.OverlapPoint(origin, layermask);
-
-        if (terrainCollider != null)    // 마우스가 지형 안쪽인 경우
-        {
-            Collider2D leftOverlapResult, rightOverlapResult;
-            leftOverlapResult = Physics2D.OverlapPoint(origin + new Vector2(-castDist, 0), layermask);
-            rightOverlapResult = Physics2D.OverlapPoint(origin + new Vector2(castDist, 0), layermask);
-            // 지형 바깥쪽으로 castDist만큼 뻗어도 지형 안쪽일 경우 '너무' 안쪽인 것으로 판정
-            if (leftOverlapResult != null && rightOverlapResult != null)
-            {
-                return null;
-            }
-            else if(leftOverlapResult == null && rightOverlapResult == null)
-            {
-                // TODO: 이 부분에 더 좋은 방법 없을지 고민해보기
-                Debug.LogWarning("벽이 너무 얇음! 식물 마법 위치 선정에 오류 발생");
-                return null;
-            }
-            // 그게 아니라면 레이캐스팅해서 위치 선정
-            // 왼쪽을 바라보는 벽인 경우
-            else if (leftOverlapResult == null)
-            {
-                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(-castDist, 0), Vector2.right, castDist, layermask);
-                if (result.collider != null)
-                {
-                    rayHitWorldPosition = result.point;
-                    cellWorldPosition = result.point + 0.1f * Vector2.right;
-                }
-                else
-                {
-                    // 정상적인 상태에서는 논리적으로 이쪽 루틴에 진입하는 것은 불가능
-                    Debug.LogError("식물 마법 위치 선정에 논리적 결함 발생");
-                    return null;
-                }
-            }
-            // 오른쪽을 바라보는 벽인 경우
-            else // if(rightOverlapResult == null)
-            {
-                RaycastHit2D result = Physics2D.Raycast(origin + new Vector2(castDist, 0), Vector2.left, castDist, layermask);
-                if (result.collider != null)
-                {
-                    rayHitWorldPosition = result.point;
-                    cellWorldPosition = result.point + 0.1f * Vector2.left;
-                }
-                else
-                {
-                    // 정상적인 상태에서는 논리적으로 이쪽 루틴에 진입하는 것은 불가능
-                    Debug.LogError("식물 마법 위치 선정에 논리적 결함 발생");
-                    return null;
-                }
-            }
-        }
-        else                // 마우스가 지형 바깥쪽인 경우
-        {
-            float distance = float.PositiveInfinity;
-            RaycastHit2D leftResult = Physics2D.Raycast(origin, Vector2.left, castDist, layermask);
-            if (leftResult.collider != null)
-            {
-                wallLR = LR.LEFT;
-                distance = leftResult.distance;
-                rayHitWorldPosition = leftResult.point;
-                cellWorldPosition = leftResult.point + 0.1f * Vector2.left;
-            }
-            RaycastHit2D rightResult = Physics2D.Raycast(origin, Vector2.right, castDist, layermask);
-            if (rightResult.collider != null && rightResult.distance < distance)
-            {
-                wallLR = LR.RIGHT;
-                distance = rightResult.distance;
-                rayHitWorldPosition = rightResult.point;
-                cellWorldPosition = rightResult.point + 0.1f * Vector2.right;
-            }
-            if(distance > castDist)
-            {
-                return null;
-            }
-        }
-
-        debug_raycastPosition = rayHitWorldPosition;
-        debug_targetTilePosition = cellWorldPosition;
-        TileData tileData = TilemapManager.Instance.GetTileDataByWorldPosition(cellWorldPosition);
-        if (!tileData.magicAllowed)
-        {
-            return null;
-        }
-
-        return rayHitWorldPosition;
-    }
-
-
-
 }

@@ -42,16 +42,6 @@ public enum MagicCastType
     EVERYWHERE,
 }
 
-public enum TerrainType
-{
-    /// <summary> 천장 </summary>
-    Ceil,
-    /// <summary> 바닥 </summary>
-    Floor,
-    /// <summary> 벽 </summary>
-    Wall,
-}
-
 /*
 public enum LR { LEFT, RIGHT }
 
