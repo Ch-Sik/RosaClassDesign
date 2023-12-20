@@ -248,7 +248,6 @@ public class PlayerController : MonoBehaviour
 
     public void SetIsNotGrounded()
     {
-        Debug.Log("Exited");
         platformBelow = null;
         if (currentState == PlayerMoveState.WALK)
             ChangeMoveState(PlayerMoveState.MIDAIR);
