@@ -20,7 +20,7 @@ public class MonsterState : MonoBehaviour
     public void TakeDamage(int dmg)
     {
         currentHP -= dmg;
-        if(currentHP < 0)
+        if(currentHP <= 0)
         {
             BroadcastMessage("OnDie");
         }
@@ -36,5 +36,13 @@ public class MonsterState : MonoBehaviour
             return;
         }
         pandaBT.enabled = false;
+
+        StartCoroutine(DieRoutine());
+        IEnumerator DieRoutine()        // 사망 연출
+        {
+            yield return new WaitForSeconds(3.0f);
+            // TODO: 여기에 사망 연출 추가하기
+            Destroy(gameObject);
+        }
     }
 }
