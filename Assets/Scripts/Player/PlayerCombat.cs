@@ -94,7 +94,6 @@ public class PlayerCombat : MonoBehaviour
     private void OnStartAttack()
     {
         isAttack = true;
-        Debug.Log("Start Attack");
     }
 
     //공격 종료 이벤트
@@ -102,7 +101,6 @@ public class PlayerCombat : MonoBehaviour
     {
         isAttack = false;
         //쿨타임은 여기 넣자.
-        Debug.Log("End Attack");
     }
 
     //추후에 공격시 대미지나 공격력을 계산하기 위해 만들었다. AttackObejct에서 충돌판정부에서 사용하자.

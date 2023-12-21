@@ -193,7 +193,6 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="inputVector"></param>
     internal void Climb(Vector2 inputVector)
     {        
-        Debug.Log("Climbing");
         if (!DetectWall())
         {
             // TODO: 지면으로 올라가기 구현
@@ -275,7 +274,6 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     void FinishJumpDown()
     {
-        // Debug.Log("FinishJumpDown");
         col.isTrigger = false;      // 지형 통과 불가능
     }
 
@@ -326,7 +324,6 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void OnLanded()
     {
-        Debug.Log("land");
         if (isDoingHooking) // 땅에 닿았을 시 후크액션 종료 판정
         {
             isDoingHooking = false;
@@ -448,7 +445,6 @@ public class PlayerMovement : MonoBehaviour
         // 벽에 설치된 덩굴에 충돌하였을 경우
         if (collision.gameObject.layer.Equals(climbableLayer))
         {
-            //Debug.Log("덩굴과 충돌");
             if (isFacingWall && !isFalling)
             {
 
@@ -464,7 +460,6 @@ public class PlayerMovement : MonoBehaviour
         // 벽에 설치된 덩굴에 충돌하였을 경우
         if (collision.gameObject.layer.Equals(climbableLayer))
         {
-            //Debug.Log("덩굴과 충돌");
             if (isFacingWall && !isFalling)
                 StickToWall();
         }
@@ -559,7 +554,6 @@ public class PlayerMovement : MonoBehaviour
 
     public void Falling()
     {
-        Debug.Log("Fall");
         isFalling = true;
         UnstickFromWall();
     }
