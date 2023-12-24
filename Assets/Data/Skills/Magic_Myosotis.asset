@@ -9,11 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b3fb9742032cd143b1df0fa43a2b7e5, type: 3}
-  m_Name: Ivy
+  m_Script: {fileID: 11500000, guid: a412d7b3acdfbc54580b02cf5ed9cc44, type: 3}
+  m_Name: Magic_Myosotis
   m_EditorClassIdentifier: 
-  code: 0
+  isUnlock: 0
+  skillCode: 2
   icon: {fileID: 21300000, guid: 1c2ca87dc4fe0e5489112db5ab336be8, type: 3}
+  skillName: "\uBB3C\uB9DD\uCD08"
+  description: "\uAF43\uB9D0: \uB098\uB97C \uC78A\uC9C0 \uB9D0\uC544\uC694"
   previewSprite: {fileID: 21300000, guid: 1c2ca87dc4fe0e5489112db5ab336be8, type: 3}
-  castType: 1
-  prefab: {fileID: 7506277341668890328, guid: d05dcfbeb1c36f74284b17332214b1fa, type: 3}
+  castType: 3
+  prefab: {fileID: 0}

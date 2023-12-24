@@ -24,7 +24,7 @@ public class PlayerMagic : MonoBehaviour
 {
     [Header("정보")]
     [SerializeField]
-    private PlantMagicSO currentSelectedMagic;
+    private SO_Magic currentSelectedMagic;
     [SerializeField, ReadOnly]
     private bool isPreviewOn = false;
     [SerializeField, ReadOnly]
@@ -180,18 +180,18 @@ public class PlayerMagic : MonoBehaviour
         }
 
         // 식물 마법의 Init까지 수행
-        if (currentSelectedMagic.code == PlantMagicCode.IVY)
+        if (currentSelectedMagic.skillCode == SkillCode.MAGIC_IVY)
         {
             magicInstance.GetComponent<MagicIvy>().Init((Vector2)magicPos);
         }
 
         // 오브젝트 풀 관리: 동시에 유지 가능한 오브젝트는 최대 1개
-        if (spawnedObject[(int)currentSelectedMagic.code] != null)
+        if (spawnedObject[(int)currentSelectedMagic.skillCode] != null)
         {
             // TODO: 기존에 설치된 식물이 자연스럽게 사라지는 것 연출
-            Destroy(spawnedObject[(int)currentSelectedMagic.code], 1f);
+            Destroy(spawnedObject[(int)currentSelectedMagic.skillCode], 1f);
         }
-        spawnedObject[(int)currentSelectedMagic.code] = magicInstance;
+        spawnedObject[(int)currentSelectedMagic.skillCode] = magicInstance;
     }
 
     private void CancelMagic()

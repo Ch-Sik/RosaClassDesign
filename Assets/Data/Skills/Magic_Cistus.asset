@@ -9,11 +9,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b3fb9742032cd143b1df0fa43a2b7e5, type: 3}
-  m_Name: Mangrove
+  m_Script: {fileID: 11500000, guid: a412d7b3acdfbc54580b02cf5ed9cc44, type: 3}
+  m_Name: Magic_Cistus
   m_EditorClassIdentifier: 
-  code: 1
+  isUnlock: 0
+  skillCode: 3
   icon: {fileID: 21300000, guid: 1c2ca87dc4fe0e5489112db5ab336be8, type: 3}
+  skillName: "\uC2DC\uC2A4\uD22C\uC2A4"
+  description: "\uD3ED\uBC1C\uC131 \uC218\uC561\uC744 \uB0B4\uBFDC\uB294 \uC2DC\uC2A4\uD22C\uC2A4
+    \uAF43\uC744 \uC3DC\uB2E4.\n\uC9C0\uD615\uC774\uB098 \uC801\uC5D0 \uB2FF\uC73C\uBA74
+    \uD130\uC9C4\uB2E4."
   previewSprite: {fileID: 21300000, guid: 1c2ca87dc4fe0e5489112db5ab336be8, type: 3}
-  castType: 2
-  prefab: {fileID: 4660638598657619659, guid: 0028c22cb43fd71408155441feecf171, type: 3}
+  castType: 3
+  prefab: {fileID: 0}

@@ -13,7 +13,7 @@ using System;
 public class UIItem : MonoBehaviour
 {
     [Header("Data")]
-    public SOItem item;
+    public SO_Item item;
     public int quantity;
 
     [Header("ItemUI")]
@@ -25,7 +25,7 @@ public class UIItem : MonoBehaviour
     //일부러 이벤트를 사용하지 않았다. 어차피 Init을 할테니 그냥 서로 연결시켜두는 것이 추후에도 나을 것.
     public InventoryUI inventoryUI;
 
-    public void Init(SOItem item, int quantity = 0)
+    public void Init(SO_Item item, int quantity = 0)
     {
         ResetBorder();
 

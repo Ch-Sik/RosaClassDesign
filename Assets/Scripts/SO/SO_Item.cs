@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Item_0", menuName = "Inventory/Item")]
-public class SOItem : ScriptableObject
+public class SO_Item : ScriptableObject
 {
     public bool isStackable = true;
     public ItemCode itemCode;

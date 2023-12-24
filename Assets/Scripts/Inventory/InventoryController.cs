@@ -75,7 +75,7 @@ public class InventoryController : MonoBehaviour
     {
         inventoryUI.UnlockSkill(skillCode);
 
-        SOSkill skill = inventoryUI.GetSkill(skillCode);
+        SO_Skill skill = inventoryUI.GetSkill(skillCode);
         if (skill != null)
         {
             eventController.UnlockSkill(skill);
@@ -88,7 +88,7 @@ public class InventoryController : MonoBehaviour
     { 
         inventory.AddItem(itemCode, quantity);
 
-        SOItem item = inventoryUI.GetItem(itemCode);
+        SO_Item item = inventoryUI.GetItem(itemCode);
         if (item != null)
         {
             eventController.AddItem(item, quantity);
