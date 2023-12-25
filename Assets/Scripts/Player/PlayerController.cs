@@ -72,6 +72,13 @@ public class PlayerController : MonoBehaviour
         inputManager.playerCLIMBActionMap.FindAction("Jump").performed += OnClimbJump;
         inputManager.playerCLIMBActionMap.FindAction("Jump").canceled += OnCancelJump;
 
+        //SuperDash 관련 액션 바인딩
+        inputManager.playerSuperDashReadyAM.FindAction("Launch").performed += OnSuperDashLaunch;
+        inputManager.playerSuperDashReadyAM.FindAction("Cancel").performed += OnSuperDashCancelBeforeLaunch;
+        inputManager.playerSuperDashAM.FindAction("Cancel").performed += OnSuperDashCancelAfterLaunch;
+        inputManager.playerSuperDashAM.FindAction("Move").performed += OnSuperDashMoveAfterLaunch;
+
+
         // inputAsset 내 다른 액션맵에 있는 액션도 바인딩 해야 함
 
     }
@@ -93,8 +100,11 @@ public class PlayerController : MonoBehaviour
             case PlayerMoveState.CLIMBING:
                 InputManager.Instance.ChangeInputState(InputState.PLAYER_CLIMB);
                 break;
-            case PlayerMoveState.MONKEY:
-                InputManager.Instance.ChangeInputState(InputState.PLAYER_MONKEY);
+            case PlayerMoveState.SUPERDASH_READY:
+                InputManager.Instance.ChangeInputState(InputState.PLAYER_SUPERDASH_READY);
+                break;
+            case PlayerMoveState.SUPERDASH:
+                InputManager.Instance.ChangeInputState(InputState.PLAYER_SUPERDASH);
                 break;
             case PlayerMoveState.CANNOTMOVE:
                 InputManager.Instance.ChangeInputState(InputState.IGNORE);
@@ -118,6 +128,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnCancelMove(InputAction.CallbackContext context)
     {
+        Debug.Log("Cancel Move");
         moveVector = context.ReadValue<Vector2>();
         // 무브 캔슬
         playerMove.Walk(moveVector);
@@ -225,6 +236,22 @@ public class PlayerController : MonoBehaviour
 
     public void OnMagic(InputAction.CallbackContext context)
     { }
+
+    public void OnSuperDashLaunch(InputAction.CallbackContext context)
+    {
+        playerMove.LaunchSuperDash(context.ReadValue<float>() < 0 ? LR.LEFT : LR.RIGHT);
+    }
+
+    public void OnSuperDashCancelBeforeLaunch(InputAction.CallbackContext context)
+    { }
+
+    public void OnSuperDashCancelAfterLaunch(InputAction.CallbackContext context)
+    { }
+
+    public void OnSuperDashMoveAfterLaunch(InputAction.CallbackContext context) 
+    { 
+        playerMove.OnMoveDuringSuperDash(context.ReadValue<Vector2>().toLR());
+    }
     #endregion
 
     #region 그라운드 체크. PlayerGroundCheck.cs에서 호출되는 함수들

@@ -4,15 +4,18 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// IGNORE를 제외한 각 원소는 Input Actions Asset에 있는 Action Map을 의미.
+/// </summary>
 public enum InputState
 {
     UICONTROL,
     DIALOGUE,
     PLAYER_WALK,
     PLAYER_CLIMB,
-    PLAYER_MONKEY,
-    IGNORE /* 레어 아이템 획득 연출 등 잠시동안 모든 입력이 무시되어야 하는 경우
-            * .
+    PLAYER_SUPERDASH_READY,
+    PLAYER_SUPERDASH,
+    IGNORE /* 레어 아이템 획득 연출 등 잠시동안 모든 입력이 무시되어야 하는 경우.
             * IGNORE 상태는 오래 유지하지 말 것. */
 }
 
@@ -48,10 +51,6 @@ public class InputManager : MonoBehaviour
     // public PlayerRef player { get { return player; } set { player = value; playerMove = value.Move; } }
     // public PlayerMovement playerMove;
 
-    // 에셋
-    //[SerializeField] InputActionAsset inputActions;
-    private InputActionMap playerInputActions;
-    private InputActionMap uiInputActions;
     // InputAction Asset
     public InputActionAsset _inputAsset;
     // InputActionMap
@@ -59,7 +58,8 @@ public class InputManager : MonoBehaviour
     public InputActionMap dialogueActionMap;
     public InputActionMap playerWalkActionMap;
     public InputActionMap playerCLIMBActionMap;
-    public InputActionMap playerMonkeyActionMap;
+    public InputActionMap playerSuperDashReadyAM;
+    public InputActionMap playerSuperDashAM;
     public InputActionMap playerDefaultActionMap;
     
     // 상태
@@ -79,20 +79,21 @@ public class InputManager : MonoBehaviour
         dialogueActionMap = _inputAsset.FindActionMap("Dialogue");
         playerWalkActionMap = _inputAsset.FindActionMap("PlayerWalk");
         playerCLIMBActionMap = _inputAsset.FindActionMap("PlayerClimb");
-        playerMonkeyActionMap = _inputAsset.FindActionMap("PlayerMonkey");
         playerDefaultActionMap = _inputAsset.FindActionMap("PlayerDefault");
+        playerSuperDashReadyAM = _inputAsset.FindActionMap("PlayerSuperDashReady");
+        playerSuperDashAM = _inputAsset.FindActionMap("PlayerSuperDash");
 
         // 모두 비활성화하고 PlayerWalk와 PlayerDefault만 활성화
         _inputAsset.Disable();
-        _inputAsset.FindActionMap("PlayerWalk").Enable();
-        _inputAsset.FindActionMap("PlayerDefault").Enable();
+        playerWalkActionMap.Enable();
+        playerDefaultActionMap.Enable();
     }
 
     public void ChangeInputState(InputState newState)
     {
         if (state == newState) return;
         state = newState;
-        Debug.Log("ChangeInputState");
+        Debug.Log($"ChangeInputState to {newState}");
 
         switch (state)
         {
@@ -106,10 +107,15 @@ public class InputManager : MonoBehaviour
                 playerDefaultActionMap.Enable();
                 playerCLIMBActionMap.Enable();
                 break;
-            case InputState.PLAYER_MONKEY:
+            case InputState.PLAYER_SUPERDASH_READY:
                 _inputAsset.Disable();
                 playerDefaultActionMap.Enable();
-                playerMonkeyActionMap.Enable();
+                playerSuperDashReadyAM.Enable();
+                break;
+            case InputState.PLAYER_SUPERDASH:
+                _inputAsset.Disable();
+                playerDefaultActionMap.Enable();
+                playerSuperDashAM.Enable();
                 break;
             case InputState.DIALOGUE:
                 _inputAsset.Disable();

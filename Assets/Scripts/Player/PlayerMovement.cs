@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -38,6 +39,10 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("반대를 보고 벽에 메달리는 시간")]
     [SerializeField] float maxClimbTime;
 
+    [Header("오이대쉬 관련 매개변수")]
+    [Tooltip("오이대쉬 속도")]
+    [SerializeField] float superDashSpeed = 3f;
+
     // 컴포넌트 레퍼런스
     [ReadOnly, SerializeField] Rigidbody2D rb;
     [ReadOnly, SerializeField] BoxCollider2D col;
@@ -68,6 +73,7 @@ public class PlayerMovement : MonoBehaviour
     [ReadOnly, SerializeField] public bool isFalling = false;
     [ReadOnly, SerializeField] public bool isDoingHooking = false;      // 후크액션을 수행하고 있는지
     [ReadOnly, SerializeField] public bool isHitHookingTarget = false;  // 후크액션중 후크목표에 도달했는지
+    [ReadOnly] public bool isDoingSuperDash = false;
                                                                         // 상수
     LayerMask groundLayer;      // NameToLayer가 constructor에서 호출 불가능하여 InitFields에서 초기화
     LayerMask climbableLayer;
@@ -372,48 +378,6 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
-    /// 목표를 향해 후크액션 사용
-    /// 실제 힘을 가하는 부분은 SeedHook에서 처리
-    /// </summary>
-    internal void HookToTarget(Vector3 target)
-    {
-
-
-        isDoingHooking = true;
-        isHitHookingTarget = false;
-
-        if (playerControl.MoveState == PlayerMoveState.CLIMBING)
-        {
-            UnstickFromWall();
-        }
-
-        playerAnim.SetTrigger("HookTrigger");
-
-        if (hookCoroutine == null)
-        {
-            hookCoroutine = StartCoroutine(DoingHookAction());
-        }
-        else
-        {
-            StopCoroutine(hookCoroutine);
-            hookCoroutine = StartCoroutine(DoingHookAction());
-        }
-
-        IEnumerator DoingHookAction() // 후크 중 넝쿨 역할을 하는 라인 생성
-        {
-            //hookLine.SetActive(true);
-            while (!isHitHookingTarget)
-            {
-                Vector2 endPoint = target - gameObject.transform.position;
-                //hookLine.GetComponent<Line>().End = endPoint;
-                yield return null;
-            }
-            //hookLine.SetActive(false);
-            hookCoroutine = null;
-        }
-    }
-
-    /// <summary>
     /// 하향 점프 시 플랫폼을 온전히 빠져나오면 FinishJumpDown을 호출
     /// </summary>
     /// <param name="collision"></param>
@@ -431,27 +395,35 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="collision"></param>
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.layer.Equals(groundLayer))
+        if (isDoingSuperDash)
         {
-            // 땅에 닿았을 경우 후크 라인 표시 종료
-            if (hookCoroutine != null)
-            {
-                isHitHookingTarget = true;
-                StopCoroutine(hookCoroutine);
-                //hookLine.SetActive(false);
-                hookCoroutine = null;
-            }
+            isDoingSuperDash = false;
+            CancelSuperDashAfterLaunch();
         }
-        // 벽에 설치된 덩굴에 충돌하였을 경우
-        if (collision.gameObject.layer.Equals(climbableLayer))
+        else
         {
-            if (isFacingWall && !isFalling)
+            if (collision.gameObject.layer.Equals(groundLayer))
             {
-
-                StickToWall();
-                //playerAnim.SetTrigger("ClimbTrigger");
+                // 땅에 닿았을 경우 후크 라인 표시 종료
+                if (hookCoroutine != null)
+                {
+                    isHitHookingTarget = true;
+                    StopCoroutine(hookCoroutine);
+                    //hookLine.SetActive(false);
+                    hookCoroutine = null;
+                }
             }
+            // 벽에 설치된 덩굴에 충돌하였을 경우
+            if (collision.gameObject.layer.Equals(climbableLayer))
+            {
+                if (isFacingWall && !isFalling)
+                {
 
+                    StickToWall();
+                    //playerAnim.SetTrigger("ClimbTrigger");
+                }
+
+            }
         }
     }
 
@@ -483,13 +455,50 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
-    // 플레이어 점프 파워 조정
-    public float SetJumpPower(float power)
+    #region 슈퍼대시 관련
+    public void PrepareSuperDash()
     {
-        float temp = jumpPower;
-        jumpPower = power;
-        return temp;
+        Debug.Log("Prepare Super Dash");
+        rb.gravityScale = 0;
+        rb.velocity = Vector2.zero;
+        moveVector = Vector2.zero;
+        playerControl.ChangeMoveState(PlayerMoveState.SUPERDASH_READY);
     }
+
+    public void LaunchSuperDash(LR direction)
+    {
+        Debug.Log("Launch Super Dash");
+        isDoingSuperDash = true;
+        if (facingDirection != direction)
+        {
+            Flip();
+        }
+        playerControl.ChangeMoveState(PlayerMoveState.SUPERDASH);
+        moveVector = direction.toVector2() * superDashSpeed;
+    }
+
+    public void CancelSuperDashBeforeLaunch()
+    {
+        Debug.Log("Cancel Super Dash Before Launch");
+        rb.gravityScale = gravityScale;
+        playerControl.ChangeMoveState(PlayerMoveState.WALK);
+    }
+
+    public void CancelSuperDashAfterLaunch()
+    {
+        Debug.Log("Cancel Super Dash After Launch");
+        isDoingSuperDash = false;
+        rb.gravityScale = gravityScale;
+        moveVector = Vector2.zero;
+        playerControl.ChangeMoveState(PlayerMoveState.WALK);
+    }
+
+    public void OnMoveDuringSuperDash(LR direction)
+    {
+        if (facingDirection == direction) return;
+        CancelSuperDashAfterLaunch();
+    }
+    #endregion
 
     bool DetectWall()
     {

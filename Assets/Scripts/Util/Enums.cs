@@ -28,4 +28,9 @@ public static class EnumExtensions
     {
         return v.x < 0 ? LR.LEFT : LR.RIGHT;
     }
+
+    public static LR toLR(this Vector2 v)
+    {
+        return v.x < 0 ? LR.LEFT : LR.RIGHT;
+    }
 }
