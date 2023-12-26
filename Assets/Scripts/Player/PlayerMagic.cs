@@ -22,9 +22,23 @@ public struct TerrainCastHit
 /// </summary>
 public class PlayerMagic : MonoBehaviour
 {
-    [Header("정보")]
+    [Header("사용 가능한 마법 목록")]
     [SerializeField]
-    private SO_Magic currentSelectedMagic;
+    private SO_Magic[] magicList;
+
+    [Space(10), Header("시전 관련")]
+    [SerializeField, Tooltip("시전 위치 미리보기 오브젝트")]
+    private GameObject previewObject;
+    [SerializeField, Tooltip("지형 경계면과 마우스가 얼마나 떨어져있어도 시전 가능한 것으로 판단할지?")]
+    private float castDist = 1.5f;
+
+    [Space(10), Header("UI")]
+    [SerializeField]
+    private PlayerStateUI playerStateUI;
+
+    [Header("정보")]
+    [SerializeField, ReadOnly]
+    private SO_Magic selectedMagic;
     [SerializeField, ReadOnly]
     private bool isPreviewOn = false;
     [SerializeField, ReadOnly]
@@ -34,19 +48,18 @@ public class PlayerMagic : MonoBehaviour
     [SerializeField, ReadOnly]
     private LR wallLR;                  // 벽일 경우, 왼쪽을 보는 벽인지, 오른쪽을 보는 벽인지
 
-    [Space(10), Header("시전 관련")]
-    [SerializeField, Tooltip("시전 위치 미리보기 오브젝트")]
-    private GameObject previewObject;
-    [SerializeField, Tooltip("지형 경계면과 마우스가 얼마나 떨어져있어도 시전 가능한 것으로 판단할지?")]
-    private float castDist = 1.5f;
-
     [Space(10), Header("스폰된 오브젝트")]
     [SerializeField, ReadOnly]
     private GameObject[] spawnedObject = new GameObject[8];
 
-    [Space(10), Header("디버깅용")]
-    [SerializeField, ReadOnly]
-    private bool debug_isMouseInTerrain;
+    private InputManager inputInstance;
+    private InputAction IAMagicSelect;
+    private InputAction IAMagicReady;
+    private InputAction IAMagicExecute;
+    private InputAction IAMagicCancel;
+    private int layerGround;
+    private int layerCurtain;
+    private int selectedMagicIndex = 0;
 
     private const string layerStringGround = "Ground";
     private const string layerStringCurtain = "HiddenRoom";
@@ -59,29 +72,37 @@ public class PlayerMagic : MonoBehaviour
     private const int RWALL = 2;
     private const int CEIL = 3;
 
-    private InputManager inputInstance;
-    private InputAction IAMagicReady;
-    private InputAction IAMagicExecute;
-    private InputAction IAMagicCancel;
-    private int layerGround;
-    private int layerCurtain;
-
 
 
     private void Start()
     {
+        Init();
+        RegisterInputActions();
+    }
+
+    private void Init()
+    {
+        // 상수 설정
         layerGround = LayerMask.GetMask(layerStringGround);
         layerCurtain = LayerMask.GetMask(layerStringCurtain);
-        RegisterInputActions();
+
+        // 파라미터 정상 설정되어있는지 검사
+        Debug.Assert(magicList.Length != 0, "식물 마법이 하나도 설정되어있지 않음!");
+
+        // 필드 초기화
+        selectedMagic = magicList[selectedMagicIndex];
     }
 
     private void RegisterInputActions()
     {
         inputInstance = InputManager.Instance;
+        IAMagicSelect = inputInstance._inputAsset.FindAction("MagicSelect");
         IAMagicReady = inputInstance._inputAsset.FindAction("MagicReady");
         IAMagicExecute = inputInstance._inputAsset.FindAction("MagicExecute");
         IAMagicCancel = inputInstance._inputAsset.FindAction("MagicCancel");
+        Debug.Log("Input Action 찾음");
 
+        IAMagicSelect.performed += OnMagicSelect;
         IAMagicReady.performed += OnMagicReady;
         IAMagicExecute.performed += OnMagicExecute;
         IAMagicCancel.performed += OnMagicCancel;
@@ -94,6 +115,17 @@ public class PlayerMagic : MonoBehaviour
     {
         if (isPreviewOn)
             UpdatePreview();
+    }
+
+    /// <summary>
+    /// 마법 선택 키를 눌렀을 때, 마법 교체
+    /// </summary>
+    private void OnMagicSelect(InputAction.CallbackContext context)
+    {
+        selectedMagicIndex = (++selectedMagicIndex) % magicList.Length;
+        selectedMagic = magicList[selectedMagicIndex];
+        if(playerStateUI != null)
+            playerStateUI.UpdateSelectedMagic(selectedMagic);
     }
 
     /// <summary>
@@ -128,7 +160,7 @@ public class PlayerMagic : MonoBehaviour
         IAMagicCancel.Disable();
 
 
-        Debug.Log($"식물마법 시전\n 종류: {currentSelectedMagic.name}\n 지형타입: {targetTerrainType}");
+        Debug.Log($"식물마법 시전\n 종류: {selectedMagic.name}\n 지형타입: {targetTerrainType}");
 
         DoMagic();
         HidePreview();
@@ -146,14 +178,14 @@ public class PlayerMagic : MonoBehaviour
     private void DoMagic()
     {
         GameObject magicInstance;
-        if (currentSelectedMagic.prefab == null)
+        if (selectedMagic.prefab == null)
         {
-            Debug.LogError($"{currentSelectedMagic.name}: 식물마법 프리팹이 지정되지 않음!");
+            Debug.LogError($"{selectedMagic.name}: 식물마법 프리팹이 지정되지 않음!");
             return;
         }
 
         // 회전 계산 및 식물 오브젝트 소환
-        if (currentSelectedMagic.castType == MagicCastType.EVERYWHERE)
+        if (selectedMagic.castType == MagicCastType.EVERYWHERE)
         {
             // 천장-벽-바닥 아무데나 설치가능한 경우
             // '지형과 수직인 방향'을 가르키기 위해 '회전'을 사용
@@ -166,12 +198,12 @@ public class PlayerMagic : MonoBehaviour
                 default: //case CEIL:
                             rotation = 180f;    break;
             }
-            magicInstance = Instantiate(currentSelectedMagic.prefab, (Vector3)magicPos, Quaternion.Euler(0, 0, rotation));
+            magicInstance = Instantiate(selectedMagic.prefab, (Vector3)magicPos, Quaternion.Euler(0, 0, rotation));
         }
         else
         {
             // 그 외의 경우 '지형과 수직인 방향'을 가르키기 위해 '좌우 대칭'을 사용
-            magicInstance = Instantiate(currentSelectedMagic.prefab, (Vector3)magicPos, Quaternion.identity);
+            magicInstance = Instantiate(selectedMagic.prefab, (Vector3)magicPos, Quaternion.identity);
             // wall_facing_left는 기본 형태, wall_facing_right가 반전된 형태
             if (targetTerrainType == RWALL)
             {
@@ -180,18 +212,18 @@ public class PlayerMagic : MonoBehaviour
         }
 
         // 식물 마법의 Init까지 수행
-        if (currentSelectedMagic.skillCode == SkillCode.MAGIC_IVY)
+        if (selectedMagic.skillCode == SkillCode.MAGIC_IVY)
         {
             magicInstance.GetComponent<MagicIvy>().Init((Vector2)magicPos);
         }
 
         // 오브젝트 풀 관리: 동시에 유지 가능한 오브젝트는 최대 1개
-        if (spawnedObject[(int)currentSelectedMagic.skillCode] != null)
+        if (spawnedObject[(int)selectedMagic.skillCode] != null)
         {
             // TODO: 기존에 설치된 식물이 자연스럽게 사라지는 것 연출
-            Destroy(spawnedObject[(int)currentSelectedMagic.skillCode], 1f);
+            Destroy(spawnedObject[(int)selectedMagic.skillCode], 1f);
         }
-        spawnedObject[(int)currentSelectedMagic.skillCode] = magicInstance;
+        spawnedObject[(int)selectedMagic.skillCode] = magicInstance;
     }
 
     private void CancelMagic()
@@ -230,7 +262,7 @@ public class PlayerMagic : MonoBehaviour
 
         // 식물 마법 종류에 따라 캐스팅 방향 판단하기
         int castFlag = 0;
-        MagicCastType castType = currentSelectedMagic.castType;
+        MagicCastType castType = selectedMagic.castType;
         switch(castType)
         {
             case MagicCastType.GROUND_ONLY:
@@ -273,7 +305,7 @@ public class PlayerMagic : MonoBehaviour
     private TerrainCastHit? FindTerrainPointFromInside(Vector2 mousePosition, int castFlag)
     {
         // 가장 '마우스에 가까운' 지점을 찾을 때 쓰는 임시 변수. 최적화를 위해 sqr를 사용.
-        float minDistance = float.MaxValue, tmpDistance;
+        float minDistanceSqr = float.MaxValue, tmpDistanceSqr;
         Vector3Int tmpCellPos;
 
         // overlap test & raycast용 임시 변수
@@ -295,15 +327,15 @@ public class PlayerMagic : MonoBehaviour
                 {
                     // 지형 바깥쪽 지점에서 안쪽 방향으로 raycast
                     raycastResult = Physics2D.Raycast(mousePosition + cDirections[i], -cDirections[i], castDist, layerGround | layerCurtain);
-                    tmpDistance = (raycastResult.point - mousePosition).SqrMagnitude();
-                    if (raycastResult.collider != null && tmpDistance < minDistance)
+                    tmpDistanceSqr = (raycastResult.point - mousePosition).SqrMagnitude();
+                    if (raycastResult.collider != null && tmpDistanceSqr < minDistanceSqr)
                     {
                         tmpCellPos = Vector3Int.FloorToInt(raycastResult.point - 0.1f * cDirections[i]);
                         // 마지막으로 식물 설치가능한 지형인지 파악
                         bool plantable = TilemapManager.Instance.GetTilePlantable(tmpCellPos);
                         if (plantable)
                         {
-                            minDistance = tmpDistance;
+                            minDistanceSqr = tmpDistanceSqr;
                             targetTerrainType = i;
                             result.worldPos = raycastResult.point;
                             result.cellPos = tmpCellPos;
@@ -313,7 +345,7 @@ public class PlayerMagic : MonoBehaviour
             }
         }
 
-        if (minDistance <= castDist) 
+        if (minDistanceSqr <= castDist) 
             return result;
         else 
             return null;
@@ -321,7 +353,7 @@ public class PlayerMagic : MonoBehaviour
 
     private TerrainCastHit? FindTerrainPointFromOutside(Vector2 mousePosition, int castFlag)
     {
-        // 가장 '마우스에 가까운' 지점을 찾을 때 쓰는 임시 변수. 최적화를 위해 sqr를 사용.
+        // 가장 '마우스에 가까운' 지점을 찾을 때 쓰는 임시 변수.
         float minDistance = float.MaxValue;
         Vector3Int tmpCellPos;
 
