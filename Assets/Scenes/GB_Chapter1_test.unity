@@ -112788,6 +112788,91 @@ MonoBehaviour:
     useMagic: 1
   isReadyforMagic: 0
   onHit: 0
+--- !u!114 &889048778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 889048764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08e5468fa1bf05b4896cd7b2ef8664ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _textureData: []
+  _meshes: []
+  _meshGroups: []
+  _controller:
+    _controlParams: []
+  _animClips: []
+  _animPlayManager:
+    _animPlayDataList: []
+  _mainMeshGroupIDList: 
+  _rootUnits: []
+  _visiblePreset:
+    _rules: []
+  _guideLines:
+    _lineInfos: []
+  _optRootUnitList: []
+  _optTransforms: []
+  _optMeshes: []
+  _optTextureData: []
+  _optBatchedMaterial:
+    _matUnits: []
+  _optAnimEventListener: {fileID: 0}
+  _animEventCallMode: 0
+  _unityEventWrapper:
+    _unityEvents: []
+  _subObjectGroup: {fileID: 0}
+  _subObjectGroup_Mesh: {fileID: 0}
+  _subObjectGroup_MeshGroup: {fileID: 0}
+  _subObjectGroup_Modifier: {fileID: 0}
+  _FPS: 30
+  _bakeScale: 0.01
+  _bakeZSize: 1
+  _imageFilePath_Thumbnail: 
+  _isPhysicsPlay_Editor: 1
+  _bakeUnlinkedGroup: {fileID: 0}
+  _isImportant: 1
+  _autoPlayAnimClipID: -1
+  _isOptimizedPortrait: 0
+  _bakeTargetOptPortrait: {fileID: 0}
+  _bakeSrcEditablePortrait: {fileID: 0}
+  _sortingLayerID: 0
+  _sortingOrder: 0
+  _sortingOrderOption: 0
+  _sortingOrderPerDepth: 1
+  _isUsingMecanim: 0
+  _mecanimAnimClipResourcePath: 
+  _emptyAnimClipForMecanim: {fileID: 0}
+  _animator: {fileID: 0}
+  _animatorLayerBakedData: []
+  _bakedPsdSets: []
+  _bakedPsdSecondarySet: []
+  _billboardType: 0
+  _vrSupportMode: 0
+  _vrRenderTextureSize: 0
+  _isForceCamSortModeToOrthographic: 1
+  _meshShadowCastingMode: 0
+  _meshReceiveShadow: 0
+  _timelineTrackSets: []
+  _objectOrders:
+    _orderSets_RootUnit: []
+    _orderSets_Image: []
+    _orderSets_Mesh: []
+    _orderSets_MeshGroup: []
+    _orderSets_AnimClip: []
+    _orderSets_ControlParam: []
+  _isSizeOptimizedV117: 0
+  _materialSets: []
+  _flippedMeshOption: 0
+  _rootBoneScaleMethod: 0
+  _unspecifiedAnimControlParamOption: 0
+  _rootGameObjectAsPrefabInstanceForRestore: {fileID: 0}
+  _srcPrefabAssetForRestore: {fileID: 0}
+  _isTeleportCorrectionOption: 0
+  _teleportMovementDist: 10
 --- !u!1001 &916515148
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -115071,6 +115156,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3115691681920552347, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
       insertIndex: -1
       addedObject: {fileID: 889048765}
+    - targetCorrespondingSourceObject: {fileID: 3115691681920552347, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 889048778}
   m_SourcePrefab: {fileID: 100100000, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
 --- !u!1001 &2043096224
 PrefabInstance:

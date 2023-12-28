@@ -1,0 +1,352 @@
+﻿(업데이트 이미지 개수)
+0
+-----------------------------------------
+(영어)
+<size=16>AnyPortrait Update Log v1.4.6</size>
+(Build August 21, 2023)
+
+<size=13>Improvements</size>
+
+- <color=blue>Improved Screen Capture</color>
+    A new capture method (Version 2) is added that solves the problem of aspect ratio distortion and excessive blur caused by resizing.
+    An option to switch between the old capture method (Version 1: Legacy) and the new capture method has been added to the setting dialog.
+    An option to fine-tune focus on a pixel-by-pixel basis at the resolution of the saved image file is added.
+    The sign of the Y value among the position options of the capture frame has been changed so that it is applied opposite to the previous one.
+
+- Options for the default color of the timeline UI and the color effect when selected are added to the settings dialog.
+- It is changed that the text colors of the layers in the timeline UI are generally the same.
+- In some demo scenes, the script where the mouse cursor disappears when the game is run has been changed so that it does not work in the Unity Editor.
+- The color and shape of the separator bar in the editor have been changed.
+- When enabled by pressing the Detph or Image option button in the Extra Option dialog box, the Extra Option itself is automatically enabled for reducing the number of unnecessary clicks.
+- Some code related to rendering within the editor is improved.
+
+
+
+<size=13>Fixed issues</size>
+
+- An Issue is fixed where depth operation is performed abnormally where the target meshes whose depth is changed by Extra Option are changed in the animation editing screen.
+- An issue is fixed where the timeline could no longer be controlled when there are two or more timelines connected to modifiers on the animation editing screen then opening and closing the Extra Option dialog.
+- An issue is fixed where the interpolation of the last keyframe is abnormally calculated when there are 3 or more keyframes in the control parameter timeline in a looped animation.
+- An issue is fixed where the color of the editor background, the separator bar, and the timeline layer's background were displayed abnormally due to an unknown cause.
+
+
+
+
+-----------------------------------------
+(한국어)
+<size=16>AnyPortrait 업데이트 로그 v1.4.6</size>
+(2023년 8월 21일)
+
+<size=13>개선된 사항</size>
+
+- <color=blue>화면 캡쳐 기능 개선</color>
+    화면 비율 왜곡 문제와 리사이징에 따른 블러 문제가 해결된 처리된 캡쳐 방식(Version 2)이 도입됨
+    설정 다이얼로그에서 기존의 캡쳐 방식(Version 1:Legacy)과 새로운 방식을 전환할 수 있음
+    결과 이미지 파일의 해상도 기준에서 픽셀 단위로 포커스를 미세 조정할 수 있는 옵션이 추가됨
+    캡쳐 프레임의 위치 옵션 중 Y 값의 부호가 기존과 반대로 적용되도록 변경됨
+
+- 타임라인 UI의 기본 색상과 선택시 색상 효과에 대한 옵션이 설정 다이얼로그에 추가됨
+- 타임라인 UI의 레이어의 글자 색상이 대체로 동일하게 보여지도록 개선됨
+- 일부 데모 씬에서 게임 실행시 커서가 사라지는 스크립트가 유니티 에디터에서는 실행되지 않도록 변경됨
+- 에디터의 구분 막대의 색상과 형태가 변경됨
+- Extra Option 다이얼로그에서 Detph나 Image 옵션 버튼을 눌러서 활성화하면 자동으로 Extra Option 자체도 활성화되도록 개선되어 불필요한 클릭 횟수를 줄일 수 있음
+- 에디터 내에서의 렌더링과 관련된 일부 코드가 개선됨
+
+
+
+<size=13>수정된 문제점</size>
+
+- 애니메이션 편집 화면에서 Extra Option에서 메시의 Depth가 변경될 때, 애니메이션 도중에 대상이 되는 메시들이 바뀌면 Depth 연산이 비정상적 수행되는 문제가 수정됨
+- 애니메이션 편집 화면에서 모디파이어와 연결되는 2개 이상의 타임라인이 있을 때, Extra Option 다이얼로그을 열고 닫으면 해당 타임라인을 더이상 제어할 수 없게되는 문제가 수정됨
+- 루프가 설정된 애니메이션에서 컨트롤 파라미터 타임라인에 3개 이상의 키프레임이 존재하는 경우, 마지막 키프레임의 보간이 비정상적으로 연산되는 문제가 수정됨
+- 알 수 없는 원인에 의해서 에디터 UI의 배경 색상이나 구분 막대 색상, 타임라인 레이어의 배경 색상 등이 비정상적으로 보여지는 문제가 수정됨
+
+
+
+
+-----------------------------------------
+(프랑스어)
+<size=16>Fichier de mise à jour AnyPortrait v1.4.6</size>
+(Construit le 21 août 2023)
+
+<size=13>Améliorations</size>
+
+- <color=blue>Capture d'écran améliorée</color>
+    Une nouvelle méthode de capture (version 2) est ajoutée qui résout le problème de distorsion du rapport d'aspect et de flou excessif causé par le redimensionnement.
+    Une option permettant de basculer entre l'ancienne méthode de capture (Version 1 : Legacy) et la nouvelle méthode de capture a été ajoutée à la boîte de dialogue de configuration.
+    Une option pour affiner la mise au point pixel par pixel à la résolution du fichier image enregistré est ajoutée.
+    Le signe de la valeur Y parmi les options de position du cadre de capture a été modifié afin qu'il soit appliqué à l'opposé du précédent.
+
+- Les options pour la couleur par défaut de l'interface utilisateur de la chronologie et l'effet de couleur lorsqu'elles sont sélectionnées sont ajoutées à la boîte de dialogue des paramètres.
+- Il est modifié que les couleurs du texte des calques dans l'interface utilisateur de la chronologie sont généralement les mêmes.
+- Dans certaines scènes de démonstration, le script où le curseur de la souris disparaît lorsque le jeu est lancé a été modifié afin qu'il ne fonctionne pas dans l'éditeur Unity.
+- La couleur et la forme de la barre de séparation dans l'éditeur ont été modifiées.
+- Lorsqu'elle est activée en appuyant sur le bouton d'option Profondeur ou Image dans la boîte de dialogue Option supplémentaire, l'option supplémentaire elle-même est automatiquement activée pour réduire le nombre de clics inutiles.
+- Certains codes liés au rendu dans l'éditeur ont été améliorés.
+
+
+
+<size=13>Problème résolu</size>
+
+- Un problème est résolu lorsque l'opération de profondeur est effectuée de manière anormale lorsque les maillages cibles dont la profondeur est modifiée par l'option supplémentaire sont modifiés dans l'écran d'édition d'animation.
+- Un problème est résolu où la chronologie ne pouvait plus être contrôlée lorsqu'il y avait deux chronologies ou plus connectées aux modificateurs sur l'écran d'édition d'animation, puis ouvrant et fermant la boîte de dialogue Option supplémentaire.
+- Un problème est résolu où l'interpolation de la dernière image clé est anormalement calculée lorsqu'il y a 3 images clés ou plus dans la chronologie des paramètres de contrôle dans une animation en boucle.
+- Un problème est résolu où la couleur de l'arrière-plan de l'éditeur, la barre de séparation et l'arrière-plan du calque de la chronologie s'affichaient anormalement en raison d'une cause inconnue.
+
+
+
+-----------------------------------------
+(독일어)
+<size=16>AnyPortrait-Aktualisierungsprotokoll v1.4.6</size>
+(Build 21. August 2023)
+
+<size=13>Verbesserungen</size>
+
+- <color=blue>Verbesserte Bildschirmaufnahme</color>
+    Es wurde eine neue Aufnahmemethode (Version 2) hinzugefügt, die das Problem der durch Größenänderung verursachten Verzerrung des Seitenverhältnisses und übermäßige Unschärfe löst.
+    Dem Einstellungsdialog wurde eine Option zum Wechseln zwischen der alten Aufnahmemethode (Version 1: Legacy) und der neuen Aufnahmemethode hinzugefügt.
+    Eine Option zur Feinabstimmung des Fokus auf Pixelbasis mit der Auflösung der gespeicherten Bilddatei wurde hinzugefügt.
+    Das Vorzeichen des Y-Werts unter den Positionsoptionen des Aufnahmerahmens wurde geändert, sodass es umgekehrt zum vorherigen angewendet wird.
+
+- Optionen für die Standardfarbe der Timeline-Benutzeroberfläche und den Farbeffekt, wenn ausgewählt, werden dem Einstellungsdialog hinzugefügt.
+- Es wurde geändert, dass die Textfarben der Ebenen in der Timeline-Benutzeroberfläche im Allgemeinen gleich sind.
+- In einigen Demoszenen wurde das Skript, bei dem der Mauszeiger verschwindet, wenn das Spiel ausgeführt wird, so geändert, dass es im Unity-Editor nicht funktioniert.
+- Farbe und Form der Trennleiste im Editor wurden geändert.
+- Bei Aktivierung durch Drücken der Optionsschaltfläche „Detph“ oder „Bild“ im Dialogfeld „Extra-Option“ wird die Extra-Option selbst automatisch aktiviert, um die Anzahl unnötiger Klicks zu reduzieren.
+- Einige Codes im Zusammenhang mit dem Rendern im Editor wurden verbessert.
+
+
+
+<size=13>Problem behoben</size>
+
+- Es wurde ein Problem behoben, bei dem die Tiefenoperation abnormal ausgeführt wurde, wenn die Zielnetze, deren Tiefe durch die Extra-Option geändert wurde, im Animationsbearbeitungsbildschirm geändert wurden.
+- Es wurde ein Problem behoben, bei dem die Zeitleiste nicht mehr gesteuert werden konnte, wenn zwei oder mehr Zeitleisten mit Modifikatoren auf dem Animationsbearbeitungsbildschirm verbunden waren und dann das Dialogfeld „Zusätzliche Optionen“ geöffnet und geschlossen wurde.
+- Es wurde ein Problem behoben, bei dem die Interpolation des letzten Keyframes ungewöhnlich berechnet wird, wenn in der Zeitleiste der Steuerungsparameter in einer Schleifenanimation drei oder mehr Keyframes vorhanden sind.
+- Es wurde ein Problem behoben, bei dem die Farbe des Editor-Hintergrunds, der Trennleiste und des Hintergrunds der Zeitleistenebene aus unbekannter Ursache abnormal angezeigt wurden.
+
+
+
+
+-----------------------------------------
+(스페인어)
+<size=16>AnyPortrait Update Log v1.4.6</size>
+(Construido el 21 de agosto de 2023)
+
+<size=13>Mejoras</size>
+
+- <color=blue>Captura de pantalla mejorada</color>
+    Se agrega un nuevo método de captura (Versión 2) que resuelve el problema de la distorsión de la relación de aspecto y el desenfoque excesivo causado por el cambio de tamaño.
+    Se ha agregado al cuadro de diálogo de configuración una opción para cambiar entre el método de captura anterior (Versión 1: Legacy) y el nuevo método de captura.
+    Se agrega una opción para ajustar el enfoque píxel por píxel a la resolución del archivo de imagen guardado.
+    Se ha cambiado el signo del valor Y entre las opciones de posición del fotograma de captura para que se aplique de forma opuesta al anterior.
+
+- Las opciones para el color predeterminado de la interfaz de usuario de la línea de tiempo y el efecto de color cuando se selecciona se agregan al cuadro de diálogo de configuración.
+- Se cambia que los colores de texto de las capas en la interfaz de usuario de la línea de tiempo son generalmente los mismos.
+- En algunas escenas de demostración, la secuencia de comandos donde desaparece el cursor del mouse cuando se ejecuta el juego se ha cambiado para que no funcione en el Editor de Unity.
+- Se ha cambiado el color y la forma de la barra de separación en el editor.
+- Cuando se habilita presionando el botón de opción Detph o Imagen en el cuadro de diálogo Opción adicional, la Opción adicional en sí se habilita automáticamente para reducir la cantidad de clics innecesarios.
+- Se mejoró algún código relacionado con la representación dentro del editor.
+
+
+
+<size=13>Problema solucionado</size>
+
+- Se solucionó un problema en el que la operación de profundidad se realiza de manera anormal donde las mallas de destino cuya profundidad se cambia mediante la opción adicional se cambian en la pantalla de edición de animación.
+- Se solucionó un problema por el cual la línea de tiempo ya no se podía controlar cuando había dos o más líneas de tiempo conectadas a modificadores en la pantalla de edición de animación y luego se abría y cerraba el cuadro de diálogo de opciones adicionales.
+- Se solucionó un problema en el que la interpolación del último fotograma clave se calcula de forma anormal cuando hay 3 o más fotogramas clave en la línea de tiempo del parámetro de control en una animación en bucle.
+- Se solucionó un problema por el cual el color del fondo del editor, la barra de separación y el fondo de la capa de la línea de tiempo se mostraban de manera anormal debido a una causa desconocida.
+
+
+
+-----------------------------------------
+(이탈리아어)
+<size=16>Registro aggiornamenti AnyPortrait v1.4.6</size>
+(Build 21 agosto 2023)
+
+<size=13>Miglioramenti</size>
+
+- <color=blue>Acquisizione dello schermo migliorata</color>
+    Viene aggiunto un nuovo metodo di acquisizione (versione 2) che risolve il problema della distorsione delle proporzioni e dell'eccessiva sfocatura causata dal ridimensionamento.
+    Nella finestra di dialogo delle impostazioni è stata aggiunta un'opzione per passare dal vecchio metodo di acquisizione (Versione 1: Legacy) al nuovo metodo di acquisizione.
+    È stata aggiunta un'opzione per mettere a punto la messa a fuoco pixel per pixel alla risoluzione del file immagine salvato.
+    Il segno del valore Y tra le opzioni di posizione del frame di cattura è stato modificato in modo che venga applicato opposto al precedente.
+
+- Le opzioni per il colore predefinito dell'interfaccia utente della timeline e l'effetto colore quando selezionato vengono aggiunte alla finestra di dialogo delle impostazioni.
+- È stato modificato il fatto che i colori del testo dei livelli nell'interfaccia utente della timeline sono generalmente gli stessi.
+- In alcune scene demo, lo script in cui il cursore del mouse scompare quando il gioco è in esecuzione è stato modificato in modo che non funzioni in Unity Editor.
+- Il colore e la forma della barra di separazione nell'editor sono stati modificati.
+- Se abilitata premendo il pulsante di opzione Profondità o Immagine nella finestra di dialogo Opzioni aggiuntive, l'opzione aggiuntiva stessa viene abilitata automaticamente per ridurre il numero di clic non necessari.
+- Alcuni codici relativi al rendering all'interno dell'editor sono stati migliorati.
+
+
+
+<size=13>Risolto il problema</size>
+
+- È stato risolto un problema per cui l'operazione di profondità viene eseguita in modo anomalo in cui le mesh target la cui profondità viene modificata dall'opzione extra vengono modificate nella schermata di modifica dell'animazione.
+- È stato risolto un problema per cui la sequenza temporale non poteva più essere controllata quando ci sono due o più linee temporali collegate ai modificatori nella schermata di modifica dell'animazione, quindi si apre e si chiude la finestra di dialogo Opzioni extra.
+- È stato risolto un problema per cui l'interpolazione dell'ultimo fotogramma chiave viene calcolata in modo anomalo quando sono presenti 3 o più fotogrammi chiave nella sequenza temporale del parametro di controllo in un'animazione in loop.
+- È stato risolto un problema per cui il colore dello sfondo dell'editor, la barra di separazione e lo sfondo del livello della sequenza temporale venivano visualizzati in modo anomalo a causa di una causa sconosciuta.
+
+
+
+-----------------------------------------
+(덴마크어)
+<size=16>AnyPortrait Update Log v1.4.6</size>
+(Byg den 21. august 2023)
+
+<size=13>Forbedringer</size>
+
+- <color=blue>Forbedret skærmoptagelse</color>
+    En ny optagelsesmetode (version 2) er tilføjet, der løser problemet med billedformatforvrængning og overdreven sløring forårsaget af ændring af størrelse.
+    En mulighed for at skifte mellem den gamle optagelsesmetode (Version 1: Legacy) og den nye optagelsesmetode er blevet tilføjet til indstillingsdialogen.
+    Der tilføjes en mulighed for at finjustere fokus pixel-for-pixel ved opløsningen af den gemte billedfil.
+    Tegnet for Y-værdien blandt positionsmulighederne for optagelsesrammen er blevet ændret, så det anvendes modsat den forrige.
+
+- Indstillinger for standardfarven på tidslinjens brugergrænseflade og farveeffekten, når den er valgt, føjes til indstillingsdialogen.
+- Det er ændret, at tekstfarverne på lagene i tidslinjens brugergrænseflade generelt er de samme.
+- I nogle demo-scener er scriptet, hvor musemarkøren forsvinder, når spillet køres, blevet ændret, så det ikke virker i Unity Editor.
+- Farven og formen på skillelinjen i editoren er blevet ændret.
+- Når den er aktiveret ved at trykke på knappen Detph eller Image i dialogboksen Ekstra valgmulighed, aktiveres selve den ekstra indstilling automatisk for at reducere antallet af unødvendige klik.
+- Noget kode relateret til gengivelse i editoren er forbedret.
+
+
+
+<size=13>Faste problem</size>
+
+- Et problem er rettet, hvor dybdeoperation udføres unormalt, hvor målmaskerne, hvis dybde ændres af Ekstra Option, ændres i animationsredigeringsskærmen.
+- Et problem er rettet, hvor tidslinjen ikke længere kunne kontrolleres, når der er to eller flere tidslinjer forbundet til modifikatorer på animationsredigeringsskærmen, hvorefter dialogboksen Ekstra valg åbnes og lukkes.
+- Et problem er rettet, hvor interpolationen af den sidste keyframe beregnes unormalt, når der er 3 eller flere keyframes i kontrolparameterens tidslinje i en loopet animation.
+- Et problem er rettet, hvor farven på editorens baggrund, separatorlinjen og tidslinjelagets baggrund blev vist unormalt på grund af en ukendt årsag.
+
+
+
+
+-----------------------------------------
+(일본어)
+<size=16> AnyPortrait更新ログv1.4.6</size>
+（2023年8月21日ビルド）
+
+<size=13>改善点</size>
+
+- <color=blue>スクリーンキャプチャの改善</color>
+    リサイズによるアスペクト比の歪みや過剰なブラーの問題を解決する新しいキャプチャ方法（Version 2）が追加されました。
+    設定ダイアログに旧キャプチャ方式（Version1：Legacy）と新キャプチャ方式を切り替えるオプションが追加されました。
+    保存された画像ファイルの解像度でピクセル単位でフォーカスを微調整するオプションが追加されました。
+    キャプチャフレームの位置オプションのうち、Y値の符号が以前とは逆に適用されるように変更されました。
+
+- 設定ダイアログにタイムラインUIのデフォルトカラーと選択時の色の効果のオプションを追加しました。
+- タイムラインUIのレイヤーの文字色がほぼ同じになるように変更しました。
+- 一部のデモシーンにおいて、ゲーム実行時にマウスカーソルが消えるスクリプトがUnityエディターでは動作しないように変更されました。
+- エディターのセパレーターバーの色と形状が変更されました。
+- 「Extra Option」ダイアログの「Detph」または「Image」オプションボタンを押して有効にすると、「Extra Option」自体が自動的に有効になり、無駄なクリック数が減ります。
+- エディター内のレンダリングに関連する一部のコードが改善されました。
+
+
+
+<size=13>修正された問題</size>
+
+- アニメーション編集画面においてエクストラオプションで深度を変更した対象メッシュを変更した場合、深度操作が異常となる問題を修正しました。
+- アニメーション編集画面でモディファイアに複数のタイムラインを接続した状態でエクストラオプションダイアログを開閉すると、タイムラインの制御ができなくなる問題を修正しました。
+- ループ アニメーションのコントロール パラメーター タイムラインに 3 つ以上のキーフレームがある場合、最後のキーフレームの補間が異常に計算される問題が修正されました。
+- 原因不明によりエディタの背景、セパレータバー、タイムラインレイヤーの背景の色が異常に表示される問題を修正しました。
+
+
+
+
+-----------------------------------------
+(중국어-번체)
+<size=16>AnyPortrait更新日誌v1.4.6</size>
+（2023年8月21日）
+
+<size=13>改進</size>
+
+- <color=blue>改進的屏幕捕獲</color>
+    添加了新的捕獲方法（版本 2），解決了因調整大小而導致的寬高比失真和過度模糊的問題。
+    設置對話框中添加了在舊捕獲方法（版本 1：舊版）和新捕獲方法之間切換的選項。
+    添加了一個選項，可以在保存的圖像文件的分辨率下逐像素微調焦點。
+    捕獲幀的位置選項中 Y 值的符號已更改，以便與之前的符號相反。
+
+- 時間線 UI 的默認顏色和選擇時的顏色效果選項已添加到設置對話框中。
+- 時間軸UI中各圖層的文字顏色大致相同。
+- 在某些演示場景中，遊戲運行時鼠標光標消失的腳本已更改，因此它在 Unity 編輯器中不起作用。
+- 編輯器中分隔欄的顏色和形狀已更改。
+- 當通過按“額外選項”對話框中的“深度”或“圖像”選項按鈕啟用時，“額外選項”本身會自動啟用，以減少不必要的點擊次數。
+- 改進了編輯器中與渲染相關的一些代碼。
+
+
+
+<size=13>修復了問題</size>
+
+- 修復了在動畫編輯屏幕中更改由 Extra Option 更改深度的目標網格時深度操作執行異常的問題。
+- 修復了當動畫編輯屏幕上有兩個或多個時間線連接到修改器然後打開和關閉“額外選項”對話框時無法再控制時間線的問題。
+- 修復了循環動畫中控制參數時間線中有 3 個或更多關鍵幀時，最後一個關鍵幀的插值計算異常的問題。
+- 修復了編輯器背景、分隔欄和時間軸圖層背景顏色由於未知原因顯示異常的問題。
+
+
+
+
+-----------------------------------------
+(중국어-간체)
+<size=16>AnyPortrait更新日志v1.4.6</size>
+（2023年8月21日）
+
+<size=13>改进</size>
+
+- <color=blue>改进的屏幕捕获</color>
+    添加了新的捕获方法（版本 2），解决了因调整大小而导致的宽高比失真和过度模糊的问题。
+    设置对话框中添加了在旧捕获方法（版本 1：旧版）和新捕获方法之间切换的选项。
+    添加了一个选项，可以在保存的图像文件的分辨率下逐像素微调焦点。
+    捕获帧的位置选项中 Y 值的符号已更改，以便与之前的符号相反。
+
+- 时间线 UI 的默认颜色和选择时的颜色效果选项已添加到设置对话框中。
+- 时间轴UI中各图层的文字颜色大致相同。
+- 在某些演示场景中，游戏运行时鼠标光标消失的脚本已更改，因此它在 Unity 编辑器中不起作用。
+- 编辑器中分隔栏的颜色和形状已更改。
+- 当通过按“额外选项”对话框中的“深度”或“图像”选项按钮启用时，“额外选项”本身会自动启用，以减少不必要的点击次数。
+- 改进了编辑器中与渲染相关的一些代码。
+
+
+
+<size=13>修复了问题</size>
+
+- 修复了在动画编辑屏幕中更改由 Extra Option 更改深度的目标网格时深度操作执行异常的问题。
+- 修复了当动画编辑屏幕上有两个或多个时间线连接到修改器然后打开和关闭“额外选项”对话框时无法再控制时间线的问题。
+- 修复了循环动画中控制参数时间线中有 3 个或更多关键帧时，最后一个关键帧的插值计算异常的问题。
+- 修复了编辑器背景、分隔栏和时间轴图层背景颜色由于未知原因显示异常的问题。
+
+
+
+
+-----------------------------------------
+(폴란드어)
+<size=16>Dziennik aktualizacji AnyPortret v1.4.6</size>
+(Zbuduj 21 sierpnia 2023 r)
+
+<size=13>Ulepszenia</size>
+
+- <color=blue>Ulepszone przechwytywanie ekranu</color>
+    Dodano nową metodę przechwytywania (wersja 2), która rozwiązuje problem zniekształcenia współczynnika proporcji i nadmiernego rozmycia spowodowanego zmianą rozmiaru.
+    Do okna dialogowego ustawień dodano opcję przełączania między starą metodą przechwytywania (wersja 1: Legacy) a nową metodą przechwytywania.
+    Dodano opcję precyzyjnej regulacji ostrości piksel po pikselu w rozdzielczości zapisanego pliku obrazu.
+    Znak wartości Y wśród opcji pozycji klatki przechwytywania został zmieniony tak, aby był stosowany odwrotnie do poprzedniego.
+
+- Opcje domyślnego koloru interfejsu osi czasu i efektu kolorystycznego po wybraniu są dodawane do okna dialogowego ustawień.
+- Zmieniono, że kolory tekstu warstw w interfejsie osi czasu są zasadniczo takie same.
+- W niektórych scenach demonstracyjnych zmieniono skrypt powodujący znikanie kursora myszy po uruchomieniu gry, tak że nie działa on w edytorze Unity.
+- Zmieniono kolor i kształt paska separatora w edytorze.
+- Po włączeniu przez naciśnięcie przycisku opcji Detph lub Image w oknie dialogowym Extra Option sama opcja Extra jest automatycznie włączana w celu zmniejszenia liczby zbędnych kliknięć.
+- Poprawiono część kodu związanego z renderowaniem w edytorze.
+
+
+
+<size=13>Naprawiono problem</size>
+
+- Rozwiązano problem polegający na tym, że operacja głębokości jest wykonywana nieprawidłowo, gdy docelowe siatki, których głębokość jest zmieniana przez opcję Dodatkowa, są zmieniane na ekranie edycji animacji.
+- Rozwiązano problem polegający na tym, że nie można było już kontrolować osi czasu, gdy na ekranie edycji animacji, a następnie otwieraniu i zamykaniu okna dialogowego opcji dodatkowych, były połączone dwie lub więcej osi czasu z modyfikatorami.
+- Rozwiązano problem polegający na tym, że interpolacja ostatniej klatki kluczowej jest nieprawidłowo obliczana, gdy w zapętlonej animacji na osi czasu parametru sterującego znajdują się 3 lub więcej klatek kluczowych.
+- Rozwiązano problem polegający na tym, że kolor tła edytora, paska separatora i tła warstwy osi czasu były wyświetlane nieprawidłowo z nieznanej przyczyny.
+
+
+
+
+-----------------------------------------
