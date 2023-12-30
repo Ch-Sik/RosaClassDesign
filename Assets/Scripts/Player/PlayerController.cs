@@ -7,7 +7,6 @@ public class PlayerController : MonoBehaviour
 {
     [ReadOnly, SerializeField] private PlayerMoveState currentState;
 
-    private InputAction moveAction;
     // public 필드
     public PlayerMoveState MoveState
     {
@@ -128,7 +127,6 @@ public class PlayerController : MonoBehaviour
 
     public void OnCancelMove(InputAction.CallbackContext context)
     {
-        Debug.Log("Cancel Move");
         moveVector = context.ReadValue<Vector2>();
         // 무브 캔슬
         playerMove.Walk(moveVector);
@@ -153,10 +151,7 @@ public class PlayerController : MonoBehaviour
                 }
                 break;
             case PlayerMoveState.MIDAIR:
-                if (playerMove.isDoingHooking && playerMove.isHitHookingTarget)
-                {
-                    playerMove.JumpUp();
-                }
+                playerMove.JumpUp();
                 playerMove.ReserveJump();       // 공중에서는 점프 선입력
                 break;
         }

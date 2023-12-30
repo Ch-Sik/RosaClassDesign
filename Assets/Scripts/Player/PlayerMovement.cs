@@ -54,7 +54,6 @@ public class PlayerMovement : MonoBehaviour
     [Header("Debug View")]
     [ReadOnly, SerializeField] private GameObject platformBelow = null;
     //[ReadOnly, SerializeField] public GameObject aimLine;
-    //[ReadOnly, SerializeField] public GameObject hookLine;
     [ReadOnly, SerializeField] public Vector2 moveVector;
     [ReadOnly, SerializeField] public LR facingDirection;                 // 플레이어 바라보는 방향
 
@@ -71,8 +70,6 @@ public class PlayerMovement : MonoBehaviour
     [ReadOnly, SerializeField] public bool isDoingMagic = false;
     //[ReadOnly, SerializeField] public bool isKnockbacked = false;
     [ReadOnly, SerializeField] public bool isFalling = false;
-    [ReadOnly, SerializeField] public bool isDoingHooking = false;      // 후크액션을 수행하고 있는지
-    [ReadOnly, SerializeField] public bool isHitHookingTarget = false;  // 후크액션중 후크목표에 도달했는지
     [ReadOnly] public bool isDoingSuperDash = false;
                                                                         // 상수
     LayerMask groundLayer;      // NameToLayer가 constructor에서 호출 불가능하여 InitFields에서 초기화
@@ -84,12 +81,6 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 detectWallBot = new Vector2(0.6f, -0.7f);
     private Vector2 detectWallEndTop = new Vector2(0.0f, 0.5f);
     private Vector2 detectWallEndBot = new Vector2(0.6f, 0.0f);
-
-    // 코루틴
-    private Coroutine hookCoroutine; // 후크 중 코루틴
-
-    // 애니메이션
-    public PlayerAnimation playerAnim;
 
     //싱글톤
     [ReadOnly, SerializeField] PlayerRef playerRef;
@@ -108,13 +99,11 @@ public class PlayerMovement : MonoBehaviour
         rb = playerRef.rb;
         col = playerRef.col;
         playerControl = playerRef.Controller;
-        playerAnim = playerRef.Animation;
     }
 
     void InitFields()
     {
         //aimLine = GameObject.Find("AimLine");
-        //hookLine = GameObject.Find("HookLine");
         facingDirection = spriteDirection;
         groundLayer = LayerMask.NameToLayer("Ground");
         climbableLayer = LayerMask.NameToLayer("Climbable");
@@ -163,10 +152,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                if (!isDoingHooking) // 후크 중일경우 좌 우 입력 값 무시
-                {
-                    rb.velocity = new Vector2(moveVector.x * moveSpeed, rb.velocity.y);
-                }
+                rb.velocity = new Vector2(moveVector.x * moveSpeed, rb.velocity.y);
                 if ((moveVector.x > 0 && facingDirection.isLEFT())
                 || (moveVector.x < 0 && facingDirection.isRIGHT()))
                 {
@@ -238,10 +224,6 @@ public class PlayerMovement : MonoBehaviour
 
     internal void JumpUp()
     {
-        if (isDoingHooking && isHitHookingTarget) // 후크 목표에 도달했고 아직 후크 액션 사용중일 경우 점프로 캔슬
-        {
-            isDoingHooking = false;
-        }
         //playerAnim.SetTrigger("JumpTrigger");
         rb.velocity = new Vector2(rb.velocity.x, jumpPower);
         jumpTimer = Timer.StartTimer();
@@ -330,11 +312,6 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void OnLanded()
     {
-        if (isDoingHooking) // 땅에 닿았을 시 후크액션 종료 판정
-        {
-            isDoingHooking = false;
-
-        }
         if (isFalling)
         {
             isFalling = false;
@@ -352,10 +329,6 @@ public class PlayerMovement : MonoBehaviour
     internal void StickToWall()
     {
         if (playerControl.MoveState == PlayerMoveState.GROUNDED)
-        {
-
-        }
-        if (isDoingHooking && !isHitHookingTarget)
         {
 
         }
@@ -402,17 +375,6 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            if (collision.gameObject.layer.Equals(groundLayer))
-            {
-                // 땅에 닿았을 경우 후크 라인 표시 종료
-                if (hookCoroutine != null)
-                {
-                    isHitHookingTarget = true;
-                    StopCoroutine(hookCoroutine);
-                    //hookLine.SetActive(false);
-                    hookCoroutine = null;
-                }
-            }
             // 벽에 설치된 덩굴에 충돌하였을 경우
             if (collision.gameObject.layer.Equals(climbableLayer))
             {
@@ -422,7 +384,6 @@ public class PlayerMovement : MonoBehaviour
                     StickToWall();
                     //playerAnim.SetTrigger("ClimbTrigger");
                 }
-
             }
         }
     }
@@ -434,22 +395,6 @@ public class PlayerMovement : MonoBehaviour
         {
             if (isFacingWall && !isFalling)
                 StickToWall();
-        }
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.tag == "HookObj")
-        {
-            isHitHookingTarget = true;
-        }
-    }
-
-    private void OnTriggerStay2D(Collider2D collision)
-    {
-        if (collision.gameObject.tag == "HookObj")
-        {
-            isHitHookingTarget = true;
         }
     }
 
@@ -502,7 +447,6 @@ public class PlayerMovement : MonoBehaviour
 
     bool DetectWall()
     {
-        if (isDoingHooking && !isHitHookingTarget) return false;
         if ((moveVector.x == -1 && facingDirection == LR.RIGHT) || (moveVector.x == 1 && facingDirection == LR.LEFT)) return false;
         Vector2 pointTop = (Vector2)transform.position
                             + Vector2.Scale(detectWallTop, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1)); 
@@ -546,7 +490,6 @@ public class PlayerMovement : MonoBehaviour
         theScale.x *= -1;
         transform.localScale = theScale;
         //aimLine.transform.localScale = theScale;
-        //hookLine.transform.localScale = theScale;
     }
 
     public void OnKnockback()
