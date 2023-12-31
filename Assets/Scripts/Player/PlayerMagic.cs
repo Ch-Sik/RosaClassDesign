@@ -1,13 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SubsystemsImplementation;
-using UnityEngine.Tilemaps;
-using UnityEngine.UIElements;
-using static UnityEngine.UI.Image;
 
 public struct TerrainCastHit
 {
@@ -53,6 +48,7 @@ public class PlayerMagic : MonoBehaviour
     private GameObject[] spawnedObject = new GameObject[8];
 
     private InputManager inputInstance;
+    private InputAction aimInput;
     private int layerGround;
     private int layerCurtain;
     private int selectedMagicIndex = 0;
@@ -87,6 +83,7 @@ public class PlayerMagic : MonoBehaviour
         selectedMagic = magicList[selectedMagicIndex];
         if (inputInstance == null)
             inputInstance = InputManager.Instance;
+        aimInput = inputInstance._inputAsset.FindActionMap("MagicReady").FindAction("Aim");
     }
 
     private void Update()
@@ -218,7 +215,7 @@ public class PlayerMagic : MonoBehaviour
     private void UpdatePreview()
     {
         // 마우스 위치 가져오기
-        Vector2 mouseScreenPos2 = InputManager.Instance._inputAsset.FindAction("Aim").ReadValue<Vector2>();
+        Vector2 mouseScreenPos2 = aimInput.ReadValue<Vector2>();
         float zDistance = transform.position.z - Camera.main.transform.position.z; // 플레이어와 카메라의 z좌표 차이
         Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPos2.x, mouseScreenPos2.y, zDistance));
 
