@@ -53,10 +53,6 @@ public class PlayerMagic : MonoBehaviour
     private GameObject[] spawnedObject = new GameObject[8];
 
     private InputManager inputInstance;
-    private InputAction IAMagicSelect;
-    private InputAction IAMagicReady;
-    private InputAction IAMagicExecute;
-    private InputAction IAMagicCancel;
     private int layerGround;
     private int layerCurtain;
     private int selectedMagicIndex = 0;
@@ -73,11 +69,9 @@ public class PlayerMagic : MonoBehaviour
     private const int CEIL = 3;
 
 
-
     private void Start()
     {
         Init();
-        RegisterInputActions();
     }
 
     private void Init()
@@ -91,24 +85,8 @@ public class PlayerMagic : MonoBehaviour
 
         // 필드 초기화
         selectedMagic = magicList[selectedMagicIndex];
-    }
-
-    private void RegisterInputActions()
-    {
-        inputInstance = InputManager.Instance;
-        IAMagicSelect = inputInstance._inputAsset.FindAction("MagicSelect");
-        IAMagicReady = inputInstance._inputAsset.FindAction("MagicReady");
-        IAMagicExecute = inputInstance._inputAsset.FindAction("MagicExecute");
-        IAMagicCancel = inputInstance._inputAsset.FindAction("MagicCancel");
-        Debug.Log("Input Action 찾음");
-
-        IAMagicSelect.performed += OnMagicSelect;
-        IAMagicReady.performed += OnMagicReady;
-        IAMagicExecute.performed += OnMagicExecute;
-        IAMagicCancel.performed += OnMagicCancel;
-
-        IAMagicExecute.Disable();
-        IAMagicCancel.Disable();
+        if (inputInstance == null)
+            inputInstance = InputManager.Instance;
     }
 
     private void Update()
@@ -120,7 +98,7 @@ public class PlayerMagic : MonoBehaviour
     /// <summary>
     /// 마법 선택 키를 눌렀을 때, 마법 교체
     /// </summary>
-    private void OnMagicSelect(InputAction.CallbackContext context)
+    public void SelectMagic()
     {
         selectedMagicIndex = (++selectedMagicIndex) % magicList.Length;
         selectedMagic = magicList[selectedMagicIndex];
@@ -132,13 +110,10 @@ public class PlayerMagic : MonoBehaviour
     /// 마법 시전 키를 처음 눌렀을 때.
     /// 현재 선택된 마법이 유효한지 검사하고, 미리보기 켜기.
     /// </summary>
-    private void OnMagicReady(InputAction.CallbackContext context)
+    public void ReadyMagic()
     {
         // TODO: PlayerState와 연동하여 현재 선택된 마법이 유효한지 확인하기
-        IAMagicReady.Disable();
-        IAMagicExecute.Enable();
-        IAMagicCancel.Enable();
-
+        inputInstance.SetActionInputState(PlayerActionState.MAGIC_READY);
         Debug.Log("식물 마법 시전 준비");
 
         ShowPreview();
@@ -147,7 +122,7 @@ public class PlayerMagic : MonoBehaviour
     /// <summary>
     /// Prepare Cast 상태에서 클릭했을 경우 미리보기로 보여준 위치에 실제로 마법을 시전하기.
     /// </summary>
-    private void OnMagicExecute(InputAction.CallbackContext context)
+    public void ExecuteMagic()
     {
         if (magicPos == null)
         {
@@ -155,25 +130,13 @@ public class PlayerMagic : MonoBehaviour
             CancelMagic();
             return;
         }
-        IAMagicReady.Enable();
-        IAMagicExecute.Disable();
-        IAMagicCancel.Disable();
-
-
-        Debug.Log($"식물마법 시전\n 종류: {selectedMagic.name}\n 지형타입: {targetTerrainType}");
 
         DoMagic();
+        Debug.Log($"식물마법 시전\n 종류: {selectedMagic.name}\n 지형타입: {targetTerrainType}");
         HidePreview();
-    }
 
-    /// <summary>
-    /// Prepare Cast 상태에서 우클릭했을 경우 마법 시전을 취소하기
-    /// </summary>
-    private void OnMagicCancel(InputAction.CallbackContext context)
-    {
-        CancelMagic();
+        inputInstance.SetActionInputState(PlayerActionState.DEFAULT);
     }
-
 
     private void DoMagic()
     {
@@ -190,13 +153,13 @@ public class PlayerMagic : MonoBehaviour
             // 천장-벽-바닥 아무데나 설치가능한 경우
             // '지형과 수직인 방향'을 가르키기 위해 '회전'을 사용
             float rotation;
-            switch(targetTerrainType)
+            switch (targetTerrainType)
             {
-                case GROUND: rotation = 0f;     break;
-                case LWALL: rotation = 90f;     break;
-                case RWALL: rotation = 270f;    break;
+                case GROUND: rotation = 0f; break;
+                case LWALL: rotation = 90f; break;
+                case RWALL: rotation = 270f; break;
                 default: //case CEIL:
-                            rotation = 180f;    break;
+                    rotation = 180f; break;
             }
             magicInstance = Instantiate(selectedMagic.prefab, (Vector3)magicPos, Quaternion.Euler(0, 0, rotation));
         }
@@ -226,14 +189,13 @@ public class PlayerMagic : MonoBehaviour
         spawnedObject[(int)selectedMagic.skillCode] = magicInstance;
     }
 
-    private void CancelMagic()
+    /// <summary>
+    /// Prepare Cast 상태에서 우클릭했을 경우 마법 시전을 취소하기
+    /// </summary>
+    public void CancelMagic()
     {
-        IAMagicReady.Enable();
-        IAMagicExecute.Disable();
-        IAMagicCancel.Disable();
-
+        inputInstance.SetActionInputState(PlayerActionState.DEFAULT);
         Debug.LogWarning("식물마법 취소");
-
         HidePreview();
     }
 

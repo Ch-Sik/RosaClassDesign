@@ -1,5 +1,5 @@
 {
-    "name": "Rosa_new",
+    "name": "Rosa",
     "maps": [
         {
             "name": "====== Player Movement ======",
@@ -52,7 +52,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Interaction",
+                    "name": "Interact",
                     "type": "Button",
                     "id": "ebcfc5d7-f007-470b-b938-e2d7b7339f11",
                     "expectedControlType": "Button",
@@ -212,7 +212,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Interaction",
+                    "action": "Interact",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -582,15 +582,6 @@
             "id": "d700bab1-4899-4bb1-9c40-d875a07963bb",
             "actions": [
                 {
-                    "name": "Pause",
-                    "type": "Button",
-                    "id": "ada02475-4162-49f2-9d7a-95ed84d07eb1",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "Aim",
                     "type": "Value",
                     "id": "7edaf206-0fff-4b1f-9cbe-22daacff5740",
@@ -600,27 +591,9 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "MagicReady",
+                    "name": "Attack",
                     "type": "Button",
-                    "id": "7bd751cc-ab85-4752-8f71-e05784095320",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "MagicExecute",
-                    "type": "Button",
-                    "id": "310e9da6-4e79-4822-8b3d-6da6e67124e6",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "MagicCancel",
-                    "type": "Button",
-                    "id": "15b85508-83f5-46c5-9af5-671425dc8040",
+                    "id": "a2ca53bc-7563-4d67-9318-e029f2a6223f",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -636,9 +609,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Attack",
+                    "name": "MagicReady",
                     "type": "Button",
-                    "id": "a2ca53bc-7563-4d67-9318-e029f2a6223f",
+                    "id": "7bd751cc-ab85-4752-8f71-e05784095320",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -646,17 +619,6 @@
                 }
             ],
             "bindings": [
-                {
-                    "name": "",
-                    "id": "f40a342c-458b-454b-9372-20fa7bf6d2fa",
-                    "path": "<Keyboard>/escape",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Pause",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
                 {
                     "name": "",
                     "id": "aa19e1f7-f9a7-41c1-a699-aa408d5082f8",
@@ -676,28 +638,6 @@
                     "processors": "",
                     "groups": "",
                     "action": "MagicReady",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "e7e507db-1707-433e-ae26-d9d48adeb66b",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "MagicExecute",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "a1c87e11-1e0f-45f8-9dcd-791c69ebb422",
-                    "path": "<Mouse>/rightButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "MagicCancel",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -741,9 +681,36 @@
             "id": "e750deb9-9479-4122-9ea0-2d1496f56e5f",
             "actions": [
                 {
-                    "name": "New action",
+                    "name": "Aim",
+                    "type": "Value",
+                    "id": "01aa99be-c13a-4a7c-8b7f-4156acd1fc10",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "MagicSelect",
                     "type": "Button",
-                    "id": "547c02bf-aefa-4428-92cd-84185660a03e",
+                    "id": "7cfb4066-ad4a-4ec5-884e-692f9bc99ad8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MagicExecute",
+                    "type": "Button",
+                    "id": "19a4645e-133e-47a0-8682-09b2160e0e7f",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MagicCancel",
+                    "type": "Button",
+                    "id": "3ba0b422-6500-48f4-9b06-60c0ba48149c",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -753,12 +720,45 @@
             "bindings": [
                 {
                     "name": "",
-                    "id": "aedfbc93-21ed-4f99-a04c-9f6a5ad14ec4",
-                    "path": "",
+                    "id": "5ad25e69-a713-43ec-96a5-c21b62e1cabc",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Aim",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8416f039-f609-458b-bc69-5af3f3638bda",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "New action",
+                    "action": "MagicExecute",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "45fd3c78-fbaa-4b9d-92f6-259caa225519",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MagicCancel",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a23cfff6-df4d-467d-8cb5-902074802529",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MagicSelect",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

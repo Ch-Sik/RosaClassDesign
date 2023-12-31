@@ -34,7 +34,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         InitFields();
-        RegisterInputHandler();
+        RegisterInputEventHandler();
     }
 
 
@@ -48,36 +48,45 @@ public class PlayerController : MonoBehaviour
         rb = playerRef.rb;
     }
 
-    private void RegisterInputHandler()
+    private void RegisterInputEventHandler()
     {
         inputAsset = inputManager._inputAsset;
 
-        //Walk 상태 바인딩
+        // MoveDefault 액션맵 바인딩
         inputManager.AM_MoveGrounded.FindAction("Move").performed += OnMove;
         inputManager.AM_MoveGrounded.FindAction("Move").canceled += OnCancelMove;
         inputManager.AM_MoveGrounded.FindAction("Jump").performed += OnJump;
         inputManager.AM_MoveGrounded.FindAction("Jump").canceled += OnCancelJump;
+        inputManager.AM_MoveGrounded.FindAction("Interact").performed += OnInteract;
 
-        inputManager.AM_ActionDefault.FindAction("Attack").performed += OnMeleeAttack;
-
-        //Climb 상태 바인딩
+        // Climb 액션맵 바인딩
         inputManager.AM_MoveClimb.FindAction("Move").performed += OnClimbMove;
         inputManager.AM_MoveClimb.FindAction("Move").canceled += OnCancelClimbMove;
         inputManager.AM_MoveClimb.FindAction("Jump").performed += OnClimbJump;
         inputManager.AM_MoveClimb.FindAction("Jump").canceled += OnCancelJump;
 
-        //SuperDash 관련 액션 바인딩
+        // SuperDash 관련 액션맵 바인딩
         inputManager.AM_MoveSuperDashReady.FindAction("Launch").performed += OnSuperDashLaunch;
         inputManager.AM_MoveSuperDashReady.FindAction("Cancel").performed += OnSuperDashCancelBeforeLaunch;
         inputManager.AM_MoveSuperDash.FindAction("Cancel").performed += OnSuperDashCancelAfterLaunch;
         inputManager.AM_MoveSuperDash.FindAction("Move").performed += OnSuperDashMoveAfterLaunch;
 
+        // ActionDefault 액션맵 바인딩
+        inputManager.AM_ActionDefault.FindAction("Attack").performed += OnMeleeAttack;
+        inputManager.AM_ActionDefault.FindAction("MagicSelect").performed += OnMagicSelect;
+        inputManager.AM_ActionDefault.FindAction("MagicReady").performed += OnMagicReady;
 
-        // inputAsset 내 다른 액션맵에 있는 액션도 바인딩 해야 함
-
+        // MagicReady 액션맵 바인딩
+        inputManager.AM_ActionMagicReady.FindAction("MagicSelect").performed += OnMagicSelect;
+        inputManager.AM_ActionMagicReady.FindAction("MagicExecute").performed += OnMagicExecute;
+        inputManager.AM_ActionMagicReady.FindAction("MagicCancel").performed += OnMagicCancel;
+        
+        // UI 관련 input action은 PlayerController에서 관리하지 않음.
     }
     #endregion
 
+    // PlayerController.ChangeMoveState를 참조하는 게 많아서 프록시(?)를 두긴 했는데
+    // 가능하면 inputManager.ChangeMoveState를 사용할 것.
     public void ChangeMoveState(PlayerMoveState newMoveState)
     {
         //MIDAIR 상태에서 키바인딩은 GROUNDED 상태와 다르지 않기 때문에 GROUNDED
@@ -87,6 +96,7 @@ public class PlayerController : MonoBehaviour
     }
 
     #region InputAction 이벤트 핸들러
+    #region PlayerMove ActionMap 핸들러
     public void OnMove(InputAction.CallbackContext context)
     {
         moveVector = context.ReadValue<Vector2>();
@@ -95,7 +105,7 @@ public class PlayerController : MonoBehaviour
         playerMove.Walk(moveVector);
     }
 
-    // Grounded에서 다른 상태로 넘어갔을 때 moveVector
+    // Grounded에서 다른 상태로 넘어갔을 때 moveVector 초기화용
     public void OnCancelMove(InputAction.CallbackContext context)
     {
         moveVector = context.ReadValue<Vector2>();
@@ -125,6 +135,9 @@ public class PlayerController : MonoBehaviour
         }
         
     }
+
+    public void OnInteract(InputAction.CallbackContext context)
+    { }
 
     public void OnClimbMove(InputAction.CallbackContext context)
     {
@@ -160,38 +173,6 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    public void OnMeleeAttack(InputAction.CallbackContext context)
-    {
-        if (context.performed)
-        {
-            if (currentMoveState != PlayerMoveState.CLIMBING)
-            {
-                PlayerRef.Instance.combat.Attack();
-            }
-        }
-    }
-
-    /*
-    public void OnRangeAttack(InputAction.CallbackContext context)
-    {
-        if (context.performed)
-        {
-            if (state != PlayerMoveState.CLIMBING)
-            {
-                anim.SetTrigger("RangeAttackTrigger");
-                playerCombat.RangeAttack();
-            }
-
-        }
-    }
-    */
-
-    public void OnInteract(InputAction.CallbackContext context)
-    { }
-
-    public void OnMagic(InputAction.CallbackContext context)
-    { }
-
     public void OnSuperDashLaunch(InputAction.CallbackContext context)
     {
         playerMove.LaunchSuperDash(context.ReadValue<float>() < 0 ? LR.LEFT : LR.RIGHT);
@@ -203,10 +184,43 @@ public class PlayerController : MonoBehaviour
     public void OnSuperDashCancelAfterLaunch(InputAction.CallbackContext context)
     { }
 
-    public void OnSuperDashMoveAfterLaunch(InputAction.CallbackContext context) 
-    { 
+    public void OnSuperDashMoveAfterLaunch(InputAction.CallbackContext context)
+    {
         playerMove.OnMoveDuringSuperDash(context.ReadValue<Vector2>().toLR());
     }
+    #endregion
+    #region PlayerAction ActionMap 핸들러
+    public void OnMeleeAttack(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            if (currentMoveState != PlayerMoveState.CLIMBING)
+            {
+                PlayerRef.Instance.combat.Attack();
+            }
+        }
+    }
+
+    public void OnMagicSelect(InputAction.CallbackContext context)
+    {
+        PlayerRef.Instance.Magic.SelectMagic();
+    }
+
+    public void OnMagicReady(InputAction.CallbackContext context)
+    {
+        PlayerRef.Instance.Magic.ReadyMagic();
+    }
+
+    public void OnMagicExecute(InputAction.CallbackContext context)
+    {
+        PlayerRef.Instance.Magic.ExecuteMagic();
+    }
+
+    public void OnMagicCancel(InputAction.CallbackContext context)
+    {
+        PlayerRef.Instance.Magic.CancelMagic();
+    }
+    #endregion
     #endregion
 
 }
