@@ -328,16 +328,8 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void StickToWall()
     {
-        if (playerControl.currentMoveState == PlayerMoveState.GROUNDED)
-        {
-
-        }
-        else
-        {
-            playerControl.ChangeMoveState(PlayerMoveState.CLIMBING);
-            rb.gravityScale = 0;
-        }
-
+        playerControl.ChangeMoveState(PlayerMoveState.CLIMBING);
+        rb.gravityScale = 0;
     }
 
     /// <summary>
