@@ -92,11 +92,6 @@ public class PlayerController : MonoBehaviour
         moveVector = context.ReadValue<Vector2>();
         // 지상, 또는 공중에 있을 경우 좌우 이동
 
-        if (!PlayerRef.Instance.Logic.CanHorizontalMove())
-            moveVector = new Vector2(0, moveVector.y);
-        if (!PlayerRef.Instance.Logic.CanVerticalMove())
-            moveVector = new Vector2(moveVector.x, 0);
-
         playerMove.Walk(moveVector);
     }
 
@@ -110,9 +105,6 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (!PlayerRef.Instance.Logic.CanJump())
-            return;
-
         switch (currentMoveState)
         {
             case PlayerMoveState.GROUNDED:
@@ -138,11 +130,6 @@ public class PlayerController : MonoBehaviour
     {
         moveVector = context.ReadValue<Vector2>();
         // 벽에 붙어있을 경우 기어오르기/내리기
-
-        if (!PlayerRef.Instance.Logic.CanHorizontalMove())
-            moveVector = new Vector2(0, moveVector.y);
-        if (!PlayerRef.Instance.Logic.CanVerticalMove())
-            moveVector = new Vector2(moveVector.x, 0);
 
         playerMove.Climb(moveVector);
     }
@@ -175,9 +162,6 @@ public class PlayerController : MonoBehaviour
 
     public void OnMeleeAttack(InputAction.CallbackContext context)
     {
-        if (!PlayerRef.Instance.Logic.CanAttack())
-            return;
-
         if (context.performed)
         {
             if (currentMoveState != PlayerMoveState.CLIMBING)
