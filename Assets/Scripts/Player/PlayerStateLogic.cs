@@ -62,9 +62,8 @@ public class PlayerStateLogic : MonoBehaviour
             return;
         }
 
-        switch (PlayerRef.Instance.Controller.MoveState)
+        switch (PlayerRef.Instance.Controller.currentMoveState)
         {
-            case PlayerMoveState.WALK:
             case PlayerMoveState.GROUNDED:
                 curState = State.GROUNDED;
                 break;

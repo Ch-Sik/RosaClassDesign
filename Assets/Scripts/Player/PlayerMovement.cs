@@ -139,7 +139,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!isWallJumping)    // 벽 점프 시작 후 minWallJumpDuration 동안은 좌우 이동 불가
         {
-            if (playerControl.MoveState == PlayerMoveState.CLIMBING)
+            if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
             {
                 // 기어 올라가는 속도와 내려오는 속도를 구분
                 rb.velocity = new Vector2(0,
@@ -328,7 +328,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void StickToWall()
     {
-        if (playerControl.MoveState == PlayerMoveState.GROUNDED)
+        if (playerControl.currentMoveState == PlayerMoveState.GROUNDED)
         {
 
         }
@@ -426,7 +426,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Debug.Log("Cancel Super Dash Before Launch");
         rb.gravityScale = gravityScale;
-        playerControl.ChangeMoveState(PlayerMoveState.WALK);
+        playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
     }
 
     public void CancelSuperDashAfterLaunch()
@@ -435,7 +435,7 @@ public class PlayerMovement : MonoBehaviour
         isDoingSuperDash = false;
         rb.gravityScale = gravityScale;
         moveVector = Vector2.zero;
-        playerControl.ChangeMoveState(PlayerMoveState.WALK);
+        playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
     }
 
     public void OnMoveDuringSuperDash(LR direction)
@@ -498,7 +498,7 @@ public class PlayerMovement : MonoBehaviour
 
         IEnumerator Knockback()
         {
-            playerControl.ChangeMoveState(PlayerMoveState.CANNOTMOVE);
+            playerControl.ChangeMoveState(PlayerMoveState.NO_MOVE);
             yield return new WaitForSeconds(0.5f);
             playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
         }
@@ -510,6 +510,33 @@ public class PlayerMovement : MonoBehaviour
         UnstickFromWall();
     }
 
+    #region 그라운드 체크. PlayerGroundCheck.cs에서 호출되는 함수들
+    public void SetIsGrounded(GameObject belowObject)
+    {
+        //해당 값이 0일 경우, 플랫폼에 평행하게 진입할 경우 바로 리턴되는 아래와 같은 문제가 있었음.
+        //1. 이동하면서 더블점프하면 점프가 안 되는 버그
+        //2. A방향으로 더블점프를 착지 전에 -A 방향으로 전환 시 점프 리셋이 안 됌.
+        if (rb.velocity.y > 0.1f) return; // 1-way platform의 groundcheck 방지
+        if (playerControl.currentMoveState == PlayerMoveState.CLIMBING) return; // climb 중 groundcheck 방지
+
+
+        platformBelow = belowObject;
+        if (playerControl.currentMoveState != PlayerMoveState.GROUNDED)
+        {
+            // 막 착지했을 때
+            OnLanded();
+        }
+        playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+    }
+
+    public void SetIsNotGrounded()
+    {
+        platformBelow = null;
+        if (playerControl.currentMoveState == PlayerMoveState.GROUNDED)
+            playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
+        // state가 Climbing일 경우 state를 수정하지 않음.
+    }
+    #endregion
 
     private void OnDrawGizmos()
     {

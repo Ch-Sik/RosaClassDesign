@@ -34,3 +34,10 @@ public static class EnumExtensions
         return v.x < 0 ? LR.LEFT : LR.RIGHT;
     }
 }
+
+public enum UiState
+{
+    IN_GAME,    // 별도의 메뉴가 열리지 않은 경우
+    DIALOG,     // 대화 UI가 열린 경우
+    MENU        // 인벤토리, 지도, 상점 등의 UI가 열린 경우
+}

@@ -5,13 +5,10 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [ReadOnly, SerializeField] private PlayerMoveState currentState;
-
     // public 필드
-    public PlayerMoveState MoveState
+    public PlayerMoveState currentMoveState
     {
-        get { return currentState; }
-        set { if (value != currentState) Debug.Log(value); currentState = value; }
+        get { return inputManager._moveState; }
     }
 
     // 컴포넌트
@@ -22,8 +19,6 @@ public class PlayerController : MonoBehaviour
     [ReadOnly, SerializeField] PlayerAnimation playerAnim;
 
     // private 변수
-    [SerializeField, ReadOnly]
-    //private PlayerMoveState state = PlayerMoveState.GROUNDED;
     private Vector2 moveVector = Vector2.zero;      // 하향점프 판단을 위해 값 보관
     private GameObject platformBelow;
 
@@ -39,7 +34,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         InitFields();
-        InitInput();
+        RegisterInputHandler();
     }
 
 
@@ -51,31 +46,31 @@ public class PlayerController : MonoBehaviour
         playerCombat = playerRef.combat;
         playerAnim = playerRef.Animation;
         rb = playerRef.rb;
-        
     }
 
-    private void InitInput()
+    private void RegisterInputHandler()
     {
         inputAsset = inputManager._inputAsset;
 
         //Walk 상태 바인딩
-        inputManager.playerWalkActionMap.FindAction("Walk").performed += OnMove;
-        inputManager.playerWalkActionMap.FindAction("Walk").canceled += OnCancelMove;
-        inputManager.playerWalkActionMap.FindAction("Jump").performed += OnJump;
-        inputManager.playerWalkActionMap.FindAction("Jump").canceled += OnCancelJump;
-        inputManager.playerWalkActionMap.FindAction("Attack").performed += OnMeleeAttack;
+        inputManager.AM_MoveGrounded.FindAction("Move").performed += OnMove;
+        inputManager.AM_MoveGrounded.FindAction("Move").canceled += OnCancelMove;
+        inputManager.AM_MoveGrounded.FindAction("Jump").performed += OnJump;
+        inputManager.AM_MoveGrounded.FindAction("Jump").canceled += OnCancelJump;
+
+        inputManager.AM_ActionDefault.FindAction("Attack").performed += OnMeleeAttack;
 
         //Climb 상태 바인딩
-        inputManager.playerCLIMBActionMap.FindAction("Walk").performed += OnClimbMove;
-        inputManager.playerCLIMBActionMap.FindAction("Walk").canceled += OnCancelClimbMove;
-        inputManager.playerCLIMBActionMap.FindAction("Jump").performed += OnClimbJump;
-        inputManager.playerCLIMBActionMap.FindAction("Jump").canceled += OnCancelJump;
+        inputManager.AM_MoveClimb.FindAction("Move").performed += OnClimbMove;
+        inputManager.AM_MoveClimb.FindAction("Move").canceled += OnCancelClimbMove;
+        inputManager.AM_MoveClimb.FindAction("Jump").performed += OnClimbJump;
+        inputManager.AM_MoveClimb.FindAction("Jump").canceled += OnCancelJump;
 
         //SuperDash 관련 액션 바인딩
-        inputManager.playerSuperDashReadyAM.FindAction("Launch").performed += OnSuperDashLaunch;
-        inputManager.playerSuperDashReadyAM.FindAction("Cancel").performed += OnSuperDashCancelBeforeLaunch;
-        inputManager.playerSuperDashAM.FindAction("Cancel").performed += OnSuperDashCancelAfterLaunch;
-        inputManager.playerSuperDashAM.FindAction("Move").performed += OnSuperDashMoveAfterLaunch;
+        inputManager.AM_MoveSuperDashReady.FindAction("Launch").performed += OnSuperDashLaunch;
+        inputManager.AM_MoveSuperDashReady.FindAction("Cancel").performed += OnSuperDashCancelBeforeLaunch;
+        inputManager.AM_MoveSuperDash.FindAction("Cancel").performed += OnSuperDashCancelAfterLaunch;
+        inputManager.AM_MoveSuperDash.FindAction("Move").performed += OnSuperDashMoveAfterLaunch;
 
 
         // inputAsset 내 다른 액션맵에 있는 액션도 바인딩 해야 함
@@ -85,30 +80,10 @@ public class PlayerController : MonoBehaviour
 
     public void ChangeMoveState(PlayerMoveState newMoveState)
     {
-        if (newMoveState == currentState) { return; }
-        currentState = newMoveState;
-        switch (currentState)
-        {
-            case PlayerMoveState.WALK:
-                InputManager.Instance.ChangeInputState(InputState.PLAYER_WALK);
-                break;
-            case PlayerMoveState.MIDAIR:
-                //MIDAIR 상태에서 키바인딩은 WALK 상태와 다르지 않기 때문에 WALK
-                InputManager.Instance.ChangeInputState(InputState.PLAYER_WALK);
-                break;
-            case PlayerMoveState.CLIMBING:
-                InputManager.Instance.ChangeInputState(InputState.PLAYER_CLIMB);
-                break;
-            case PlayerMoveState.SUPERDASH_READY:
-                InputManager.Instance.ChangeInputState(InputState.PLAYER_SUPERDASH_READY);
-                break;
-            case PlayerMoveState.SUPERDASH:
-                InputManager.Instance.ChangeInputState(InputState.PLAYER_SUPERDASH);
-                break;
-            case PlayerMoveState.CANNOTMOVE:
-                InputManager.Instance.ChangeInputState(InputState.IGNORE);
-                break;
-        }
+        //MIDAIR 상태에서 키바인딩은 GROUNDED 상태와 다르지 않기 때문에 GROUNDED
+        if (newMoveState == PlayerMoveState.MIDAIR)
+            newMoveState = PlayerMoveState.GROUNDED;
+        inputManager.SetMoveInputState(newMoveState);
     }
 
     #region InputAction 이벤트 핸들러
@@ -125,6 +100,7 @@ public class PlayerController : MonoBehaviour
         playerMove.Walk(moveVector);
     }
 
+    // Grounded에서 다른 상태로 넘어갔을 때 moveVector
     public void OnCancelMove(InputAction.CallbackContext context)
     {
         moveVector = context.ReadValue<Vector2>();
@@ -137,9 +113,9 @@ public class PlayerController : MonoBehaviour
         if (!PlayerRef.Instance.Logic.CanJump())
             return;
 
-        switch (currentState)
+        switch (currentMoveState)
         {
-            case PlayerMoveState.WALK:
+            case PlayerMoveState.GROUNDED:
                 if (moveVector.y >= 0 || !(platformBelow?.CompareTag("Platform") == true))
                 {
                     isJumpingUp = true;
@@ -204,7 +180,7 @@ public class PlayerController : MonoBehaviour
 
         if (context.performed)
         {
-            if (currentState != PlayerMoveState.CLIMBING)
+            if (currentMoveState != PlayerMoveState.CLIMBING)
             {
                 PlayerRef.Instance.combat.Attack();
             }
@@ -249,31 +225,4 @@ public class PlayerController : MonoBehaviour
     }
     #endregion
 
-    #region 그라운드 체크. PlayerGroundCheck.cs에서 호출되는 함수들
-    public void SetIsGrounded(GameObject belowObject)
-    {
-        //해당 값이 0일 경우, 플랫폼에 평행하게 진입할 경우 바로 리턴되는 아래와 같은 문제가 있었음.
-        //1. 이동하면서 더블점프하면 점프가 안 되는 버그
-        //2. A방향으로 더블점프를 착지 전에 -A 방향으로 전환 시 점프 리셋이 안 됌.
-        if (rb.velocity.y > 0.1f) return; // 1-way platform의 groundcheck 방지
-        if (currentState == PlayerMoveState.CLIMBING) return; // climb 중 groundcheck 방지
-
-
-        platformBelow = belowObject;
-        if (currentState != PlayerMoveState.WALK)
-        {
-            // 막 착지했을 때
-            playerMove.OnLanded();
-        }
-        ChangeMoveState(PlayerMoveState.WALK);
-    }
-
-    public void SetIsNotGrounded()
-    {
-        platformBelow = null;
-        if (currentState == PlayerMoveState.WALK)
-            ChangeMoveState(PlayerMoveState.MIDAIR);
-        // state가 Climbing일 경우 state를 수정하지 않음.
-    }
-    #endregion
 }

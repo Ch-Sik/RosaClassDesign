@@ -1,12 +1,12 @@
 {
-    "name": "Rosa_new",
+    "name": "Rosa",
     "maps": [
         {
             "name": "====== Player Movement ======",
             "id": "b6fe153d-7417-47ea-900b-36cd571cc9cd",
             "actions": [
                 {
-                    "name": "(이건 그냥 구분선임. 실제 작동하는 액션맵은 아님)",
+                    "name": "New action",
                     "type": "Button",
                     "id": "8b587816-2b43-464c-911a-8e63896c931f",
                     "expectedControlType": "Button",
@@ -23,18 +23,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "(이건 그냥 구분선임. 실제 작동하는 액션맵은 아님)",
+                    "action": "New action",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
             ]
         },
         {
-            "name": "MoveDefault",
+            "name": "PlayerWalk",
             "id": "7d360251-86b3-4cd1-aafc-f63e9cb03af2",
             "actions": [
                 {
-                    "name": "Move",
+                    "name": "Walk",
                     "type": "Value",
                     "id": "b5e348bb-3826-42c3-834f-fa93c47bf8ec",
                     "expectedControlType": "Vector2",
@@ -52,9 +52,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Interaction",
+                    "name": "Attack",
                     "type": "Button",
-                    "id": "ebcfc5d7-f007-470b-b938-e2d7b7339f11",
+                    "id": "64527d3e-3ed6-4a2b-860b-50cb9d88fa38",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -69,7 +69,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -80,7 +80,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -91,7 +91,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -102,7 +102,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -113,7 +113,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -124,7 +124,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -135,7 +135,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -146,7 +146,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -157,7 +157,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -168,7 +168,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -179,7 +179,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "XR",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -190,7 +190,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Joystick",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -207,23 +207,34 @@
                 },
                 {
                     "name": "",
-                    "id": "d7d27486-22cf-4a2d-95c2-6acbdd3ef431",
-                    "path": "<Keyboard>/w",
+                    "id": "d5c460b7-7c2b-453e-b8f8-259d0ec3951e",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d8f599cc-c780-4398-b07e-f9a0e84db95a",
+                    "path": "",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Interaction",
+                    "action": "Attack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
             ]
         },
         {
-            "name": "Climb",
+            "name": "PlayerClimb",
             "id": "4e12faf0-618c-412b-9a63-75818a9841ca",
             "actions": [
                 {
-                    "name": "Move",
+                    "name": "Walk",
                     "type": "Value",
                     "id": "6b5aab0e-a1d6-4142-a274-a711836d8410",
                     "expectedControlType": "Vector2",
@@ -249,7 +260,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -260,7 +271,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -271,7 +282,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -282,7 +293,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -293,7 +304,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -304,7 +315,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -315,7 +326,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -326,7 +337,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -337,7 +348,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -348,7 +359,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -359,7 +370,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "XR",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -370,7 +381,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Joystick",
-                    "action": "Move",
+                    "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -388,7 +399,7 @@
             ]
         },
         {
-            "name": "SuperDashReady",
+            "name": "PlayerSuperDashReady",
             "id": "abcdeeec-9544-498e-b8b6-43b9f17d4d1c",
             "actions": [
                 {
@@ -458,7 +469,7 @@
             ]
         },
         {
-            "name": "SuperDash",
+            "name": "PlayerSuperDash",
             "id": "ab59ac29-ace8-4f9d-9c3d-19bb719158cc",
             "actions": [
                 {
@@ -550,11 +561,11 @@
             ]
         },
         {
-            "name": "===== Player Action =====",
+            "name": "===== Aim, Attack & Magic =====",
             "id": "a36e1b2b-826c-42bf-aa99-6f3e7a0ed9a0",
             "actions": [
                 {
-                    "name": "(이건 그냥 구분선임. 실제 작동하는 액션맵은 아님)",
+                    "name": "New action",
                     "type": "Button",
                     "id": "ec92241c-f531-4618-9714-3dadb51159ed",
                     "expectedControlType": "Button",
@@ -571,14 +582,14 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "(이건 그냥 구분선임. 실제 작동하는 액션맵은 아님)",
+                    "action": "New action",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
             ]
         },
         {
-            "name": "ActionDefault",
+            "name": "PlayerDefault",
             "id": "d700bab1-4899-4bb1-9c40-d875a07963bb",
             "actions": [
                 {
@@ -630,15 +641,6 @@
                     "name": "MagicSelect",
                     "type": "Button",
                     "id": "a07d42f1-ad2a-4994-b421-3d309b7333f5",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Attack",
-                    "type": "Button",
-                    "id": "a2ca53bc-7563-4d67-9318-e029f2a6223f",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -711,56 +713,6 @@
                     "action": "MagicSelect",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "0bc874e6-3674-4935-9754-64d14e364938",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Attack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "5f56b8ca-bb1e-4e85-968e-55abdae2af69",
-                    "path": "",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Attack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                }
-            ]
-        },
-        {
-            "name": "MagicReady",
-            "id": "e750deb9-9479-4122-9ea0-2d1496f56e5f",
-            "actions": [
-                {
-                    "name": "New action",
-                    "type": "Button",
-                    "id": "547c02bf-aefa-4428-92cd-84185660a03e",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                }
-            ],
-            "bindings": [
-                {
-                    "name": "",
-                    "id": "aedfbc93-21ed-4f99-a04c-9f6a5ad14ec4",
-                    "path": "",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "New action",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 }
             ]
         },
@@ -769,7 +721,7 @@
             "id": "5e995706-df2f-43fd-89a2-dfbc1a90b430",
             "actions": [
                 {
-                    "name": "(이건 그냥 구분선임. 실제 작동하는 액션맵은 아님)",
+                    "name": "New action",
                     "type": "Button",
                     "id": "681debd5-429b-4121-934a-ef82fbdc6702",
                     "expectedControlType": "Button",
@@ -786,55 +738,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "(이건 그냥 구분선임. 실제 작동하는 액션맵은 아님)",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                }
-            ]
-        },
-        {
-            "name": "InGame",
-            "id": "f0593d32-10cb-4a1d-9008-2b7fbcf45764",
-            "actions": [
-                {
-                    "name": "Pause",
-                    "type": "Button",
-                    "id": "fe1e0d60-3d41-4aa5-b369-d9daea884e56",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "OpenMenu",
-                    "type": "Button",
-                    "id": "94cec3d1-6e1a-40eb-8432-cd35a360fa18",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                }
-            ],
-            "bindings": [
-                {
-                    "name": "",
-                    "id": "e8dca3c9-9abf-4c70-b3d6-e30ddfa0aa9b",
-                    "path": "",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Pause",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "fef76e93-e3a9-4396-9ed1-9e5364d09203",
-                    "path": "",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "OpenMenu",
+                    "action": "New action",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -869,7 +773,7 @@
             ]
         },
         {
-            "name": "Menu",
+            "name": "UI",
             "id": "ce713f7f-cf8b-47a5-9f8f-9d31529a5cb1",
             "actions": [
                 {
