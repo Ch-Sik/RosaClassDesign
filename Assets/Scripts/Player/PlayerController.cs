@@ -201,6 +201,7 @@ public class PlayerController : MonoBehaviour
             if (currentState != PlayerMoveState.CLIMBING)
             {
                 PlayerRef.Instance.combat.Attack();
+                playerAnim.SetTrigger("Attack");
             }
         }
     }
