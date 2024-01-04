@@ -46,7 +46,7 @@ public class PlayerAnimation : MonoBehaviour
         
         anim.SetBool("isWalking", (playerControl.MoveState == PlayerMoveState.WALK && playerMove.moveVector.x != 0) ? true : false);
         anim.SetBool("isJumping", (playerControl.MoveState == PlayerMoveState.MIDAIR && !playerMove.isDoingHooking) ? true : false);
-        //anim.SetBool("isClimbing", (playerControl.MoveState == PlayerMoveState.CLIMBING) ? true : false);
+        anim.SetBool("isClimbing", (playerControl.MoveState == PlayerMoveState.CLIMBING) ? true : false);
         //anim.SetBool("isHooking", (playerMove.isDoingHooking) ? true : false);
         //anim.SetBool("isClimbOver", ((playerControl.MoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
         anim.SetFloat("yVel", rb.velocity.y);
