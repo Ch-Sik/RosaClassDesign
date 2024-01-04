@@ -7,20 +7,21 @@ using AnyPortrait;
 /// </summary>
 public class PlayerAnimation : MonoBehaviour
 {
-    Rigidbody2D rb;
-    Animator anim;
-    PlayerController playerControl;
-    PlayerMovement playerMove;
-    PlayerRef playerRef;
-    apPortrait portrait;
+    public Rigidbody2D rb;
+    public Animator anim;
+    public PlayerController playerControl;
+    public PlayerMovement playerMove;
+    public PlayerRef playerRef;
+    public apPortrait portrait;
 
-    enum AnimState {Idle, Walk, Attack, Jump, Climb }
+    public enum AnimState {Idle, Walk, Attack, Jump, Climb, Fall }
 
-    AnimState state = AnimState.Idle;
+    
+    public AnimState state = AnimState.Idle;
     bool isFirstFrame = true;
     bool isAttack = false;
 
-    private void Awake()
+    private void Start()
     {
         GetComponents();
     }
@@ -29,9 +30,10 @@ public class PlayerAnimation : MonoBehaviour
     {
         playerRef = PlayerRef.Instance;
         rb = playerRef.rb;
-        anim = playerRef.anim;
+        //anim = playerRef.anim;
         playerControl = playerRef.Controller;
         playerMove = playerRef.Move;
+        portrait = GetComponentInChildren<apPortrait>();
     }
 
     private void FixedUpdate()
@@ -42,49 +44,50 @@ public class PlayerAnimation : MonoBehaviour
     void UpdateAnim()
     {
         
-        anim.SetBool("isWalking", (playerControl.MoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0) ? true : false);
+        anim.SetBool("isWalking", (playerControl.MoveState == PlayerMoveState.WALK && playerMove.moveVector.x != 0) ? true : false);
         anim.SetBool("isJumping", (playerControl.MoveState == PlayerMoveState.MIDAIR && !playerMove.isDoingHooking) ? true : false);
-        anim.SetBool("isClimbing", (playerControl.MoveState == PlayerMoveState.CLIMBING) ? true : false);
-        anim.SetBool("isHooking", (playerMove.isDoingHooking) ? true : false);
-        anim.SetBool("isClimbOver", ((playerControl.MoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
+        //anim.SetBool("isClimbing", (playerControl.MoveState == PlayerMoveState.CLIMBING) ? true : false);
+        //anim.SetBool("isHooking", (playerMove.isDoingHooking) ? true : false);
+        //anim.SetBool("isClimbOver", ((playerControl.MoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
         anim.SetFloat("yVel", rb.velocity.y);
-        if (!playerMove.isWallJumping)
-        {
-            if (playerControl.MoveState == PlayerMoveState.CLIMBING)
-            {
-                if (playerMove.isWallClimbingTop)
-                {
-                    if (playerMove.moveVector.y > 0)
-                    {
-                        Debug.Log("애니메이션 정재생");
-                        /*
-                        anim["ClimbAnimation"].speed = 1;
-                        if (!anim.IsPlaying("ClimbAnimation"))
-                        {
-                            anim.Play("ClimbAnimation");
-                        }
-                        */
-                    }
-                    else if (playerMove.moveVector.y < 0)
-                    {
-                        Debug.Log("애니메이션 역재생");
-                        /*
-                        anim["ClimbAnimation"].time = anim["ClimbAnimation"].length;
-                        anim["ClimbAnimation"].speed = -1;
-                        if (!anim.IsPlaying("ClimbAnimation"))
-                        {
-                            anim.Play("ClimbAnimation");
-                        }
-                        */
-                    }
-                    else
-                    {
-                        Debug.Log("애니메이션 정지");
-                        //anim.Stop("ClimbAnimation");
-                    }
-                }
-            }
-        }
+        //if (!playerMove.isWallJumping)
+        //{
+        //    if (playerControl.MoveState == PlayerMoveState.CLIMBING)
+        //    {
+        //        if (playerMove.isWallClimbingTop)
+        //        {
+        //            if (playerMove.moveVector.y > 0)
+        //            {
+        //                Debug.Log("애니메이션 정재생");
+        //                /*
+        //                anim["ClimbAnimation"].speed = 1;
+        //                if (!anim.IsPlaying("ClimbAnimation"))
+        //                {
+        //                    anim.Play("ClimbAnimation");
+        //                }
+        //                */
+        //            }
+        //            else if (playerMove.moveVector.y < 0)
+        //            {
+        //                Debug.Log("애니메이션 역재생");
+        //                /*
+        //                anim["ClimbAnimation"].time = anim["ClimbAnimation"].length;
+        //                anim["ClimbAnimation"].speed = -1;
+        //                if (!anim.IsPlaying("ClimbAnimation"))
+        //                {
+        //                    anim.Play("ClimbAnimation");
+        //                }
+        //                */
+        //            }
+        //            else
+        //            {
+        //                Debug.Log("애니메이션 정지");
+        //                //anim.Stop("ClimbAnimation");
+        //            }
+        //        }
+        //    }
+        //}
+        
     }
 
     void UpdateIdle()
@@ -95,7 +98,7 @@ public class PlayerAnimation : MonoBehaviour
             isFirstFrame = false;
         }
 
-        if(playerControl.MoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0)
+        if(playerControl.MoveState == PlayerMoveState.WALK && playerMove.moveVector.x != 0)
         {
             state = AnimState.Walk;
             isFirstFrame = true;
@@ -115,6 +118,11 @@ public class PlayerAnimation : MonoBehaviour
             state = AnimState.Attack;
             isFirstFrame = true;
         }
+        else if(playerControl.MoveState == PlayerMoveState.MIDAIR && rb.velocity.y < 0)
+        {
+            state = AnimState.Fall;
+            isFirstFrame = true;
+        }
     }
 
     void UpdateAttack()
@@ -130,7 +138,8 @@ public class PlayerAnimation : MonoBehaviour
     {
         if (isFirstFrame)
         {
-            portrait.CrossFade("Walk");
+            portrait.CrossFade("Run");
+            portrait.SetAnimationSpeed(2);
             isFirstFrame = false;
         }
 
@@ -160,12 +169,18 @@ public class PlayerAnimation : MonoBehaviour
     {
         if (isFirstFrame)
         {
-            portrait.CrossFade("JumpBegin");
+            portrait.CrossFade("JumpBegin", 0.1f);
             isFirstFrame = false;
         }
 
-        if (playerControl.MoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0)
+        if(playerControl.MoveState == PlayerMoveState.MIDAIR && rb.velocity.y < 0)
         {
+            state = AnimState.Fall;
+            isFirstFrame = true;
+        }
+        else if (playerControl.MoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0)
+        {
+            portrait.CrossFade("JumpEnd",0.1f);
             state = AnimState.Walk;
             isFirstFrame = true;
         }
@@ -180,7 +195,40 @@ public class PlayerAnimation : MonoBehaviour
             isFirstFrame = true;
         }
         else 
-        { 
+        {
+            portrait.CrossFade("JumpEnd", 0.1f);
+            state = AnimState.Idle;
+            isFirstFrame = true;
+        }
+    }
+
+    void UpdateFall()
+    {
+        if(isFirstFrame)
+        {
+            portrait.CrossFade("Fall");
+            isFirstFrame = false;
+        }
+
+        if (playerControl.MoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0)
+        {
+            portrait.CrossFade("JumpEnd", 0.1f);
+            state = AnimState.Walk;
+            isFirstFrame = true;
+        }
+        else if (playerControl.MoveState == PlayerMoveState.CLIMBING)
+        {
+            state = AnimState.Climb;
+            isFirstFrame = true;
+        }
+        else if (isAttack)
+        {
+            state = AnimState.Attack;
+            isFirstFrame = true;
+        }
+        else
+        {
+            portrait.CrossFade("JumpEnd", 0.1f);
             state = AnimState.Idle;
             isFirstFrame = true;
         }

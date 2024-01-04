@@ -8,7 +8,6 @@ public class PlayerInput : MonoBehaviour
     public float speed;
     public float currentVelocity;
 
-    public TMP_Text velocityText;
     public Animator anim;
 
     // Start is called before the first frame update
@@ -24,6 +23,10 @@ public class PlayerInput : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftShift))
             currentVelocity *= 3;
         anim.SetFloat("velocityAbs", Mathf.Abs(currentVelocity));
-        velocityText.text = currentVelocity.ToString();
+
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            anim.SetTrigger("Attack");
+        }
     }
 }

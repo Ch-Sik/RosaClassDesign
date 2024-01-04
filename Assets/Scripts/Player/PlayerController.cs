@@ -242,6 +242,7 @@ public class PlayerController : MonoBehaviour
         {
             // 막 착지했을 때
             playerMove.OnLanded();
+            playerAnim.SetTrigger("Grounded");
         }
         ChangeMoveState(PlayerMoveState.WALK);
     }
