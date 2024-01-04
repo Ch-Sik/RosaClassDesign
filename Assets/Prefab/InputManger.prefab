@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1673152693718459606
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3304661309547001356}
+  - component: {fileID: 7855161928197896393}
+  m_Layer: 0
+  m_Name: InputManger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3304661309547001356
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1673152693718459606}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -13.18668, y: 0.850519, z: -1.4413778}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7855161928197896393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1673152693718459606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6920f67e30baa914ab690320eeee715e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _inputAsset: {fileID: -944628639613478452, guid: d4de120757f938d49b71c5a160e782a8, type: 3}
+  uiActionMap:
+    m_Name: Ui
+    m_Id: 419a597a-059a-4405-82a3-63a2bc880cf7
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  dialogueActionMap:
+    m_Name: Dialogue
+    m_Id: 3272b4dc-7d1c-46cb-8e08-ff1913c8e883
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  playerWalkActionMap:
+    m_Name: Player Walk
+    m_Id: 05de5aba-e8af-451d-9a6b-afa4fde19835
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  playerCLIMBActionMap:
+    m_Name: Player CLIMB
+    m_Id: 39a2e446-4a49-4a38-8ae9-298fa3892501
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  playerMonkeyActionMap:
+    m_Name: Player Monkey
+    m_Id: 8ce36e80-e792-436a-91e8-be292b934689
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  playerDefaultActionMap:
+    m_Name: Player Default
+    m_Id: b9cbf061-2237-4119-bc81-cee3152bb84f
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  state: 2

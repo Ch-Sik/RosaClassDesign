@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class UISkill : MonoBehaviour
 {
     [Header("Data")]
-    public SOSkill skill;
+    public SO_Skill skill;
 
     [Header("ItemUI")]
     public Image border;
@@ -16,13 +16,13 @@ public class UISkill : MonoBehaviour
     //일부러 이벤트를 사용하지 않았다. 어차피 Init을 할테니 그냥 서로 연결시켜두는 것이 추후에도 나을 것.
     public InventoryUI inventoryUI;
 
-    public void Init(SOSkill skill)
+    public void Init(SO_Skill skill)
     {
         ResetBorder();
 
         this.skill = skill;
-        skillImage.sprite = skill.skillImage;
-        backImage.sprite = skill.skillImage;
+        skillImage.sprite = skill.icon;
+        backImage.sprite = skill.icon;
         SetUnlock();
     }
 

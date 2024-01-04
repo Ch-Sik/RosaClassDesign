@@ -12,15 +12,15 @@ public class AttackObject : MonoBehaviour
 {
     Collider2D col;                                 //오브젝트의 충돌 컴포넌트
     PlayerCombat playerCombat;                      //PlayerCombat과 이벤트 전달을 위해 직접 연결
-    LayerMask attackableObjects;                    //attackable한 objects의 layermask
-    LayerMask butterfly;                            //butterfly인식을 위한 layermask
+    LayerMask layer_attackable;                    //attackable한 objects의 layermask
+    LayerMask layer_butterfly;                      //butterfly인식을 위한 layermask
 
     //PlayerCombat에서 Init해준다. 기본적으로 
     public void Init(PlayerCombat playerCombat, LayerMask attackableObjects, LayerMask butterfly)
     {
         this.playerCombat = playerCombat;
-        this.attackableObjects = attackableObjects;
-        this.butterfly = butterfly;
+        layer_attackable = attackableObjects;
+        layer_butterfly = butterfly;
     }
 
     //시작과 동시에 콜라이더를 세팅한다.
@@ -46,13 +46,20 @@ public class AttackObject : MonoBehaviour
     //충돌 감지
     public void OnTriggerEnter2D(Collider2D collision)
     {
+        // 몬스터 등등과 충돌한다면,
+        if ((layer_attackable & 1 << collision.gameObject.layer) != 0)
+        {
+            Debug.Log($"플레이어 공격: {collision.gameObject.name}");
+            collision.GetComponent<Hittable>().GetHitt(PlayerRef.Instance.State.AttackDmg, playerCombat.angle);
+            playerCombat.StopAttack();
+        }
+
         //나비와 충돌한다면,
-        if ((butterfly.value & 1 << collision.gameObject.layer) > 0)
+        if ((layer_butterfly.value & 1 << collision.gameObject.layer) > 0)
         {
             Debug.Log("나비와 충돌됨");
             //PlayerCombat에 RideButterFly함수를 실행시키며, 나비의 부모 데이터를 전달한다.
-            //나비의 충돌포인트는 나비 자체에 있으나, 나비 프리팹은 웨이포인트 통솔을 위한 부모오브젝트에서 스크립트를 조절하기 때문
-            playerCombat.RideButterFly(collision.transform.parent.GetComponent<ButterFly>());
+            playerCombat.RideButterFly(collision.transform.parent.GetComponentInChildren<Butterfly>());
         }
     }
 }

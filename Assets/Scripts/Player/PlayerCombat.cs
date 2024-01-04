@@ -4,6 +4,7 @@ using UnityEngine;
 using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine.UIElements;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// ButterFlyAction을 위해서라도, 얘는 최종부모에 넣어두자.
@@ -17,6 +18,7 @@ public class PlayerCombat : MonoBehaviour
     public GameObject attackEntity;         //공격을 위한 AttackObject의 게임오브젝트
     public AttackObject attackObject;       //공격 이벤트를 위한 AttackObject
     public bool isAttack = false;           //공격중이라면 true, 아니라면 false;
+    public bool isFly = false;              //나비를 타고 있다면 true, 아니라면 false;
 
     [Header("CombatOptions")]
     public LayerMask attackableObjects;     //공격가능한 대상 레이어 마스크
@@ -28,30 +30,24 @@ public class PlayerCombat : MonoBehaviour
     public float attackCooltime;            //공격을 위한 쿨타임
 
     public float angle;                         //마우스의 Euler Angle
-    [HideInInspector] public Vector2 mouse;     //마우스 좌표
+    [HideInInspector] public Vector2 mouse;     //마우스 월드 좌표
     public Vector2 direction;                   //방향벡터
+    private InputAction aimInput;
 
     //시작하면서 AttackEntity에 존재하는 attackObject를 얻어오며, attackObject를 Init해준다.
     private void Start()
     {
         attackObject = attackEntity.GetComponent<AttackObject>();
         attackObject.Init(this, attackableObjects, butterfly);
-    }
-
-    private void Update()
-    {
-
-        //테스트용 추후엔 Update를 사용할 일이 없다.
-        if (Input.GetMouseButtonDown(0))
-        {
-            Attack();
-        }
+        aimInput = InputManager.Instance._inputAsset.FindActionMap("ActionDefault").FindAction("Aim");
     }
 
     //SetData는 호출되면, 현재의 마우스 위치를 토대로 각도와 방향벡터 Data를 Set해준다.
     void SetData()
     {
-        mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);                                            //마우스의 월드 좌표 반환
+        Vector2 mouseScreenPos2 = aimInput.ReadValue<Vector2>();
+        float zDistance = transform.position.z - Camera.main.transform.position.z; // 플레이어와 카메라의 z좌표 차이
+        mouse = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPos2.x, mouseScreenPos2.y, zDistance));   //마우스의 월드 좌표 반환
         angle = Mathf.Atan2(mouse.y - transform.position.y, mouse.x - transform.position.x) * Mathf.Rad2Deg;    //해당 좌표 데이터를 기반으로 각도 얻음
         direction = new Vector2(mouse.x - transform.position.x, mouse.y - transform.position.y).normalized;     //해당 좌표 데이터를 기반으로 방향벡터 얻음
         if (transform.lossyScale.x < 0)
@@ -103,7 +99,6 @@ public class PlayerCombat : MonoBehaviour
     private void OnStartAttack()
     {
         isAttack = true;
-        Debug.Log("Start Attack");
     }
 
     //공격 종료 이벤트
@@ -111,7 +106,6 @@ public class PlayerCombat : MonoBehaviour
     {
         isAttack = false;
         //쿨타임은 여기 넣자.
-        Debug.Log("End Attack");
     }
 
     //추후에 공격시 대미지나 공격력을 계산하기 위해 만들었다. AttackObejct에서 충돌판정부에서 사용하자.
@@ -120,8 +114,11 @@ public class PlayerCombat : MonoBehaviour
     }
 
     //AttackObject가 나비에 닿을 경우, 해당 나비데이터를 PlayerCombat에 전달해주고, 그 데이터를 나비에 전달하기 위한 함수
-    public void RideButterFly(ButterFly butterFly)
+    public void RideButterFly(Butterfly butterFly)
     {
+        if (isFly)
+            return;
+
         StopAttack();
         butterFly.ButterFlyAct(transform);
     }

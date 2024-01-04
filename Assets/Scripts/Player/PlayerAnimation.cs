@@ -37,15 +37,14 @@ public class PlayerAnimation : MonoBehaviour
     void UpdateAnim()
     {
 
-        anim.SetBool("isWalking", (playerControl.MoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0) ? true : false);
-        anim.SetBool("isJumping", (playerControl.MoveState == PlayerMoveState.MIDAIR && !playerMove.isDoingHooking) ? true : false);
-        anim.SetBool("isClimbing", (playerControl.MoveState == PlayerMoveState.CLIMBING) ? true : false);
-        anim.SetBool("isHooking", (playerMove.isDoingHooking) ? true : false);
-        anim.SetBool("isClimbOver", ((playerControl.MoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
+        anim.SetBool("isWalking", (playerControl.currentMoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0) ? true : false);
+        anim.SetBool("isJumping", (playerControl.currentMoveState == PlayerMoveState.MIDAIR) ? true : false);
+        anim.SetBool("isClimbing", (playerControl.currentMoveState == PlayerMoveState.CLIMBING) ? true : false);
+        anim.SetBool("isClimbOver", ((playerControl.currentMoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
         anim.SetFloat("yVel", rb.velocity.y);
         if (!playerMove.isWallJumping)
         {
-            if (playerControl.MoveState == PlayerMoveState.CLIMBING)
+            if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
             {
                 if (playerMove.isWallClimbingTop)
                 {
