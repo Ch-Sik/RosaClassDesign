@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HittableMonster : Hittable
+public class MonsterDamageReceiver : DamageReceiver
 {
     [SerializeField] Blackboard blackboard;
     [SerializeField] MonsterState monsterState;

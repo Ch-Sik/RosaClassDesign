@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Hittable : MonoBehaviour
+public class DamageReceiver : MonoBehaviour
 {
     public virtual void GetHitt(int damage, float attackAngle)
     {

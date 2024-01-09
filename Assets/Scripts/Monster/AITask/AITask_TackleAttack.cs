@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Panda;
 
-[RequireComponent(typeof(MonsterDamageObject))]
+[RequireComponent(typeof(MonsterDamageInflictor))]
 public class AITask_TackleAttack : MonoBehaviour
 {
     [SerializeField]
@@ -11,7 +11,7 @@ public class AITask_TackleAttack : MonoBehaviour
     [SerializeField]
     private new Rigidbody2D rigidbody;
     [SerializeField]
-    MonsterDamageObject damageComponent;
+    MonsterDamageInflictor damageComponent;
 
     [Header("공격 관련")]
     [SerializeField, Tooltip("돌진 패턴 공격력")]
@@ -59,7 +59,7 @@ public class AITask_TackleAttack : MonoBehaviour
         }
         if(damageComponent == null)
         {
-            damageComponent = GetComponent<MonsterDamageObject>();
+            damageComponent = GetComponent<MonsterDamageInflictor>();
             if(damageComponent == null)
                 Debug.LogError($"{gameObject.name}: damageComponent를 찾을 수 없음!");
         }

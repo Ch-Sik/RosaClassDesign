@@ -8,7 +8,7 @@ using UnityEngine.Animations;
 /// 공격을 판정하기 위한 투사체를 위한 스크립트입니다.
 /// </summary>
 
-public class AttackObject : MonoBehaviour
+public class PlayerDamageInflictor : MonoBehaviour
 {
     Collider2D col;                                 //오브젝트의 충돌 컴포넌트
     PlayerCombat playerCombat;                      //PlayerCombat과 이벤트 전달을 위해 직접 연결
@@ -50,7 +50,7 @@ public class AttackObject : MonoBehaviour
         if ((layer_attackable & 1 << collision.gameObject.layer) != 0)
         {
             Debug.Log($"플레이어 공격: {collision.gameObject.name}");
-            collision.GetComponent<Hittable>().GetHitt(PlayerRef.Instance.State.AttackDmg, playerCombat.angle);
+            collision.GetComponent<DamageReceiver>().GetHitt(PlayerRef.Instance.State.AttackDmg, playerCombat.angle);
             playerCombat.StopAttack();
         }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
-public class MonsterDamageObject : MonoBehaviour
+public class MonsterDamageInflictor : MonoBehaviour
 {
     public int damage;
     private void OnCollisionEnter2D(Collision2D collision)
