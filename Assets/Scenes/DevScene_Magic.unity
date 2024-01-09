@@ -497,38 +497,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4520447404637267053, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
   m_PrefabInstance: {fileID: 7021938175651734110}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &742904578 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8743732499894286392, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
-  m_PrefabInstance: {fileID: 1721392595}
-  m_PrefabAsset: {fileID: 0}
---- !u!50 &742904583
-Rigidbody2D:
-  serializedVersion: 4
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 742904578}
-  m_BodyType: 1
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
 --- !u!1001 &815689957
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4008,41 +3976,9 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 143508074348399508, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 143508074348399508, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
       propertyPath: playerStateUI
       value: 
       objectReference: {fileID: 1503000557}
-    - target: {fileID: 143508074348399508, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
-      propertyPath: currentSelectedMagic
-      value: 
-      objectReference: {fileID: 11400000, guid: e77b856be9411344f93225ae0090d0f4, type: 2}
-    - target: {fileID: 143508074348399508, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
-      propertyPath: magicList.Array.size
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 143508074348399508, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
-      propertyPath: magicList.Array.data[0]
-      value: 
-      objectReference: {fileID: 11400000, guid: fba58eb9aab3a584e944576a9121b4d4, type: 2}
-    - target: {fileID: 143508074348399508, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
-      propertyPath: magicList.Array.data[1]
-      value: 
-      objectReference: {fileID: 11400000, guid: abd1b3ca845ac5e49bd4d5b3ee2b0728, type: 2}
-    - target: {fileID: 143508074348399508, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
-      propertyPath: magicList.Array.data[2]
-      value: 
-      objectReference: {fileID: 11400000, guid: bd67ad2d8bd22224ea213f171716cb5f, type: 2}
-    - target: {fileID: 143508074348399508, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
-      propertyPath: magicList.Array.data[3]
-      value: 
-      objectReference: {fileID: 11400000, guid: e77b856be9411344f93225ae0090d0f4, type: 2}
-    - target: {fileID: 143508074348399508, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
-      propertyPath: magicList.Array.data[4]
-      value: 
-      objectReference: {fileID: 11400000, guid: e77b856be9411344f93225ae0090d0f4, type: 2}
     - target: {fileID: 3115691681920552347, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
       propertyPath: m_Name
       value: Player
@@ -4087,17 +4023,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7725802082029578169, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
-      propertyPath: Logic
-      value: 
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 8743732499894286392, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 742904583}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4d169afb5daf8ff45a95f9e61fa0e022, type: 3}
 --- !u!1 &1837368296
 GameObject:

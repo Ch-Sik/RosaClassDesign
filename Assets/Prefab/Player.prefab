@@ -128,7 +128,6 @@ Transform:
   - {fileID: 3720588161586707496}
   - {fileID: 7590511551983532891}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7725802082029578169
 MonoBehaviour:
@@ -149,7 +148,6 @@ MonoBehaviour:
   combat: {fileID: 0}
   Animation: {fileID: 0}
   sound: {fileID: 0}
-  Logic: {fileID: 0}
   rb: {fileID: 0}
   col: {fileID: 0}
   anim: {fileID: 0}
@@ -289,13 +287,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a116c4f25ee3129448c2a086892cc227, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentState: 0
   inputAsset: {fileID: 0}
   playerMove: {fileID: 0}
   playerCombat: {fileID: 0}
   rb: {fileID: 0}
   playerAnim: {fileID: 0}
-  moveVector: {x: 0, y: 0}
   playerRef: {fileID: 0}
 --- !u!114 &2057387464850298031
 MonoBehaviour:
@@ -320,6 +316,7 @@ MonoBehaviour:
   wallJumpPower: {x: 3, y: 10}
   minWallJumpDuration: 0.2
   maxClimbTime: 0
+  superDashSpeed: 3
   rb: {fileID: 0}
   col: {fileID: 0}
   playerControl: {fileID: 0}
@@ -332,9 +329,7 @@ MonoBehaviour:
   isWallJumping: 0
   isDoingMagic: 0
   isFalling: 0
-  isDoingHooking: 0
-  isHitHookingTarget: 0
-  playerAnim: {fileID: 0}
+  isDoingSuperDash: 0
   playerRef: {fileID: 0}
 --- !u!114 &2387705055096087820
 MonoBehaviour:
@@ -426,12 +421,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e161333bce389cc439b8cb062e081f90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentSelectedMagic: {fileID: 11400000, guid: b36015cd9e63c274a865031d5db35edd, type: 2}
-  isPreviewOn: 0
-  terrainType: 0
-  wallLR: 0
+  magicList:
+  - {fileID: 11400000, guid: fba58eb9aab3a584e944576a9121b4d4, type: 2}
+  - {fileID: 11400000, guid: abd1b3ca845ac5e49bd4d5b3ee2b0728, type: 2}
+  - {fileID: 11400000, guid: bd67ad2d8bd22224ea213f171716cb5f, type: 2}
+  - {fileID: 11400000, guid: e77b856be9411344f93225ae0090d0f4, type: 2}
   previewObject: {fileID: 2642815221398176241}
   castDist: 1.5
+  playerStateUI: {fileID: 0}
+  selectedMagic: {fileID: 0}
+  isPreviewOn: 0
+  targetTerrainType: 0
+  wallLR: 0
   spawnedObject:
   - {fileID: 0}
   - {fileID: 0}
@@ -441,10 +442,6 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  debug_isMouseInTerrain: 0
-  debug_mousePosition: {x: 0, y: 0, z: 0}
-  debug_raycastPosition: {x: 0, y: 0, z: 0}
-  debug_targetTilePosition: {x: 0, y: 0, z: 0}
 --- !u!1 &6679340956211731867
 GameObject:
   m_ObjectHideFlags: 0
@@ -576,6 +573,7 @@ GameObject:
   - component: {fileID: 9192916594342069269}
   - component: {fileID: 1134063485376372986}
   - component: {fileID: 4531016787827012638}
+  - component: {fileID: 3361931144325385087}
   m_Layer: 21
   m_Name: AttackObject
   m_TagString: Untagged
@@ -697,3 +695,30 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.49999997
+--- !u!50 &3361931144325385087
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8743732499894286392}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
