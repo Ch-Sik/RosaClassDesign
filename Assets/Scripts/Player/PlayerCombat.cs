@@ -128,10 +128,7 @@ public class PlayerCombat : MonoBehaviour
         if (!showGizmo)
             return;
 
-
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition); // 마우스 위치를 월드 좌표로 변환
-
-        Vector3 direction = new Vector2(mousePosition.x - transform.position.x, mousePosition.y - transform.position.y).normalized;
+        Vector3 direction = new Vector2(mouse.x - transform.position.x, mouse.y - transform.position.y).normalized;
 
         // 기준점에서 직사각형의 중심을 계산
         Vector3 center = transform.position + direction * (attackDistance / 2);
