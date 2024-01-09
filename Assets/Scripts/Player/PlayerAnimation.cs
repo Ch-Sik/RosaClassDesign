@@ -7,15 +7,82 @@ using UnityEngine;
 /// </summary>
 public class PlayerAnimation : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    Rigidbody2D rb;
+    Animator anim;
+    PlayerController playerControl;
+    PlayerMovement playerMove;
+    PlayerRef playerRef;
+
+
+
+    private void Awake()
     {
-        
+        GetComponents();
     }
 
-    // Update is called once per frame
-    void Update()
+    void GetComponents()
     {
-        
+        playerRef = PlayerRef.Instance;
+        rb = playerRef.rb;
+        anim = playerRef.anim;
+        playerControl = playerRef.Controller;
+        playerMove = playerRef.Move;
+    }
+
+    private void FixedUpdate()
+    {
+        UpdateAnim();
+    }
+
+    void UpdateAnim()
+    {
+
+        anim.SetBool("isWalking", (playerControl.currentMoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0) ? true : false);
+        anim.SetBool("isJumping", (playerControl.currentMoveState == PlayerMoveState.MIDAIR) ? true : false);
+        anim.SetBool("isClimbing", (playerControl.currentMoveState == PlayerMoveState.CLIMBING) ? true : false);
+        anim.SetBool("isClimbOver", ((playerControl.currentMoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
+        anim.SetFloat("yVel", rb.velocity.y);
+        if (!playerMove.isWallJumping)
+        {
+            if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
+            {
+                if (playerMove.isWallClimbingTop)
+                {
+                    if (playerMove.moveVector.y > 0)
+                    {
+                        Debug.Log("애니메이션 정재생");
+                        /*
+                        anim["ClimbAnimation"].speed = 1;
+                        if (!anim.IsPlaying("ClimbAnimation"))
+                        {
+                            anim.Play("ClimbAnimation");
+                        }
+                        */
+                    }
+                    else if (playerMove.moveVector.y < 0)
+                    {
+                        Debug.Log("애니메이션 역재생");
+                        /*
+                        anim["ClimbAnimation"].time = anim["ClimbAnimation"].length;
+                        anim["ClimbAnimation"].speed = -1;
+                        if (!anim.IsPlaying("ClimbAnimation"))
+                        {
+                            anim.Play("ClimbAnimation");
+                        }
+                        */
+                    }
+                    else
+                    {
+                        Debug.Log("애니메이션 정지");
+                        //anim.Stop("ClimbAnimation");
+                    }
+                }
+            }
+        }
+    }
+
+    public void SetTrigger(string name)
+    {
+        anim.SetTrigger(name);
     }
 }

@@ -1,0 +1,22 @@
+tree("Root")
+    repeat
+        fallback                            // 실행 우선순위: 피격 리액션 -> 공격 -> 추격 -> 순찰
+            tree("Hitt")
+            tree("Chase and Attack")
+            tree("Patroll")
+
+tree("Hitt")
+    sequence
+        IsHitt()                        // '피격된 상태'라면
+        HittReaction()                  // 피격 리액션 수행
+
+tree("Chase and Attack")
+    sequence
+        ChaseEnemy()                    // ChaseEnemy는 적에게 충분히 가까이 가면 Success -> Attack으로 이행
+        Attack()                        // 공격 (선딜 후딜 포함)
+
+tree("Patroll")
+    sequence
+        PatrollWait()
+        SetNextDest()                   // repeat root에 의해 Hitted나 Chase로 이행되지 않는다면 Patroll 반복
+        Patroll()                       // Patroll은 적을 탐지하면 Fail로 종료됨 -> EnemyFoundReaction으로 이행

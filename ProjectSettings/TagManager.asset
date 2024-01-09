@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Ground
+  - Monster
   layers:
   - Default
   - TransparentFX
@@ -12,24 +14,24 @@ TagManager:
   - Water
   - UI
   - PostProcess
+  - Player
+  - 
+  - GroundCheck
+  - Ground
+  - HiddenRoom
   - 
   - 
+  - Climbable
   - 
   - 
+  - WallCheck
   - 
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - DroppedItem
+  - AttackObject
+  - MapGimmick
+  - Monster
+  - Destroyable Props
   - 
   - 
   - 
