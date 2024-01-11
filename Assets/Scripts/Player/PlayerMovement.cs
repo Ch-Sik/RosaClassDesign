@@ -152,7 +152,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
             {
-                if (playerControl.MoveState == PlayerMoveState.CLIMBING)
+                if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
                 {
                     // 기어 올라가는 속도와 내려오는 속도를 구분
                     rb.velocity = new Vector2(0,
@@ -557,6 +557,7 @@ public class PlayerMovement : MonoBehaviour
             OnLanded();
         }
         playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+        playerRef.Animation.SetTrigger("Grounded");
     }
 
     public void SetIsNotGrounded()

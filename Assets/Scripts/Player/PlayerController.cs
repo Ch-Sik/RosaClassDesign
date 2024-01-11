@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     // 플래그
     private bool isJumpingUp = false;
     private bool isDoingMagic = false;
+    public bool isMIDAIR = false;
 
     //싱글톤
     [ReadOnly, SerializeField] PlayerRef playerRef;
@@ -91,7 +92,14 @@ public class PlayerController : MonoBehaviour
     {
         //MIDAIR 상태에서 키바인딩은 GROUNDED 상태와 다르지 않기 때문에 GROUNDED
         if (newMoveState == PlayerMoveState.MIDAIR)
+        {
             newMoveState = PlayerMoveState.GROUNDED;
+            isMIDAIR = true;
+        }
+        else
+        {
+            isMIDAIR = false;
+        }
         inputManager.SetMoveInputState(newMoveState);
     }
 

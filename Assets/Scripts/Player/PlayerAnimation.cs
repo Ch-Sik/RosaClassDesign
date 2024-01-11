@@ -44,16 +44,16 @@ public class PlayerAnimation : MonoBehaviour
     void UpdateAnim()
     {
         
-        anim.SetBool("isWalking", (playerControl.MoveState == PlayerMoveState.WALK && playerMove.moveVector.x != 0) ? true : false);
-        anim.SetBool("isJumping", (playerControl.MoveState == PlayerMoveState.MIDAIR && !playerMove.isDoingHooking) ? true : false);
-        anim.SetBool("isClimbing", (playerControl.MoveState == PlayerMoveState.CLIMBING) ? true : false);
+        anim.SetBool("isWalking", (playerControl.currentMoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0) ? true : false);
+        anim.SetBool("isJumping", (playerControl.isMIDAIR && !playerMove.isDoingHooking) ? true : false);
+        anim.SetBool("isClimbing", (playerControl.currentMoveState == PlayerMoveState.CLIMBING) ? true : false);
         anim.SetBool("isClimbEnd", (playerMove.isWallClimbingTop) ? true : false);
         //anim.SetBool("isHooking", (playerMove.isDoingHooking) ? true : false);
-        //anim.SetBool("isClimbOver", ((playerControl.MoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
+        //anim.SetBool("isClimbOver", ((playerControl.currentMoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
         anim.SetFloat("yVel", rb.velocity.y);
         //if (!playerMove.isWallJumping)
         //{
-        //    if (playerControl.MoveState == PlayerMoveState.CLIMBING)
+        //    if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
         //    {
         //        if (playerMove.isWallClimbingTop)
         //        {
@@ -99,17 +99,17 @@ public class PlayerAnimation : MonoBehaviour
             isFirstFrame = false;
         }
 
-        if(playerControl.MoveState == PlayerMoveState.WALK && playerMove.moveVector.x != 0)
+        if(playerControl.currentMoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0)
         {
             state = AnimState.Walk;
             isFirstFrame = true;
         }
-        else if(playerControl.MoveState == PlayerMoveState.MIDAIR && !playerMove.isDoingHooking)
+        else if(playerControl.currentMoveState == PlayerMoveState.MIDAIR && !playerMove.isDoingHooking)
         {
             state = AnimState.Jump;
             isFirstFrame = true;
         }
-        else if(playerControl.MoveState == PlayerMoveState.CLIMBING)
+        else if(playerControl.currentMoveState == PlayerMoveState.CLIMBING)
         {
             state = AnimState.Climb;
             isFirstFrame = true;
@@ -119,7 +119,7 @@ public class PlayerAnimation : MonoBehaviour
             state = AnimState.Attack;
             isFirstFrame = true;
         }
-        else if(playerControl.MoveState == PlayerMoveState.MIDAIR && rb.velocity.y < 0)
+        else if(playerControl.currentMoveState == PlayerMoveState.MIDAIR && rb.velocity.y < 0)
         {
             state = AnimState.Fall;
             isFirstFrame = true;
@@ -144,12 +144,12 @@ public class PlayerAnimation : MonoBehaviour
             isFirstFrame = false;
         }
 
-        if (playerControl.MoveState == PlayerMoveState.MIDAIR && !playerMove.isDoingHooking)
+        if (playerControl.currentMoveState == PlayerMoveState.MIDAIR && !playerMove.isDoingHooking)
         {
             state = AnimState.Jump;
             isFirstFrame = true;
         }
-        else if (playerControl.MoveState == PlayerMoveState.CLIMBING)
+        else if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
         {
             state = AnimState.Climb;
             isFirstFrame = true;
@@ -174,18 +174,18 @@ public class PlayerAnimation : MonoBehaviour
             isFirstFrame = false;
         }
 
-        if(playerControl.MoveState == PlayerMoveState.MIDAIR && rb.velocity.y < 0)
+        if(playerControl.currentMoveState == PlayerMoveState.MIDAIR && rb.velocity.y < 0)
         {
             state = AnimState.Fall;
             isFirstFrame = true;
         }
-        else if (playerControl.MoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0)
+        else if (playerControl.currentMoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0)
         {
             portrait.CrossFade("JumpEnd",0.1f);
             state = AnimState.Walk;
             isFirstFrame = true;
         }
-        else if (playerControl.MoveState == PlayerMoveState.CLIMBING)
+        else if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
         {
             state = AnimState.Climb;
             isFirstFrame = true;
@@ -211,13 +211,13 @@ public class PlayerAnimation : MonoBehaviour
             isFirstFrame = false;
         }
 
-        if (playerControl.MoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0)
+        if (playerControl.currentMoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0)
         {
             portrait.CrossFade("JumpEnd", 0.1f);
             state = AnimState.Walk;
             isFirstFrame = true;
         }
-        else if (playerControl.MoveState == PlayerMoveState.CLIMBING)
+        else if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
         {
             state = AnimState.Climb;
             isFirstFrame = true;
@@ -243,12 +243,12 @@ public class PlayerAnimation : MonoBehaviour
             isFirstFrame = false;
         }
 
-        if (playerControl.MoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0)
+        if (playerControl.currentMoveState == PlayerMoveState.GROUNDED && playerMove.moveVector.x != 0)
         {
             state = AnimState.Walk;
             isFirstFrame = true;
         }
-        else if (playerControl.MoveState == PlayerMoveState.MIDAIR && !playerMove.isDoingHooking)
+        else if (playerControl.currentMoveState == PlayerMoveState.MIDAIR && !playerMove.isDoingHooking)
         {
             state = AnimState.Jump;
             isFirstFrame = true;
@@ -270,5 +270,6 @@ public class PlayerAnimation : MonoBehaviour
     public void SetTrigger(string name)
     {
         anim.SetTrigger(name);
+        
     }
 }
