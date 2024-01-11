@@ -14,13 +14,13 @@ public class AITask_RangeAttack_SimpleProjectile : MonoBehaviour
     [SerializeField, Tooltip("투사체가 발사되어야 할 위치")]
     private Transform muzzle;
     [SerializeField, Tooltip("공격 선딜레이")]
-    private float prepareDuration;
+    private float startupDuration;
     [SerializeField, Tooltip("공격 후딜레이")]
     private float recoveryDuration;
     [SerializeField, Tooltip("공격 방향 옵션")]
     private bool forceDirection90Deg = false;
 
-    private Timer prepareTimer = null;
+    private Timer startupTimer = null;
     private Timer recoveryTimer = null;
     private Vector2 attackDir;
 
@@ -40,48 +40,35 @@ public class AITask_RangeAttack_SimpleProjectile : MonoBehaviour
         // 블랙보드에서 피격 정보 가져오기
         bool isHitt;
         blackboard.TryGet(BBK.isHitt, out isHitt);
-        if (prepareTimer == null || prepareTimer.duration < prepareDuration)
+        // 피격 시 행동 중지
+        if (isHitt)
         {
-            // 피격 시 행동 중지
-            if (isHitt)
-            {
-                Fail();
-                return;
-            }
-            if(prepareTimer == null)
-                prepareTimer = Timer.StartTimer();
-            else
-                ThisTask.debugInfo = $"선딜레이: {prepareTimer.duration}";
+            Fail();
+            return;
+        }
+
+        if ( !startupTimer && !recoveryTimer ) // 공격의 첫 프레임
+        {
+            startupTimer = Timer.StartTimer();
+        }
+        else if (startupTimer && startupTimer.duration < startupDuration)    // 선딜레이 중
+        {
+            ThisTask.debugInfo = $"선딜레이: {startupTimer.duration}";
         }
         else if (!recoveryTimer)     // 선딜은 끝났지만 공격을 아직 수행하지 않은 경우
         {
-            // 피격 시 행동 중지
-            if (isHitt)
-            {
-                Fail();
-                return;
-            }
             // 공격 시전
-            {
-                DoAttack();
-            }
+            DoAttack();
+            startupTimer = null;
             recoveryTimer = Timer.StartTimer();
-            prepareTimer = null;
         }
         else if (recoveryTimer.duration < recoveryDuration)  // 후딜 진행중인 경우
         {
-            // 피격 시 행동 중지
-            if (isHitt)
-            {
-                Fail();
-                return;
-            }
             ThisTask.debugInfo = $"후딜레이: {recoveryTimer.duration}";
         }
         else        // 후딜 종료
         {
-            ThisTask.Succeed();
-            recoveryTimer = null;
+            Succeed();
         }
     }
 
@@ -92,7 +79,8 @@ public class AITask_RangeAttack_SimpleProjectile : MonoBehaviour
         GameObject enemy;
         if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
         {
-            Debug.LogError($"{gameObject.name}: Attack에서 적을 찾을 수 없음!");
+            Debug.LogWarning($"{gameObject.name}: Attack에서 적을 찾을 수 없음!");
+            ThisTask.Fail();
             return;
         }
         dir = enemy.transform.position - gameObject.transform.position;
@@ -114,10 +102,17 @@ public class AITask_RangeAttack_SimpleProjectile : MonoBehaviour
         projectile.GetComponent<MonsterProjectile>().InitProjectile(attackDir);
     }
 
+    private void Succeed()
+    {
+        ThisTask.Succeed();
+        startupTimer = null;
+        recoveryTimer = null;
+    }
+
     private void Fail()
     {
         ThisTask.Fail();
+        startupTimer = null;
         recoveryTimer = null;
-        prepareTimer = null;
     }
 }
