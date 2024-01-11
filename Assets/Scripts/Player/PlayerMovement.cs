@@ -20,8 +20,12 @@ public class PlayerMovement : MonoBehaviour
     [Header("점프 관련 매개변수")]
     [Tooltip("플레이어 점프 파워")]
     [SerializeField] float jumpPower = 10f;
+    [Tooltip("플레이어 하향 점프 파워")]
+    [SerializeField] float jumpDownPower = 1f;
     [Tooltip("최소 상승 시간")]
     [SerializeField] float minJumpUpDuration = 0.1f;
+    [Tooltip("하향 점프 플렛폼 적용 시간")]
+    [SerializeField] float downJumpPlatformDuration = 0.1f;
 
     [Header("벽이동 관련 매개변수")]
     [Tooltip("벽 기어오르기 활성화")]
@@ -52,7 +56,7 @@ public class PlayerMovement : MonoBehaviour
 
     // 필드
     [Header("Debug View")]
-    [ReadOnly, SerializeField] private GameObject platformBelow = null;
+    [ReadOnly, SerializeField] public GameObject platformBelow = null;
     //[ReadOnly, SerializeField] public GameObject aimLine;
     [ReadOnly, SerializeField] public Vector2 moveVector;
     [ReadOnly, SerializeField] public LR facingDirection;                 // 플레이어 바라보는 방향
@@ -274,7 +278,16 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void JumpDown()
     {
-        col.isTrigger = true;       // 지형 통과 가능
+        StartCoroutine(ApplyDownJumpCollider());
+        rb.velocity = new Vector2(rb.velocity.x, jumpDownPower);
+
+        IEnumerator ApplyDownJumpCollider()
+        {
+            PlatformEffector2D platEffector = platformBelow.GetComponent<PlatformEffector2D>();
+            platEffector.rotationalOffset = 180f;
+            yield return new WaitForSeconds(downJumpPlatformDuration);
+            platEffector.rotationalOffset = 0;
+        }
     }
 
     /// <summary>

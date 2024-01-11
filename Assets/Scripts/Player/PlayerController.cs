@@ -20,7 +20,6 @@ public class PlayerController : MonoBehaviour
 
     // private 변수
     private Vector2 moveVector = Vector2.zero;      // 하향점프 판단을 위해 값 보관
-    private GameObject platformBelow;
 
     // 플래그
     private bool isJumpingUp = false;
@@ -126,8 +125,9 @@ public class PlayerController : MonoBehaviour
         switch (currentMoveState)
         {
             case PlayerMoveState.GROUNDED:
-                if (moveVector.y >= 0 || !(platformBelow?.CompareTag("Platform") == true))
+                if (moveVector.y >= 0 || !(playerMove.platformBelow?.CompareTag("Platform") == true))
                 {
+                    Debug.Log(playerMove.platformBelow?.tag);
                     isJumpingUp = true;
                     playerMove.JumpUp();        // 상향 점프
                 }
