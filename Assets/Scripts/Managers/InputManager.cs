@@ -4,18 +4,6 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public enum InputState
-{
-    UICONTROL,
-    DIALOGUE,
-    PLAYER_WALK,
-    PLAYER_CLIMB,
-    PLAYER_MONKEY,
-    IGNORE /* 레어 아이템 획득 연출 등 잠시동안 모든 입력이 무시되어야 하는 경우
-            * .
-            * IGNORE 상태는 오래 유지하지 말 것. */
-}
-
 /// <summary>
 /// Unity에서 제공하는 Input System를 사용하기 편하게 InputState로 추상화.
 /// 현재의 InputState에 해당하는 InputActionMap들만 활성화하고 나머지는 비활성화함.
@@ -44,27 +32,26 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    // 컴포넌트
-    // public PlayerRef player { get { return player; } set { player = value; playerMove = value.Move; } }
-    // public PlayerMovement playerMove;
-
-    // 에셋
-    //[SerializeField] InputActionAsset inputActions;
-    private InputActionMap playerInputActions;
-    private InputActionMap uiInputActions;
     // InputAction Asset
     public InputActionAsset _inputAsset;
-    // InputActionMap
-    public InputActionMap uiActionMap;
-    public InputActionMap dialogueActionMap;
-    public InputActionMap playerWalkActionMap;
-    public InputActionMap playerCLIMBActionMap;
-    public InputActionMap playerMonkeyActionMap;
-    public InputActionMap playerDefaultActionMap;
+    // Input ActionMaps
+    // 움직임 관련
+    public InputActionMap AM_MoveGrounded;
+    public InputActionMap AM_MoveClimb;
+    public InputActionMap AM_MoveSuperDashReady;
+    public InputActionMap AM_MoveSuperDash;
+    // 액션 관련
+    public InputActionMap AM_ActionDefault;
+    public InputActionMap AM_ActionMagicReady;
+    // UI 조작 관련
+    public InputActionMap AM_UiInGame;
+    public InputActionMap AM_UiDialogue;
+    public InputActionMap AM_UiMenu;
     
     // 상태
-    [ContextMenuItem("switch inputState", "Test")]
-    public InputState state;
+    [SerializeField, ReadOnly] public PlayerMoveState _moveState = PlayerMoveState.GROUNDED;
+    [SerializeField, ReadOnly] private PlayerActionState _actionState = PlayerActionState.DEFAULT;
+    [SerializeField, ReadOnly] private UiState _uiState = UiState.IN_GAME;
 
     private void Awake()
     {
@@ -75,66 +62,150 @@ public class InputManager : MonoBehaviour
     private void InitInput()
     {
         // Find Action Maps
-        uiActionMap = _inputAsset.FindActionMap("UI");
-        dialogueActionMap = _inputAsset.FindActionMap("Dialogue");
-        playerWalkActionMap = _inputAsset.FindActionMap("PlayerWalk");
-        playerCLIMBActionMap = _inputAsset.FindActionMap("PlayerClimb");
-        playerMonkeyActionMap = _inputAsset.FindActionMap("PlayerMonkey");
-        playerDefaultActionMap = _inputAsset.FindActionMap("PlayerDefault");
 
-        // 모두 비활성화하고 PlayerWalk와 PlayerDefault만 활성화
+        // 플레이어 움직임 관련 Action Map
+        {
+            AM_MoveGrounded = _inputAsset.FindActionMap("MoveDefault");
+            AM_MoveClimb = _inputAsset.FindActionMap("Climb");
+            AM_MoveSuperDashReady = _inputAsset.FindActionMap("SuperDashReady");
+            AM_MoveSuperDash = _inputAsset.FindActionMap("SuperDash");
+        }
+        // 공격, 마법 등 액션 관련 Action Map
+        {
+            AM_ActionDefault = _inputAsset.FindActionMap("ActionDefault");
+            AM_ActionMagicReady = _inputAsset.FindActionMap("MagicReady");
+        }
+        // 일시정지, 메뉴, 상점 등 UI 관련 Action Map
+        {
+            AM_UiInGame = _inputAsset.FindActionMap("InGame");
+            AM_UiDialogue = _inputAsset.FindActionMap("Dialogue");
+            AM_UiMenu = _inputAsset.FindActionMap("UI");
+        }
+
+        // TODO: 타이틀 화면 추가하면 기본적으로 활성화된 액션맵을 바꾸기
+        // 모두 비활성화하고 Grounded, DefaultAction, InGame만 활성화
         _inputAsset.Disable();
-        _inputAsset.FindActionMap("PlayerWalk").Enable();
-        _inputAsset.FindActionMap("PlayerDefault").Enable();
+        AM_MoveGrounded.Enable();
+        AM_ActionDefault.Enable();
+        AM_UiInGame.Enable();
     }
 
-    public void ChangeInputState(InputState newState)
+    // moveState에 해당하는 action map을 제외하고 모두 비활성화
+    public void SetMoveInputState(PlayerMoveState newMoveState)
     {
-        if (state == newState) return;
-        state = newState;
-        Debug.Log("ChangeInputState");
-
-        switch (state)
+        if(newMoveState != _moveState)
         {
-            case InputState.PLAYER_WALK:
-                _inputAsset.Disable();
-                playerDefaultActionMap.Enable();
-                playerWalkActionMap.Enable();
+            switch (_moveState)
+            {
+                case PlayerMoveState.GROUNDED:
+                    AM_MoveGrounded.Disable();
+                    break;
+                case PlayerMoveState.CLIMBING:
+                    AM_MoveClimb.Disable();
+                    break;
+                case PlayerMoveState.SUPERDASH_READY:
+                    AM_MoveSuperDashReady.Disable();
+                    break;
+                case PlayerMoveState.SUPERDASH:
+                    AM_MoveSuperDash.Disable();
+                    break;
+                case PlayerMoveState.NO_MOVE:
+                    // 아무것도 안함
+                    break;
+            }
+        }
+        switch(newMoveState)
+        {
+            case PlayerMoveState.GROUNDED:
+                AM_MoveGrounded.Enable();
                 break;
-            case InputState.PLAYER_CLIMB:
-                _inputAsset.Disable();
-                playerDefaultActionMap.Enable();
-                playerCLIMBActionMap.Enable();
+            case PlayerMoveState.CLIMBING:
+                AM_MoveClimb.Enable();
                 break;
-            case InputState.PLAYER_MONKEY:
-                _inputAsset.Disable();
-                playerDefaultActionMap.Enable();
-                playerMonkeyActionMap.Enable();
+            case PlayerMoveState.SUPERDASH_READY:
+                AM_MoveSuperDashReady.Enable();
                 break;
-            case InputState.DIALOGUE:
-                _inputAsset.Disable();
-                playerDefaultActionMap.Enable();
-                dialogueActionMap.Enable();
+            case PlayerMoveState.SUPERDASH:
+                AM_MoveSuperDash.Enable();
                 break;
-            case InputState.IGNORE:
-                _inputAsset.Disable();
-                playerDefaultActionMap.Enable();
-                uiActionMap.Enable();
+            case PlayerMoveState.NO_MOVE:
+                // 아무것도 안함
                 break;
-            case InputState.UICONTROL:
-                _inputAsset.Disable();
+            default:
+                Debug.LogError("잘못된 Move State 변환 요청");
                 break;
         }
+        _moveState = newMoveState;
     }
 
-    /*
-    public void Test()
+    public void SetActionInputState(PlayerActionState newActionState)
     {
-        if (state == InputState.PLAYERMOVE)
-            ChangeInputState(InputState.UICONTROL);
-        else
-            ChangeInputState(InputState.PLAYERMOVE);
+        if(newActionState != _actionState)
+        {
+            switch(_actionState)
+            {
+                case PlayerActionState.DEFAULT:
+                    AM_ActionDefault.Disable();
+                    break;
+                case PlayerActionState.MAGIC_READY:
+                    AM_ActionMagicReady.Disable();
+                    break;
+                case PlayerActionState.NO_ACTION:
+                    // 아무것도 안함
+                    break;
+            }
+        }
+        switch(newActionState)
+        {
+            case PlayerActionState.DEFAULT:
+                AM_ActionDefault.Enable();
+                break;
+            case PlayerActionState.MAGIC_READY:
+                AM_ActionMagicReady.Enable();
+                break;
+            case PlayerActionState.NO_ACTION:
+                // 아무것도 안함
+                break;
+            default:
+                Debug.LogError("잘못된 Action State 변환 요청");
+                break;
+        }
+        _actionState = newActionState;
     }
-    */
+
+    public void SetUiInputState(UiState newUiState)
+    {
+        if(newUiState != _uiState)
+        {
+            switch(_uiState)
+            {
+                case UiState.IN_GAME:
+                    AM_UiInGame.Disable();
+                    break;
+                case UiState.DIALOG:
+                    AM_UiDialogue.Disable();
+                    break;
+                case UiState.MENU:
+                    AM_UiMenu.Disable();
+                    break;
+            }
+        }
+        switch(newUiState)
+        {
+            case UiState.IN_GAME:
+                AM_UiInGame.Enable();
+                break;
+            case UiState.DIALOG:
+                AM_UiDialogue.Enable();
+                break;
+            case UiState.MENU:
+                AM_UiMenu.Enable();
+                break;
+            default:
+                Debug.LogError("잘못된 UI State 변환 요청");
+                break;
+        }
+        _uiState = newUiState;
+    }
 }
 

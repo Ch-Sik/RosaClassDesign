@@ -32,7 +32,6 @@ public class PlayerRef : MonoBehaviour
     public PlayerCombat combat;
     public PlayerAnimation Animation;
     public PlayerSound sound;
-    public PlayerStateLogic Logic;
 
     public Rigidbody2D rb;
     public BoxCollider2D col;

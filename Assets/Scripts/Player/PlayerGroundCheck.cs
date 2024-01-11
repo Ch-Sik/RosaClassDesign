@@ -6,7 +6,7 @@ public class PlayerGroundCheck : MonoBehaviour
 {
     
     [ReadOnly, SerializeField] PlayerRef playerRef;
-    PlayerController playerControl;
+    PlayerMovement playerControl;
     // Start is called before the first frame update
     void Start()
     {
@@ -16,7 +16,7 @@ public class PlayerGroundCheck : MonoBehaviour
     void GetComponents()
     {
         playerRef = PlayerRef.Instance;
-        playerControl = playerRef.Controller;
+        playerControl = playerRef.Move;
     }
 
     // Update is called once per frame
@@ -30,10 +30,10 @@ public class PlayerGroundCheck : MonoBehaviour
         playerControl?.SetIsGrounded(collision.gameObject);
     }
 
-    private void OnTriggerStay2D(Collider2D collision)
-    {
-        playerControl?.SetIsGrounded(collision.gameObject);
-    }
+    //private void OnTriggerStay2D(Collider2D collision)
+    //{
+    //    playerControl?.SetIsGrounded(collision.gameObject);
+    //}
 
     private void OnTriggerExit2D(Collider2D collision)
     {

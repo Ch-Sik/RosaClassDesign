@@ -29,5 +29,5 @@ public class PlayerState : MonoBehaviour
 
     public void Heal(int amount) { }
     public void TakeDamage(int amount) { }
-    public void UpgradePlantMagic(PlantMagicCode magicCode) { } // 획득 및 업그레이드
+    public void UpgradePlantMagic(SkillCode magicCode) { } // 획득 및 업그레이드
 }
