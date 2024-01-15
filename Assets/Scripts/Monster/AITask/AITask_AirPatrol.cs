@@ -27,7 +27,7 @@ public class AITask_AirPatrol : MonoBehaviour
     [SerializeField, Tooltip("랜덤 요소 사용 시 가중치 지수")]
     private float randomPow;
     [SerializeField, Tooltip("다음 목적지까지의 최소 거리")]
-    private float minPatrollDist = 1f;
+    private float minPatrolDist = 1f;
     [SerializeField, Tooltip("다음 목적지까지의 최대 거리")]
     private float maxPatrolDist = 4f;
 
@@ -76,7 +76,7 @@ public class AITask_AirPatrol : MonoBehaviour
     }
 
     [Task]
-    private void Patroll()
+    private void Patrol()
     {
         if(Vector2.Distance((Vector2)transform.position, nextDest) < 0.1f)
         {
@@ -102,7 +102,7 @@ public class AITask_AirPatrol : MonoBehaviour
                     index = i;
             }
             nextDest = (Vector2)transform.position + dirVector[index] 
-                        * UnityEngine.Random.Range(minPatrollDist, maxPatrolDist);
+                        * UnityEngine.Random.Range(minPatrolDist, maxPatrolDist);
         }
 
         Vector2 moveDir = (dest - (Vector2)transform.position);
@@ -114,7 +114,7 @@ public class AITask_AirPatrol : MonoBehaviour
     }
 
     [Task]
-    private void PatrollWait()
+    private void PatrolWait()
     {
         if (waitTimer == null)
         {
@@ -123,7 +123,7 @@ public class AITask_AirPatrol : MonoBehaviour
         }
         else if (waitTimer.duration >= patrolWaitTime)
         {
-            // 타이머 시간 다 되었으면 PatrollWait 종료
+            // 타이머 시간 다 되었으면 PatrolWait 종료
             waitTimer = null;
             ThisTask.Succeed();
         }
@@ -162,7 +162,7 @@ public class AITask_AirPatrol : MonoBehaviour
             }
         }
 
-        nextDest = (Vector2)transform.position + dirVector[index] * UnityEngine.Random.Range(minPatrollDist, maxPatrolDist);
+        nextDest = (Vector2)transform.position + dirVector[index] * UnityEngine.Random.Range(minPatrolDist, maxPatrolDist);
     }
 
 
@@ -181,12 +181,12 @@ public class AITask_AirPatrol : MonoBehaviour
         if (moveOnlyNearby)
         {
             // 멀어졌을 때 선호도 크도록 normalize 안함.
-            Vector2 toPatrollCenter = patrolAreaCenter - (Vector2)transform.position;
+            Vector2 toPatrolCenter = patrolAreaCenter - (Vector2)transform.position;
             for(int i=0; i<dirVector.Length; i++)
             {
-                dirPreference[i] += (Vector2.Dot(dirVector[i], toPatrollCenter) - 0.2f) * aiCoef_toCenter;
+                dirPreference[i] += (Vector2.Dot(dirVector[i], toPatrolCenter) - 0.2f) * aiCoef_toCenter;
                 // 목표 방향과 수직인 요소 추가
-                dirPreference[i] += (1 - Mathf.Abs(Vector2.Dot(dirVector[i], toPatrollCenter))) * aiCoef_sidestep;
+                dirPreference[i] += (1 - Mathf.Abs(Vector2.Dot(dirVector[i], toPatrolCenter))) * aiCoef_sidestep;
             }
         }
         else

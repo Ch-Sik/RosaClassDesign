@@ -5,10 +5,10 @@ using Panda;
 using System;
 
 /// <summary>
-/// 지상형 몬스터의 Patroll Task를 수행하는 스크립트
+/// 지상형 몬스터의 Patrol Task를 수행하는 스크립트
 /// 멈추지 않고 순찰하는 버전
 /// </summary>
-public class AITask_gPatroll : MonoBehaviour
+public class AITask_gPatrol : MonoBehaviour
 {
     [SerializeField]
     private Blackboard blackboard;
@@ -16,18 +16,18 @@ public class AITask_gPatroll : MonoBehaviour
     private new Rigidbody2D rigidbody;
 
     [SerializeField]
-    private float patrollSpeed = 1.0f;
+    private float patrolSpeed = 1.0f;
     [SerializeField, Tooltip("순찰 중 좌우 끝에서 잠시 머무는 시간")]
-    private float patrollWaitTime = 1.0f;
+    private float patrolWaitTime = 1.0f;
     [SerializeField, Tooltip("낭떠러지에 도달하면 멈출지 말지")]
     private bool considerCliff = true;
 
     [SerializeField]
-    private bool hasPatrollRangeLimit = true;   // 순찰 범위를 수동으로 제한할 것인지
-    [SerializeField, DrawIf("hasPatrollRangeLimit", true)]
-    private float PatrollRangeSize = 5.0f;
-    [SerializeField, DrawIf("hasPatrollRangeLimit", true)]
-    private float PatrollRangeOffset = 0.0f;
+    private bool hasPatrolRangeLimit = true;   // 순찰 범위를 수동으로 제한할 것인지
+    [SerializeField, DrawIf("hasPatrolRangeLimit", true)]
+    private float PatrolRangeSize = 5.0f;
+    [SerializeField, DrawIf("hasPatrolRangeLimit", true)]
+    private float PatrolRangeOffset = 0.0f;
     [SerializeField, ReadOnly]
     private float startXpos, destXpos;      // 한 번 와리가리 할 때 시작점과 도착점의 x좌표
 
@@ -54,9 +54,9 @@ public class AITask_gPatroll : MonoBehaviour
 
         // 순찰 범위 지정
         LR currentDir = GetCurrentDir();
-        destXpos = transform.position.x + PatrollRangeOffset;
-        destXpos += 0.5f * PatrollRangeSize * (currentDir.isLEFT() ? -1 : +1);
-        startXpos = destXpos - PatrollRangeSize * (currentDir.isLEFT() ? -1 : +1);
+        destXpos = transform.position.x + PatrolRangeOffset;
+        destXpos += 0.5f * PatrolRangeSize * (currentDir.isLEFT() ? -1 : +1);
+        startXpos = destXpos - PatrolRangeSize * (currentDir.isLEFT() ? -1 : +1);
 
         // 시작하자마자 SetNextDest 실행되는 것 고려하여 방향 설정
         if (GetCurrentDir() == startDir)
@@ -66,7 +66,7 @@ public class AITask_gPatroll : MonoBehaviour
     }
 
     [Task]
-    private void Patroll()
+    private void Patrol()
     {
         LR nowDir = GetCurrentDir();
 
@@ -89,7 +89,7 @@ public class AITask_gPatroll : MonoBehaviour
         }
 
         // 순찰 범위가 지정되었을 때, 순찰 범위에 도달했다면 순찰 종료
-        if (hasPatrollRangeLimit)
+        if (hasPatrolRangeLimit)
         {
             if ((nowDir.isLEFT() && transform.position.x < destXpos) ||
                 (nowDir.isRIGHT() && transform.position.x > destXpos))
@@ -105,7 +105,7 @@ public class AITask_gPatroll : MonoBehaviour
         blackboard.TryGet(BBK.StuckAtWall, out isStuckAtWall);
         if (isStuckAtWall)
         {
-            // Succeed로 끝나야 PatrollWait를 수행함
+            // Succeed로 끝나야 PatrolWait를 수행함
             ThisTask.Succeed();
             StopMoving();
             return;
@@ -129,7 +129,7 @@ public class AITask_gPatroll : MonoBehaviour
     }
 
     [Task]
-    private void PatrollWait()
+    private void PatrolWait()
     {
         // 피격당했을 때 행동 중지
         bool isHitt;
@@ -154,9 +154,9 @@ public class AITask_gPatroll : MonoBehaviour
             // 타이머 시작
             waitTimer = Timer.StartTimer();
         }
-        else if(waitTimer.duration >= patrollWaitTime)
+        else if(waitTimer.duration >= patrolWaitTime)
         {
-            // 타이머 시간 다 되었으면 PatrollWait 종료
+            // 타이머 시간 다 되었으면 PatrolWait 종료
             waitTimer = null;
             ThisTask.Succeed();
         }
@@ -165,7 +165,7 @@ public class AITask_gPatroll : MonoBehaviour
     [Task]
     private void SetNextDest()
     {
-        if(hasPatrollRangeLimit)
+        if(hasPatrolRangeLimit)
         {
             // ==== 순찰 범위 제한이 있는 경우 ==== 
 
@@ -180,12 +180,12 @@ public class AITask_gPatroll : MonoBehaviour
                 if (GetCurrentDir().isLEFT())
                 {
                     // 왼쪽으로 가고 있었다면 다음 목적지는 오른쪽
-                    destXpos = transform.position.x + PatrollRangeSize;
+                    destXpos = transform.position.x + PatrolRangeSize;
                 }
                 else
                 {
                     // 오른쪽으로 가고 있었다면 다음 목적지는 왼쪽
-                    destXpos = transform.position.x - PatrollRangeSize;
+                    destXpos = transform.position.x - PatrolRangeSize;
                 }
                 startXpos = transform.position.x;
                 // 물리 업데이트 지연으로 뒤돌고 나서도 벽/절벽 마주본 것처럼 인식하는 현상 방지
@@ -257,7 +257,7 @@ public class AITask_gPatroll : MonoBehaviour
         else
             moveDir = 1;
 
-        rigidbody.velocity = new Vector2(moveDir * patrollSpeed, rigidbody.velocity.y);
+        rigidbody.velocity = new Vector2(moveDir * patrolSpeed, rigidbody.velocity.y);
         // 바라보는 방향과 이동 방향이 다를 경우
         /*if (transform.localScale.x * rigidbody.velocity.x < 0)   
         {
@@ -285,16 +285,16 @@ public class AITask_gPatroll : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (hasPatrollRangeLimit)
+        if (hasPatrolRangeLimit)
         {
             // 패트롤 범위 시각화
             Gizmos.color = Color.white;
             if (Application.isPlaying)
                 Gizmos.DrawWireCube(new Vector3((startXpos + destXpos) / 2, transform.position.y, 0),
-                                    new Vector3(PatrollRangeSize, 1));
+                                    new Vector3(PatrolRangeSize, 1));
             else
-                Gizmos.DrawWireCube(transform.position + new Vector3(PatrollRangeOffset, 0),
-                                    new Vector3(PatrollRangeSize, 1));
+                Gizmos.DrawWireCube(transform.position + new Vector3(PatrolRangeOffset, 0),
+                                    new Vector3(PatrolRangeSize, 1));
         }
     }
 }
