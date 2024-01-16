@@ -404,7 +404,7 @@ Transform:
   m_GameObject: {fileID: 1045241087}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -444,7 +444,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.9
+  m_Radius: 0.5
 --- !u!114 &1045241090
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -683,18 +683,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 1354080928}
   rigidbody: {fileID: 1354080922}
-  moveOnlyNearby: 1
-  drawDestDecisionVector: 1
   useRandomToPreference: 1
-  randomPow: 0
-  minPatrollDist: 2.5
+  randomWeightExp: 1.25
+  minPatrolDist: 2.5
   maxPatrolDist: 3
-  patrolWaitTime: 0.7
-  patrolSpeed: 3
   aiCoef_toCenter: 0.8
   aiCoef_awayFromWall: 3.55
   aiCoef_sidestep: 0.3
-  nextDest: {x: 0, y: 0}
+  patrolStopTime: 1
+  patrolSpeed: 5
+  terrainSensor: {fileID: 1045241087}
+  terrainSensorOffset: 0.5
+  drawPatrolCenter: 0
+  drawDestDecision: 1
+  drawDestPoint: 0
 --- !u!114 &1354080930
 MonoBehaviour:
   m_ObjectHideFlags: 0
