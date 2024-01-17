@@ -91,6 +91,26 @@ public class AITask_AirPatrol : AITask_Base
     {
         bool isStuckAtWall;
         blackboard.TryGet(BBK.StuckAtWall, out isStuckAtWall);
+
+        // 피격당했을 때 행동 중지
+        bool isHitt;
+        if (blackboard.TryGet(BBK.isHitt, out isHitt) && isHitt)
+        {
+            ThisTask.Fail();
+            StopMoving();
+            return;
+        }
+
+        // 적이 탐지되었을 경우 순찰 종료
+        GameObject enemy;
+        if (blackboard.TryGet(BBK.Enemy, out enemy) && enemy != null)
+        {
+            ThisTask.Fail();
+            StopMoving();
+            return;
+        }
+
+        // 벽에 가로막혔을 때 행동 중지
         if (isStuckAtWall)
         {
             ThisTask.Succeed();
@@ -113,6 +133,11 @@ public class AITask_AirPatrol : AITask_Base
 
         // 이동 속도에 Lerp 사용
         rigidbody.velocity = rigidbody.velocity * 0.9f + moveDir * patrolSpeed * 0.1f;
+    }
+
+    private void StopMoving()
+    {
+        rigidbody.velocity = Vector2.zero;
     }
 
     [Task]
