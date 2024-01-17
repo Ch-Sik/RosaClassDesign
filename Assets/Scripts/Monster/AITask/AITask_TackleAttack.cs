@@ -4,43 +4,44 @@ using UnityEngine;
 using Panda;
 
 [RequireComponent(typeof(MonsterDamageInflictor))]
-public class AITask_TackleAttack : MonoBehaviour
+public class AITask_TackleAttack : AITask_Base
 {
+    // 컴포넌트 레퍼런스
     [SerializeField]
     protected Blackboard blackboard;
     [SerializeField]
-    private new Rigidbody2D rigidbody;
+    protected new Rigidbody2D rigidbody;
     [SerializeField]
-    MonsterDamageInflictor damageComponent;
+    protected MonsterDamageInflictor damageComponent;
 
     [Header("공격 관련")]
     [SerializeField, Tooltip("돌진 패턴 공격력")]
-    private int tackleAttackPower;
+    protected int tackleAttackPower;
     [SerializeField, Tooltip("돌진 도중에 슈퍼아머")]
-    private bool superArmourOnTackle;
+    protected bool superArmourOnTackle;
     [SerializeField, Tooltip("돌진 속도")]
-    private float tackleSpeed;
+    protected float tackleSpeed = 5;
 
     [Header("타이밍 관련")]
     [SerializeField, Tooltip("돌진 준비 시간(선딜레이)")]
-    private float prepareDuration;
+    protected float prepareDuration;
     [SerializeField, Tooltip("돌진 유지 시간")]
-    private float tackleDuration;
+    protected float tackleDuration;
     [SerializeField, Tooltip("돌진 후 대기 시간(후딜레이)")]
-    private float recoveryDuration;
+    protected float recoveryDuration;
 
-    [Header("스턴 관련")]
+    [Header("벽에 박았을 때 관련")]
     [SerializeField, Tooltip("돌진 중 벽에 박았을 때 스턴 활성화")]
-    private bool wallStunEnabled;
+    protected bool wallStunEnabled;
     [SerializeField, Tooltip("돌진 중 벽에 박았을 떄 스턴 시간")]
-    private float wallStunDuration;
+    protected float wallStunDuration;
 
-    private Timer prepareTimer = null;
-    private Timer tackleTimer = null;
-    private Timer recoveryTimer = null;
-    private Timer stunTimer = null;
-    private LR tackleDir;
-    private int defaultCollideDamage;    // 몸체 충돌 판정이 기본적으로 가지고 있던 데미지
+    protected Timer prepareTimer = null;
+    protected Timer tackleTimer = null;
+    protected Timer recoveryTimer = null;
+    protected Timer stunTimer = null;
+    protected Vector2 tackleDir;
+    protected int defaultCollideDamage;    // 몸체 충돌 판정이 기본적으로 가지고 있던 데미지
 
 
     private void Start()
@@ -67,7 +68,7 @@ public class AITask_TackleAttack : MonoBehaviour
     }
 
     [Task]
-    private void Attack()
+    protected void Attack()
     {
         // 블랙보드에서 피격 정보 & 벽에 박음 정보 가져오기
         bool isHitt;
@@ -126,18 +127,13 @@ public class AITask_TackleAttack : MonoBehaviour
             Succeed();
     }
 
-    private void PrepareAttack()
+    protected void PrepareAttack()
     {
         // 발구르면서 돌진 준비하는 시간
         if (prepareTimer == null)
         {
             // 방향 계산
-            GameObject enemy;
-            if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
-            {
-                Debug.LogError($"{gameObject.name}: PrepareAttack에서 적을 찾을 수 없음!");
-            }
-            tackleDir = (enemy.transform.position.x - transform.position.x) < 0 ? LR.LEFT : LR.RIGHT;
+            CalculateAttackDirection();
 
             prepareTimer = Timer.StartTimer();
             return;
@@ -146,7 +142,20 @@ public class AITask_TackleAttack : MonoBehaviour
         ThisTask.debugInfo = $"선딜: {prepareTimer.duration}";
     }
 
-    private void DoAttack()
+    protected virtual void CalculateAttackDirection()
+    {
+        GameObject enemy;
+        if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
+        {
+            Debug.LogError($"{gameObject.name}: PrepareAttack에서 적을 찾을 수 없음!");
+        }
+        tackleDir = (enemy.transform.position.x - transform.position.x) < 0 ? Vector2.left : Vector2.right;
+
+        // 공격 방향에 따라 좌우 반전하기
+        lookAt2D(enemy.transform.position);
+    }
+
+    protected virtual void DoAttack()
     {
         // DoAttack이 실행되는 첫 프레임
         if (tackleTimer == null)
@@ -160,10 +169,9 @@ public class AITask_TackleAttack : MonoBehaviour
         ThisTask.debugInfo = $"돌진: {tackleTimer.duration}";
 
         // 실제 돌진 수행
-        Vector2 velocity = tackleDir.toVector2() * tackleSpeed;
+        Vector2 velocity = tackleDir * tackleSpeed;
         velocity.y = rigidbody.velocity.y;
         rigidbody.velocity = velocity;
-
     }
 
     private void AttackRecovery()
@@ -186,11 +194,9 @@ public class AITask_TackleAttack : MonoBehaviour
 
     private bool isTargetBehind(GameObject enemy)
     {
-        float deltaX = enemy.transform.position.x - transform.position.x;
-        if(tackleDir.isLEFT()) 
-            return deltaX > 0;
-        else 
-            return deltaX < 0;
+        Vector2 toEnemy = (enemy.transform.position - transform.position).normalized;
+        float cosDist = Vector2.Dot(toEnemy, tackleDir);
+        return cosDist < -0.1f;     // 아주 약간 정도는 뒤로 가도 봐줌.
     }
 
     // Task 성공/실패로 인해 종료 시 Timer 값 정리를 위해 간단히 추상화

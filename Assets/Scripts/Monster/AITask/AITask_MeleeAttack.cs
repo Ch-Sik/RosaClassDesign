@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Panda;
 
-public class AITask_MeleeAttack : MonoBehaviour
+public class AITask_MeleeAttack : AITask_Base
 {
     [SerializeField]
     protected Blackboard blackboard;

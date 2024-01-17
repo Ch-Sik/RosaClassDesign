@@ -5,8 +5,10 @@ using Panda;
 using Sirenix.OdinInspector;
 using Rito;
 using System;
+using UnityEditor.Tilemaps;
+using static UnityEngine.GraphicsBuffer;
 
-public class AITask_AirPatrol : MonoBehaviour
+public class AITask_AirPatrol : AITask_Base
 {
     [Title("컴포넌트 레퍼런스")]// 컴포넌트 레퍼런스
     [SerializeField]
@@ -109,7 +111,7 @@ public class AITask_AirPatrol : MonoBehaviour
         if (moveDir.sqrMagnitude > 1)
             moveDir.Normalize();
 
-        // Lerp 사용
+        // 이동 속도에 Lerp 사용
         rigidbody.velocity = rigidbody.velocity * 0.9f + moveDir * patrolSpeed * 0.1f;
     }
 
@@ -197,12 +199,15 @@ public class AITask_AirPatrol : MonoBehaviour
         }
 
         nextDest = (Vector2)transform.position + dirVector[index] * UnityEngine.Random.Range(minPatrolDist, maxPatrolDist);
+
+        // 필요하다면 스프라이트 좌우반전
+        lookAt2D(nextDest);
     }
 
     private void MoveTerrainCheckCollider()
     {
         Vector2 toNextDest = nextDest - (Vector2)transform.position;
-        terrainSensor.transform.localPosition = toNextDest.normalized * terrainSensorOffset;
+        SetChildObjectPos(terrainSensor, toNextDest.normalized * terrainSensorOffset);
         blackboard.Set(BBK.StuckAtWall, false);     // 벽에 막혔음 플래그 강제 초기화
     }
 

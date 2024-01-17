@@ -8,7 +8,7 @@ using System;
 /// 지상형 몬스터의 Patrol Task를 수행하는 스크립트
 /// 멈췄다 갔다 하는 버전
 /// </summary>
-public class AITask_gPatrolGoAndStop : MonoBehaviour
+public class AITask_gPatrolGoAndStop : AITask_Base
 {
     [SerializeField]
     private Blackboard blackboard;
@@ -63,7 +63,7 @@ public class AITask_gPatrolGoAndStop : MonoBehaviour
         // 시작하자마자 SetNextDest 실행되는 것 고려하여 방향 설정
         if (GetCurrentDir() == startDir)
         {
-            flip();
+            Flip();
         }
     }
 
@@ -216,7 +216,7 @@ public class AITask_gPatrolGoAndStop : MonoBehaviour
             if ((destXpos - transform.position.x)
                 * transform.localScale.x < 0f)
             {
-                flip();
+                Flip();
             }
         }
         else
@@ -240,15 +240,10 @@ public class AITask_gPatrolGoAndStop : MonoBehaviour
             blackboard.Set(BBK.StuckAtCliff, false);
 
             // 방향 설정
-            flip();
+            Flip();
         }
 
         ThisTask.Succeed();
-    }
-
-    private void flip()
-    {
-        transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y);
     }
 
     private void MoveTo(float xCoord)
@@ -263,7 +258,7 @@ public class AITask_gPatrolGoAndStop : MonoBehaviour
         // 바라보는 방향과 이동 방향이 다를 경우
         /*if (transform.localScale.x * rigidbody.velocity.x < 0)   
         {
-            flip();
+            Flip();
         }*/
     }
 
