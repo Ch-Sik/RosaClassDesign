@@ -1,0 +1,23 @@
+tree("Root")
+    Sequence
+        tree("Phase0")
+        tree("PhaseChange")
+        tree("Phase1")
+
+tree("Phase0")
+    not                                         // Phase 종료 조건 달성했을 때 Fail 대신 Succeed 반환하도록 not 게이트 사용
+        repeat
+            sequence
+                isHpOverPhaseLimit(0)           // HP 체크하고 만약 HP가 기준 아래(=fail)일 경우 Phase2로 이행
+                mute                            // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지
+                    fallback                    // HP가 충분하다면 패턴 수행
+                        Attack()                // 일단 임시로 아무 공격이나 수행            
+
+tree("PhaseChange")
+    Wait(3.0)                                   // TODO: 고정 시간 대기 대신 보스 페이즈 전환 연출 끝날 때까지 대기로 바꾸기
+
+tree("Phase1")
+    repeat                                      // 마지막 Phase에서는 HP 체크할 필요 없음.
+        mute
+            fallback                                
+                Attack() 
