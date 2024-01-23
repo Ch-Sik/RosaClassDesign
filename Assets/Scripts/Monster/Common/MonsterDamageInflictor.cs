@@ -20,6 +20,7 @@ public class MonsterDamageInflictor : MonoBehaviour
     {
         if (go.CompareTag("Player"))
         {
+            Debug.Log($"플레이어에게 {damage}데미지");
             // TODO: 플레이어에게 데미지 주기
         }
     }

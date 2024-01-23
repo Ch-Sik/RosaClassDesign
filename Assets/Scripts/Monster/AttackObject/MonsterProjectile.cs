@@ -7,6 +7,8 @@ public class MonsterProjectile : MonoBehaviour
 {
     [SerializeField, Tooltip("투사체 속도")]
     private float projectileSpeed = 3f;
+    [SerializeField, Tooltip("중력 영향 여부")]
+    private bool useGravity = false;
 
     [SerializeField]
     private new Rigidbody2D rigidbody;
@@ -14,7 +16,7 @@ public class MonsterProjectile : MonoBehaviour
     private new Collider2D collider;
 
     // projectileDir은 Normalize된 벡터임을 전제
-    public void InitProjectile(Vector2 projectileDir)
+    public void InitProjectile(Vector2 projectileDir, GameObject target = null)
     {
         // 필요 컴포넌트 설정
         if(rigidbody == null)
@@ -22,9 +24,23 @@ public class MonsterProjectile : MonoBehaviour
             rigidbody = GetComponent<Rigidbody2D>();
             Debug.Assert(rigidbody != null, $"{gameObject.name}: Rigidbody2D 레퍼런스가 설정되어있지 않음");
         }
+        if (useGravity)
+            rigidbody.isKinematic = false;
+        else
+            rigidbody.isKinematic = true;
 
-        // 속도 설정
+        // 기본 속도 설정
         rigidbody.velocity = projectileDir * projectileSpeed;
+
+        // 중력 사용시 조금 더 위쪽 방향을 향하도록 보정
+        if(useGravity)
+        {
+            Debug.Assert(target != null, $"{gameObject.name}: 투사체에 중력을 사용하려면 보정을 위해 target 지정 필요함");
+            float eta = (target.transform.position.x - transform.position.x) / (projectileDir * projectileSpeed).x;
+            // ↓ 중력가속도를 시간으로 두번 적분한 값
+            Vector2 aimCorrection = 0.5f * Vector2.up * eta * eta * rigidbody.gravityScale;
+            rigidbody.velocity += aimCorrection;
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
