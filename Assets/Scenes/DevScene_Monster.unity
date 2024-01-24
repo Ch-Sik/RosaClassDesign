@@ -202,25 +202,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1829516297546014215, guid: e4a905a3494fcfe4ba41f04ad2d4ebcf, type: 3}
-      propertyPath: activeDuration
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 1829516297546014215, guid: e4a905a3494fcfe4ba41f04ad2d4ebcf, type: 3}
-      propertyPath: startupDuration
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1829516297546014215, guid: e4a905a3494fcfe4ba41f04ad2d4ebcf, type: 3}
-      propertyPath: tackleAttackPower
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 3823687514981672594, guid: e4a905a3494fcfe4ba41f04ad2d4ebcf, type: 3}
       propertyPath: m_Name
       value: WildBoar
-      objectReference: {fileID: 0}
-    - target: {fileID: 3823687514981672594, guid: e4a905a3494fcfe4ba41f04ad2d4ebcf, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1959,10 +1943,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: RangeEnemy_GroundAOE
       objectReference: {fileID: 0}
-    - target: {fileID: 9184589203213703143, guid: 0fa7de26d844e5a4c89d18547c45890e, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1976,25 +1956,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2834114836744119400, guid: beaf5f4acaab32e4a99a0b7de8e8bd4b, type: 3}
-      propertyPath: activeDuration
-      value: 0.8
-      objectReference: {fileID: 0}
-    - target: {fileID: 2834114836744119400, guid: beaf5f4acaab32e4a99a0b7de8e8bd4b, type: 3}
-      propertyPath: startupDuration
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2834114836744119400, guid: beaf5f4acaab32e4a99a0b7de8e8bd4b, type: 3}
-      propertyPath: wallStunEnabled
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5370473681700700326, guid: beaf5f4acaab32e4a99a0b7de8e8bd4b, type: 3}
       propertyPath: m_Name
       value: FlyingEnemy_Tackle
-      objectReference: {fileID: 0}
-    - target: {fileID: 5370473681700700326, guid: beaf5f4acaab32e4a99a0b7de8e8bd4b, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5583020702702528783, guid: beaf5f4acaab32e4a99a0b7de8e8bd4b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2049,21 +2013,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 485159792782262725, guid: da7cf4d7532b2db439d8ae6a68832d04, type: 3}
-      propertyPath: maxHP
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1900283008207837288, guid: da7cf4d7532b2db439d8ae6a68832d04, type: 3}
-      propertyPath: startupDuration
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5852326382886546652, guid: da7cf4d7532b2db439d8ae6a68832d04, type: 3}
       propertyPath: m_Name
       value: RangeEnemy_Projectile
-      objectReference: {fileID: 0}
-    - target: {fileID: 5852326382886546652, guid: da7cf4d7532b2db439d8ae6a68832d04, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6541328140981933512, guid: da7cf4d7532b2db439d8ae6a68832d04, type: 3}
       propertyPath: m_LocalPosition.x

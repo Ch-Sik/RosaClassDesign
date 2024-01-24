@@ -118,7 +118,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5583020702702528783
 Transform:
   m_ObjectHideFlags: 0
@@ -244,14 +244,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 4018340061913962624}
+  superArmourOnActiveTime: 0
+  startupDuration: 0.5
+  activeDuration: 0.8
+  recoveryDuration: 1
+  currentState: 0
   rigidbody: {fileID: 768318837720881973}
   damageComponent: {fileID: 4781385508507061}
   tackleAttackPower: 2
-  superArmourOnTackle: 0
   tackleSpeed: 5
-  prepareDuration: 0.5
-  tackleDuration: 1
-  recoveryDuration: 1
   wallStunEnabled: 1
   wallStunDuration: 0
   terrainSensor: {fileID: 6252223960851784911}
@@ -436,7 +437,7 @@ GameObject:
   - component: {fileID: 1527714121119451536}
   - component: {fileID: 6339020573577873484}
   - component: {fileID: 4721243682746141556}
-  m_Layer: 17
+  m_Layer: 9
   m_Name: TerrainCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}

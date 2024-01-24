@@ -28,7 +28,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1063722233323340405
 Transform:
   m_ObjectHideFlags: 0
@@ -172,13 +172,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
   rigidbody: {fileID: 0}
-  patrollSpeed: 1
-  patrollGoTime: 3
-  patrollStopTime: 1
+  patrolSpeed: 1
+  patrolGoTime: 1
+  patrolStopTime: 1
   considerCliff: 1
-  hasPatrollRangeLimit: 0
-  PatrollRangeSize: 5
-  PatrollRangeOffset: 0
+  hasPatrolRangeLimit: 1
+  PatrolRangeSize: 5
+  PatrolRangeOffset: 0
   startXpos: 0
   destXpos: 0
   startDir: 1
@@ -209,14 +209,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
+  superArmourOnActiveTime: 0
+  startupDuration: 0.5
+  activeDuration: 3
+  recoveryDuration: 1
+  currentState: 0
   rigidbody: {fileID: 0}
   damageComponent: {fileID: 0}
-  tackleAttackPower: 0
-  superArmourOnTackle: 0
+  tackleAttackPower: 2
   tackleSpeed: 3
-  prepareDuration: 1
-  tackleDuration: 2.5
-  recoveryDuration: 1
   wallStunEnabled: 1
   wallStunDuration: 2
 --- !u!50 &3574660721282094193
@@ -538,7 +539,7 @@ GameObject:
   - component: {fileID: 6787666210377079989}
   - component: {fileID: 7007271496092196109}
   - component: {fileID: 7079825232698836751}
-  m_Layer: 17
+  m_Layer: 9
   m_Name: WallCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
