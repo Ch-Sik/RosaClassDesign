@@ -37,6 +37,12 @@ public class AITask_RangeAttack_SimpleProjectile : AITask_Base
     [Task]
     private void Attack()
     {
+        SimpleProjectileAttack();
+    }
+
+    [Task]
+    private void SimpleProjectileAttack()
+    {
         // 블랙보드에서 피격 정보 가져오기
         bool isHitt;
         blackboard.TryGet(BBK.isHitt, out isHitt);
@@ -72,6 +78,8 @@ public class AITask_RangeAttack_SimpleProjectile : AITask_Base
         }
     }
 
+    
+
     private void DoAttack()
     {
         // 적(플레이어) 위치 파악
@@ -99,7 +107,7 @@ public class AITask_RangeAttack_SimpleProjectile : AITask_Base
 
         // 공격 시전
         GameObject projectile = Instantiate(projectilePrefab, muzzle.position, Quaternion.identity);
-        projectile.GetComponent<MonsterProjectile>().InitProjectile(attackDir);
+        projectile.GetComponent<MonsterProjectile>().InitProjectile(attackDir.normalized, enemy);
     }
 
     private void Succeed()

@@ -86,10 +86,4 @@ public class AITask_gndShockwaveAttack : MonoBehaviour
         startupTimer = null;
         recoveryTimer = null;
     }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(muzzle.position, 0.3f);
-    }
 }

@@ -133,7 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 15630334}
   m_Layer: 23
-  m_Name: muzzle
+  m_Name: rock muzzle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -148,7 +148,7 @@ Transform:
   m_GameObject: {fileID: 15630333}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.582, y: -0.418, z: 0}
+  m_LocalPosition: {x: -0.639, y: -0.216, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -442,6 +442,37 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 01114e4d723c7a04b8d1df30a97f568f, type: 2}
   - {fileID: 11400000, guid: 37db6ff988b51c44bb8e712b5efa87a9, type: 2}
   defaultTileData: {fileID: 11400000, guid: 01114e4d723c7a04b8d1df30a97f568f, type: 2}
+--- !u!1 &1316404873
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1316404874}
+  m_Layer: 23
+  m_Name: shockwave muzzle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1316404874
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316404873}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.724, y: -0.46, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1459561986}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1459561981
 GameObject:
   m_ObjectHideFlags: 0
@@ -607,6 +638,7 @@ Transform:
   m_Children:
   - {fileID: 15630334}
   - {fileID: 592811529}
+  - {fileID: 1316404874}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1459561987
@@ -694,7 +726,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 1459561989}
   attackPrefab: {fileID: 721283632189696070, guid: 206a5113eea0dd649a8c9749b8c04765, type: 3}
-  muzzle: {fileID: 15630334}
+  muzzle: {fileID: 1316404874}
   startupDuration: 1.8
   recoveryDuration: 1
 --- !u!1 &1716278703
