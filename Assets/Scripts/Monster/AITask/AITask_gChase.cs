@@ -68,7 +68,7 @@ public class AITask_gChase : AITask_Base
             StopMoving();
             // 마지막에 방향 확실히 설정
             if((enemy.transform.position - transform.position).toLR() != transform.localScale.toLR())
-                flip();
+                Flip();
             return;
         }
 
@@ -99,16 +99,11 @@ public class AITask_gChase : AITask_Base
         if ((enemy.transform.position.x - transform.position.x) 
             * transform.localScale.x < 0f)
         {
-            flip();
+            Flip();
         }    
 
         // 적 방향으로 이동
         MoveTo(enemy.transform.position.x);
-    }
-
-    private void flip()
-    {
-        transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y);
     }
 
     private void MoveTo(float xCoord)

@@ -28,20 +28,8 @@ public class AITask_TackleAttack_Air : AITask_TackleAttack
         SetChildObjectPos(terrainSensor, tackleDir * terrainSensorOffset);
     }
 
-    protected override void DoAttack()
+    protected override void DoTackle()
     {
-        // DoAttack이 실행되는 첫 프레임
-        if (tackleTimer == null)
-        {
-            // 공격력 설정
-            damageComponent.damage = tackleAttackPower;
-            // 타이머 설정
-            tackleTimer = Timer.StartTimer();
-        }
-        // 디버그 출력
-        ThisTask.debugInfo = $"돌진: {tackleTimer.duration}";
-
-        // 실제 돌진 수행
         rigidbody.velocity = tackleDir * tackleSpeed;
     }
 }

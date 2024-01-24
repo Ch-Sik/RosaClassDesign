@@ -4,11 +4,9 @@ using UnityEngine;
 using Panda;
 
 [RequireComponent(typeof(MonsterDamageInflictor))]
-public class AITask_TackleAttack : AITask_Base
+public class AITask_TackleAttack : AITask_AttackBase
 {
     // 컴포넌트 레퍼런스
-    [SerializeField]
-    protected Blackboard blackboard;
     [SerializeField]
     protected new Rigidbody2D rigidbody;
     [SerializeField]
@@ -17,18 +15,8 @@ public class AITask_TackleAttack : AITask_Base
     [Header("공격 관련")]
     [SerializeField, Tooltip("돌진 패턴 공격력")]
     protected int tackleAttackPower;
-    [SerializeField, Tooltip("돌진 도중에 슈퍼아머")]
-    protected bool superArmourOnTackle;
     [SerializeField, Tooltip("돌진 속도")]
     protected float tackleSpeed = 5;
-
-    [Header("타이밍 관련")]
-    [SerializeField, Tooltip("돌진 준비 시간(선딜레이)")]
-    protected float prepareDuration;
-    [SerializeField, Tooltip("돌진 유지 시간")]
-    protected float tackleDuration;
-    [SerializeField, Tooltip("돌진 후 대기 시간(후딜레이)")]
-    protected float recoveryDuration;
 
     [Header("벽에 박았을 때 관련")]
     [SerializeField, Tooltip("돌진 중 벽에 박았을 때 스턴 활성화")]
@@ -36,9 +24,6 @@ public class AITask_TackleAttack : AITask_Base
     [SerializeField, Tooltip("돌진 중 벽에 박았을 떄 스턴 시간")]
     protected float wallStunDuration;
 
-    protected Timer prepareTimer = null;
-    protected Timer tackleTimer = null;
-    protected Timer recoveryTimer = null;
     protected Timer stunTimer = null;
     protected Vector2 tackleDir;
     protected int defaultCollideDamage;    // 몸체 충돌 판정이 기본적으로 가지고 있던 데미지
@@ -68,78 +53,72 @@ public class AITask_TackleAttack : AITask_Base
     }
 
     [Task]
-    protected void Attack()
+    protected void TackleAttack()
     {
-        // 블랙보드에서 피격 정보 & 벽에 박음 정보 가져오기
-        bool isHitt;
-        blackboard.TryGet(BBK.isHitt, out isHitt);
-        bool isStuckAtWall;
-        blackboard.TryGet(BBK.StuckAtWall, out isStuckAtWall);
-        if (prepareTimer == null || prepareTimer.duration < prepareDuration)
-        {
-            // 피격 시 행동 중지
-            if (isHitt)
-            {
-                Fail();
-                return;
-            }
-            PrepareAttack();
-        }
-        else if (tackleTimer == null || tackleTimer.duration < tackleDuration)
-        {
-            // 슈퍼아머가 아니면서 피격 시 행동 중지
-            if (!superArmourOnTackle && isHitt)
-            {
-                Fail();
-                return;
-            }
-            // DoAttack을 해야할 타이밍에 벽에 박았을 경우 스턴
-            if(wallStunEnabled && isStuckAtWall)
-            {
-                // 스턴 첫 프레임
-                if(stunTimer == null)   
-                {
-                    stunTimer = Timer.StartTimer();
-                    blackboard.Set(BBK.isStunned, true);    // 애니메이션을 위한 블랙보드 설정
-                    Debug.Log("벽에다 대가리 꽁!!!");
-                }
-                // 스턴 중간 프레임
-                else if(stunTimer.duration < wallStunDuration)
-                {
-                    ThisTask.debugInfo = $"stun: {wallStunDuration - stunTimer.duration}";
-                    return;
-                }
-                // 스턴 마지막 프레임
-                else  
-                {
-                    stunTimer = null;
-                    blackboard.Set(BBK.isStunned, false);
-                    // Debug.Log("스턴 끝");
-                    Succeed();
-                    return;
-                }
-            }
-            DoAttack();
-        }
-        else if (recoveryTimer == null || recoveryTimer.duration < recoveryDuration)
-            AttackRecovery();
-        else
-            Succeed();
+        _Attack();
     }
 
-    protected void PrepareAttack()
+    // 공격 패턴을 구체적으로 지정하지 않고 대충 Attack()으로 뭉뚱그려 작성된 BT 스크립트 호환용
+    [Task]
+    protected void Attack()
     {
-        // 발구르면서 돌진 준비하는 시간
-        if (prepareTimer == null)
-        {
-            // 방향 계산
-            CalculateAttackDirection();
+        _Attack();
+    }
 
-            prepareTimer = Timer.StartTimer();
-            return;
+    protected override void OnAttackStartupBeginFrame()
+    {
+        // 방향 계산
+        CalculateAttackDirection();
+    }
+
+    protected override void OnAttackActiveBeginFrame()
+    {
+        // 기존 공격력은 저장해두고 몸통 접촉 시의 데미지를 tackleAttackPower로 대체
+        defaultCollideDamage = damageComponent.damage;
+        damageComponent.damage = tackleAttackPower;
+    }
+
+    protected override void OnAttackActiveFrames()
+    {
+        // 블랙보드에서 벽에 박음 정보 가져오기
+        bool isStuckAtWall;
+        blackboard.TryGet(BBK.StuckAtWall, out isStuckAtWall);
+
+        // 벽에 박았을 경우 스턴
+        if (wallStunEnabled && isStuckAtWall)
+        {
+            // 스턴 첫 프레임
+            if (stunTimer == null)
+            {
+                stunTimer = Timer.StartTimer();
+                blackboard.Set(BBK.isStunned, true);    // 애니메이션을 위한 블랙보드 설정
+                Debug.Log("벽에다 대가리 꽁!!!");
+            }
+            // 스턴 중간 프레임
+            else if (stunTimer.duration < wallStunDuration)
+            {
+                ThisTask.debugInfo = $"stun: {wallStunDuration - stunTimer.duration}";
+                return;
+            }
+            // 스턴 마지막 프레임
+            else
+            {
+                stunTimer = null;
+                blackboard.Set(BBK.isStunned, false);
+                // Debug.Log("스턴 끝");
+                Succeed();
+                return;
+            }
         }
 
-        ThisTask.debugInfo = $"선딜: {prepareTimer.duration}";
+        // 실제 돌진 수행
+        DoTackle();
+    }
+
+    protected override void OnAttackRecoveryBeginFrame()
+    {
+        // 기존 공격력으로 복구
+        damageComponent.damage = defaultCollideDamage;
     }
 
     protected virtual void CalculateAttackDirection()
@@ -155,64 +134,18 @@ public class AITask_TackleAttack : AITask_Base
         lookAt2D(enemy.transform.position);
     }
 
-    protected virtual void DoAttack()
+    protected virtual void DoTackle()
     {
-        // DoAttack이 실행되는 첫 프레임
-        if (tackleTimer == null)
-        {
-            // 공격력 설정
-            damageComponent.damage = tackleAttackPower;
-            // 타이머 설정
-            tackleTimer = Timer.StartTimer();
-        }
-        // 디버그 출력
-        ThisTask.debugInfo = $"돌진: {tackleTimer.duration}";
-
-        // 실제 돌진 수행
         Vector2 velocity = tackleDir * tackleSpeed;
         velocity.y = rigidbody.velocity.y;
         rigidbody.velocity = velocity;
     }
 
-    private void AttackRecovery()
-    {
-        if(recoveryTimer == null)
-        {
-            // 공격력 되돌리기
-            damageComponent.damage = defaultCollideDamage;
-            // 타이머 설정
-            recoveryTimer = Timer.StartTimer();
-        }
-        /*
-            // 움직임 강제 멈춤
-            tmpVector = rigidbody.velocity;
-            tmpVector.x = 0f;
-            rigidbody.velocity = tmpVector;
-        */
-        ThisTask.debugInfo = $"후딜: {recoveryTimer.duration}";
-    }
 
     private bool isTargetBehind(GameObject enemy)
     {
         Vector2 toEnemy = (enemy.transform.position - transform.position).normalized;
         float cosDist = Vector2.Dot(toEnemy, tackleDir);
         return cosDist < -0.1f;     // 아주 약간 정도는 뒤로 가도 봐줌.
-    }
-
-    // Task 성공/실패로 인해 종료 시 Timer 값 정리를 위해 간단히 추상화
-    private void Succeed()
-    {
-        prepareTimer = null;
-        tackleTimer = null;
-        recoveryTimer = null;
-        ThisTask.Succeed();
-    }
-
-    private void Fail()
-    {
-        prepareTimer = null;
-        tackleTimer = null;
-        recoveryTimer = null;
-        ThisTask.Fail();
     }
 }

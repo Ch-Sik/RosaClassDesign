@@ -3,21 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using Panda;
 
-public class AITask_RangeAttack_GroundTargetAOE : AITask_Base
+public class AITask_RangeAttack_GroundTargetAOE : AITask_AttackBase
 {
-    [SerializeField]
-    protected Blackboard blackboard;
-
     [Header("공격 관련")]
     [SerializeField, Tooltip("범위 공격 프리팹")]
     private GameObject AoePrefab;
-    [SerializeField, Tooltip("공격 선딜레이")]
-    private float startupDuration;
-    [SerializeField, Tooltip("공격 후딜레이")]
-    private float recoveryDuration;
 
-    private Timer startupTimer = null;
-    private Timer recoveryTimer = null;
     private MonsterAOE attackInstance = null;
 
     private void Start()
@@ -31,46 +22,19 @@ public class AITask_RangeAttack_GroundTargetAOE : AITask_Base
     }
 
     [Task]
-    private void Attack()
+    private void GroundAOEAttack()
     {
-        // 블랙보드에서 피격 정보 가져오기
-        bool isHitt;
-        blackboard.TryGet(BBK.isHitt, out isHitt);
-        // 피격 시 행동 중지
-        if (isHitt)
-        {
-            Fail();
-            return;
-        }
-
-        if (!startupTimer && !recoveryTimer) // 공격의 첫 프레임
-        {
-            // 공격(범위 미리보기) 오브젝트 소환 & 선딜레이 타이머 시작
-            SpawnAttackObject();
-            startupTimer = Timer.StartTimer();
-        }
-        else if (startupTimer && startupTimer.duration < startupDuration)   // 선딜레이 중
-        {
-            ThisTask.debugInfo = $"선딜레이: {startupTimer.duration}";
-        }
-        else if (!recoveryTimer)     // 선딜은 끝났지만 공격을 아직 수행하지 않은 경우
-        {
-            // 공격 시전
-            DoAttack();
-            startupTimer = null;
-            recoveryTimer = Timer.StartTimer();
-        }
-        else if (recoveryTimer.duration < recoveryDuration)  // 후딜 진행중인 경우
-        {
-            ThisTask.debugInfo = $"후딜레이: {recoveryTimer.duration}";
-        }
-        else        // 후딜 종료
-        {
-            Succeed();
-        }
+        _Attack();
     }
 
-    private void SpawnAttackObject()
+    // 공격 패턴을 구체적으로 지정하지 않고 대충 Attack()으로 뭉뚱그려 작성된 BT 스크립트 호환용
+    [Task]
+    private void Attack()
+    {
+        _Attack();
+    }
+
+    protected override void OnAttackStartupBeginFrame()
     {
         Debug.Log("공격 소환");
         // 적(플레이어) 위치 파악
@@ -93,26 +57,17 @@ public class AITask_RangeAttack_GroundTargetAOE : AITask_Base
         attackInstance.Init();
     }
 
-    private void DoAttack()
+    protected override void OnAttackActiveBeginFrame()
     {
         // 공격 범위 미리보기를 실제 공격으로 변환
         attackInstance.ExecuteAttack();
     }
 
-    private void Succeed()
+    protected override void Fail()
     {
-        ThisTask.Succeed();
-        startupTimer = null;
-        recoveryTimer = null;
-    }
-
-    private void Fail()
-    {
+        base.Fail();
         // 선딜레이 상황인 경우, 소환된 미리보기 오브젝트를 삭제
         if(startupTimer != null)
             attackInstance.CancelAttack();
-        ThisTask.Fail();
-        startupTimer = null;
-        recoveryTimer = null;
     }
 }
