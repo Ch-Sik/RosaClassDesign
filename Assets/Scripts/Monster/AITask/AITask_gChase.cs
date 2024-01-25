@@ -8,13 +8,15 @@ using System.Runtime.CompilerServices;
 /// 지상형 몬스터의 Chase Task를 수행하는 스크립트
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
-public class AITask_gChase : MonoBehaviour
+public class AITask_gChase : AITask_Base
 {
+    // 컴포넌트 레퍼런스
     [SerializeField]
     private Blackboard blackboard;
     [SerializeField]
     private new Rigidbody2D rigidbody;
 
+    // 추격 관련 파라미터
     [SerializeField, Tooltip("어느정도까지 가까워져야 접근 완료로 판단할지")]
     private float acceptableRadius = 1.5f;
     [SerializeField, Tooltip("접근 속도")]
@@ -66,7 +68,7 @@ public class AITask_gChase : MonoBehaviour
             StopMoving();
             // 마지막에 방향 확실히 설정
             if((enemy.transform.position - transform.position).toLR() != transform.localScale.toLR())
-                flip();
+                Flip();
             return;
         }
 
@@ -97,16 +99,11 @@ public class AITask_gChase : MonoBehaviour
         if ((enemy.transform.position.x - transform.position.x) 
             * transform.localScale.x < 0f)
         {
-            flip();
+            Flip();
         }    
 
         // 적 방향으로 이동
         MoveTo(enemy.transform.position.x);
-    }
-
-    private void flip()
-    {
-        transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y);
     }
 
     private void MoveTo(float xCoord)

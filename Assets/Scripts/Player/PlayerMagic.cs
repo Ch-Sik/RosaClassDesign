@@ -49,11 +49,11 @@ public class PlayerMagic : MonoBehaviour
 
     private InputManager inputInstance;
     private InputAction aimInput;
-    private int layerGround;
-    private int layerCurtain;
+    private int layerMagicAble = 0;
     private int selectedMagicIndex = 0;
 
     private const string layerStringGround = "Ground";
+    private const string layerStringTmp = "TmpTerrain";
     private const string layerStringCurtain = "HiddenRoom";
 
     // 4방향 검사용 상수들
@@ -73,8 +73,9 @@ public class PlayerMagic : MonoBehaviour
     private void Init()
     {
         // 상수 설정
-        layerGround = LayerMask.GetMask(layerStringGround);
-        layerCurtain = LayerMask.GetMask(layerStringCurtain);
+        layerMagicAble |= LayerMask.GetMask(layerStringGround);
+        layerMagicAble  |= LayerMask.GetMask(layerStringTmp);
+        layerMagicAble  |= LayerMask.GetMask(layerStringCurtain);
 
         // 파라미터 정상 설정되어있는지 검사
         Debug.Assert(magicList.Length != 0, "식물 마법이 하나도 설정되어있지 않음!");
@@ -235,7 +236,7 @@ public class PlayerMagic : MonoBehaviour
         }
 
         // 마우스가 지형 안쪽인지 바깥쪽인지 파악하고 마우스 위치로부터 가장 가까운 캐스팅 위치 가져오기
-        Collider2D col = Physics2D.OverlapPoint(mouseWorldPosition, layerGround | layerCurtain);
+        Collider2D col = Physics2D.OverlapPoint(mouseWorldPosition, layerMagicAble);
         TerrainCastHit? terrainHit = null;
         if(col != null)
         {
@@ -281,11 +282,11 @@ public class PlayerMagic : MonoBehaviour
             if ((castFlag & 1<<i) != 0)
             {
                 // 지형 바깥쪽 방향으로 castDist만큼 뻗어도 지형 안쪽일 경우 '너무' 안쪽인 것으로 판정
-                overlapResult = Physics2D.OverlapPoint(mousePosition + cDirections[i], layerGround | layerCurtain);
+                overlapResult = Physics2D.OverlapPoint(mousePosition + cDirections[i], layerMagicAble);
                 if (overlapResult == null)
                 {
                     // 지형 바깥쪽 지점에서 안쪽 방향으로 raycast
-                    raycastResult = Physics2D.Raycast(mousePosition + cDirections[i], -cDirections[i], castDist, layerGround | layerCurtain);
+                    raycastResult = Physics2D.Raycast(mousePosition + cDirections[i], -cDirections[i], castDist, layerMagicAble);
                     tmpDistanceSqr = (raycastResult.point - mousePosition).SqrMagnitude();
                     if (raycastResult.collider != null && tmpDistanceSqr < minDistanceSqr)
                     {
@@ -329,7 +330,7 @@ public class PlayerMagic : MonoBehaviour
             if ((castFlag & 1<<i) != 0)
             {
                 // 레이 캐스팅 수행
-                raycastResult = Physics2D.Raycast(mousePosition, -cDirections[i], castDist, layerGround | layerCurtain);
+                raycastResult = Physics2D.Raycast(mousePosition, -cDirections[i], castDist, layerMagicAble);
                 if (raycastResult.collider != null && raycastResult.distance < minDistance)
                 {
                     tmpCellPos = Vector3Int.FloorToInt(raycastResult.point - 0.1f * cDirections[i]);

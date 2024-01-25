@@ -11,6 +11,7 @@ public class MonsterState : MonoBehaviour
 {
     [SerializeField] private int maxHP = 5;
     [SerializeField, ReadOnly] private int currentHP;
+    public int HP { get { return currentHP; } }
 
     private void Start()
     {

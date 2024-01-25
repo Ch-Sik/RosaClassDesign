@@ -10,7 +10,7 @@ public class TilemapManager : SerializedMonoBehaviour
     public static TilemapManager Instance;
 
     [SerializeField]
-    public Tilemap map;
+    public Tilemap defaultTliemap;
 
     public List<TileData> tileDatas;
     [SerializeField]
@@ -39,17 +39,32 @@ public class TilemapManager : SerializedMonoBehaviour
     {
         Vector3 cellOffset = new Vector3(0.5f, 0.5f);
 
-        TileBase selectedTile = map.GetTile(cellPosition);
+        // 우선 기본 타일맵에서 가져오기 시도 (최적화)
+        TileBase selectedTile = null;
+        if(defaultTliemap != null)
+            selectedTile = defaultTliemap.GetTile(cellPosition);
+
+        // 기본 타일맵에 없다면 Overlap 사용해서 해당 위치에 다른 타일맵이 있는지 검사
         if(selectedTile == null)
         {
-            // Debug.LogWarning($"그 위치에는 타일이 존재하지 않습니다\n위치: {tilePosition}");
-            Collider2D hiddenRoomCurtain = Physics2D.OverlapPoint((Vector3)cellPosition + cellOffset, LayerMask.GetMask("HiddenRoom"));
-            if(hiddenRoomCurtain != null)
+            // 기본 타일맵에서 없다면 가능성은 2가지
+            // 1. 숨겨진 방 커튼인 경우
+            // 2. 보스 등의 몬스터 패턴으로 인한 지형 소환
+            Collider2D subTilemapCollider = Physics2D.OverlapPoint((Vector3)cellPosition + cellOffset, LayerMask.GetMask("HiddenRoom", "TmpTerrain"));
+            //if(subTilemapCollider == null)
+            //{
+            //    Debug.Log("no subtilemap");
+            //}
+            //else
+            //    Debug.Log($"subTilemap: {subTilemapCollider.gameObject.name}");
+            if (subTilemapCollider != null)
             {
-                selectedTile = hiddenRoomCurtain.gameObject.GetComponent<Tilemap>().GetTile(cellPosition);
+                selectedTile = subTilemapCollider.gameObject.GetComponent<Tilemap>().GetTile(cellPosition);
             }
             else return null;
         }
+
+        // 타일을 찾았다면 해당 타일의 데이터 가져오기
         try
         {
             return dataFromTiles[selectedTile];
@@ -63,7 +78,7 @@ public class TilemapManager : SerializedMonoBehaviour
 
     public TileData GetTileDataByWorldPosition(Vector3 worldPosition)
     {
-        return GetTileDataByCellPosition(map.WorldToCell(worldPosition));
+        return GetTileDataByCellPosition(defaultTliemap.WorldToCell(worldPosition));
     }
 
     public TileData GetTileDataByTileBase(TileBase tile)
@@ -85,7 +100,7 @@ public class TilemapManager : SerializedMonoBehaviour
     {
         Vector3 cellOffset = new Vector3(0.5f, 0.5f);
 
-        TileBase selectedTile = map.GetTile(cellPosition);
+        TileBase selectedTile = defaultTliemap.GetTile(cellPosition);
         if(selectedTile != null) return true;
         Collider2D hiddenRoomCurtain = Physics2D.OverlapPoint((Vector3)cellPosition + cellOffset, LayerMask.GetMask("HiddenRoom"));
         if (hiddenRoomCurtain != null)
