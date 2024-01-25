@@ -8,13 +8,25 @@ public class Boss1Debug : MonoBehaviour
 {
     public TMP_Text text;
     public AITask_BossPhaseChange phaseChanger;
+    public GameObject boss;
     public MonsterState monsterState;
 
+    private void Start()
+    {
+        monsterState = boss.GetComponent<MonsterState>();
+    }
+
     // Update is called once per frame
-    [Task]
     void Update()
     {
-        text.text = $"Phase: {phaseChanger.currentPhase + 1}\n"
-            + $"HP: {monsterState.HP}\n";
+        if (boss != null)
+        {
+            text.text = $"Phase: {phaseChanger.currentPhase + 1}\n"
+                + $"HP: {monsterState.HP}\n";
+        }
+        else
+        {
+            text.text = "No Boss";
+        }
     }
 }

@@ -26,6 +26,14 @@ public class AITask_BossPhaseChange : AITask_Base
     [Task]
     private bool isHpOverPhaseLimit(int phaseNum)
     {
-        return (bossState.HP >= phaseMinHP[phaseNum]);
+        if (bossState.HP >= phaseMinHP[phaseNum])
+        {
+            return true;
+        }
+        else
+        {
+            currentPhase = phaseNum + 1;
+            return false;
+        }
     }
 }

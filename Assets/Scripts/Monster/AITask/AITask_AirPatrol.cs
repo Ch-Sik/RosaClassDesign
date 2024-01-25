@@ -5,8 +5,6 @@ using Panda;
 using Sirenix.OdinInspector;
 using Rito;
 using System;
-using UnityEditor.Tilemaps;
-using static UnityEngine.GraphicsBuffer;
 
 public class AITask_AirPatrol : AITask_Base
 {

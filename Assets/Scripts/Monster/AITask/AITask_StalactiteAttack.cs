@@ -172,4 +172,17 @@ public class AITask_StalactiteAttack : AITask_AttackBase
         base.Succeed();
         attackInstance.Clear();
     }
+
+    private void OnDie()
+    {
+        if (attackInstance.Count > 0)
+        {
+            Debug.Log("몬스터 사망으로 인해 남아있는 낙하물 정리");
+            foreach (var instance in attackInstance)
+            {
+                if (instance != null)
+                    Destroy(instance);
+            }
+        }
+    }
 }
