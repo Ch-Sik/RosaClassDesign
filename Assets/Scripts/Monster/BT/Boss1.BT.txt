@@ -12,7 +12,7 @@ tree("Phase0")
                 mute                            // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지
                     random                      // 체력이 충분하다면 랜덤 패턴 수행
                         ShockwaveAttack()
-                        TackleAttack
+                        TackleAttack()
 
 tree("PhaseChange")
     Wait(3.0)                                   // TODO: 고정 시간 대기 대신 보스 페이즈 전환 연출 끝날 때까지 대기로 바꾸기
@@ -21,4 +21,7 @@ tree("Phase1")
     repeat                                      // 마지막 Phase에서는 HP 체크할 필요 없음.
         mute
             random                                
-                ShockwaveCombo()
+                TackleAttack()
+                Parallel
+                    StalactiteAttack()
+                    ShockwaveCombo()

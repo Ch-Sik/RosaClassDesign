@@ -11,6 +11,8 @@ public class AITask_BossPhaseChange : AITask_Base
     [SerializeField]
     private int[] phaseMinHP = null;
 
+    public int currentPhase = 0;    // 디버깅용
+
     private void Start()
     {
         if (bossState == null)
