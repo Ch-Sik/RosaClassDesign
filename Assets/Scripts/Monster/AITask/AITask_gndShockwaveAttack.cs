@@ -48,6 +48,11 @@ public class AITask_gndShockwaveAttack : AITask_AttackBase
 
     protected override void OnAttackActiveBeginFrame()
     {
+        EmitShockwave();
+    }
+
+    protected virtual void EmitShockwave()
+    {
         // 적(플레이어)의 위치 파악
         GameObject enemy;
         blackboard.TryGet(BBK.Enemy, out enemy);

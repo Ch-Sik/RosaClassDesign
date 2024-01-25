@@ -20,6 +20,5 @@ tree("PhaseChange")
 tree("Phase1")
     repeat                                      // 마지막 Phase에서는 HP 체크할 필요 없음.
         mute
-            fallback                                
-                ShockwaveAttack()
-                SimpleProjectileAttack()
+            random                                
+                ShockwaveCombo()

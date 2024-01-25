@@ -37,6 +37,11 @@ public class AITask_AttackBase : AITask_Base
     [SerializeField, ReadOnly]
     protected MonsterAtttackState currentState;
 
+    /// <summary>
+    /// <br> 설정한 startup/active/recovery 타이밍에 맞게 공격 이벤트 함수들을 호출함. </br>
+    /// <br> 이 이름 그대로면 다양한 패턴(AITask)을 BT에서 구별이 불가능하므로, 상속된 클래스에서
+    /// 고유한 이름의 Task 함수를 만들고 이 함수를 호출해줘야 됨. </br>
+    /// </summary>
     [Task]
     protected void _Attack()
     {
@@ -112,14 +117,25 @@ public class AITask_AttackBase : AITask_Base
         }
     }
 
+    /// <summary> 선딜레이 첫 프레임에서 호출되는 함수. 선딜레이가 0이여도 반드시 호출됨. </summary>
     protected virtual void OnAttackStartupBeginFrame() { }
+    /// <summary> 선딜레이 프레임에서 반복적 호출되는 함수. 선딜레이가 0이면 호출되지 않음. </summary>
     protected virtual void OnAttackStartupFrames() { }
+    /// <summary> 공격유지 첫 프레임에서 호출되는 함수. 공격유지시간이 0이여도 반드시 호출됨. </summary>
     protected virtual void OnAttackActiveBeginFrame() { }
+    /// <summary> 공격유지 프레임에서 반복적 호출되는 함수. 공격유지시간이 0이면 호출되지 않음. </summary>
     protected virtual void OnAttackActiveFrames() { }
+    /// <summary> 후딜레이 첫 프레임에서 호출되는 함수. 후딜레이가 0이여도 반드시 호출됨. </summary>
     protected virtual void OnAttackRecoveryBeginFrame() { }
+    /// <summary> 후딜레이 프레임에서 반복적 호출되는 함수. 후딜레이가 0이면 호출되지 않음. </summary>
     protected virtual void OnAttackRecoveryFrames() { }
+    /// <summary> 공격 패턴의 마지막 프레임에서 호출되는 함수. </summary>
     protected virtual void OnAttackEndFrame() { }
 
+    /// <summary>
+    /// <br> 패턴이 성공한 것으로 BT에게 알리고 불필요한 요소들을 정리함. </br>
+    /// <br> 필요하다면 override해서 추가 정리 수행 </br>
+    /// </summary>
     protected virtual void Succeed()
     {
         ThisTask.Succeed();
@@ -129,6 +145,10 @@ public class AITask_AttackBase : AITask_Base
         recoveryTimer = null;
     }
 
+    /// <summary>
+    /// <br> 패턴이 실패한 것으로 BT에게 알리고 불필요한 요소들을 정리함. </br>
+    /// <br> 필요하다면 override해서 추가 정리 수행 </br>
+    /// </summary>
     protected virtual void Fail()
     {
         ThisTask.Fail();

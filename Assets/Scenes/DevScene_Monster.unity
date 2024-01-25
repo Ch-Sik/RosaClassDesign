@@ -580,6 +580,7 @@ GameObject:
   - component: {fileID: 1459561984}
   - component: {fileID: 1459561987}
   - component: {fileID: 1459561991}
+  - component: {fileID: 1459561995}
   - component: {fileID: 1459561993}
   - component: {fileID: 1459561989}
   - component: {fileID: 1459561983}
@@ -703,7 +704,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bossState: {fileID: 1459561985}
-  phaseMinHP: 05000000
+  phaseMinHP: 1400000000000000
 --- !u!114 &1459561985
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -895,6 +896,27 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &1459561995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1459561981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba1d81249101240448bf2049cfc72299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blackboard: {fileID: 0}
+  superArmourOnActiveTime: 0
+  startupDuration: 1.8
+  activeDuration: 4
+  recoveryDuration: 2
+  currentState: 0
+  attackPrefab: {fileID: 721283632189696070, guid: 206a5113eea0dd649a8c9749b8c04765, type: 3}
+  muzzle: {fileID: 1316404874}
+  shockwaveCount: 3
 --- !u!1 &1716278703
 GameObject:
   m_ObjectHideFlags: 0
@@ -1996,7 +2018,7 @@ CompositeCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
-  m_GeometryType: 0
+  m_GeometryType: 1
   m_GenerationType: 0
   m_EdgeRadius: 0
   m_ColliderPaths:
