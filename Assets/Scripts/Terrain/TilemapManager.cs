@@ -51,12 +51,12 @@ public class TilemapManager : SerializedMonoBehaviour
             // 1. 숨겨진 방 커튼인 경우
             // 2. 보스 등의 몬스터 패턴으로 인한 지형 소환
             Collider2D subTilemapCollider = Physics2D.OverlapPoint((Vector3)cellPosition + cellOffset, LayerMask.GetMask("HiddenRoom", "TmpTerrain"));
-            if(subTilemapCollider == null)
-            {
-                Debug.Log("no subtilemap");
-            }
-            else
-                Debug.Log($"subTilemap: {subTilemapCollider.gameObject.name}");
+            //if(subTilemapCollider == null)
+            //{
+            //    Debug.Log("no subtilemap");
+            //}
+            //else
+            //    Debug.Log($"subTilemap: {subTilemapCollider.gameObject.name}");
             if (subTilemapCollider != null)
             {
                 selectedTile = subTilemapCollider.gameObject.GetComponent<Tilemap>().GetTile(cellPosition);

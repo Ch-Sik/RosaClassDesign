@@ -37,6 +37,15 @@ public class AITask_gndShockwaveAttack : AITask_AttackBase
         _Attack();
     }
 
+    protected override void OnAttackStartupBeginFrame()
+    {
+        GameObject enemy;
+        blackboard.TryGet(BBK.Enemy, out enemy);
+        Debug.Assert(enemy != null, "충격파 패턴: 적을 찾을 수 없음!");
+
+        lookAt2D(enemy.transform.position);
+    }
+
     protected override void OnAttackActiveBeginFrame()
     {
         // 적(플레이어)의 위치 파악
