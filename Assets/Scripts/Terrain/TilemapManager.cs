@@ -96,12 +96,14 @@ public class TilemapManager : SerializedMonoBehaviour
         return result;
     }
 
-    public bool GetTileExist(Vector3Int cellPosition)
+    public bool GetIfSubstanceTileExist(Vector3Int cellPosition)
     {
         Vector3 cellOffset = new Vector3(0.5f, 0.5f);
 
         TileBase selectedTile = defaultTliemap.GetTile(cellPosition);
-        if(selectedTile != null) return true;
+        if(selectedTile != null && dataFromTiles[selectedTile].isSubstance) 
+            return true;
+
         Collider2D hiddenRoomCurtain = Physics2D.OverlapPoint((Vector3)cellPosition + cellOffset, LayerMask.GetMask("HiddenRoom"));
         if (hiddenRoomCurtain != null)
             return true;
