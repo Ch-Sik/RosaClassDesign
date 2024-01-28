@@ -36,7 +36,7 @@ public class MagicIvy : MonoBehaviour
 
         // 오른쪽 벽에 부딪혔는지 왼쪽 벽에 부딪혔는지 판단
         // 0.5의 오프셋을 주어서 오른쪽 셀 검사
-        originCellPos = tilemapManager.defaultTliemap.WorldToCell(magicPos + new Vector2(0.5f, 0));   
+        originCellPos = tilemapManager.WorldToCell(magicPos + new Vector2(0.5f, 0));   
         if(TilemapManager.Instance.GetIfSubstanceTileExist(originCellPos))
         {
             wallDirection = LR.LEFT;
@@ -51,7 +51,7 @@ public class MagicIvy : MonoBehaviour
         // y축 방향 위치 보정
         magicPos.y = Mathf.Round(magicPos.y - 0.5f) + 0.5f;
         transform.position = magicPos;
-        originCellPos = tilemapManager.defaultTliemap.WorldToCell(magicPos + new Vector2(0.5f, 0));
+        originCellPos = tilemapManager.WorldToCell(magicPos + new Vector2(0.5f, 0));
 
         // 최적화
         tick = new WaitForSeconds(tickTime);
