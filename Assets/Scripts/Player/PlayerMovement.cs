@@ -47,6 +47,9 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("오이대쉬 속도")]
     [SerializeField] float superDashSpeed = 3f;
 
+    [Header("넉백 관련 매개변수")]
+    [Tooltip("넉백 힘")]
+    [SerializeField] float knockbackStrength = 1f;
     // 컴포넌트 레퍼런스
     [ReadOnly, SerializeField] Rigidbody2D rb;
     [ReadOnly, SerializeField] BoxCollider2D col;
@@ -136,13 +139,26 @@ public class PlayerMovement : MonoBehaviour
         isFacingWall = DetectWall();
         if (isFacingWall) 
         { 
-            isWallClimbingTop = CheckWallEnd();
+            if(playerControl.currentMoveState == PlayerMoveState.CLIMBING)
+            {
+                isWallClimbingTop = CheckWallEnd();
+            }
+            else
+            {
+                isWallClimbingTop = false;
+            }
+            
             isFalling = false;
             if(isWallClimbingTop)
             {
                 rb.velocity = Vector2.zero;
                 isStopControl = true;
             }
+        }
+        else
+        {
+            isWallClimbingTop = false;
+            
         }
         
     }
@@ -164,7 +180,7 @@ public class PlayerMovement : MonoBehaviour
                     if (isFacingWall == false)
                     {
                         // TODO: 이 부분을 벽 위 지면에 올라가는 것으로 대체
-                        UnstickFromWall();
+                        //UnstickFromWall();
                     }
                 }
             }
@@ -370,6 +386,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void UnstickFromWall()
     {
+        Debug.Log("unstick");
         playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
         rb.gravityScale = this.gravityScale;
         
@@ -389,8 +406,8 @@ public class PlayerMovement : MonoBehaviour
         }
         isStopControl = false;
         isWallClimbingTop = false;
-
-        
+        playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+        rb.gravityScale = this.gravityScale;
     }
 
     /// <summary>
@@ -535,15 +552,43 @@ public class PlayerMovement : MonoBehaviour
         //aimLine.transform.localScale = theScale;
     }
 
-    public void OnKnockback()
+    public void OnKnockback(Vector3 knockbackPos)
     {
+
+        Vector2 knockbackDirection = transform.position - knockbackPos;
+        knockbackDirection.Normalize();
+
+        Debug.Log(knockbackDirection);
+        
+        GetComponent<Rigidbody2D>().AddForce(knockbackDirection * knockbackStrength, ForceMode2D.Impulse);
+
         StartCoroutine(Knockback());
 
         IEnumerator Knockback()
         {
             playerControl.ChangeMoveState(PlayerMoveState.NO_MOVE);
-            yield return new WaitForSeconds(0.5f);
-            playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
+            if ((knockbackDirection.x < 0 && facingDirection.isLEFT())
+            || (knockbackDirection.x > 0 && facingDirection.isRIGHT()))
+            {
+                Flip();
+            }
+            playerRef.Animation.SetTrigger("Hit");
+            playerRef.Animation.ResetTrigger("Grounded");
+            isStopControl = true;
+            float waitTime = 0.3f;
+            bool isGrounded = false;
+            while (waitTime > 0)
+            {
+                if(playerControl.currentMoveState == PlayerMoveState.GROUNDED)
+                {
+                    isGrounded = true;
+                    break;
+                }
+                waitTime -= Time.deltaTime;
+                yield return null;
+            }
+            if(!isGrounded) playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
+            isStopControl = false;
         }
     }
 
@@ -564,7 +609,7 @@ public class PlayerMovement : MonoBehaviour
 
 
         platformBelow = belowObject;
-        if (playerControl.currentMoveState != PlayerMoveState.GROUNDED)
+        if (playerControl.isMIDAIR)
         {
             // 막 착지했을 때
             OnLanded();
@@ -577,7 +622,11 @@ public class PlayerMovement : MonoBehaviour
     {
         platformBelow = null;
         if (playerControl.currentMoveState == PlayerMoveState.GROUNDED)
+        {
             playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
+            playerRef.Animation.ResetTrigger("Grounded");
+        }
+            
         // state가 Climbing일 경우 state를 수정하지 않음.
     }
     #endregion

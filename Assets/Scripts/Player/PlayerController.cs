@@ -17,7 +17,7 @@ public class PlayerController : MonoBehaviour
     [ReadOnly, SerializeField] PlayerCombat playerCombat;
     [ReadOnly, SerializeField] Rigidbody2D rb;
     [ReadOnly, SerializeField] PlayerAnimation playerAnim;
-
+    
     // private 변수
     private Vector2 moveVector = Vector2.zero;      // 하향점프 판단을 위해 값 보관
 
@@ -122,26 +122,35 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
+        if(isMIDAIR)
+        {
+            //playerMove.JumpUp();
+            playerMove.ReserveJump();       // 공중에서는 점프 선입력
+        }
+        else
+        {
+            if (moveVector.y >= 0 || !(playerMove.platformBelow?.CompareTag("Platform") == true))
+            {
+                Debug.Log(playerMove.platformBelow?.tag);
+                isJumpingUp = true;
+                playerMove.JumpUp();        // 상향 점프
+            }
+            else
+            {
+                playerMove.JumpDown();      // 하향 점프
+            }
+        }
+        /*
         switch (currentMoveState)
         {
             case PlayerMoveState.GROUNDED:
-                if (moveVector.y >= 0 || !(playerMove.platformBelow?.CompareTag("Platform") == true))
-                {
-                    Debug.Log(playerMove.platformBelow?.tag);
-                    isJumpingUp = true;
-                    playerMove.JumpUp();        // 상향 점프
-                }
-                else
-                {
-                    playerMove.JumpDown();      // 하향 점프
-                }
+                
                 break;
             case PlayerMoveState.MIDAIR:
-                playerMove.JumpUp();
-                playerMove.ReserveJump();       // 공중에서는 점프 선입력
+                
                 break;
         }
-        
+        */
     }
 
     public void OnInteract(InputAction.CallbackContext context)

@@ -48,10 +48,13 @@ public class PlayerAnimation : MonoBehaviour
         anim.SetBool("isJumping", (playerControl.isMIDAIR && !playerMove.isDoingHooking) ? true : false);
         anim.SetBool("isClimbing", (playerControl.currentMoveState == PlayerMoveState.CLIMBING) ? true : false);
         anim.SetBool("isClimbEnd", (playerMove.isWallClimbingTop) ? true : false);
+        anim.SetBool("isInputClimbX", (playerControl.currentMoveState == PlayerMoveState.CLIMBING && 
+            (playerMove.facingDirection.toVector2().x == -playerMove.moveVector.x)) ? true : false);
         //anim.SetBool("isHooking", (playerMove.isDoingHooking) ? true : false);
         //anim.SetBool("isClimbOver", ((playerControl.currentMoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
         anim.SetFloat("yVel", rb.velocity.y);
-        //if (!playerMove.isWallJumping)
+        
+        //if (!playerMove.isWallJumping)q
         //{
         //    if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
         //    {
@@ -271,5 +274,10 @@ public class PlayerAnimation : MonoBehaviour
     {
         anim.SetTrigger(name);
         
+    }
+
+    public void ResetTrigger(string name)
+    {
+        anim.ResetTrigger(name);
     }
 }
