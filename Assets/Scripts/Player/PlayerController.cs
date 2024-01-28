@@ -17,14 +17,14 @@ public class PlayerController : MonoBehaviour
     [ReadOnly, SerializeField] PlayerCombat playerCombat;
     [ReadOnly, SerializeField] Rigidbody2D rb;
     [ReadOnly, SerializeField] PlayerAnimation playerAnim;
-
+    
     // private 변수
     private Vector2 moveVector = Vector2.zero;      // 하향점프 판단을 위해 값 보관
-    private GameObject platformBelow;
 
     // 플래그
     private bool isJumpingUp = false;
     private bool isDoingMagic = false;
+    public bool isMIDAIR = false;
 
     //싱글톤
     [ReadOnly, SerializeField] PlayerRef playerRef;
@@ -91,7 +91,14 @@ public class PlayerController : MonoBehaviour
     {
         //MIDAIR 상태에서 키바인딩은 GROUNDED 상태와 다르지 않기 때문에 GROUNDED
         if (newMoveState == PlayerMoveState.MIDAIR)
+        {
             newMoveState = PlayerMoveState.GROUNDED;
+            isMIDAIR = true;
+        }
+        else
+        {
+            isMIDAIR = false;
+        }
         inputManager.SetMoveInputState(newMoveState);
     }
 
@@ -115,25 +122,35 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
+        if(isMIDAIR)
+        {
+            //playerMove.JumpUp();
+            playerMove.ReserveJump();       // 공중에서는 점프 선입력
+        }
+        else
+        {
+            if (moveVector.y >= 0 || !(playerMove.platformBelow?.CompareTag("Platform") == true))
+            {
+                Debug.Log(playerMove.platformBelow?.tag);
+                isJumpingUp = true;
+                playerMove.JumpUp();        // 상향 점프
+            }
+            else
+            {
+                playerMove.JumpDown();      // 하향 점프
+            }
+        }
+        /*
         switch (currentMoveState)
         {
             case PlayerMoveState.GROUNDED:
-                if (moveVector.y >= 0 || !(platformBelow?.CompareTag("Platform") == true))
-                {
-                    isJumpingUp = true;
-                    playerMove.JumpUp();        // 상향 점프
-                }
-                else
-                {
-                    playerMove.JumpDown();      // 하향 점프
-                }
+                
                 break;
             case PlayerMoveState.MIDAIR:
-                playerMove.JumpUp();
-                playerMove.ReserveJump();       // 공중에서는 점프 선입력
+                
                 break;
         }
-        
+        */
     }
 
     public void OnInteract(InputAction.CallbackContext context)
@@ -197,6 +214,7 @@ public class PlayerController : MonoBehaviour
             if (currentMoveState != PlayerMoveState.CLIMBING)
             {
                 PlayerRef.Instance.combat.Attack();
+                playerAnim.SetTrigger("Attack");
             }
         }
     }
