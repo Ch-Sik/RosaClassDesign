@@ -13,7 +13,7 @@ public class ItemEventPanel : MonoBehaviour
     public TextMeshProUGUI dataText;
 
     [Button]
-    public void SetData(SOItem item, int quantity)
+    public void SetData(SO_Item item, int quantity)
     {
         dataImage.sprite = item.itemImage;
         dataText.text = item.itemName;
@@ -25,9 +25,9 @@ public class ItemEventPanel : MonoBehaviour
     }
 
     [Button]
-    public void SetData(SOSkill skill)
+    public void SetData(SO_Skill skill)
     {
-        dataImage.sprite = skill.skillImage;
+        dataImage.sprite = skill.icon;
         dataText.text = skill.skillName;
     }
     [Button]

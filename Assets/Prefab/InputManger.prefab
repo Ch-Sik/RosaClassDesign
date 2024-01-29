@@ -24,13 +24,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1673152693718459606}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -13.18668, y: 0.850519, z: -1.4413778}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7855161928197896393
 MonoBehaviour:
@@ -44,41 +44,61 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6920f67e30baa914ab690320eeee715e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _inputAsset: {fileID: -944628639613478452, guid: d4de120757f938d49b71c5a160e782a8, type: 3}
-  uiActionMap:
-    m_Name: Ui
-    m_Id: 419a597a-059a-4405-82a3-63a2bc880cf7
+  _inputAsset: {fileID: -944628639613478452, guid: 6704e5156e5601242bf2541818ea666f, type: 3}
+  AM_MoveGrounded:
+    m_Name: AM_Move Grounded
+    m_Id: d7e666f8-076e-466a-8986-4cb347d68778
     m_Asset: {fileID: 0}
     m_Actions: []
     m_Bindings: []
-  dialogueActionMap:
-    m_Name: Dialogue
-    m_Id: 3272b4dc-7d1c-46cb-8e08-ff1913c8e883
+  AM_MoveClimb:
+    m_Name: AM_Move Climb
+    m_Id: 33b2eaa2-4cc1-4a84-8d0d-88c2856bd947
     m_Asset: {fileID: 0}
     m_Actions: []
     m_Bindings: []
-  playerWalkActionMap:
-    m_Name: Player Walk
-    m_Id: 05de5aba-e8af-451d-9a6b-afa4fde19835
+  AM_MoveSuperDashReady:
+    m_Name: AM_Move Super Dash Ready
+    m_Id: 42bff58a-63c7-48e1-9b84-76a94a24b4ff
     m_Asset: {fileID: 0}
     m_Actions: []
     m_Bindings: []
-  playerCLIMBActionMap:
-    m_Name: Player CLIMB
-    m_Id: 39a2e446-4a49-4a38-8ae9-298fa3892501
+  AM_MoveSuperDash:
+    m_Name: AM_Move Super Dash
+    m_Id: 11370e14-dbba-4e26-aec0-65e640dca0bf
     m_Asset: {fileID: 0}
     m_Actions: []
     m_Bindings: []
-  playerMonkeyActionMap:
-    m_Name: Player Monkey
-    m_Id: 8ce36e80-e792-436a-91e8-be292b934689
+  AM_ActionDefault:
+    m_Name: AM_Action Default
+    m_Id: ae12e773-2b6c-4608-b920-6badf1fb9b1a
     m_Asset: {fileID: 0}
     m_Actions: []
     m_Bindings: []
-  playerDefaultActionMap:
-    m_Name: Player Default
-    m_Id: b9cbf061-2237-4119-bc81-cee3152bb84f
+  AM_ActionMagicReady:
+    m_Name: AM_Action Magic Ready
+    m_Id: cc53cdda-fec7-48b6-ad73-25574ca71543
     m_Asset: {fileID: 0}
     m_Actions: []
     m_Bindings: []
-  state: 2
+  AM_UiInGame:
+    m_Name: AM_Ui In Game
+    m_Id: 5db1a21c-1c12-4f4a-a41a-1166b8f2d171
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  AM_UiDialogue:
+    m_Name: AM_Ui Dialogue
+    m_Id: b872a66a-e472-48c8-bbe0-c3551bab6519
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  AM_UiMenu:
+    m_Name: AM_Ui Menu
+    m_Id: d1932ba8-d6d0-4659-b9a5-44dd32ec22c4
+    m_Asset: {fileID: 0}
+    m_Actions: []
+    m_Bindings: []
+  _moveState: 0
+  _actionState: 0
+  _uiState: 0

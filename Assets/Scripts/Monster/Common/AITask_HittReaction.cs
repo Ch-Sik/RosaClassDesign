@@ -32,17 +32,15 @@ public class AITask_HittReaction : MonoBehaviour
         bool hitResult;
         if(!blackboard.TryGet(BBK.isHitt, out hitResult))
         {
-            Debug.Log("IsHitt? NO");
             ThisTask.Fail();
         }
         if (hitResult == true)
         {
-            Debug.Log("IsHitt? YES");
+            Debug.Log("피격 당함");
             ThisTask.Succeed();
         }
         else
         {
-            Debug.Log("IsHitt? NO");
             ThisTask.Fail();
         }
     }

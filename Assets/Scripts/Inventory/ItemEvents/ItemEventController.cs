@@ -7,7 +7,7 @@ public class ItemEventController : MonoBehaviour
     public GameObject sortPanel;
     public GameObject eventPanel;
 
-    public void AddItem(SOItem item, int quantity)
+    public void AddItem(SO_Item item, int quantity)
     {
         GameObject panel = Instantiate(eventPanel);
         panel.transform.SetParent(sortPanel.transform);
@@ -16,7 +16,7 @@ public class ItemEventController : MonoBehaviour
         ep.PlayEvent();
     }
 
-    public void UnlockSkill(SOSkill skill)
+    public void UnlockSkill(SO_Skill skill)
     {
         GameObject panel = Instantiate(eventPanel);
         panel.transform.SetParent(sortPanel.transform);

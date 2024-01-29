@@ -31,8 +31,8 @@ public class InventoryUI : MonoBehaviour
     [Header("SlotDatas")]
     [ShowInInspector] public Dictionary<SkillCode, UISkill> skillUIs = new Dictionary<SkillCode, UISkill>();
     [ShowInInspector] public Dictionary<ItemCode, UIItem> itemUIs = new Dictionary<ItemCode, UIItem>();
-    public List<SOSkill> skillList = new List<SOSkill>();
-    public List<SOItem> itemList = new List<SOItem>();
+    public List<SO_Skill> skillList = new List<SO_Skill>();
+    public List<SO_Item> itemList = new List<SO_Item>();
 
     private void Start()
     {
@@ -121,7 +121,7 @@ public class InventoryUI : MonoBehaviour
     }
 
     //설명을 설정함. 개수를 받는 이유는 아이템의 개수에 따라 보이는 정보가 달라지기 때문이다.
-    public void SetDescsription(SOItem item, int quantity)
+    public void SetDescsription(SO_Item item, int quantity)
     {
         ResetDescription();
         itemImage.color = Color.white;
@@ -144,7 +144,7 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
-    public void SetDescsription(SOSkill skill)
+    public void SetDescsription(SO_Skill skill)
     {
         ResetDescription();
         itemImage.color = Color.white;
@@ -153,14 +153,14 @@ public class InventoryUI : MonoBehaviour
 
         if (skill.isUnlock)
         {
-            itemImage.sprite = skill.skillImage;
+            itemImage.sprite = skill.icon;
             itemName.text = $"{skill.skillName}";
-            itemDescription.text = $"{skill.skillDescription}";
+            itemDescription.text = $"{skill.description}";
         }
         else
         {
             itemImage.color = Color.black; ;
-            itemImage.sprite = skill.skillImage;
+            itemImage.sprite = skill.icon;
             itemName.text = "???";
             itemDescription.text = "";
         }
@@ -187,7 +187,7 @@ public class InventoryUI : MonoBehaviour
             }
     }
 
-    public SOSkill GetSkill(SkillCode skillCode)
+    public SO_Skill GetSkill(SkillCode skillCode)
     {
         for (int i = 0; i < skillList.Count; i++)
             if (skillList[i].skillCode == skillCode)
@@ -196,7 +196,7 @@ public class InventoryUI : MonoBehaviour
         return null;
     }
 
-    public SOItem GetItem(ItemCode itemCode)
+    public SO_Item GetItem(ItemCode itemCode)
     {
         for (int i = 0; i < itemList.Count; i++)
             if (itemList[i].itemCode == itemCode)
