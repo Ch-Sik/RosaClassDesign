@@ -22,6 +22,6 @@ tree("Phase1")
         mute
             random                                
                 TackleAttack()
-                Parallel
-                    StalactiteAttack()
+                sequence
                     ShockwaveCombo()
+                    StalactiteAttack()

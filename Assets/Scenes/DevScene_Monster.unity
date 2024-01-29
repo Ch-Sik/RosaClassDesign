@@ -688,17 +688,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
+    SerializedFormat: 0
+    SerializedBytes: 2d010d0000006400610074006100460072006f006d00540069006c0065007300
     ReferencedUnityObjects: []
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
-    SerializationNodes:
-    - Name: dataFromTiles
-      Entry: 6
-      Data: 
+    SerializationNodes: []
   defaultTliemap: {fileID: 1716278707}
   tileDatas:
   - {fileID: 11400000, guid: 01114e4d723c7a04b8d1df30a97f568f, type: 2}
@@ -1239,7 +1236,7 @@ MonoBehaviour:
   superArmourOnActiveTime: 0
   startupDuration: 1.8
   activeDuration: 4
-  recoveryDuration: 2
+  recoveryDuration: 0.1
   currentState: 0
   attackPrefab: {fileID: 721283632189696070, guid: 3b1f3aef6bf825547baeddfff64809b9, type: 3}
   muzzle: {fileID: 1316404874}
@@ -1258,9 +1255,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
   superArmourOnActiveTime: 0
-  startupDuration: 2
+  startupDuration: 1
   activeDuration: 3
-  recoveryDuration: 0.5
+  recoveryDuration: 1
   currentState: 0
   attackPrefab: {fileID: 586251084327265594, guid: 38008e5be9f00fa4dad48f414dd06f79, type: 3}
   numOfInstance: 8
