@@ -1,4 +1,5 @@
 using DG.Tweening;
+using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,6 +11,7 @@ public class ButterflyCage : MonoBehaviour
 
     [SerializeField, ReadOnly]
     private Vector3 butterflyReleasePosition;       // 해방한 나비가 어디로 날아가야 하는지
+    public bool isRelease = false;                  // 해방의 여부
     
 
     // Start is called before the first frame update
@@ -45,12 +47,31 @@ public class ButterflyCage : MonoBehaviour
         Destroy(gameObject, 1f);
     }
 
+    //즉각적 해방, 내부에 존재하는 나비장내의 나비를 즉각적으로 해방시킨다. (맵 로더 에서 사용)
+    [Button]
+    public void ReleaseImmediate()
+    {
+        isRelease = true;
+        //butterfly.transform.parent.parent = transform.parent;
+        GetComponent<SpriteRenderer>().enabled = false;
+        GetComponent<BoxCollider2D>().enabled = false;
+        butterfly.transform.position = butterflyReleasePosition;
+        butterfly.isCaged = false;
+        //Destroy(gameObject);
+    }
+
     private void ReleaseButterfly()
     {
+        isRelease = true;
         // Destroy 전에 나비를 자식오브젝트가 아니도록 설정
         butterfly.transform.parent.parent = transform.parent;       // butterfly module 계층 구조 고려
 
         Sequence releaseSequence = DOTween.Sequence()
+            .AppendCallback(() =>
+            {
+                GetComponent<SpriteRenderer>().enabled = false;
+                GetComponent<BoxCollider2D>().enabled = false;
+            })
             .AppendInterval(1f)                                                         // 잠시 쉬었다가
             .Append(butterfly.transform.DOMove(butterflyReleasePosition, 1f)) // 지정된 위치로 이동
             .AppendCallback(() =>                                                       // 그리고 상호작용 활성화
