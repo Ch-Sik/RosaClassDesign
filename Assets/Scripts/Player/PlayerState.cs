@@ -28,6 +28,6 @@ public class PlayerState : MonoBehaviour
     }
 
     public void Heal(int amount) { }
-    public void TakeDamage(int amount) { }
+    public void TakeDamage(int amount) { currentHP -= amount; }
     public void UpgradePlantMagic(SkillCode magicCode) { } // 획득 및 업그레이드
 }

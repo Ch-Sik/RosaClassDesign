@@ -36,8 +36,8 @@ public class MagicIvy : MonoBehaviour
 
         // 오른쪽 벽에 부딪혔는지 왼쪽 벽에 부딪혔는지 판단
         // 0.5의 오프셋을 주어서 오른쪽 셀 검사
-        originCellPos = tilemapManager.defaultTliemap.WorldToCell(magicPos + new Vector2(0.5f, 0));   
-        if(TilemapManager.Instance.GetTileExist(originCellPos))
+        originCellPos = tilemapManager.WorldToCell(magicPos + new Vector2(0.5f, 0));   
+        if(TilemapManager.Instance.GetIfSubstanceTileExist(originCellPos))
         {
             wallDirection = LR.LEFT;
             Debug.Log("왼쪽 보는 벽에 담쟁이 설치");
@@ -51,7 +51,7 @@ public class MagicIvy : MonoBehaviour
         // y축 방향 위치 보정
         magicPos.y = Mathf.Round(magicPos.y - 0.5f) + 0.5f;
         transform.position = magicPos;
-        originCellPos = tilemapManager.defaultTliemap.WorldToCell(magicPos + new Vector2(0.5f, 0));
+        originCellPos = tilemapManager.WorldToCell(magicPos + new Vector2(0.5f, 0));
 
         // 최적화
         tick = new WaitForSeconds(tickTime);
@@ -78,7 +78,9 @@ public class MagicIvy : MonoBehaviour
                     + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, cursor, 0)
                     );
 
-            if (innerTile != null && outerTile == null && innerTile.magicAllowed == true)
+            bool isInnerTileMagicAllowed = innerTile != null && innerTile.magicAllowed;
+            bool isOuterTileNonSubstance = !outerTile || !outerTile.isSubstance;
+            if (isInnerTileMagicAllowed && isOuterTileNonSubstance)
             {
                 points = edgeCol.points;
                 points[0] = new Vector2(-offset, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
@@ -120,7 +122,9 @@ public class MagicIvy : MonoBehaviour
                     + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, cursor, 0)
                     );
 
-            if (innerTile != null && outerTile == null && innerTile.magicAllowed == true)
+            bool isInnerTileMagicAllowed = innerTile != null && innerTile.magicAllowed;
+            bool isOuterTileNonSubstance = !outerTile || !outerTile.isSubstance;
+            if (isInnerTileMagicAllowed && isOuterTileNonSubstance)
             {
                 points = edgeCol.points;
                 points[1] = new Vector2(-offset, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
