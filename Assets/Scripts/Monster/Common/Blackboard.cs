@@ -10,7 +10,19 @@ using UnityEngine;
 /// </summary>
 public class Blackboard : MonoBehaviour
 {
-    public List<string> dictPreview;
+    [System.Serializable]
+    public class BlackboardPreviewElement
+    {
+        public string key;
+        public string value;
+        public BlackboardPreviewElement(string key, string value)
+        {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
+    public List<BlackboardPreviewElement> dictPreview;
 
     // item type이 object라서 Inspector에서 볼 수 없음 ㅜㅜ
     private Dictionary<string, object> dict;
@@ -20,16 +32,33 @@ public class Blackboard : MonoBehaviour
         dict = new Dictionary<string, object>();
     }
 
-    public void Set(string key, object value)
+    public void Set<T>(string key, T value)
     {
-        if(dict.ContainsKey(key))
+        // 값 설정
+        if (dict.ContainsKey(key))
         {
             dict[key] = value;
         }
         else
             dict.Add(key, value);
 
-        dictPreview = dict.Keys.ToList();
+        // 미리보기 업데이트
+        bool alreadyInList = false;
+        for(int i = 0; i< dictPreview.Count; i++)
+        {
+            if (dictPreview[i].key == key)
+            {
+                if (dictPreview[i].value == null)
+                    dictPreview[i].value = "null";
+                else
+                    dictPreview[i].value = ((T)value).ToString();
+
+                alreadyInList = true;
+                break;
+            }
+        }
+        if(!alreadyInList)
+            dictPreview.Add(new BlackboardPreviewElement(key, ((T)value).ToString()));
     }
 
     /// <summary>
