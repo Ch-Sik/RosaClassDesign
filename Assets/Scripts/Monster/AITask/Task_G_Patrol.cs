@@ -8,7 +8,7 @@ using System;
 /// 지상형 몬스터의 Patrol Task를 수행하는 스크립트
 /// 멈추지 않고 순찰하는 버전
 /// </summary>
-public class AITask_gPatrol : AITask_Base
+public class Task_G_Patrol : Task_Base
 {
     [SerializeField]
     private Blackboard blackboard;
@@ -211,7 +211,7 @@ public class AITask_gPatrol : AITask_Base
             }
 
             // 방향 설정
-            lookAt2D(new Vector2(destXpos, transform.position.y));
+            LookAt2D(new Vector2(destXpos, transform.position.y));
         }
         else
         {
@@ -234,7 +234,7 @@ public class AITask_gPatrol : AITask_Base
             blackboard.Set(BBK.StuckAtCliff, false);
 
             // 방향 설정
-            lookAt2D(new Vector2(destXpos, transform.position.y));
+            LookAt2D(new Vector2(destXpos, transform.position.y));
         }
 
         ThisTask.Succeed();

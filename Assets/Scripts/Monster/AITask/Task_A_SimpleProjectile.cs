@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Panda;
 
-public class AITask_RangeAttack_SimpleProjectile : AITask_AttackBase
+public class Task_A_SimpleProjectile : Task_A_Base
 {
     [Header("공격 관련")]
     [SerializeField, Tooltip("투사체 프리팹")]
@@ -28,17 +28,17 @@ public class AITask_RangeAttack_SimpleProjectile : AITask_AttackBase
     [Task]
     private void SimpleProjectileAttack()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
     // 공격 패턴을 구체적으로 지정하지 않고 대충 Attack()으로 뭉뚱그려 작성된 BT 스크립트 호환용
     [Task]
     private void Attack()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
-    protected override void OnAttackActiveBeginFrame()
+    protected override void OnActiveBegin()
     {
         // 적(플레이어) 위치 파악
         Vector2 dir;

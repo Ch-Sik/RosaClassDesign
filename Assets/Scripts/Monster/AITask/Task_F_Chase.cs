@@ -1,14 +1,9 @@
+using Panda;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Panda;
-using System.Runtime.CompilerServices;
 
-/// <summary>
-/// 지상형 몬스터의 Chase Task를 수행하는 스크립트
-/// </summary>
-[RequireComponent(typeof(Rigidbody2D))]
-public class AITask_gChase : AITask_Base
+public class Task_F_Chase : Task_Base
 {
     // 컴포넌트 레퍼런스
     [SerializeField]
@@ -19,10 +14,14 @@ public class AITask_gChase : AITask_Base
     // 추격 관련 파라미터
     [SerializeField, Tooltip("어느정도까지 가까워져야 접근 완료로 판단할지")]
     private float acceptableRadius = 1.5f;
-    [SerializeField, Tooltip("접근 속도")]
-    private float chaseSpeed = 1f;
-    [SerializeField, Tooltip("낭떠러지에 도달하면 멈출지 말지")]
-    private bool considerCliff = true;
+    [SerializeField, Tooltip("가로/세로 방향 추격 속도")]
+    protected Vector2 chaseSpeed = new Vector2(1, 1);
+
+    // 지형 감지
+    [SerializeField]
+    protected GameObject terrainSensor;
+    [SerializeField]
+    protected float terrainSensorOffset;
 
     private void Start()
     {
@@ -35,13 +34,13 @@ public class AITask_gChase : AITask_Base
         if (rigidbody == null)
         {
             rigidbody = GetComponent<Rigidbody2D>();
-            if(rigidbody == null)
+            if (rigidbody == null)
                 Debug.LogError($"{gameObject.name}: Rigidbody2D를 찾을 수 없음!");
         }
     }
 
     [Task]
-    private void ChaseEnemy()
+    protected void ChaseEnemy()
     {
         // 피격당했을 때 행동 중지
         bool isHitt;
@@ -66,55 +65,34 @@ public class AITask_gChase : AITask_Base
         {
             ThisTask.Succeed();
             StopMoving();
-            // 마지막에 방향 확실히 설정
-            if((enemy.transform.position - transform.position).toLR() != transform.localScale.toLR())
-                Flip();
             return;
         }
 
         // 벽에 막혔을 경우 행동 중지
         bool isStuckAtWall;
         blackboard.TryGet(BBK.StuckAtWall, out isStuckAtWall);
-        if(isStuckAtWall)
+        if (isStuckAtWall)
         {
             ThisTask.Fail();
             StopMoving();
             return;
         }
 
-        // 절벽에 이르렀을 경우 똑똑하다면 행동 중지
-        if(considerCliff)
-        {
-            bool isStuckAtCliff;
-            blackboard.TryGet(BBK.StuckAtCliff, out isStuckAtCliff);
-            if(isStuckAtCliff)
-            {
-                ThisTask.Fail();
-                StopMoving(); 
-                return;
-            }
-        }
+        // 스프라이트 방향 설정
+        LookAt2D(enemy.transform.position);
 
-        // 방향 설정
-        if ((enemy.transform.position.x - transform.position.x) 
-            * transform.localScale.x < 0f)
-        {
-            Flip();
-        }    
+        // 지형 센서 이동
+        Vector2 toTarget = (Vector2)(enemy.transform.position - transform.position);
+        SetChildObjectPos(terrainSensor, toTarget.normalized * terrainSensorOffset);
 
         // 적 방향으로 이동
-        MoveTo(enemy.transform.position.x);
+        MoveTo(enemy);
     }
 
-    private void MoveTo(float xCoord)
+    private void MoveTo(GameObject enemy)
     {
-        float moveDir;
-        if (xCoord < transform.position.x)
-            moveDir = -1;
-        else
-            moveDir = 1;
-
-        rigidbody.velocity = new Vector2(moveDir * chaseSpeed, rigidbody.velocity.y);
+        Vector2 toEnemy = (enemy.transform.position - transform.position).normalized;
+        rigidbody.velocity = Vector2.Scale(toEnemy, chaseSpeed);
     }
 
     private void StopMoving()

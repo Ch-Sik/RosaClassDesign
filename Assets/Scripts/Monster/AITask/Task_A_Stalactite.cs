@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Panda;
-using Unity.VisualScripting;
 using System.Linq;
 
 public enum DropAttackSpawnMode 
@@ -28,7 +27,7 @@ public enum DropAttackLaunchMode
 }
 
 // 패턴을 보스만 쓴다고 가정, 보스방에서만 실행되며 지형은 아무런 장애물이 없다고 가정함.
-public class AITask_StalactiteAttack : AITask_AttackBase
+public class Task_A_Stalactite : Task_A_Base
 {
     [SerializeField]
     private GameObject attackPrefab;
@@ -50,16 +49,16 @@ public class AITask_StalactiteAttack : AITask_AttackBase
     [Task]
     protected void Attack()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
     [Task]
     protected void StalactiteAttack()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
-    protected override void OnAttackStartupBeginFrame()
+    protected override void OnStartupBegin()
     {
         SetFields();
         SpawnObjects();
@@ -135,7 +134,7 @@ public class AITask_StalactiteAttack : AITask_AttackBase
         }
     }
 
-    protected override void OnAttackActiveFrames()
+    protected override void OnActiveLast()
     {
         // 랜덤이던 왼쪽에서부터던 오른쪽에서부터건 순차적으로 내려와야 하는 경우
         if (launchMode != DropAttackLaunchMode.Parallel)

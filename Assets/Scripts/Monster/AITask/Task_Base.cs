@@ -5,9 +5,9 @@ using UnityEngine;
 /// <summary>
 /// AITask에서 공통적으로 사용하는 함수들 모음
 /// </summary>
-public class AITask_Base : MonoBehaviour
+public class Task_Base : MonoBehaviour
 {
-    protected void lookAt2D(Vector2 targetPosition)
+    protected void LookAt2D(Vector2 targetPosition)
     {
         Vector2 toTarget = targetPosition - (Vector2)transform.position;
         if(toTarget.toLR() != transform.localScale.toLR())

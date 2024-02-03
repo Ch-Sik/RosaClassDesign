@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Panda;
 using Sirenix.OdinInspector;
-using Rito;
 using System;
 
-public class AITask_AirPatrol : AITask_Base
+public class Task_F_Patroll : Task_Base
 {
     [Title("컴포넌트 레퍼런스")]// 컴포넌트 레퍼런스
     [SerializeField]
@@ -76,7 +75,7 @@ public class AITask_AirPatrol : AITask_Base
     private float[] dirPreference = new float[16];
     private Vector2 nextDest;
     private Timer waitTimer = null;
-    private WeightedRandomPicker<int> randomPicker;
+    private Rito.WeightedRandomPicker<int> randomPicker;
 
     private void Start()
     {
@@ -224,7 +223,7 @@ public class AITask_AirPatrol : AITask_Base
         nextDest = (Vector2)transform.position + dirVector[index] * UnityEngine.Random.Range(minPatrolDist, maxPatrolDist);
 
         // 필요하다면 스프라이트 좌우반전
-        lookAt2D(nextDest);
+        LookAt2D(nextDest);
     }
 
     private void MoveTerrainCheckCollider()

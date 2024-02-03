@@ -2,12 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Panda;
-using System.Runtime.Serialization;
 
 /// <summary>
 /// 보스가 사용하는 충격파 공격
 /// </summary>
-public class AITask_gndShockwaveAttack : AITask_AttackBase
+public class Task_GA_Shockwave : Task_A_Base
 {
     [SerializeField]
     private GameObject attackPrefab;
@@ -27,26 +26,26 @@ public class AITask_gndShockwaveAttack : AITask_AttackBase
     [Task]
     private void ShockwaveAttack()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
     // 공격 패턴을 구체적으로 지정하지 않고 대충 Attack()으로 뭉뚱그려 작성된 BT 스크립트 호환용
     [Task]
     private void Attack()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
-    protected override void OnAttackStartupBeginFrame()
+    protected override void OnStartupBegin()
     {
         GameObject enemy;
         blackboard.TryGet(BBK.Enemy, out enemy);
         Debug.Assert(enemy != null, "충격파 패턴: 적을 찾을 수 없음!");
 
-        lookAt2D(enemy.transform.position);
+        LookAt2D(enemy.transform.position);
     }
 
-    protected override void OnAttackActiveBeginFrame()
+    protected override void OnActiveBegin()
     {
         EmitShockwave();
     }

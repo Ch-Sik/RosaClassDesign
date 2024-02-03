@@ -6,7 +6,7 @@ using Panda;
 /// <summary>
 /// 몬스터의 피격 담당
 /// </summary>
-public class AITask_HittReaction : MonoBehaviour
+public class Task_HittReaction : MonoBehaviour
 {
     [SerializeField]
     private Blackboard blackboard;

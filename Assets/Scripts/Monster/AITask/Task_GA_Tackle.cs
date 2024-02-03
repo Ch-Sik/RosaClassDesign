@@ -4,7 +4,7 @@ using UnityEngine;
 using Panda;
 
 [RequireComponent(typeof(MonsterDamageInflictor))]
-public class AITask_TackleAttack : AITask_AttackBase
+public class Task_GA_Tackle : Task_A_Base
 {
     // 컴포넌트 레퍼런스
     [SerializeField]
@@ -55,30 +55,30 @@ public class AITask_TackleAttack : AITask_AttackBase
     [Task]
     protected void TackleAttack()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
     // 공격 패턴을 구체적으로 지정하지 않고 대충 Attack()으로 뭉뚱그려 작성된 BT 스크립트 호환용
     [Task]
     protected void Attack()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
-    protected override void OnAttackStartupBeginFrame()
+    protected override void OnStartupBegin()
     {
         // 방향 계산
         CalculateAttackDirection();
     }
 
-    protected override void OnAttackActiveBeginFrame()
+    protected override void OnActiveBegin()
     {
         // 기존 공격력은 저장해두고 몸통 접촉 시의 데미지를 tackleAttackPower로 대체
         defaultCollideDamage = damageComponent.damage;
         damageComponent.damage = tackleAttackPower;
     }
 
-    protected override void OnAttackActiveFrames()
+    protected override void OnActiveLast()
     {
         // 블랙보드에서 벽에 박음 정보 가져오기
         bool isStuckAtWall;
@@ -115,7 +115,7 @@ public class AITask_TackleAttack : AITask_AttackBase
         DoTackle();
     }
 
-    protected override void OnAttackRecoveryBeginFrame()
+    protected override void OnRecoveryBegin()
     {
         // 기존 공격력으로 복구
         damageComponent.damage = defaultCollideDamage;
@@ -131,7 +131,7 @@ public class AITask_TackleAttack : AITask_AttackBase
         tackleDir = (enemy.transform.position.x - transform.position.x) < 0 ? Vector2.left : Vector2.right;
 
         // 공격 방향에 따라 좌우 반전하기
-        lookAt2D(enemy.transform.position);
+        LookAt2D(enemy.transform.position);
     }
 
     protected virtual void DoTackle()

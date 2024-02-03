@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Panda;
 
-public class AITask_RangeAttack_GroundTargetAOE : AITask_AttackBase
+/// <summary>
+/// 성큰 콜로니같이 지면에서 튀어나오는 범위 공격
+/// </summary>
+public class Task_A_GroundAOE : Task_A_Base
 {
     [Header("공격 관련")]
     [SerializeField, Tooltip("범위 공격 프리팹")]
@@ -24,17 +27,17 @@ public class AITask_RangeAttack_GroundTargetAOE : AITask_AttackBase
     [Task]
     private void GroundAOEAttack()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
     // 공격 패턴을 구체적으로 지정하지 않고 대충 Attack()으로 뭉뚱그려 작성된 BT 스크립트 호환용
     [Task]
     private void Attack()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
-    protected override void OnAttackStartupBeginFrame()
+    protected override void OnStartupBegin()
     {
         Debug.Log("공격 소환");
         // 적(플레이어) 위치 파악
@@ -57,7 +60,7 @@ public class AITask_RangeAttack_GroundTargetAOE : AITask_AttackBase
         attackInstance.Init();
     }
 
-    protected override void OnAttackActiveBeginFrame()
+    protected override void OnActiveBegin()
     {
         // 공격 범위 미리보기를 실제 공격으로 변환
         attackInstance.ExecuteAttack();

@@ -8,7 +8,7 @@ using System;
 /// 지상형 몬스터의 Patrol Task를 수행하는 스크립트
 /// 멈췄다 갔다 하는 버전
 /// </summary>
-public class AITask_gPatrolGoAndStop : AITask_Base
+public class Task_G_PatrolGoAndStop : Task_Base
 {
     [SerializeField]
     private Blackboard blackboard;

@@ -4,7 +4,7 @@ using UnityEngine;
 using Panda;
 
 [RequireComponent(typeof(MonsterState))]
-public class AITask_BossPhaseChange : AITask_Base
+public class Task_BossPhaseChange : Task_Base
 {
     [SerializeField]
     private MonsterState bossState;

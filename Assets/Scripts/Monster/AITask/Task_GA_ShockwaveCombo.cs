@@ -6,7 +6,7 @@ using Panda;
 /// <summary>
 /// 보스가 사용하는 충격파 공격 연속 버전
 /// </summary>
-public class AITask_gndShockwaveCombo : AITask_gndShockwaveAttack
+public class Task_GA_ShockwaveCombo : Task_GA_Shockwave
 {
     [SerializeField, Tooltip("ActiveDuration 동안 shockwaveCount 만큼 충격파를 발사함")]
     private int shockwaveCount;
@@ -23,16 +23,16 @@ public class AITask_gndShockwaveCombo : AITask_gndShockwaveAttack
     [Task]
     private void ShockwaveCombo()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
     [Task]
     private void Attack()
     {
-        _Attack();
+        ExecuteAttack();
     }
 
-    protected override void OnAttackActiveBeginFrame()
+    protected override void OnActiveBegin()
     {
         // 기존 AITask_gndShockwaveAttack에서 충격파 발사하는 내용은 Hide
         // 대신 OnAttackActiveFrames에서 타이머를 관찰하면서 충격파를 발사하도록 하고
@@ -41,7 +41,7 @@ public class AITask_gndShockwaveCombo : AITask_gndShockwaveAttack
         secondsPerShockwave = activeDuration / shockwaveCount;
     }
 
-    protected override void OnAttackActiveFrames()
+    protected override void OnActiveLast()
     {
         float nextShockwaveEmit = secondsPerShockwave * (curShockwaveCount);
         if(activeTimer.duration >= nextShockwaveEmit)
