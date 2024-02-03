@@ -48,7 +48,7 @@ public class Blackboard : MonoBehaviour
         {
             if (dictPreview[i].key == key)
             {
-                if (dictPreview[i].value == null)
+                if (value == null)
                     dictPreview[i].value = "null";
                 else
                     dictPreview[i].value = ((T)value).ToString();
