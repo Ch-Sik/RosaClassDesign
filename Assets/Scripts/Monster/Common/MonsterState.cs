@@ -11,10 +11,18 @@ public class MonsterState : MonoBehaviour
 {
     [SerializeField] private int maxHP = 5;
     [SerializeField, ReadOnly] private int currentHP;
+    [SerializeField] private Blackboard blackboard;
+
     public int HP { get { return currentHP; } }
 
     private void Start()
     {
+        if(blackboard == null)
+        {
+            blackboard = GetComponent<Blackboard>();
+            Debug.Assert(blackboard != null, $"{gameObject.name}: Blackboard를 찾을 수 없음!");
+        }
+
         currentHP = maxHP;
     }
 
@@ -41,6 +49,7 @@ public class MonsterState : MonoBehaviour
         StartCoroutine(DieRoutine());
         IEnumerator DieRoutine()        // 사망 연출
         {
+            blackboard.Set(BBK.isDead, true);
             yield return new WaitForSeconds(3.0f);
             // TODO: 여기에 사망 연출 추가하기
             Destroy(gameObject);

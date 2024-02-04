@@ -7,7 +7,7 @@ using UnityEngine;
 public class Boss1Debug : MonoBehaviour
 {
     public TMP_Text text;
-    public AITask_BossPhaseChange phaseChanger;
+    public Task_BossPhaseChange phaseChanger;
     public GameObject boss;
     public MonsterState monsterState;
 
