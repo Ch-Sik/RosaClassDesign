@@ -35,8 +35,16 @@ public class Task_A_Base : Task_Base
     protected Timer recoveryTimer;
 
     // 이거 없어도 구현에는 문제없긴 한데 애니메이션 컨트롤 목적도 겸해서 추가함.
-    [SerializeField, ReadOnly]
-    protected MonsterAtttackState currentState;
+    [SerializeField]
+    protected MonsterAtttackState attackState {
+        get { return currentState; }
+        set {
+            currentState = value;
+            blackboard.Set(BBK.AttackState, (int)currentState); 
+        } 
+    }
+    [SerializeField]
+    private MonsterAtttackState currentState = MonsterAtttackState.Null;
 
     /// <summary>
     /// <br> 설정한 startup/active/recovery 타이밍에 맞게 공격 이벤트 함수들을 호출함. </br>
@@ -46,7 +54,7 @@ public class Task_A_Base : Task_Base
     protected void ExecuteAttack()
     {
         // 공격 active 중에 슈퍼아머 옵션이 꺼져있거나 애초에 공격 active가 아니라면 피격 여부 검사
-        if(currentState != MonsterAtttackState.Active || !superArmourOnActiveTime)
+        if(attackState != MonsterAtttackState.Active || !superArmourOnActiveTime)
         {
             if(blackboard == null)
             {
@@ -62,11 +70,11 @@ public class Task_A_Base : Task_Base
             }
         }
 
-        switch(currentState)
+        switch(attackState)
         {
             case MonsterAtttackState.Null:
                 // 선딜레이 첫 프레임
-                currentState = MonsterAtttackState.Startup;
+                attackState = MonsterAtttackState.Startup;
                 startupTimer = Timer.StartTimer();
                 OnStartupBegin();
                 break;
@@ -80,7 +88,7 @@ public class Task_A_Base : Task_Base
                 else
                 {
                     // 공격 시전 첫프레임
-                    currentState = MonsterAtttackState.Active;
+                    attackState = MonsterAtttackState.Active;
                     activeTimer = Timer.StartTimer();
                     OnActiveBegin();
                 }
@@ -95,7 +103,7 @@ public class Task_A_Base : Task_Base
                 else
                 {
                     // 후딜레이 첫 프레임
-                    currentState = MonsterAtttackState.Recovery;
+                    attackState = MonsterAtttackState.Recovery;
                     recoveryTimer = Timer.StartTimer();
                     OnRecoveryBegin();
                 }
@@ -110,6 +118,7 @@ public class Task_A_Base : Task_Base
                 else
                 {
                     // 후딜 종료, 패턴 완료
+                    attackState = MonsterAtttackState.Null;
                     OnEnd();
                     Succeed();
                 }
@@ -139,7 +148,7 @@ public class Task_A_Base : Task_Base
     protected virtual void Succeed()
     {
         ThisTask.Succeed();
-        currentState = MonsterAtttackState.Null;
+        attackState = MonsterAtttackState.Null;
         startupTimer = null;
         activeTimer = null;
         recoveryTimer = null;
@@ -152,7 +161,7 @@ public class Task_A_Base : Task_Base
     protected virtual void Fail()
     {
         ThisTask.Fail();
-        currentState = MonsterAtttackState.Null;
+        attackState = MonsterAtttackState.Null;
         startupTimer = null;
         activeTimer = null;
         recoveryTimer = null;
