@@ -11,6 +11,11 @@ public class PlayerController : MonoBehaviour
         get { return inputManager._moveState; }
     }
 
+    public PlayerActionState currentActionState
+    {
+        get { return inputManager._actionState; }
+    }
+
     // 컴포넌트
     [ReadOnly, SerializeField] public InputActionAsset inputAsset;
     [ReadOnly, SerializeField] PlayerMovement playerMove;
