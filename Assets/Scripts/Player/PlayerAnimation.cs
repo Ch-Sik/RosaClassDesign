@@ -13,7 +13,10 @@ public class PlayerAnimation : MonoBehaviour
     public PlayerMovement playerMove;
     public PlayerRef playerRef;
     public apPortrait portrait;
+    public float minAngle;
+    public float maxAngle;
 
+    private Vector3 _aimPosition;
     public enum AnimState {Idle, Walk, Attack, Jump, Climb, Fall }
 
     
@@ -39,6 +42,7 @@ public class PlayerAnimation : MonoBehaviour
     private void FixedUpdate()
     {
         UpdateAnim();
+        UpdateHeadDir();
     }
 
     void UpdateAnim()
@@ -50,6 +54,7 @@ public class PlayerAnimation : MonoBehaviour
         anim.SetBool("isClimbEnd", (playerMove.isWallClimbingTop) ? true : false);
         anim.SetBool("isInputClimbX", (playerControl.currentMoveState == PlayerMoveState.CLIMBING && 
             (playerMove.facingDirection.toVector2().x == -playerMove.moveVector.x)) ? true : false);
+        anim.SetBool("isMagicReady", (playerControl.currentActionState == PlayerActionState.MAGIC_READY) ? true : false);
         //anim.SetBool("isHooking", (playerMove.isDoingHooking) ? true : false);
         //anim.SetBool("isClimbOver", ((playerControl.currentMoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
         anim.SetFloat("yVel", rb.velocity.y);
@@ -269,6 +274,38 @@ public class PlayerAnimation : MonoBehaviour
 
     }
 
+    void UpdateHeadDir()
+    {
+        Vector2 mousePos_Screen = Input.mousePosition;
+        if (Camera.main != null)
+        {
+            _aimPosition = Camera.main.ScreenToWorldPoint(mousePos_Screen);
+            _aimPosition.z = 0;
+            if (portrait != null)
+            {
+                Vector2 girlToMouse = (Vector2)_aimPosition - (Vector2)portrait.transform.position;
+                float angle = Vector2.SignedAngle(Vector2.right, girlToMouse) ;
+                if(gameObject.transform.localScale.x == -1) // 바라보는 방향에 따른 각도 보정
+                {
+                    angle *= -1;
+                    if (angle < 0) angle += 180;
+                    else angle -= 180;
+                }
+                Mathf.Clamp(angle,minAngle,maxAngle);
+                portrait.SetBonePosition("IKHelper", _aimPosition, Space.World);
+                Vector2 headVector2 = new Vector2(0, angle / 50);
+                portrait.SetControlParamVector2("Head Direction", headVector2);
+            }
+            else
+            {
+                Debug.LogError("girl object is not initialized!");
+            }
+        }
+        else
+        {
+            Debug.LogError("Camera.main is null!");
+        }
+    }
 
     public void SetTrigger(string name)
     {
