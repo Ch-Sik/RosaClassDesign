@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -141,6 +141,37 @@ namespace AnyPortrait
 				});
 			}
 
+			public void SortByName(bool isDesc)
+			{
+				int nPath = _filePathList != null ? _filePathList.Count : 0;
+				if(nPath == 0)
+				{
+					return;
+				}
+
+				if(isDesc)
+				{
+					//내림차순일때
+					_filePathList.Sort(delegate(ImageFileData a, ImageFileData b)
+					{
+						return string.Compare(b._filePath, a._filePath);
+					});
+				}
+				else
+				{
+					//오름차순일때
+					_filePathList.Sort(delegate(ImageFileData a, ImageFileData b)
+					{
+						return string.Compare(a._filePath, b._filePath);
+					});
+				}
+
+				for (int i = 0; i < _filePathList.Count; i++)
+				{
+					_filePathList[i]._index = i;
+				}
+			}
+
 			public void ChangeFileOrder(ImageFileData fileData, bool toForward)
 			{
 				if(!_filePathList.Contains(fileData))
@@ -199,6 +230,9 @@ namespace AnyPortrait
 					_filePathList[i]._index = i;
 				}
 			}
+
+
+
 
 			public void Save(StreamWriter sw)
 			{
@@ -263,6 +297,22 @@ namespace AnyPortrait
 				}
 			}
 
+			public bool IsContainFile(string filePath)
+			{
+				if(_filePathList == null)
+				{
+					return false;
+				}
+				string targetFilePath = filePath.Replace('\\', '/');
+				return _filePathList.Exists(delegate(ImageFileData a)
+				{
+					//파일 변환 후 동일한 경로의 파일이 있는지 확인
+					string aFilePath = a._filePath.Replace('\\', '/');
+
+					return string.Equals(aFilePath, targetFilePath);
+				});
+			}
+
 			public void AddImageFile(string filePath)
 			{
 				if(_filePathList == null)
@@ -278,6 +328,8 @@ namespace AnyPortrait
 				_filePathList.Remove(fileData);
 				Sort();
 			}
+
+
 
 
 			public void LoadImages()
@@ -320,11 +372,23 @@ namespace AnyPortrait
 		public int _opacity = 128;//255면 불투명
 		public int _scaleWithinScreen = 80;//작업 공간 대비 80% 비율로 들어간다. 세로 기준
 
+		//추가 v1.4.7 : 크기 반전
+		public bool _scaleReverseX = false;
+		public bool _scaleReverseY = false;
+
+
 		private const string DELIMETER = "----";
 		private const string KEY_POS_X = "POX";
 		private const string KEY_POS_Y = "POY";
 		private const string KEY_OPACITY = "OPC";
 		private const string KEY_SCALE = "SCL";//스크린대비 크기
+
+
+		//추가 v1.4.7
+		private const string KEY_SCALE_REV_X = "RVX";
+		private const string KEY_SCALE_REV_Y = "RVY";
+		private const string STR_TRUE = "TRUE";
+		private const string STR_FALSE = "FALSE";
 
 		private const string SAVE_FILE_NAME = "AnyPortrait_Rotoscoping.txt";
 
@@ -392,6 +456,10 @@ namespace AnyPortrait
 				sw.WriteLine(KEY_POS_Y + _posOffset_Y);
 				sw.WriteLine(KEY_OPACITY + _opacity);
 				sw.WriteLine(KEY_SCALE + _scaleWithinScreen);
+
+				//추가 v1.4.7
+				sw.WriteLine(KEY_SCALE_REV_X + (_scaleReverseX ? STR_TRUE : STR_FALSE));
+				sw.WriteLine(KEY_SCALE_REV_Y + (_scaleReverseY ? STR_TRUE : STR_FALSE));
 				
 				for (int i = 0; i < _imageSetDataList.Count; i++)
 				{
@@ -538,6 +606,16 @@ namespace AnyPortrait
 								{
 									_scaleWithinScreen = 80;
 								}
+							}
+							else if(string.Equals(strKey, KEY_SCALE_REV_X))
+							{
+								//추가 v1.4.7
+								_scaleReverseX = strValue.Contains(STR_TRUE);
+							}
+							else if(string.Equals(strKey, KEY_SCALE_REV_Y))
+							{
+								//추가 v1.4.7
+								_scaleReverseY = strValue.Contains(STR_TRUE);
 							}
 						}
 						else

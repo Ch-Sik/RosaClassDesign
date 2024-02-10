@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -711,6 +711,16 @@ namespace AnyPortrait
 															ImageSet.Get(apImageSet.PRESET.GUI_Button_EditPin_RollOver),
 															GUI_STAT_MENUBTN_SIZE, GUI_STAT_MENUBTN_SIZE);
 			}
+
+			//추가 v1.4.8 : Fix Spike 버튼
+			if(_guiButton_FixSpike == null)
+			{
+				_guiButton_FixSpike = new apGUIButton(		ImageSet.Get(apImageSet.PRESET.GUI_Button_FixSpike), 
+															ImageSet.Get(apImageSet.PRESET.GUI_Button_FixSpike_Roll), 
+															GUI_STAT_MENUBTN_SIZE, GUI_STAT_MENUBTN_SIZE);
+			}
+
+
 
 			//추가 21.2.18 : GUI에 아이콘을 표시한다.
 			if(_guiStatBox == null)
@@ -3262,7 +3272,7 @@ namespace AnyPortrait
 			int scaledImageHeight = (int)(rotoImage.height * scaleRatio);
 			Color rotoColor = new Color(0.5f, 0.5f, 0.5f, (float)Rotoscoping._opacity / 255.0f);
 
-			apGL.DrawTextureGL(rotoImage, posGL, scaledImageWidth, scaledImageHeight, rotoColor, 0.0f);
+			apGL.DrawTextureGL(rotoImage, posGL, scaledImageWidth, scaledImageHeight, rotoColor, 0.0f, Rotoscoping._scaleReverseX, Rotoscoping._scaleReverseY);
 			apGL.EndPass();
 		}
 
@@ -3740,11 +3750,112 @@ namespace AnyPortrait
 			
 		}
 
+
+		//-------------------------------------------------------------------------
+		// 스파이크 체크 로직
+		//-------------------------------------------------------------------------
+		/// <summary>
+		/// 추가 v1.4.8 : 퍼포먼스 상의 스파이크가 너무 빈번하게 발생한다면,
+		/// 잠깐 포커스를 메인 에디터로 이동하는 것 만으로도 문제가 해결될 수 있다.
+		/// 자주 호출되지 않도록 딜레이도 있다.
+		/// 이 함수는 Focus가 된 상태에서만 호출하자
+		/// </summary>
+		/// <param name="tDelta"></param>		
+		private void CheckSpikeIssue(float tDelta)
+		{
+			switch (_spikeCheckStatus)
+			{
+				case SPIKE_CHECK_STATUS.None:
+					{
+						if(tDelta > SPIKE_DELTA_TIME)
+						{
+							//스파이크가 발생했다.
+							//체크 로직을 시작한다.
+							_spikeCheckStatus = SPIKE_CHECK_STATUS.Checking;
+							_nSpikeOccurred = 1;//카운트 1
+							_tSpikeWait = 0.0f;
+							
+							//Debug.Log("스파이크 발생 시작 [" + _nSpikeOccurred + "]");
+						}
+					}
+					break;
+
+				case SPIKE_CHECK_STATUS.Checking:
+					{
+						if(tDelta > SPIKE_DELTA_TIME)
+						{
+							//스파이크가 발생했다.
+							_nSpikeOccurred += 1;//카운트를 증가시킨다.
+							_tSpikeWait = 0.0f;//다음 스파이크 대기 시간 카운터 초기화
+
+							//Debug.Log("스파이크 발생 [" + _nSpikeOccurred + "]");
+
+							if(_nSpikeOccurred > NUM_SPIKES)
+							{
+								//스파이크가 일정 개수 이상 발생한다면,
+								//포커스를 일시적으로 이동시키자 (중요. 근데 이게 되네)
+								//< 자동 복구 기능 >								
+								//EditorUtility.FocusProjectWindow();
+								//Focus();//바로 복귀하자 < 이 코드를 쓰면 외부 프로그램을 사용하다가 다시 유니티가 선택되어버린다.
+
+								//<수동 복구 버튼 출력하기 >
+								_isFixSpikeButtonVisible = true;
+
+								//쿨타임을 시작하자
+								_spikeCheckStatus = SPIKE_CHECK_STATUS.Cooltime;
+								_tSpikeCooltime = 0.0f;
+
+								//Debug.Log("스파이크에 의한 포커스 이동");
+
+								Notification("Performance issue detected", false, false);
+							}
+						}
+						else
+						{
+							//스파이크가 발생하지 않은 프레임이다.
+							_tSpikeWait += tDelta;//몇초간 다음 스파이크를 기다리자
+							if(_tSpikeWait > SPIKE_WAIT_TIME)
+							{
+								//추가적인 스파이크가 발생하지 않은 상태로 체크 시간이 종료되었다.
+								//이전으로 돌아가자
+								_spikeCheckStatus = SPIKE_CHECK_STATUS.None;
+								_nSpikeOccurred = 0;
+								_tSpikeWait = 0.0f;
+								_tSpikeCooltime = 0.0f;
+							}
+						}
+					}
+					break;
+
+				case SPIKE_CHECK_STATUS.Cooltime:
+					{
+						//스파이크 체크 로직이 한동안 동작하지 않는다.
+						//Fix 버튼이 떠있는 동안은 카운터가 작동하지 않는다.
+						if (!_isFixSpikeButtonVisible)
+						{
+							_tSpikeCooltime += tDelta;
+							if (_tSpikeCooltime > SPIKE_COOL_TIME)
+							{
+								//다시 체크 로직을 복구한다.
+								_spikeCheckStatus = SPIKE_CHECK_STATUS.None;
+								_nSpikeOccurred = 0;
+								_tSpikeWait = 0.0f;
+								_tSpikeCooltime = 0.0f;
+							}
+						}
+						
+					}
+					break;
+			}
+		}
+
+
+
 		//-------------------------------------------------------------------------
 		// Low CPU를 체크하고 갱신하기
 		//-------------------------------------------------------------------------
 		//추가 3.1 : CPU가 느리게 재생될 수도 있다.
-		private void CheckLowCPUOption()
+		private void CheckLowCPUOption(bool isAnyMousePressed)
 		{
 			if(!_isLowCPUOption)
 			{
@@ -3785,9 +3896,9 @@ namespace AnyPortrait
 							
 							_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
 						}
-					}
-					
+					}					
 					break;
+
 				case apSelection.SELECTION_TYPE.ImageRes:
 					//이미지 메뉴에서는 항상 LowCPU
 					_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
@@ -3795,39 +3906,48 @@ namespace AnyPortrait
 
 				case apSelection.SELECTION_TYPE.Mesh:
 					{
-						//탭마다 LowCPU의 정도가 다르다.
-						switch (_meshEditMode)
+						if (isAnyMousePressed)
 						{
-							case MESH_EDIT_MODE.Setting:
-								if (_isMeshEdit_AreaEditing)
-								{
-									//Area 편집 시에는 CPU가 올라가야 한다.
-									_lowCPUStatus = LOW_CPU_STATUS.Full;
-								}
-								else
-								{
-									_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
-								}
-								break;
+							//마우스 입력시에는 (v1.4.8)
+							_lowCPUStatus = LOW_CPU_STATUS.Full;
+						}
+						else
+						{
+							//탭마다 LowCPU의 정도가 다르다.
+							switch (_meshEditMode)
+							{
+								case MESH_EDIT_MODE.Setting:
+									if (_isMeshEdit_AreaEditing)
+									{
+										//Area 편집 시에는 CPU가 올라가야 한다.
+										_lowCPUStatus = LOW_CPU_STATUS.Full;
+									}
+									else
+									{
+										_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
+									}
 
-							case MESH_EDIT_MODE.MakeMesh:
-								if (_isMeshEdit_AreaEditing)
-								{
-									_lowCPUStatus = LOW_CPU_STATUS.Full;
-								}
-								else
-								{
+									break;
+
+								case MESH_EDIT_MODE.MakeMesh:
+									if (_isMeshEdit_AreaEditing)
+									{
+										_lowCPUStatus = LOW_CPU_STATUS.Full;
+									}
+									else
+									{
+										_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
+									}
+									break;
+
+								case MESH_EDIT_MODE.Modify:
 									_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
-								}
-								break;
+									break;
 
-							case MESH_EDIT_MODE.Modify:
-								_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
-								break;
-
-							case MESH_EDIT_MODE.PivotEdit:
-								_lowCPUStatus = LOW_CPU_STATUS.Full;
-								break;
+								case MESH_EDIT_MODE.PivotEdit:
+									_lowCPUStatus = LOW_CPU_STATUS.Full;
+									break;
+							}
 						}
 					}
 					
@@ -3835,93 +3955,103 @@ namespace AnyPortrait
 
 				case apSelection.SELECTION_TYPE.MeshGroup:
 					{
-						switch (_meshGroupEditMode)
+						if (isAnyMousePressed)
 						{
-							case MESHGROUP_EDIT_MODE.Setting:
-								_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
-								break;
+							//마우스 입력시에는 (v1.4.8)
+							_lowCPUStatus = LOW_CPU_STATUS.Full;
+						}
+						else
+						{
+							//탭마다 다르다.
+							switch (_meshGroupEditMode)
+							{
+								case MESHGROUP_EDIT_MODE.Setting:
+									_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
+									break;
 
-							case MESHGROUP_EDIT_MODE.Modifier:
-								if(_selection.Modifier != null)
-								{
-									//모디파이어에 따라서 CPU가 다르다.
-									//Physics > Full (편집 모드 상관 없음)
-									//Rigging > Low
-									//Morph계열 > 편집 모드 : Mid, 단 Blur 툴 켰을땐 Full / 일반 Low
-									//Transform계열 > 편집 모드 : Mid / 일반 Low
-									
-									bool isEditMode = _selection.ExEditingMode != apSelection.EX_EDIT.None;
-
-									switch (_selection.Modifier.ModifierType)
+								case MESHGROUP_EDIT_MODE.Modifier:
+									if (_selection.Modifier != null)
 									{
-										case apModifierBase.MODIFIER_TYPE.Physic:
-											_lowCPUStatus = LOW_CPU_STATUS.Full;
-											break;
+										//모디파이어에 따라서 CPU가 다르다.
+										//Physics > Full (편집 모드 상관 없음)
+										//Rigging > Low
+										//Morph계열 > 편집 모드 : Mid, 단 Blur 툴 켰을땐 Full / 일반 Low
+										//Transform계열 > 편집 모드 : Mid / 일반 Low
 
-										case apModifierBase.MODIFIER_TYPE.Rigging:
-											if(Select.IsRigEditBinding && Select.RiggingBrush_Mode != apSelection.RIGGING_BRUSH_TOOL_MODE.None)
-											{
-												//브러시로 Rigging을 하는 중일때
+										bool isEditMode = _selection.ExEditingMode != apSelection.EX_EDIT.None;
+
+										switch (_selection.Modifier.ModifierType)
+										{
+											case apModifierBase.MODIFIER_TYPE.Physic:
 												_lowCPUStatus = LOW_CPU_STATUS.Full;
-											}
-											else
-											{
-												_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
-											}
-											
-											break;
+												break;
 
-										case apModifierBase.MODIFIER_TYPE.Morph:
-										case apModifierBase.MODIFIER_TYPE.AnimatedMorph:
-											if(isEditMode)
-											{
-												if(_gizmos != null && _gizmos.IsBrushMode)
+											case apModifierBase.MODIFIER_TYPE.Rigging:
+												if (Select.IsRigEditBinding && Select.RiggingBrush_Mode != apSelection.RIGGING_BRUSH_TOOL_MODE.None)
 												{
+													//브러시로 Rigging을 하는 중일때
 													_lowCPUStatus = LOW_CPU_STATUS.Full;
 												}
 												else
 												{
+													_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
+												}
+
+												break;
+
+											case apModifierBase.MODIFIER_TYPE.Morph:
+											case apModifierBase.MODIFIER_TYPE.AnimatedMorph:
+												if (isEditMode)
+												{
+													if (_gizmos != null && _gizmos.IsBrushMode)
+													{
+														_lowCPUStatus = LOW_CPU_STATUS.Full;
+													}
+													else
+													{
+														_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
+													}
+												}
+												else
+												{
+													_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
+												}
+												break;
+
+											case apModifierBase.MODIFIER_TYPE.TF:
+											case apModifierBase.MODIFIER_TYPE.AnimatedTF:
+												if (isEditMode)
+												{
 													_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
 												}
-											}
-											else
-											{
-												_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
-											}
-											break;
-
-										case apModifierBase.MODIFIER_TYPE.TF:
-										case apModifierBase.MODIFIER_TYPE.AnimatedTF:
-											if(isEditMode)
-											{
-												_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
-											}
-											else
-											{
-												_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
-											}
-											break;
+												else
+												{
+													_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
+												}
+												break;
 
 											//추가 21.7.20 : 색상 모디파이어
-										case apModifierBase.MODIFIER_TYPE.ColorOnly:
-										case apModifierBase.MODIFIER_TYPE.AnimatedColorOnly:
-											if(isEditMode)
-											{
-												_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
-											}
-											else
-											{
-												_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
-											}
-											break;
+											case apModifierBase.MODIFIER_TYPE.ColorOnly:
+											case apModifierBase.MODIFIER_TYPE.AnimatedColorOnly:
+												if (isEditMode)
+												{
+													_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
+												}
+												else
+												{
+													_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
+												}
+												break;
+										}
 									}
-								}
-								else
-								{
-									_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
-								}
-								break;
+									else
+									{
+										_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
+									}
+									break;
+							}
 						}
+						
 					}
 					break;
 
@@ -3929,28 +4059,36 @@ namespace AnyPortrait
 					if(_selection.AnimClip != null)
 					{
 						//애니메이션 모드에서는
-						//- 재생 중일 때는 항상 Full
-						//- 편집 모드에서는 Mid / 단 Blur가 켜질땐 Full
-						//- 그 외에는 Low
-						bool isEditMode = _selection.ExAnimEditingMode != apSelection.EX_EDIT.None;
-						if(_selection.AnimClip.IsPlaying_Editor)
+						if (isAnyMousePressed)
 						{
+							//마우스 입력시에는 (v1.4.8)
 							_lowCPUStatus = LOW_CPU_STATUS.Full;
 						}
-						else if(isEditMode)
-						{
-							if(_gizmos != null && _gizmos.IsBrushMode)
+						else
+						{	
+							//- 재생 중일 때는 항상 Full
+							//- 편집 모드에서는 Mid / 단 Blur가 켜질땐 Full
+							//- 그 외에는 Low
+							bool isEditMode = _selection.ExAnimEditingMode != apSelection.EX_EDIT.None;
+							if (_selection.AnimClip.IsPlaying_Editor)
 							{
 								_lowCPUStatus = LOW_CPU_STATUS.Full;
 							}
+							else if (isEditMode)
+							{
+								if (_gizmos != null && _gizmos.IsBrushMode)
+								{
+									_lowCPUStatus = LOW_CPU_STATUS.Full;
+								}
+								else
+								{
+									_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
+								}
+							}
 							else
 							{
-								_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Mid;
+								_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
 							}
-						}
-						else
-						{
-							_lowCPUStatus = LOW_CPU_STATUS.LowCPU_Low;
 						}
 					}
 					else
@@ -5833,14 +5971,20 @@ namespace AnyPortrait
 
 			Controller.PortraitReadyToEdit_AsyncStep();
 			Selection.activeGameObject = null;
+
+			//v1.4.7 위치 변경. RootUnit 선택보다 Order 링크가 먼저 수행되어야 한다.
+			SyncHierarchyOrders();
+
 			_selection.SelectRootUnitDefault();
 			OnAnyObjectAddedOrRemoved();
 
-			SyncHierarchyOrders();
+			
 
 			_hierarchy.ResetAllUnits();
 			_hierarchy_MeshGroup.ResetSubUnits();
 			_hierarchy_AnimClip.ResetSubUnits();
+
+			yield return false;
 
 			SetProgressPopupRatio(true, 1.0f);
 

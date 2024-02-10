@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -1260,9 +1260,13 @@ namespace AnyPortrait
 			}
 
 
-
+			//스파이크 체크 로직
+			_spikeCheckStatus = SPIKE_CHECK_STATUS.None;
+			_isFixSpikeButtonVisible = false;
 			
-			
+			//Low CPU 입력
+			_isAnyMouseKeyboardInput = false;
+			_tAnyMouseKeyboardInput = 0.0f;
 		}
 
 		
@@ -1282,9 +1286,28 @@ namespace AnyPortrait
 			//재생 시간과 별도로 "Repaint 하지 않아도 되는 불필요한 시간"을 체크하기 위함
 
 			//추가 3.1 : CPU 프레임이 낮아도 되는지 체크
-			CheckLowCPUOption();
+			// > 마우스 입력을 이걸로 받으면 "작업 공간"에서의 입력만 받게 된다.
+			// > OnGUI에서 마우스/키보드 이벤트 발생시 일정 시간은 유효하도록 만들자
+			
+			apMouse.MouseBtnStatus leftBtnStatus = Mouse.GetStatusWithoutActionID(apMouseSet.Button.Left);
+			apMouse.MouseBtnStatus rightBtnStatus = Mouse.GetStatusWithoutActionID(apMouseSet.Button.Right);
+			apMouse.MouseBtnStatus middleBtnStatus = Mouse.GetStatusWithoutActionID(apMouseSet.Button.Middle);
+			bool isAnyMousePressed = leftBtnStatus == apMouse.MouseBtnStatus.Down
+									|| leftBtnStatus == apMouse.MouseBtnStatus.Pressed
+									|| rightBtnStatus == apMouse.MouseBtnStatus.Down
+									|| rightBtnStatus == apMouse.MouseBtnStatus.Pressed
+									|| middleBtnStatus == apMouse.MouseBtnStatus.Down
+									|| middleBtnStatus == apMouse.MouseBtnStatus.Pressed;
 
+			//OnGUI에서의 마우스 입력도 체크
+			if(_isAnyMouseKeyboardInput)
+			{
+				isAnyMousePressed = true;
+			}
 
+			CheckLowCPUOption(isAnyMousePressed);
+
+			
 			//Update 타입의 타이머를 작동한다.
 			if (UpdateFrameCount(FRAME_TIMER_TYPE.Update))//중요! : 여기서 리턴값에 의해서 업데이트 빈도를 조절한다. (실제 FPS는 아니다.)
 			{
@@ -1293,12 +1316,40 @@ namespace AnyPortrait
 				_isRepaintTimerUsable = true;
 			}
 
+
+			float tDelta = DeltaTime_UpdateAllFrame;
 			//Debug.Log("Update [" + _isRepaintTimerUsable + "]");
 
-			_tMemGC += DeltaTime_UpdateAllFrame;
+
+//v1.4.8 스파이크 체크 로직 (Unity 2023 전용)
+#if UNITY_2023_1_OR_NEWER
+			if(focusedWindow == this)
+			{
+				CheckSpikeIssue(tDelta);
+			}
+#endif
+
+			//v1.4.8 LOW CPU 입력 로직 카운터
+			if(_isAnyMouseKeyboardInput)
+			{
+				_tAnyMouseKeyboardInput += tDelta;
+				if(_tAnyMouseKeyboardInput > LOW_CPU_MOUSE_KEYBOARD_INPUT_TIME)
+				{
+					//시간이 지나면 다시 Low CPU용 성능으로 돌린다.
+					_isAnyMouseKeyboardInput = false;
+					_tAnyMouseKeyboardInput = 0.0f;
+				}
+			}
+			
+
+			//코멘트 v1.4.8 (변경사항은 없음)
+			//- GC를 자주 호출한다고 GC Spike가 완화되지는 않는다.
+			//- Unity의 GC는 낮은 메모리 레벨에서 바로 호출되며, 데모씬의 Hierarchy 정도면 거의 5초 이내마다 한번씩 호출된다. (호출 컷이 너무 낮다)
+			//- GC Spike는 해제되는 메모리 크기보단, 그냥 호출 그 자체의 비용이 커서 문제.
+			_tMemGC += tDelta;
 			if (_tMemGC > 30.0f)
 			{
-				//System.GC.AddMemoryPressure(1024 * 200);//200MB 정도 압박을 줘보자
+				//System.GC.AddMemoryPressure(1024 * 200);//200MB 정도 압박을 줘보자				
 				System.GC.Collect();
 
 				_tMemGC = 0.0f;
@@ -1335,7 +1386,7 @@ namespace AnyPortrait
 			//Notification이나 없애주자
 			if (_isNotification)
 			{
-				_tNotification -= DeltaTime_UpdateAllFrame;
+				_tNotification -= tDelta;
 				if (_tNotification < 0.0f)
 				{
 					_isNotification = false;
@@ -1345,7 +1396,7 @@ namespace AnyPortrait
 			}
 			if (_isNotification_GUI)
 			{
-				_tNotification_GUI -= DeltaTime_UpdateAllFrame;
+				_tNotification_GUI -= tDelta;
 				if (_tNotification_GUI < 0.0f)
 				{
 					_isNotification_GUI = false;
@@ -1362,8 +1413,8 @@ namespace AnyPortrait
 			}
 			if (_isBackupProcessing)
 			{
-				_tBackupProcessing_Icon += DeltaTime_UpdateAllFrame;
-				_tBackupProcessing_Label += DeltaTime_UpdateAllFrame;
+				_tBackupProcessing_Icon += tDelta;
+				_tBackupProcessing_Label += tDelta;
 
 				if (_tBackupProcessing_Icon > BACKUP_ICON_TIME_LENGTH)
 				{
@@ -1452,7 +1503,18 @@ namespace AnyPortrait
 					_isReadyToCheckClickedHierarchy = true;
 					_isClickedHierarchyProcessed = false;
 					_lastClickedHierarchy = LAST_CLICKED_HIERARCHY.None;//일단 해제
+
+					//LOW CPU용 변수 [v1.4.8]
+					_isAnyMouseKeyboardInput = true;
+					_tAnyMouseKeyboardInput = 0.0f;
 				}
+			}
+			else if(Event.current.isKey)
+			{
+				//키보드 입력의 경우
+				//LOW CPU용 변수 [v1.4.8]
+				_isAnyMouseKeyboardInput = true;
+				_tAnyMouseKeyboardInput = 0.0f;
 			}
 
 
@@ -2036,7 +2098,7 @@ namespace AnyPortrait
 
 
 
-				GUI.Box(new Rect(rectMainCenter.x, rectMainCenter.y, rectMainCenter.width - guiViewBtnSize, rectMainCenter.height - guiViewBtnSize), apStringFactory.I.None, apEditorUtil.WhiteGUIStyle_Box);
+				GUI.Box(new Rect(rectMainCenter.x, rectMainCenter.y, rectMainCenter.width - guiViewBtnSize, rectMainCenter.height - guiViewBtnSize), apStringFactory.I.None, apEditorUtil.WhiteGUIStyle);
 				GUILayout.BeginArea(rectMainCenter, apStringFactory.I.None);
 
 				GUI.backgroundColor = guiBasicColor;
@@ -4415,7 +4477,14 @@ namespace AnyPortrait
 					//씬에 있는 Portrait를 찾는다.
 					//추가) 썸네일도 표시
 					_portraitsInScene.Clear();
+					
+					//v1.4.8 : Unity 2023용 코드 분기
+#if UNITY_2023_1_OR_NEWER
+					apPortrait[] portraits = UnityEngine.Object.FindObjectsByType<apPortrait>(FindObjectsSortMode.None);
+#else
 					apPortrait[] portraits = UnityEngine.Object.FindObjectsOfType<apPortrait>();
+#endif
+
 					if (portraits != null)
 					{
 						int nPortraits = portraits.Length;
@@ -4753,6 +4822,19 @@ namespace AnyPortrait
 				deltaTime = DeltaTime_Repaint;
 			}
 
+			
+			//if(deltaTime > 1.0f/60.0f)
+			//{
+			//	//15FPS보다 시간이 오래 걸린다면 : GC. 체크 기준은 15 FPS가 아닌 60 FPS 기준으로.. 그럼 성능 괜찮은거 아녀?
+			//	Debug.LogError("Spike 감지됨 : " + deltaTime);
+			//}
+			//else if(deltaTime < 1.0f / 200.0f)
+			//{
+			//  >> 이건 주로 마우스 입력때문에 발생
+			//	//200FPS보다 시간이 짧았다면 (너무 빈번한 호출)
+			//	Debug.LogWarning("빈번한 Repaint 감지됨 : " + deltaTime);
+			//}
+
 
 
 
@@ -4917,6 +4999,33 @@ namespace AnyPortrait
 				_guiButton_MorphEditVert.Hide();
 				_guiButton_MorphEditPin.Hide();
 			}
+
+			//성능 해결 버튼은 Unity 2023부터 나온다.
+#if UNITY_2023_1_OR_NEWER
+			//추가 v1.4.8 : 성능 문제 발생시
+			if(_isFixSpikeButtonVisible)
+			{
+				//성능 문제 해결 버튼이 나왔다.
+				if(_guiButton_FixSpike.Update(	new Vector2(guiMenuPosX, guiMenuPosY), 
+													Mouse.Pos, Mouse.GetStatus(apMouseSet.Button.Left, apMouseSet.ACTION.GUIMenu)))
+				{
+					//성능 문제를 해결한다.
+					EditorUtility.FocusProjectWindow();
+					Focus();//바로 복귀하자
+
+					//버튼을 숨긴다.
+					_isFixSpikeButtonVisible = false;
+				}
+
+				guiMenuPosX += GUI_STAT_MENUBTN_SIZE + GUI_STAT_MENUBTN_MARGIN_DIFGROUP;//Width + 약간의 Margin
+			}
+			else
+			{
+				_guiButton_FixSpike.Hide();
+			}
+#endif
+
+
 			//--------------------------------------------------
 
 
@@ -6233,6 +6342,7 @@ namespace AnyPortrait
 			_guiButton_RecordOnion.Draw();
 			_guiButton_MorphEditPin.Draw();
 			_guiButton_MorphEditVert.Draw();
+			_guiButton_FixSpike.Draw();
 
 			//순서
 			//LowCPU / Mesh / Bone / Physics / Onion Skin / Preset Visible / Rotoscoping

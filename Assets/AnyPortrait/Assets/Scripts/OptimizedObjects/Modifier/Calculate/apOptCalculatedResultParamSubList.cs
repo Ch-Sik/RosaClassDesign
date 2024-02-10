@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -92,6 +92,23 @@ namespace AnyPortrait
 		private apAnimKeyframe _cal_keyframe_A = null;
 		private apAnimKeyframe _cal_keyframe_B = null;
 
+		//[v1.4.7 최적화]
+		//Calculate 함수 최적화 방안.
+		//_subParamKeyValues와 동일한 타입이지만, Calculate되는 
+		//이전에는 Calculate 함수를 통해서 "적용되는 CalParam_PKV의 isCalculated 속성을 true로 전환"하는 방식을 이용했다.
+		//새로운 방식에서는, 그냥 "Calculate되는 CalParam_PKV를 리스트"로 따로 모은다.
+		private int _nCalculatedParamKeyValues = 0;
+		private List<apOptCalculatedResultParam.OptParamKeyValueSet> _calculatedParamKeyValues = null;
+		
+		//이미 추가된 PKV인지 여부는 기존의 _isCalculated (중간의 RandKey) 대신, 캐시 변수를 먼저 이용하자.
+		//캐시는 총 4개
+		private apOptCalculatedResultParam.OptParamKeyValueSet _calculatedPKV_Cache_0 = null;
+		private apOptCalculatedResultParam.OptParamKeyValueSet _calculatedPKV_Cache_1 = null;
+		private apOptCalculatedResultParam.OptParamKeyValueSet _calculatedPKV_Cache_2 = null;
+		private apOptCalculatedResultParam.OptParamKeyValueSet _calculatedPKV_Cache_3 = null;
+		private int _nCalculatedPKVCached = 0;
+
+
 		// Init
 		//--------------------------------------------
 		public apOptCalculatedResultParamSubList(apOptCalculatedResultParam parentResultParam, bool isLocalMorph, bool isRigging)
@@ -114,6 +131,21 @@ namespace AnyPortrait
 			{
 				_vertexRequest = new apOptVertexRequest(apOptVertexRequest.REQUEST_TYPE.Rigging);
 			}
+
+			//v1.4.7 추가 : 최적화
+			if(_calculatedParamKeyValues == null)
+			{
+				_calculatedParamKeyValues = new List<apOptCalculatedResultParam.OptParamKeyValueSet>();
+			}
+			_calculatedParamKeyValues.Clear();
+			_nCalculatedParamKeyValues = 0;
+			
+			//v1.4.7 : 선택 캐시 초기화
+			_calculatedPKV_Cache_0 = null;
+			_calculatedPKV_Cache_1 = null;
+			_calculatedPKV_Cache_2 = null;
+			_calculatedPKV_Cache_3 = null;
+			_nCalculatedPKVCached = 0;
 		}
 
 		public void SetParamSetGroup(apOptParamSetGroup paramSetGroup)
@@ -156,6 +188,10 @@ namespace AnyPortrait
 
 
 			
+			//v1.4.7 변경
+			//_isCalculated가 사용되지 않는 대신 PKV와 (morph용) Vertex Request의 Pair값을 직접 연결해야한다.
+			apOptVertexRequest.ModWeightPair linkedModVertWeightPair = null;
+
 
 			if(_isVertexLocalMorph || _isVertexRigging)
 			{
@@ -166,14 +202,23 @@ namespace AnyPortrait
 				//변경 19.5.24 : ModifiedMeshSet을 이용할지 여부
 				if(paramKeyValue._modifiedMesh != null)
 				{
-					_vertexRequest.AddModMesh(paramKeyValue._modifiedMesh);
+					linkedModVertWeightPair = _vertexRequest.AddModMesh(paramKeyValue._modifiedMesh);
 				}
 				else if(paramKeyValue._modifiedMeshSet != null)
 				{
-					_vertexRequest.AddModMeshSet(paramKeyValue._modifiedMeshSet);
+					linkedModVertWeightPair = _vertexRequest.AddModMeshSet(paramKeyValue._modifiedMeshSet);
 				}
 				
 			}
+
+			//v1.4.7
+			//PKV가 Opt만의 최적화된 Vertex Request의 연결된 요소 (ModMesh의 변형값)을 가져야 한다.
+			//Vertex Request도 _isCalculated 체크 방식으로 업데이트를 했기 때문
+			if(linkedModVertWeightPair != null)
+			{
+				paramKeyValue.LinkVertexRequestModWeightPair(linkedModVertWeightPair);
+			}
+			
 		}
 
 
@@ -229,20 +274,38 @@ namespace AnyPortrait
 		public void InitCalculate()
 		{
 			_totalWeight = 0.0f;
-			for (int i = 0; i < _nSubParamKeyValues; i++)
-			{
-				_subParamKeyValues[i].ReadyToCalculate();
-			}
+			
 
 			if(_isVertexLocalMorph || _isVertexRigging)
 			{
 				_vertexRequest.InitCalculate();
 			}
+
+			//v1.4.7 삭제
+			//for (int i = 0; i < _nSubParamKeyValues; i++)
+			//{
+			//	_subParamKeyValues[i].ReadyToCalculate();
+			//}
+
+			//v1.4.7 변경. 전체 isCalculated를 초기화하는 대신, 몇개의 캐시로 이를 대체할 수 있다.
+			_calculatedParamKeyValues.Clear();
+			_nCalculatedParamKeyValues = 0;
+			
+			_calculatedPKV_Cache_0 = null;
+			_calculatedPKV_Cache_1 = null;
+			_calculatedPKV_Cache_2 = null;
+			_calculatedPKV_Cache_3 = null;
+			_nCalculatedPKVCached = 0;
 		}
 
 
 		public bool Calculate()
 		{
+			//v1.4.7 : 변경. 계산 결과를 여기에 저장하자
+			_calculatedParamKeyValues.Clear();
+			_nCalculatedParamKeyValues = 0;
+
+
 			if (_keyParamSetGroup == null)
 			{
 				Debug.LogError("Null KeyParamSetGroup");
@@ -255,10 +318,22 @@ namespace AnyPortrait
 			}
 
 			_totalWeight = 0.0f;
-			for (int i = 0; i < _nSubParamKeyValues; i++)
-			{
-				_subParamKeyValues[i].ReadyToCalculate();
-			}
+			
+			//PKV 초기화
+			//이전
+			//for (int i = 0; i < _nSubParamKeyValues; i++)
+			//{
+			//	_subParamKeyValues[i].ReadyToCalculate();
+			//}
+
+			//v1.4.7 변경. 전체 isCalculated를 초기화하는 대신, 몇개의 캐시로 이를 대체할 수 있다.
+			_calculatedPKV_Cache_0 = null;
+			_calculatedPKV_Cache_1 = null;
+			_calculatedPKV_Cache_2 = null;
+			_calculatedPKV_Cache_3 = null;
+			_nCalculatedPKVCached = 0;
+
+
 
 //#if UNITY_EDITOR
 //			Profiler.BeginSample("Calcualte Result Param Sub List - Calculate");
@@ -306,6 +381,9 @@ namespace AnyPortrait
 //			Profiler.EndSample();
 //#endif
 
+			//v1.4.7 : 계산된 PKV의 개수
+			_nCalculatedParamKeyValues = _calculatedParamKeyValues.Count;
+
 			return true;
 		}
 
@@ -332,17 +410,143 @@ namespace AnyPortrait
 			//	_subParamKeyValues[i].ReadyToCalculate();
 			//}
 
+
+			// [ 노트 ]
+			//v1.4.7에 추가된 _calculatedParamKeyValues와 _calculatedPKV_Cache_0..는 여기서 사용되지 않는다.
+			//애니메이션의 경우는 고정 배열인 _resultAnimKeyPKVs와 _resultAnimKeyPKVIndices, _nResultAnimKey를 이용한다.
+			//_isCalculated도 사용하지 않는다.
+			
+
+
 			//키프레임의 Weight 계산
 			//TODO : 이 내부에 LookUpTable을 이용하여 처리를 가속화할 것
 			//CalculateWeight_KeyFrame();/이전 함수
 			CalculateWeight_KeyFrame_WithLUT();
 
+			
 
 			return true;
 		}
 
 
 
+
+		//[v1.4.7 변경] 계산된 결과를 단순히 각각의 PKV의 isCalculated로 구분할 것이 아니라, 리스트에 저장해서 참조할 수 있게 하자.
+		/// <summary>
+		/// v1.4.7 : 계산된 ParamKeyValue를 결과 리스트에 넣는다.
+		/// 이전 코드에서 isCalculated = true와 동일한 효과를 가진다.
+		/// </summary>
+		/// <param name="calculatedPKV"></param>
+		public void OnParamKeyValueCalculated(apOptCalculatedResultParam.OptParamKeyValueSet calculatedPKV, float addedWeight)
+		{
+			bool isCalculated = false;
+
+			//이미 계산되었는지 여부 체크
+			//1. 캐시를 확인한다.
+			//2. 4개의 캐시를 모두 체크했다면, 리스트에서 Contains를 하자 (계산된 PKV 자체가 많지 않아서 이거 그렇게 안느리다)
+			
+			//새로 추가할 때는 캐시 개수가 남았다면 캐시에 추가한다.
+			if(_nCalculatedPKVCached > 0)
+			{
+				if(_calculatedPKV_Cache_0 == calculatedPKV)
+				{
+					//PKV는 이미 계산되었으며 "캐시 0"에 저장된 상태다
+					isCalculated = true;
+				}
+			}
+			if(!isCalculated && _nCalculatedPKVCached > 1)
+			{
+				if(_calculatedPKV_Cache_1 == calculatedPKV)
+				{
+					//PKV는 이미 계산되었으며 "캐시 1"에 저장된 상태다
+					isCalculated = true;
+				}
+			}
+			if(!isCalculated && _nCalculatedPKVCached > 2)
+			{
+				if(_calculatedPKV_Cache_2 == calculatedPKV)
+				{
+					//PKV는 이미 계산되었으며 "캐시 2"에 저장된 상태다
+					isCalculated = true;
+				}
+			}
+			if(!isCalculated && _nCalculatedPKVCached > 3)
+			{
+				if(_calculatedPKV_Cache_3 == calculatedPKV)
+				{
+					//PKV는 이미 계산되었으며 "캐시 3"에 저장된 상태다
+					isCalculated = true;
+				}
+			}
+			//4개 미만이면, 모두 캐시에서 찾을 수 있고, 못찾았다면 신규 값이다.
+			//캐시가 최대값이 4개인데도 계산 여부를 알 수 없다면, 리스트에서 직접 계산 여부를 알아내야한다.
+			if(!isCalculated && _nCalculatedPKVCached >= 4)
+			{
+				//만약 4개의 
+				//만약 캐시에서 계산 여부를 판정할 수 없다면 리스트에서 직접 찾아야 함
+				isCalculated = _calculatedParamKeyValues.Contains(calculatedPKV);
+
+				//Debug.Log("4개의 캐시에서 찾을 수 없었다. [" + _nCalculatedPKVCached + "] - " + isCalculated);
+			}
+
+			
+			if(isCalculated)
+			{
+				// [ 이미 계산되었다면 ]
+				// "계산된 리스트"에 추가하지 말고, 가중치만 더하기만 하자
+				calculatedPKV._weight += addedWeight;
+				return;
+			}
+			
+
+			// [ 새로운 계산된 PKV 라면 ]
+			//리스트에 추가하자
+			_calculatedParamKeyValues.Add(calculatedPKV);
+			_nCalculatedParamKeyValues += 1;
+
+			//- 처음 추가하는 것이므로 가중치는 바로 할당을 한다. (별도의 초기화가 없다)
+			calculatedPKV._weight = addedWeight;
+
+			//계산되었음을 저장하자
+			
+			//캐시에 저장하기
+			if(_nCalculatedPKVCached < 4)//최대값 4개
+			{
+				//기존의 저장된 캐시 개수에 따라 캐시 대상을 결정한다.
+				switch (_nCalculatedPKVCached)
+				{
+					case 0: _calculatedPKV_Cache_0 = calculatedPKV; break;
+					case 1: _calculatedPKV_Cache_1 = calculatedPKV; break;
+					case 2: _calculatedPKV_Cache_2 = calculatedPKV; break;
+					case 3: _calculatedPKV_Cache_3 = calculatedPKV; break;
+				}
+				//Debug.Log("PKV 저장 > 캐시 : " + _nCalculatedPKVCached);
+				_nCalculatedPKVCached += 1;
+			}
+		}
+
+
+
+
+
+		/// <summary>
+		/// v1.4.7 : Calculated된 ParamKeyValues (기존의 isCalculated가 true인 ParamKeyValue들의 집합)
+		/// </summary>
+		public List<apOptCalculatedResultParam.OptParamKeyValueSet> CalculatedParamKeyValues
+		{
+			get
+			{
+				return _calculatedParamKeyValues;
+			}
+		}
+
+		/// <summary>
+		/// v1.4.7 : Calcuated된 ParamKeyValues의 개수
+		/// </summary>
+		public int NumCalculatedParamKeyValues
+		{
+			get { return _nCalculatedParamKeyValues; }
+		}
 
 
 
@@ -367,178 +571,170 @@ namespace AnyPortrait
 		// 계산함수 - Control Param
 		//---------------------------------------------------
 		//계산에 사용할 변수를 멤버로 두자
-		private apControlParam _cal_controlParam = null;
-		//private float _cal_minDist = float.MaxValue;
-		//private float _cal_maxDist = 0.0f;
-		private float _cal_dist = 0.0f;
-		private float _cal_sumDist = 0.0f;
+		//private apControlParam _cal_controlParam = null;
+		//private float _cal_dist = 0.0f;
+		//private float _cal_sumDist = 0.0f;
 		private float _cal_itp = 0.0f;
-		private apOptCalculatedResultParam.OptParamKeyValueSet _cal_curParamKeyValue = null;
-		private apOptCalculatedResultParam.OptParamKeyValueSet _cal_nextParamKeyValue = null;
-		//private float _cal_deltaMinDist = 0.0f;
-		//private float _cal_keepWeightRatio = 0.0f;
-		//private float _cal_mulWeight = 0.0f;
-		//private float _cal_revWeight = 0.0f;
-		private const float _zeroBias = 0.00001f;
+		//private apOptCalculatedResultParam.OptParamKeyValueSet _cal_curParamKeyValue = null;
+		//private apOptCalculatedResultParam.OptParamKeyValueSet _cal_nextParamKeyValue = null;
+		//private const float _zeroBias = 0.00001f;
 
 		private apControlParam _tmp_controlParam = null;
 		apOptCalculatedResultParam.OptParamKeyValueSet _tmp_paramKeyValue = null;
 
 
 
-		private void CalculateWeight_ControlParam()
-		{
-			if (_keyParamSetGroup._keyControlParam == null)
-			{
-				Debug.LogError("Null Key Control Param");
-				return;
-			}
+		#region [미사용 코드] 이전 버전의 Control Param 계산식
+		//private void CalculateWeight_ControlParam()
+		//{
+		//	if (_keyParamSetGroup._keyControlParam == null)
+		//	{
+		//		Debug.LogError("Null Key Control Param");
+		//		return;
+		//	}
 
 
-			//Debug.Log("Update Control Param : " + _keyParamSetGroup._keyControlParam._keyName);
+		//	//Debug.Log("Update Control Param : " + _keyParamSetGroup._keyControlParam._keyName);
 
-			_cal_controlParam = _keyParamSetGroup._keyControlParam;
+		//	_cal_controlParam = _keyParamSetGroup._keyControlParam;
 
-			//_cal_minDist = float.MaxValue;
-			//_cal_maxDist = 0.0f;
-			_cal_dist = 0.0f;
-			_cal_curParamKeyValue = null;
-			_totalWeight = 0.0f;
+		//	_cal_dist = 0.0f;
+		//	_cal_curParamKeyValue = null;
+		//	_totalWeight = 0.0f;
 
-			//Debug.Log(_cal_controlParam._keyName + " : " + _cal_controlParam._vec2_Cur);
+		//	for (int i = 0; i < _nSubParamKeyValues; i++)
+		//	{
+		//		_cal_curParamKeyValue = _subParamKeyValues[i];
+		//		_cal_dist = -10.0f;
+		//		_cal_curParamKeyValue._isCalculated = false;
 
-			for (int i = 0; i < _nSubParamKeyValues; i++)
-			{
-				_cal_curParamKeyValue = _subParamKeyValues[i];
-				_cal_dist = -10.0f;
-				_cal_curParamKeyValue._isCalculated = false;
+		//		switch (_cal_controlParam._valueType)
+		//		{
+		//			//case apControlParam.TYPE.Bool:
+		//			//	if(_cal_curParamKeyValue._paramSet._conSyncValue_Bool == _cal_controlParam._bool_Cur)
+		//			//	{
+		//			//		_cal_curParamKeyValue._dist = 0.0f;
+		//			//		_cal_curParamKeyValue._isCalculated = true;
+		//			//	}
+		//			//	else
+		//			//	{
+		//			//		_cal_curParamKeyValue._dist = -10.0f;
+		//			//		_cal_curParamKeyValue._isCalculated = false;
+		//			//	}
+		//			//	break;
 
-				switch (_cal_controlParam._valueType)
-				{
-					//case apControlParam.TYPE.Bool:
-					//	if(_cal_curParamKeyValue._paramSet._conSyncValue_Bool == _cal_controlParam._bool_Cur)
-					//	{
-					//		_cal_curParamKeyValue._dist = 0.0f;
-					//		_cal_curParamKeyValue._isCalculated = true;
-					//	}
-					//	else
-					//	{
-					//		_cal_curParamKeyValue._dist = -10.0f;
-					//		_cal_curParamKeyValue._isCalculated = false;
-					//	}
-					//	break;
+		//			case apControlParam.TYPE.Int:
+		//				_cal_dist = _cal_controlParam.GetNormalizedDistance_Int(_cal_curParamKeyValue._paramSet._conSyncValue_Int);
+		//				break;
 
-					case apControlParam.TYPE.Int:
-						_cal_dist = _cal_controlParam.GetNormalizedDistance_Int(_cal_curParamKeyValue._paramSet._conSyncValue_Int);
-						break;
+		//			case apControlParam.TYPE.Float:
+		//				_cal_dist = _cal_controlParam.GetNormalizedDistance_Float(_cal_curParamKeyValue._paramSet._conSyncValue_Float);
+		//				break;
 
-					case apControlParam.TYPE.Float:
-						_cal_dist = _cal_controlParam.GetNormalizedDistance_Float(_cal_curParamKeyValue._paramSet._conSyncValue_Float);
-						break;
+		//			case apControlParam.TYPE.Vector2:
+		//				_cal_dist = _cal_controlParam.GetNormalizedDistance_Vector2(_cal_curParamKeyValue._paramSet._conSyncValue_Vector2);
+		//				break;
 
-					case apControlParam.TYPE.Vector2:
-						_cal_dist = _cal_controlParam.GetNormalizedDistance_Vector2(_cal_curParamKeyValue._paramSet._conSyncValue_Vector2);
-						break;
+		//				//case apControlParam.TYPE.Vector3:
+		//				//	_cal_dist = _cal_controlParam.GetNormalizedDistance_Vector3(_cal_curParamKeyValue._paramSet._conSyncValue_Vector3);
+		//				//	break;
+		//		}
+		//		if (_cal_dist < -1.0f)
+		//		{
+		//			_cal_curParamKeyValue._dist = -10.0f;
+		//			_cal_curParamKeyValue._isCalculated = false;
+		//			_cal_curParamKeyValue._weight = 0.0f;
+		//			continue;
+		//		}
 
-						//case apControlParam.TYPE.Vector3:
-						//	_cal_dist = _cal_controlParam.GetNormalizedDistance_Vector3(_cal_curParamKeyValue._paramSet._conSyncValue_Vector3);
-						//	break;
-				}
-				if (_cal_dist < -1.0f)
-				{
-					_cal_curParamKeyValue._dist = -10.0f;
-					_cal_curParamKeyValue._isCalculated = false;
-					_cal_curParamKeyValue._weight = 0.0f;
-					continue;
-				}
+		//		//주의 : Runtime에서는 Matched가 없다.
 
-				//주의 : Runtime에서는 Matched가 없다.
+		//		_cal_curParamKeyValue._dist = _cal_dist;
+		//		_cal_curParamKeyValue._isCalculated = true;
+		//		_cal_curParamKeyValue._weight = 1.0f;
+		//		_totalWeight += 1.0f;
+		//	}
 
-				_cal_curParamKeyValue._dist = _cal_dist;
-				_cal_curParamKeyValue._isCalculated = true;
-				_cal_curParamKeyValue._weight = 1.0f;
-				_totalWeight += 1.0f;
-			}
-
-			//-----------------------------------------------
-			// Weight 계산
+		//	//-----------------------------------------------
+		//	// Weight 계산
 
 
 
-			//선형 IDW 방식으로 계산한다.
-			#region [미사용 코드] 역선형 보간 방식은 오류가 있다;
-			//for (int i = 0; i < _nSubParamKeyvalues; i++)
-			//{
-			//	_cal_curParamKeyValue = _subParamKeyValues[i];
-			//	if(!_cal_curParamKeyValue._isCalculated)
-			//	{
-			//		_cal_curParamKeyValue._weight = 0.0f;
-			//		continue;
-			//	}
+		//	//선형 IDW 방식으로 계산한다.
+		//	#region [미사용 코드] 역선형 보간 방식은 오류가 있다;
+		//	//for (int i = 0; i < _nSubParamKeyvalues; i++)
+		//	//{
+		//	//	_cal_curParamKeyValue = _subParamKeyValues[i];
+		//	//	if(!_cal_curParamKeyValue._isCalculated)
+		//	//	{
+		//	//		_cal_curParamKeyValue._weight = 0.0f;
+		//	//		continue;
+		//	//	}
 
-			//	_cal_keepWeightRatio = Mathf.Clamp01((_cal_curParamKeyValue._dist - _cal_minDist) / (_cal_maxDist - _cal_minDist));
-			//	_cal_mulWeight = (_cal_minDist * _cal_keepWeightRatio) + (1.0f - _cal_keepWeightRatio);
-			//	//_cal_revWeight = (_cal_maxDist - _cal_curParamKeyValue._dist) * _cal_mulWeight;
-			//	_cal_revWeight = (2.0f - _cal_curParamKeyValue._dist) * _cal_mulWeight;
+		//	//	_cal_keepWeightRatio = Mathf.Clamp01((_cal_curParamKeyValue._dist - _cal_minDist) / (_cal_maxDist - _cal_minDist));
+		//	//	_cal_mulWeight = (_cal_minDist * _cal_keepWeightRatio) + (1.0f - _cal_keepWeightRatio);
+		//	//	//_cal_revWeight = (_cal_maxDist - _cal_curParamKeyValue._dist) * _cal_mulWeight;
+		//	//	_cal_revWeight = (2.0f - _cal_curParamKeyValue._dist) * _cal_mulWeight;
 
-			//	//_cal_revWeight = (1.0f / (_cal_curParamKeyValue._dist)) * _cal_mulWeight;
+		//	//	//_cal_revWeight = (1.0f / (_cal_curParamKeyValue._dist)) * _cal_mulWeight;
 
-			//	_totalWeight += _cal_revWeight;
-			//	_cal_curParamKeyValue._weight = _cal_revWeight;
-			//} 
-			#endregion
+		//	//	_totalWeight += _cal_revWeight;
+		//	//	_cal_curParamKeyValue._weight = _cal_revWeight;
+		//	//} 
+		//	#endregion
 
-			if (_nSubParamKeyValues >= 2)
-			{
-				_totalWeight = 0.0f;
-				for (int i = 0; i < _nSubParamKeyValues; i++)
-				{
-					_cal_curParamKeyValue = _subParamKeyValues[i];
-					if (!_cal_curParamKeyValue._isCalculated || _cal_curParamKeyValue._weight < _zeroBias)
-					{
-						continue;
-					}
+		//	if (_nSubParamKeyValues >= 2)
+		//	{
+		//		_totalWeight = 0.0f;
+		//		for (int i = 0; i < _nSubParamKeyValues; i++)
+		//		{
+		//			_cal_curParamKeyValue = _subParamKeyValues[i];
+		//			if (!_cal_curParamKeyValue._isCalculated || _cal_curParamKeyValue._weight < _zeroBias)
+		//			{
+		//				continue;
+		//			}
 
-					//다른 SubParam과의 Dist를 비교하여 내분 Weight를 하자
-					if (i + 1 < _nSubParamKeyValues)
-					{
-						for (int j = i + 1; j < _nSubParamKeyValues; j++)
-						{
-							_cal_nextParamKeyValue = _subParamKeyValues[j];
-							if (!_cal_nextParamKeyValue._isCalculated)
-							{
-								continue;
-							}
+		//			//다른 SubParam과의 Dist를 비교하여 내분 Weight를 하자
+		//			if (i + 1 < _nSubParamKeyValues)
+		//			{
+		//				for (int j = i + 1; j < _nSubParamKeyValues; j++)
+		//				{
+		//					_cal_nextParamKeyValue = _subParamKeyValues[j];
+		//					if (!_cal_nextParamKeyValue._isCalculated)
+		//					{
+		//						continue;
+		//					}
 
-							_cal_sumDist = _cal_curParamKeyValue._dist + _cal_nextParamKeyValue._dist;
-							if (_cal_sumDist > _zeroBias)
-							{
-								_cal_itp = Mathf.Clamp01((_cal_sumDist - _cal_curParamKeyValue._dist) / _cal_sumDist);
-								_cal_curParamKeyValue._weight *= _cal_itp;
-								_cal_nextParamKeyValue._weight *= (1.0f - _cal_itp);
-							}
-						}
-					}
+		//					_cal_sumDist = _cal_curParamKeyValue._dist + _cal_nextParamKeyValue._dist;
+		//					if (_cal_sumDist > _zeroBias)
+		//					{
+		//						_cal_itp = Mathf.Clamp01((_cal_sumDist - _cal_curParamKeyValue._dist) / _cal_sumDist);
+		//						_cal_curParamKeyValue._weight *= _cal_itp;
+		//						_cal_nextParamKeyValue._weight *= (1.0f - _cal_itp);
+		//					}
+		//				}
+		//			}
 
-					_totalWeight += _cal_curParamKeyValue._weight;
-				}
-			}
+		//			_totalWeight += _cal_curParamKeyValue._weight;
+		//		}
+		//	}
 
 
 
-			if (_totalWeight > 0.0f)
-			{
-				for (int i = 0; i < _nSubParamKeyValues; i++)
-				{
-					_cal_curParamKeyValue = _subParamKeyValues[i];
-					if (_cal_curParamKeyValue._isCalculated)
-					{
-						_cal_curParamKeyValue._weight /= _totalWeight;
-					}
-				}
-			}
+		//	if (_totalWeight > 0.0f)
+		//	{
+		//		for (int i = 0; i < _nSubParamKeyValues; i++)
+		//		{
+		//			_cal_curParamKeyValue = _subParamKeyValues[i];
+		//			if (_cal_curParamKeyValue._isCalculated)
+		//			{
+		//				_cal_curParamKeyValue._weight /= _totalWeight;
+		//			}
+		//		}
+		//	}
 
-		}
+		//} 
+		#endregion
 
 
 
@@ -575,16 +771,14 @@ namespace AnyPortrait
 
 			_tmp_controlParam = _keyParamSetGroup._keyControlParam;
 
-			//_nCpLerpPoints = _cpLerpPoints.Count;
-			//			_nCpLerpAreas = _cpLerpAreas.Count;
-
 			
-			for (int i = 0; i < _nSubParamKeyValues; i++)
-			{
-				_tmp_paramKeyValue = _subParamKeyValues[i];
-				_tmp_paramKeyValue._weight = 0.0f;
-				_tmp_paramKeyValue._isCalculated = false;//<<나중에 이것도 true로 올리자
-			}
+			//v1.4.7 삭제 : 초기화를 없앴다. _isCalculated를 없앤 방식
+			//for (int i = 0; i < _nSubParamKeyValues; i++)
+			//{
+			//	_tmp_paramKeyValue = _subParamKeyValues[i];
+			//	_tmp_paramKeyValue._weight = 0.0f;
+			//	_tmp_paramKeyValue._isCalculated = false;//<<나중에 이것도 true로 올리자
+			//}
 			
 			//if (_cpLerpPoints.Count == 0)
 			if(_nCpLerpPoints == 0)//변경 v1.4.6
@@ -592,13 +786,16 @@ namespace AnyPortrait
 				return;//처리 불가;
 			}
 
+			//v1.4.7 코드 위치 변경 : Weight 계산이 Calcuate 중간에 바로 발생하므로 여기서 초기화
+			_totalWeight = 0.0f;
+
 			//if (_cpLerpPoints.Count == 1)
 			if(_nCpLerpPoints == 1)//변경 v1.4.6
 			{
 				_cal_CpLerpPoint = _cpLerpPoints[0];
 
 				_cal_CpLerpPoint._calculatedWeight = 1.0f;
-				_cal_CpLerpPoint.CalculateITPWeight();
+				_cal_CpLerpPoint.CalculateITPWeight(ref _totalWeight);//v1.4.7 : Total Weight 전달
 			}
 			else
 			{
@@ -683,7 +880,7 @@ namespace AnyPortrait
 				if (_cpLerpPoint_A == _cpLerpPoint_B)
 				{
 					_cpLerpPoint_A._calculatedWeight = 1.0f;
-					_cpLerpPoint_A.CalculateITPWeight();
+					_cpLerpPoint_A.CalculateITPWeight(ref _totalWeight);//v1.4.7 : Total Weight 전달 (인자 추가)
 				}
 				else
 				{
@@ -700,33 +897,46 @@ namespace AnyPortrait
 					_cpLerpPoint_A._calculatedWeight = itp;
 					_cpLerpPoint_B._calculatedWeight = 1.0f - itp;
 
-					_cpLerpPoint_A.CalculateITPWeight();
-					_cpLerpPoint_B.CalculateITPWeight();
+					//v1.4.7 : Total Weight 전달 (인자 추가)
+					_cpLerpPoint_A.CalculateITPWeight(ref _totalWeight);
+					_cpLerpPoint_B.CalculateITPWeight(ref _totalWeight);
 
 				}
 
-				_totalWeight = 0.0f;
+				//v1.4.7 삭제 : Weight 계산은 위에서 바로 계산한다. (CalculateITPWeight)
+				//_totalWeight = 0.0f;
 
-				for (int i = 0; i < _nSubParamKeyValues; i++)
-				{
-					_tmp_paramKeyValue = _subParamKeyValues[i];
+				//for (int i = 0; i < _nSubParamKeyValues; i++)
+				//{
+				//	_tmp_paramKeyValue = _subParamKeyValues[i];
 
-					if (!_tmp_paramKeyValue._isCalculated)
-					{
-						_tmp_paramKeyValue._weight = 0.0f;
-						continue;
-					}
+				//	if (!_tmp_paramKeyValue._isCalculated)
+				//	{
+				//		_tmp_paramKeyValue._weight = 0.0f;
+				//		continue;
+				//	}
 
-					_totalWeight += _tmp_paramKeyValue._weight;
-				}
+				//	_totalWeight += _tmp_paramKeyValue._weight;
+				//}
 
 				if (_totalWeight > 0.0f)
 				{
-					for (int i = 0; i < _nSubParamKeyValues; i++)
+					//이전
+					//for (int i = 0; i < _nSubParamKeyValues; i++)
+					//{
+					//	_tmp_paramKeyValue = _subParamKeyValues[i];
+					//	if (_tmp_paramKeyValue._isCalculated)
+					//	{
+					//		_tmp_paramKeyValue._weight /= _totalWeight;
+					//	}
+					//}
+
+					//v1.4.7 변경 : 모든 ParamKeyValue가 아닌 계산된 리스트만 골라서 나누자 (개수 차이가 크다)
+					if(_nCalculatedParamKeyValues > 0)
 					{
-						_tmp_paramKeyValue = _subParamKeyValues[i];
-						if (_tmp_paramKeyValue._isCalculated)
+						for (int i = 0; i < _nCalculatedParamKeyValues; i++)
 						{
+							_tmp_paramKeyValue = _calculatedParamKeyValues[i];
 							_tmp_paramKeyValue._weight /= _totalWeight;
 						}
 					}
@@ -751,19 +961,21 @@ namespace AnyPortrait
 			//1. Param의 Weight를 모두 0으로 세팅 (+ 연산으로 Weight를 추가하는 방식)
 			//2. 어느 RectArea에 있는지 결정한다.
 			//3. Rect 안에서 itp를 계산한다.
-			for (int i = 0; i < _nSubParamKeyValues; i++)
-			{
-				_tmp_paramKeyValue = _subParamKeyValues[i];
-				_tmp_paramKeyValue._weight = 0.0f;
-				_tmp_paramKeyValue._isCalculated = false;//<<나중에 이것도 true로 올리자
-			}
+
+			//v1.4.7 삭제 : 이 함수 전에 이미 PKV는 초기화가 되었다.
+			//for (int i = 0; i < _nSubParamKeyValues; i++)
+			//{
+			//	_tmp_paramKeyValue = _subParamKeyValues[i];
+			//	_tmp_paramKeyValue._weight = 0.0f;
+			//	_tmp_paramKeyValue._isCalculated = false;//<<나중에 이것도 true로 올리자
+			//}
 
 
 
 
 			Vector2 curValue = _tmp_controlParam._vec2_Cur;
 
-			
+			_totalWeight = 0.0f;//v1.4.7 : Weight 계산이 Calcuate 중간에 바로 발생
 
 			if (_cpLerpAreaLastSelected == null || !_cpLerpAreaLastSelected.IsInclude(curValue))
 			{
@@ -772,12 +984,6 @@ namespace AnyPortrait
 				//for (int i = 0; i < _cpLerpAreas.Count; i++)
 				for (int i = 0; i < _nCpLerpAreas; i++)
 				{
-					//if(_cpLerpAreas[i].IsInclude(curValue))
-					//{
-					//	_cpLerpAreaLastSelected = _cpLerpAreas[i];
-					//	break;
-					//}
-
 					//변경 v1.4.6
 					_cal_CpLerpArea = _cpLerpAreas[i];
 					if(_cal_CpLerpArea.IsInclude(curValue))
@@ -816,35 +1022,53 @@ namespace AnyPortrait
 			_cpLerpAreaLastSelected._pointLB._calculatedWeight = itpX * (1.0f - itpY);
 			_cpLerpAreaLastSelected._pointRB._calculatedWeight = (1.0f - itpX) * (1.0f - itpY);
 
-			_cpLerpAreaLastSelected._pointLT.CalculateITPWeight();
-			_cpLerpAreaLastSelected._pointRT.CalculateITPWeight();
-			_cpLerpAreaLastSelected._pointLB.CalculateITPWeight();
-			_cpLerpAreaLastSelected._pointRB.CalculateITPWeight();
+			//v1.4.7 : Total Weight 전달 (인자 추가)
+			_cpLerpAreaLastSelected._pointLT.CalculateITPWeight(ref _totalWeight);
+			_cpLerpAreaLastSelected._pointRT.CalculateITPWeight(ref _totalWeight);
+			_cpLerpAreaLastSelected._pointLB.CalculateITPWeight(ref _totalWeight);
+			_cpLerpAreaLastSelected._pointRB.CalculateITPWeight(ref _totalWeight);
 
-			_totalWeight = 0.0f;
 
-			// 여러개의 키값을 사용할 거라면
-			for (int i = 0; i < _nSubParamKeyValues; i++)
-			{
-				_tmp_paramKeyValue = _subParamKeyValues[i];
+			//v1.4.7 삭제 : Weight 계산은 위에서 (CalculateITPWeight) 바로 계산한다.
+			//_totalWeight = 0.0f;
 
-				if (!_tmp_paramKeyValue._isCalculated)
-				{
-					_tmp_paramKeyValue._weight = 0.0f;
-					continue;
-				}
+			//// 여러개의 키값을 사용할 거라면
+			//for (int i = 0; i < _nSubParamKeyValues; i++)
+			//{
+			//	_tmp_paramKeyValue = _subParamKeyValues[i];
 
-				//변경
-				//Weight 시작값이 기본 1이 아니라, 거리에 따른 가중치로 바뀐다.
-				_totalWeight += _tmp_paramKeyValue._weight;
-			}
+			//	if (!_tmp_paramKeyValue._isCalculated)
+			//	{
+			//		_tmp_paramKeyValue._weight = 0.0f;
+			//		continue;
+			//	}
+
+			//	//변경
+			//	//Weight 시작값이 기본 1이 아니라, 거리에 따른 가중치로 바뀐다.
+			//	_totalWeight += _tmp_paramKeyValue._weight;
+			//}
+
+			//이전
+			//if (_totalWeight > 0.0f)
+			//{
+			//	for (int i = 0; i < _nSubParamKeyValues; i++)
+			//	{
+			//		_tmp_paramKeyValue = _subParamKeyValues[i];
+			//		if (_tmp_paramKeyValue._isCalculated)
+			//		{
+			//			_tmp_paramKeyValue._weight /= _totalWeight;
+			//		}
+			//	}
+			//}
+
+			//v1.4.7 변경 " //변경 v1.4.7 : 모든 ParamKeyValue가 아닌 계산된 리스트만 골라서 나누자 (개수 차이가 크다)
 			if (_totalWeight > 0.0f)
 			{
-				for (int i = 0; i < _nSubParamKeyValues; i++)
+				if (_nCalculatedParamKeyValues > 0)
 				{
-					_tmp_paramKeyValue = _subParamKeyValues[i];
-					if (_tmp_paramKeyValue._isCalculated)
+					for (int i = 0; i < _nCalculatedParamKeyValues; i++)
 					{
+						_tmp_paramKeyValue = _calculatedParamKeyValues[i];
 						_tmp_paramKeyValue._weight /= _totalWeight;
 					}
 				}
@@ -857,6 +1081,7 @@ namespace AnyPortrait
 		//---------------------------------------------------
 		// 계산함수 - KeyFrame
 		//---------------------------------------------------
+		//사실 이 함수는 호출되지 않는다. Calculate_AnimMod에서 호출되므로. (구형 코드에서만 동작함)
 		private void CalculateWeight_KeyFrame()
 		{
 			if (_keyParamSetGroup == null || _keyParamSetGroup._keyAnimTimelineLayer == null)
@@ -893,7 +1118,7 @@ namespace AnyPortrait
 				curParamKeyValue = _subParamKeyValues[i];
 
 				curParamKeyValue._dist = -10.0f;
-				curParamKeyValue._isCalculated = false;
+				//curParamKeyValue._isCalculated = false;//삭제
 				curParamKeyValue._weight = 0.0f;
 
 				//추가 12.5
@@ -917,8 +1142,14 @@ namespace AnyPortrait
 					((curKeyframe._isLoopAsStart || curKeyframe._isLoopAsEnd) && curFrame == curKeyframe._loopFrameIndex))
 				{
 					curParamKeyValue._dist = 0.0f;
-					curParamKeyValue._isCalculated = true;
-					curParamKeyValue._weight = 1.0f;
+
+					//이전
+					//curParamKeyValue._isCalculated = true;
+					//curParamKeyValue._weight = 1.0f;
+
+					//변경 v1.4.7
+					OnParamKeyValueCalculated(curParamKeyValue, 1.0f);
+
 					_totalWeight += 1.0f;
 					
 					//추가 12.5 : AnimKeyPos : 동일 프레임
@@ -948,8 +1179,14 @@ namespace AnyPortrait
 						_cal_itp = curKeyframe._curveKey.GetItp_Float(tmpCurFrameFloat, true, tmpCurFrameInt);//변경 : Float
 
 						curParamKeyValue._dist = 0.0f;
-						curParamKeyValue._isCalculated = true;
-						curParamKeyValue._weight = _cal_itp;
+
+						//이전
+						//curParamKeyValue._isCalculated = true;
+						//curParamKeyValue._weight = _cal_itp;
+
+						//변경 v1.4.7
+						OnParamKeyValueCalculated(curParamKeyValue, _cal_itp);
+
 						_totalWeight += _cal_itp;
 						
 
@@ -969,8 +1206,15 @@ namespace AnyPortrait
 					{
 						//연결된게 없다면 이게 100% 가중치를 갖는다.
 						curParamKeyValue._dist = 0.0f;
-						curParamKeyValue._isCalculated = true;
-						curParamKeyValue._weight = 1.0f;
+						
+						//이전
+						//curParamKeyValue._isCalculated = true;
+						//curParamKeyValue._weight = 1.0f;
+
+						//변경 v1.4.7
+						OnParamKeyValueCalculated(curParamKeyValue, 1.0f);
+
+
 						_totalWeight += 1.0f;
 						//Debug.Log("[" + i + "] [Prev ?? ~ Cur] 1.0");
 
@@ -1006,8 +1250,14 @@ namespace AnyPortrait
 						//itp = 1.0f - itp;//결과가 B에 맞추어지므로 여기서는 Reverse
 
 						curParamKeyValue._dist = 0.0f;
-						curParamKeyValue._isCalculated = true;
-						curParamKeyValue._weight = _cal_itp;
+
+						//이전
+						//curParamKeyValue._isCalculated = true;
+						//curParamKeyValue._weight = _cal_itp;
+
+						//변경 v1.4.7
+						OnParamKeyValueCalculated(curParamKeyValue, _cal_itp);
+
 						_totalWeight += _cal_itp;
 
 						//Debug.Log("[" + i + "] [Cur ~ Next] " + itp);
@@ -1026,8 +1276,14 @@ namespace AnyPortrait
 					{
 						//연결된게 없다면 이게 100% 가중치를 갖는다.
 						curParamKeyValue._dist = 0.0f;
-						curParamKeyValue._isCalculated = true;
-						curParamKeyValue._weight = 1.0f;
+						
+						//이전
+						//curParamKeyValue._isCalculated = true;
+						//curParamKeyValue._weight = 1.0f;
+
+						//변경 v1.4.7
+						OnParamKeyValueCalculated(curParamKeyValue, 1.0f);
+
 						_totalWeight += 1.0f;
 
 						//Debug.Log("[" + i + "] [Cur ~ Next ??] 1.0");
@@ -1042,24 +1298,38 @@ namespace AnyPortrait
 
 			}
 
+			//이전
+			//if (_totalWeight > 0.0f)
+			//{
+			//	//Debug.Log("Result --------------------------------");
+			//	for (int i = 0; i < _nSubParamKeyValues; i++)
+			//	{
+			//		curParamKeyValue = _subParamKeyValues[i];
+
+			//		if (curParamKeyValue._isCalculated)
+			//		{
+			//			curParamKeyValue._weight /= _totalWeight;
+			//			//Debug.Log("[" + curParamKeyValue._weight + "]");
+			//		}
+			//		else
+			//		{
+			//			curParamKeyValue._weight = 0.0f;
+			//		}
+			//	}
+			//	//Debug.Log("-------------------------------------");
+			//}
+
+			//변경 v1.4.7
 			if (_totalWeight > 0.0f)
 			{
-				//Debug.Log("Result --------------------------------");
-				for (int i = 0; i < _nSubParamKeyValues; i++)
+				if (_nCalculatedParamKeyValues > 0)
 				{
-					curParamKeyValue = _subParamKeyValues[i];
-
-					if (curParamKeyValue._isCalculated)
+					for (int i = 0; i < _nCalculatedParamKeyValues; i++)
 					{
-						curParamKeyValue._weight /= _totalWeight;
-						//Debug.Log("[" + curParamKeyValue._weight + "]");
-					}
-					else
-					{
-						curParamKeyValue._weight = 0.0f;
+						_tmp_paramKeyValue = _calculatedParamKeyValues[i];
+						_tmp_paramKeyValue._weight /= _totalWeight;
 					}
 				}
-				//Debug.Log("-------------------------------------");
 			}
 
 			
@@ -1115,12 +1385,15 @@ namespace AnyPortrait
 
 			int lengthFrames = animClip.EndFrame - animClip.StartFrame;
 
+			
 			if(_cal_resultAnimKeyPKV_A == _cal_resultAnimKeyPKV_B)
 			{
 				//A와 B가 같다 > 한개의 PKV의 영역에 들어와서 100%로 계산해야함
 				_cal_resultAnimKeyPKV_A._dist = 0.0f;
-				_cal_resultAnimKeyPKV_A._isCalculated = true;
+				
+				//_cal_resultAnimKeyPKV_A._isCalculated = true;//v1.4.7 삭제
 				_cal_resultAnimKeyPKV_A._weight = 1.0f;
+
 				_totalWeight += 1.0f;
 				_cal_resultAnimKeyPKV_A._animKeyPos = apOptCalculatedResultParam.AnimKeyPos.ExactKey;
 
@@ -1158,8 +1431,11 @@ namespace AnyPortrait
 
 				//PKV A 계산
 				_cal_resultAnimKeyPKV_A._dist = 0.0f;
-				_cal_resultAnimKeyPKV_A._isCalculated = true;
+				
+				//_cal_resultAnimKeyPKV_A._isCalculated = true;//v1.4.7 삭제
 				_cal_resultAnimKeyPKV_A._weight = _cal_keyframe_A._curveKey.GetItp_Float(frameFloat_ForA, false, frameInt_ForA);
+
+				
 				_cal_resultAnimKeyPKV_A._animKeyPos = apOptCalculatedResultParam.AnimKeyPos.PrevKey;
 
 				//Rotation Bias도 계산한다.
@@ -1174,8 +1450,11 @@ namespace AnyPortrait
 
 				//PKV B 계산
 				_cal_resultAnimKeyPKV_B._dist = 0.0f;
-				_cal_resultAnimKeyPKV_B._isCalculated = true;
+				
+				//이전
+				//_cal_resultAnimKeyPKV_B._isCalculated = true;//v1.4.7 삭제
 				_cal_resultAnimKeyPKV_B._weight = _cal_keyframe_B._curveKey.GetItp_Float(frameFloat_ForB, true, frameInt_ForB);
+
 				_cal_resultAnimKeyPKV_B._animKeyPos = apOptCalculatedResultParam.AnimKeyPos.NextKey;
 
 				//Rotation Bias도 계산한다.
@@ -1280,21 +1559,21 @@ namespace AnyPortrait
 					case apControlParam.TYPE.Int:
 						{
 							int iPos = keyValueSet._paramSet._conSyncValue_Int;
-							newPoint = new apOptCalculatedLerpPoint(iPos, true);
+							newPoint = new apOptCalculatedLerpPoint(iPos, true, this);
 						}
 						break;
 
 					case apControlParam.TYPE.Float:
 						{
 							float fPos = keyValueSet._paramSet._conSyncValue_Float;
-							newPoint = new apOptCalculatedLerpPoint(fPos, true);
+							newPoint = new apOptCalculatedLerpPoint(fPos, true, this);
 						}
 						break;
 
 					case apControlParam.TYPE.Vector2:
 						{
 							Vector2 vPos = keyValueSet._paramSet._conSyncValue_Vector2;
-							newPoint = new apOptCalculatedLerpPoint(vPos, true);
+							newPoint = new apOptCalculatedLerpPoint(vPos, true, this);
 
 							//위치를 저장해둔다.
 							AddLerpPos(vPos, fPosXList, fPosYList, bias);
@@ -1451,7 +1730,7 @@ namespace AnyPortrait
 			{
 				return existLerpPoint;
 			}
-			apOptCalculatedLerpPoint newPoint = new apOptCalculatedLerpPoint(pos, false);
+			apOptCalculatedLerpPoint newPoint = new apOptCalculatedLerpPoint(pos, false, this);
 			_cpLerpPoints.Add(newPoint);
 
 			//실제 Control Param Key를 입력해야한다.

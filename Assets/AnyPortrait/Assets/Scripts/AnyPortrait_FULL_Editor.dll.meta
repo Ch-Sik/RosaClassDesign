@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: acc9fbe6197590c4995caf0f9ca81889
+guid: 0e161b2785e07b84baa9713efa5885a5
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -55,7 +55,7 @@ PluginImporter:
     second:
       enabled: 0
       settings:
-        CPU: None
+        CPU: x86
   - first:
       Standalone: Win
     second:
@@ -68,6 +68,11 @@ PluginImporter:
       enabled: 0
       settings:
         CPU: None
+  - first:
+      WebGL: WebGL
+    second:
+      enabled: 0
+      settings: {}
   - first:
       Windows Store Apps: WindowsStoreApps
     second:

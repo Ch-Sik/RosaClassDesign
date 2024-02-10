@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -1378,9 +1378,16 @@ namespace AnyPortrait
 						continue;
 					}
 
-					//int nParamKeys = calParam._paramKeyValues.Count;//전체 Params
-					_cal_NumParamKeys = _cal_CurSubList._subParamKeyValues.Count;//Sub Params
-					_cal_SubParamKeyValueList = _cal_CurSubList._subParamKeyValues;
+					//[ 변경 v1.4.7 : 속도 개선된 코드 ]
+					//> 기존 : PKV의 _isCalculated를 체크하여 보간식에 적용한다.
+					//> 변경 : Calculate 함수 내에서 계산된 것만 가져온다.
+					//이전
+					//_cal_NumParamKeys = _cal_CurSubList._subParamKeyValues.Count;//Sub Params
+					//_cal_SubParamKeyValueList = _cal_CurSubList._subParamKeyValues;
+
+					//변경 : 전체 PKV가 아닌 계산된 PKV만 가져온다. 이전의 isCalculated=true인 것만 모은 것과 같다.
+					_cal_NumParamKeys = _cal_CurSubList.NumCalculatedParamKeyValues;
+					_cal_SubParamKeyValueList = _cal_CurSubList.CalculatedParamKeyValues;
 
 
 
@@ -1471,10 +1478,9 @@ namespace AnyPortrait
 						//>>>> Cal Log 초기화
 						//paramKeyValue._modifiedMesh.CalculatedLog.ReadyToRecord();
 
-						if (!_cal_ParamKeyValue._isCalculated)
-						{
-							continue;
-						}
+
+						// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
+						//if (!_cal_ParamKeyValue._isCalculated) { continue; }
 
 
 						_cal_TotalParamSetWeight += _cal_ParamKeyValue._weight * _cal_ParamKeyValue._paramSet._overlapWeight;
@@ -2076,15 +2082,12 @@ namespace AnyPortrait
 				_cal_curCalParam.Calculate();
 				//----------------------------------------------
 
-
-
-				//>>> LinkedMatrix를 초기화
-				//calParam.CalculatedLog.ReadyToRecord();
-
-
 				_cal_SubParamGroupList = _cal_curCalParam._subParamKeyValueList;
 				_cal_SubParamKeyValueList = null;
 				_cal_KeyParamSetGroup = null;
+
+
+				
 
 
 				//결과 매트릭스를 만들자
@@ -2183,9 +2186,19 @@ namespace AnyPortrait
 					}
 
 
-					//int nParamKeys = calParam._paramKeyValues.Count;//전체 Params
-					_cal_NumParamKeys = _cal_CurSubList._subParamKeyValues.Count;//Sub Params
-					_cal_SubParamKeyValueList = _cal_CurSubList._subParamKeyValues;
+					// [ 변경 v1.4.7 : 속도 개선된 코드 ]
+					//> 기존 : PKV의 _isCalculated를 체크하여 보간식에 적용한다.
+					//> 변경 : Calculate 함수 내에서 계산된 것만 가져온다.
+					//이전
+					//_cal_NumParamKeys = _cal_CurSubList._subParamKeyValues.Count;//Sub Params
+					//_cal_SubParamKeyValueList = _cal_CurSubList._subParamKeyValues;
+
+					//변경 : 전체 PKV가 아닌 계산된 PKV만 가져온다. 이전의 isCalculated=true인 것만 모은 것과 같다.
+					_cal_NumParamKeys = _cal_CurSubList.NumCalculatedParamKeyValues;
+					_cal_SubParamKeyValueList = _cal_CurSubList.CalculatedParamKeyValues;
+
+					
+
 
 					_cal_ParamKeyValue = null;
 
@@ -2199,7 +2212,9 @@ namespace AnyPortrait
 						continue;
 					}
 
-					//tmpMatrix = keyParamSetGroup._tmpMatrix;//삭제 21.5.16
+					
+					
+
 
 					//추가 3.22
 					//Transfrom / Color Update 여부를 따로 결정한다.
@@ -2241,6 +2256,10 @@ namespace AnyPortrait
 					_cal_TmpToggleOpt_KeyIndex_Hidden = 0.0f;
 
 
+					
+
+
+
 					if (!_cal_isBoneTarget)
 					{
 						//ModMesh를 활용하는 타입인 경우
@@ -2273,8 +2292,8 @@ namespace AnyPortrait
 							//layerWeight = Mathf.Clamp01(paramKeyValue._keyParamSetGroup._layerWeight);
 
 							
-							if (!_cal_ParamKeyValue._isCalculated)
-							{ continue; }
+							//[삭제 v1.4.7] : _isCalculated를 삭제하고 계산된 PKV 리스트만 순회한다.
+							//if (!_cal_ParamKeyValue._isCalculated) { continue; }
 
 							//ParamSetWeight를 추가
 							_cal_TotalParamSetWeight += _cal_ParamKeyValue._weight * _cal_ParamKeyValue._paramSet._overlapWeight;
@@ -2477,10 +2496,10 @@ namespace AnyPortrait
 							for (int iPV = 0; iPV < _cal_NumParamKeys; iPV++)
 							{
 								_cal_ParamKeyValue = _cal_SubParamKeyValueList[iPV];
-								if(!_cal_ParamKeyValue._isCalculated)
-								{
-									continue;
-								}
+								
+								//[v1.4.7 삭제 : _isCalculated 삭제되고 계산된 리스트를 순회함 ]
+								//if(!_cal_ParamKeyValue._isCalculated) { continue; }
+
 								float curAngle = _cal_ParamKeyValue._modifiedMesh._transformMatrix._angleDeg * Mathf.Deg2Rad;
 								_cal_Rotation180Correction_CurVector = new Vector2(Mathf.Cos(curAngle), Mathf.Sin(curAngle));
 								_cal_Rotation180Correction_SumVector += (_cal_Rotation180Correction_CurVector * _cal_ParamKeyValue._weight) * 10.0f;//벡터합이 너무 작은 값이면 float 오차로 인하여 각도가 제대로 계산되기 힘들다.
@@ -2514,10 +2533,8 @@ namespace AnyPortrait
 							_cal_ParamKeyValue = _cal_SubParamKeyValueList[iPV];
 							//layerWeight = Mathf.Clamp01(paramKeyValue._keyParamSetGroup._layerWeight);
 
-							if (!_cal_ParamKeyValue._isCalculated)
-							{
-								continue;
-							}
+							// [ v1.4.7 삭제 : _isCalculated 삭제되고 계산된 리스트를 순회함 ]
+							//if (!_cal_ParamKeyValue._isCalculated) { continue; }
 
 							//ParamSetWeight를 추가
 							_cal_TotalParamSetWeight += _cal_ParamKeyValue._weight * _cal_ParamKeyValue._paramSet._overlapWeight;
@@ -2571,10 +2588,11 @@ namespace AnyPortrait
 							for (int iPV = 0; iPV < _cal_NumParamKeys; iPV++)
 							{
 								_cal_ParamKeyValue = _cal_SubParamKeyValueList[iPV];
-								if(!_cal_ParamKeyValue._isCalculated)
-								{
-									continue;
-								}
+								
+								
+								// [ v1.4.7 삭제 : _isCalculated 삭제되고 계산된 리스트만 순회함 ]
+								//if(!_cal_ParamKeyValue._isCalculated) { continue; }
+
 								float curAngle = _cal_ParamKeyValue._modifiedBone._transformMatrix._angleDeg * Mathf.Deg2Rad;
 								_cal_Rotation180Correction_CurVector = new Vector2(Mathf.Cos(curAngle), Mathf.Sin(curAngle));
 								_cal_Rotation180Correction_SumVector += (_cal_Rotation180Correction_CurVector * _cal_ParamKeyValue._weight) * 10.0f;//벡터합이 너무 작은 값이면 float 오차로 인하여 각도가 제대로 계산되기 힘들다.
@@ -2838,7 +2856,7 @@ namespace AnyPortrait
 				// 중요! -> Static은 Weight 계산이 필요없어염
 				//-------------------------------------------------------
 				//1. Param Weight Calculate
-				_cal_curCalParam.Calculate();
+				//_cal_curCalParam.Calculate();//Static은 Calculate가 필요 없다.
 				//-------------------------------------------------------
 
 				//Profiler.EndSample();
@@ -3235,7 +3253,7 @@ namespace AnyPortrait
 				// 중요!
 				//-------------------------------------------------------
 				//1. Param Weight Calculate
-				_cal_curCalParam.Calculate();
+				//_cal_curCalParam.Calculate();//Static에선 필요없다 (v1.4.7)
 				//-------------------------------------------------------
 
 				_cal_ResultPosList = _cal_curCalParam._result_Positions;
@@ -3317,8 +3335,8 @@ namespace AnyPortrait
 						//paramKeyValue._modifiedMesh.CalculatedLog.ReadyToRecord();
 
 
-						if (!_cal_ParamKeyValue._isCalculated)
-						{ continue; }
+						// [ v1.4.7 삭제 : Static 타입인 Physics는 _isCalculated (삭제됨)를 비교하지 않는다. ]
+						//if (!_cal_ParamKeyValue._isCalculated) { continue; }
 
 						//tmpPhysics_TotalWeight += _cal_ParamKeyValue._weight;
 
@@ -4058,9 +4076,20 @@ namespace AnyPortrait
 					}
 
 
-					//int nParamKeys = calParam._paramKeyValues.Count;//전체 Params
-					_cal_NumParamKeys = _cal_CurSubList._subParamKeyValues.Count;//Sub Params
-					_cal_SubParamKeyValueList = _cal_CurSubList._subParamKeyValues;
+					
+					//[ 변경 v1.4.7 : 속도 개선된 코드 ]
+					//> 기존 : PKV의 _isCalculated를 체크하여 보간식에 적용한다.
+					//> 변경 : Calculate 함수 내에서 계산된 것만 가져온다.
+					//이전
+					//_cal_NumParamKeys = _cal_CurSubList._subParamKeyValues.Count;//Sub Params
+					//_cal_SubParamKeyValueList = _cal_CurSubList._subParamKeyValues;
+
+					//변경 : 전체 PKV가 아닌 계산된 PKV만 가져온다. 이전의 isCalculated=true인 것만 모은 것과 같다.
+					_cal_NumParamKeys = _cal_CurSubList.NumCalculatedParamKeyValues;
+					_cal_SubParamKeyValueList = _cal_CurSubList.CalculatedParamKeyValues;
+
+
+
 
 					_cal_ParamKeyValue = null;
 
@@ -4128,7 +4157,8 @@ namespace AnyPortrait
 						{
 							_cal_ParamKeyValue = _cal_SubParamKeyValueList[iPV];
 							
-							if (!_cal_ParamKeyValue._isCalculated) { continue; }
+							// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
+							//if (!_cal_ParamKeyValue._isCalculated) { continue; }
 
 							//ParamSetWeight를 추가
 							_cal_TotalParamSetWeight += _cal_ParamKeyValue._weight * _cal_ParamKeyValue._paramSet._overlapWeight;
@@ -4628,8 +4658,16 @@ namespace AnyPortrait
 						continue;
 					}
 
-					_cal_NumParamKeys = _cal_CurSubList._subParamKeyValues.Count;//Sub Params
-					_cal_SubParamKeyValueList = _cal_CurSubList._subParamKeyValues;
+					//[ 변경 v1.4.7 : 속도 개선된 코드 ]
+					//> 기존 : PKV의 _isCalculated를 체크하여 보간식에 적용한다.
+					//> 변경 : Calculate 함수 내에서 계산된 것만 가져온다.
+					//이전
+					//_cal_NumParamKeys = _cal_CurSubList._subParamKeyValues.Count;//Sub Params
+					//_cal_SubParamKeyValueList = _cal_CurSubList._subParamKeyValues;
+
+					//변경 : 전체 PKV가 아닌 계산된 PKV만 가져온다. 이전의 isCalculated=true인 것만 모은 것과 같다.
+					_cal_NumParamKeys = _cal_CurSubList.NumCalculatedParamKeyValues;
+					_cal_SubParamKeyValueList = _cal_CurSubList.CalculatedParamKeyValues;
 
 
 					_cal_ParamKeyValue = null;
@@ -4707,11 +4745,8 @@ namespace AnyPortrait
 					{
 						_cal_ParamKeyValue = _cal_SubParamKeyValueList[iPV];
 
-						
-						if (!_cal_ParamKeyValue._isCalculated)
-						{
-							continue;
-						}
+						// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
+						//if (!_cal_ParamKeyValue._isCalculated) { continue; }
 
 						_cal_TotalParamSetWeight += _cal_ParamKeyValue._weight * _cal_ParamKeyValue._paramSet._overlapWeight;
 
@@ -5350,9 +5385,18 @@ namespace AnyPortrait
 					}
 
 
-					//int nParamKeys = calParam._paramKeyValues.Count;//전체 Params
-					_cal_NumParamKeys = _cal_CurSubList._subParamKeyValues.Count;//Sub Params
-					_cal_SubParamKeyValueList = _cal_CurSubList._subParamKeyValues;
+					//[ 변경 v1.4.7 : 속도 개선된 코드 ]
+					//> 기존 : PKV의 _isCalculated를 체크하여 보간식에 적용한다.
+					//> 변경 : Calculate 함수 내에서 계산된 것만 가져온다.
+					//이전
+					//_cal_NumParamKeys = _cal_CurSubList._subParamKeyValues.Count;//Sub Params
+					//_cal_SubParamKeyValueList = _cal_CurSubList._subParamKeyValues;
+
+					//변경 : 전체 PKV가 아닌 계산된 PKV만 가져온다. 이전의 isCalculated=true인 것만 모은 것과 같다.
+					_cal_NumParamKeys = _cal_CurSubList.NumCalculatedParamKeyValues;
+					_cal_SubParamKeyValueList = _cal_CurSubList.CalculatedParamKeyValues;
+
+
 
 					_cal_ParamKeyValue = null;
 
@@ -5429,7 +5473,8 @@ namespace AnyPortrait
 						{
 							_cal_ParamKeyValue = _cal_SubParamKeyValueList[iPV];
 							
-							if (!_cal_ParamKeyValue._isCalculated) { continue; }
+							// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
+							//if (!_cal_ParamKeyValue._isCalculated) { continue; }
 
 							//ParamSetWeight를 추가
 							_cal_TotalParamSetWeight += _cal_ParamKeyValue._weight * _cal_ParamKeyValue._paramSet._overlapWeight;
@@ -5639,10 +5684,10 @@ namespace AnyPortrait
 							for (int iPV = 0; iPV < _cal_NumParamKeys; iPV++)
 							{
 								_cal_ParamKeyValue = _cal_SubParamKeyValueList[iPV];
-								if(!_cal_ParamKeyValue._isCalculated)
-								{
-									continue;
-								}
+								
+								// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
+								//if(!_cal_ParamKeyValue._isCalculated) { continue; }
+
 								float curAngle = _cal_ParamKeyValue._modifiedMesh._transformMatrix._angleDeg * Mathf.Deg2Rad;
 								_cal_Rotation180Correction_CurVector = new Vector2(Mathf.Cos(curAngle), Mathf.Sin(curAngle));
 								_cal_Rotation180Correction_SumVector += (_cal_Rotation180Correction_CurVector * _cal_ParamKeyValue._weight) * 10.0f;//벡터합이 너무 작은 값이면 float 오차로 인하여 각도가 제대로 계산되기 힘들다.
@@ -5673,12 +5718,10 @@ namespace AnyPortrait
 						{
 							//paramKeyValue = calParam._paramKeyValues[iPV];
 							_cal_ParamKeyValue = _cal_SubParamKeyValueList[iPV];
-							//layerWeight = Mathf.Clamp01(paramKeyValue._keyParamSetGroup._layerWeight);
+							
 
-							if (!_cal_ParamKeyValue._isCalculated)
-							{
-								continue;
-							}
+							// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
+							//if (!_cal_ParamKeyValue._isCalculated) { continue; }
 
 							//ParamSetWeight를 추가
 							_cal_TotalParamSetWeight += _cal_ParamKeyValue._weight * _cal_ParamKeyValue._paramSet._overlapWeight;
@@ -5714,10 +5757,10 @@ namespace AnyPortrait
 							for (int iPV = 0; iPV < _cal_NumParamKeys; iPV++)
 							{
 								_cal_ParamKeyValue = _cal_SubParamKeyValueList[iPV];
-								if(!_cal_ParamKeyValue._isCalculated)
-								{
-									continue;
-								}
+								
+								// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
+								//if(!_cal_ParamKeyValue._isCalculated) { continue; }
+
 								float curAngle = _cal_ParamKeyValue._modifiedBone._transformMatrix._angleDeg * Mathf.Deg2Rad;
 								_cal_Rotation180Correction_CurVector = new Vector2(Mathf.Cos(curAngle), Mathf.Sin(curAngle));
 								_cal_Rotation180Correction_SumVector += (_cal_Rotation180Correction_CurVector * _cal_ParamKeyValue._weight) * 10.0f;//벡터합이 너무 작은 값이면 float 오차로 인하여 각도가 제대로 계산되기 힘들다.
@@ -6481,9 +6524,8 @@ namespace AnyPortrait
 					{
 						_cal_ParamKeyValue = _cal_SubParamKeyValueList[iPV];
 
-
-						if (!_cal_ParamKeyValue._isCalculated)
-						{ continue; }
+						// [ v1.4.7 : 삭제 ]
+						//if (!_cal_ParamKeyValue._isCalculated) { continue; }
 
 						//tmpPhysics_TotalWeight += _cal_ParamKeyValue._weight;
 

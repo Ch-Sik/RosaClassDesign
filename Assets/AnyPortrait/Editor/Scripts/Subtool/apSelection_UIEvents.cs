@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -1722,7 +1722,273 @@ namespace AnyPortrait
 
 
 
-		
+		/// <summary>
+		/// 메시그룹의 탭을 Setting으로 바꾸기
+		/// </summary>
+		private apHotKey.HotKeyResult OnHotKeyEvent_MeshGroup_Tab1_Setting(object paramObject)
+		{
+			if(_meshGroup == null
+				|| Editor._meshGroupEditMode == apEditor.MESHGROUP_EDIT_MODE.Setting)
+			{
+				return null;
+			}
+			
+			//v1.4.2 : FFD 모드 같은 모달 상태를 체크한다.
+			bool isExecutable = Editor.CheckModalAndExecutable();
+
+			if(!isExecutable)
+			{
+				return null;
+			}
+
+			Editor._meshGroupEditMode = apEditor.MESHGROUP_EDIT_MODE.Setting;
+			_isMeshGroupSetting_EditDefaultTransform = false;
+
+			//선택 모두 초기화
+						
+			//변경 20.6.11 : 통합 + 이 안에 "자동 ModMesh선택"이 있다.
+			SelectSubObject(null, null, null, MULTI_SELECT.Main, TF_BONE_SELECT.Exclusive);
+
+			SelectModifier(null);
+
+			SetBoneEditing(false, false);//Bone 처리는 종료 
+
+			//Gizmo 컨트롤 방식을 Setting에 맞게 바꾸자
+			Editor.Gizmos.LinkObject(Editor.GizmoController.GetEventSet_MeshGroupSetting());
+
+
+			//이전
+			//SetModifierEditMode(EX_EDIT_KEY_VALUE.None);
+
+			//변경 22.5.14 : 편집 모드 해제
+			SetModifierExclusiveEditing(EX_EDIT.None);
+
+			//_rigEdit_isBindingEdit = false;//삭제 22.5.15
+			_rigEdit_isTestPosing = false;
+			SetBoneRiggingTest();
+
+
+			//[v1.4.2] 리깅 도중에 탭 변경시, "모디파이어에 선택되지 않은 본/메시" 정보를 리셋한다.
+			SetEnableMeshGroupExEditingFlagsForce();
+
+
+			//스크롤 초기화 (오른쪽2)
+			Editor.ResetScrollPosition(false, false, false, true, false);
+
+			apEditorUtil.ReleaseGUIFocus();
+			return apHotKey.HotKeyResult.MakeResult();
+		}
+
+		/// <summary>
+		/// 메시그룹의 탭을 Bone으로 바꾸기
+		/// </summary>
+		private apHotKey.HotKeyResult OnHotKeyEvent_MeshGroup_Tab2_Bone(object paramObject)
+		{
+			if(_meshGroup == null
+				|| Editor._meshGroupEditMode == apEditor.MESHGROUP_EDIT_MODE.Bone)
+			{
+				return null;
+			}
+
+			//v1.4.2 : FFD 모드 같은 모달 상태를 체크한다.
+			bool isExecutable = Editor.CheckModalAndExecutable();
+			if(!isExecutable)
+			{
+				return null;
+			}
+			
+			Editor._meshGroupEditMode = apEditor.MESHGROUP_EDIT_MODE.Bone;
+			_isBoneDefaultEditing = false;
+
+
+			//선택 초기화
+						
+			//변경 20.6.11 : 통합 선택 + ModMesh선택 포함됨
+			SelectSubObject(null, null, null, MULTI_SELECT.Main, TF_BONE_SELECT.Exclusive);
+
+
+			SelectModifier(null);
+
+			//일단 Gizmo 초기화
+			Editor.Gizmos.Unlink();
+
+			_meshGroupChildHierarchy = MESHGROUP_CHILD_HIERARCHY.Bones;//하단 UI도 변경
+
+			//이전
+			//SetModifierEditMode(EX_EDIT_KEY_VALUE.ParamKey_Bone);
+
+			//변경 22.5.14 : 편집 모드 해제
+			SetModifierExclusiveEditing(EX_EDIT.None);
+
+
+			//_rigEdit_isBindingEdit = false;//삭제 22.5.15
+			_rigEdit_isTestPosing = false;
+			SetBoneRiggingTest();
+
+			SetBoneEditing(false, true);
+
+
+			//[v1.4.2] 리깅 도중에 탭 변경시, "모디파이어에 선택되지 않은 본/메시" 정보를 리셋한다.
+			SetEnableMeshGroupExEditingFlagsForce();
+
+
+			//스크롤 초기화 (오른쪽2)
+			Editor.ResetScrollPosition(false, false, false, true, false);
+
+			//추가 21.10.6
+			//본 탭을 누를때 "본이 숨겨진 상태"면 본이 보여지도록 만든다.
+			if (Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None)
+			{
+				Editor._boneGUIRenderMode = apEditor.BONE_RENDER_MODE.Render;
+			}
+
+			apEditorUtil.ReleaseGUIFocus();
+			return apHotKey.HotKeyResult.MakeResult();
+		}
+
+		/// <summary>
+		/// 메시그룹의 탭을 Modifier로 바꾸기
+		/// </summary>
+		private apHotKey.HotKeyResult OnHotKeyEvent_MeshGroup_Tab3_Modifier(object paramObject)
+		{
+			if(_meshGroup == null
+				|| Editor._meshGroupEditMode == apEditor.MESHGROUP_EDIT_MODE.Modifier)
+			{
+				return null;
+			}
+
+			//v1.4.2 : FFD 모드 같은 모달 상태를 체크한다.
+			bool isExecutable = Editor.CheckModalAndExecutable();
+
+			if(!isExecutable)
+			{
+				return null;
+			}
+			SelectBone(null, MULTI_SELECT.Main);
+			SetBoneEditing(false, false);//Bone 처리는 종료 
+
+			Editor._meshGroupEditMode = apEditor.MESHGROUP_EDIT_MODE.Modifier;
+
+			bool isSelectMod = false;
+			if (Modifier == null)
+			{
+				//이전에 선택했던 Modifier가 없다면..
+				if (_meshGroup._modifierStack != null)
+				{
+					if (_meshGroup._modifierStack._modifiers.Count > 0)
+					{
+						//맨 위의 Modifier를 자동으로 선택해주자
+						int nMod = _meshGroup._modifierStack._modifiers.Count;
+						apModifierBase lastMod = _meshGroup._modifierStack._modifiers[nMod - 1];
+						SelectModifier(lastMod);
+						isSelectMod = true;
+					}
+				}
+			}
+			else
+			{
+				SelectModifier(Modifier);
+
+				isSelectMod = true;
+			}
+
+			if (!isSelectMod)
+			{
+				SelectModifier(null);
+			}
+
+
+
+			//스크롤 초기화 (오른쪽2)
+			Editor.ResetScrollPosition(false, false, false, true, false);
+			
+			apEditorUtil.ReleaseGUIFocus();
+			return apHotKey.HotKeyResult.MakeResult();
+		}
+
+
+		/// <summary>
+		/// 메시 그룹 내의 서브 오브젝트를 검색하는 창 열기. 이건 Mesh Group Hierarchy와 연동해서 호출하자
+		/// </summary>
+		/// <param name="paramObj"></param>
+		/// <returns></returns>
+		private apHotKey.HotKeyResult OnHotKeyEvent_SearchObject_MeshGroup(object paramObj)
+		{
+			if(_meshGroup == null)
+			{
+				return null;
+			}
+			bool isMeshTab = _meshGroupChildHierarchy == apSelection.MESHGROUP_CHILD_HIERARCHY.ChildMeshes;
+			bool isResult = Editor.Hierarchy_MeshGroup.RequestOpenSearchDialog(isMeshTab);
+
+			if (!isResult)
+			{
+				return null;
+			}
+			return apHotKey.HotKeyResult.MakeResult();
+		}
+
+		/// <summary>
+		/// 애니메이션 내의 서브 오브젝트를 검색하는 창 열기. 이건 Mesh Group Hierarchy와 연동해서 호출하자
+		/// </summary>
+		/// <param name="paramObj"></param>
+		/// <returns></returns>
+		private apHotKey.HotKeyResult OnHotKeyEvent_SearchObject_Animation(object paramObj)
+		{
+			if(_animClip == null)
+			{
+				return null;
+			}
+			
+			bool isMeshTab = false;
+			bool isBoneTab = false;
+			if(AnimTimeline == null)
+			{
+				//대상 타임라인이 없다면
+				if(_meshGroupChildHierarchy_Anim == apSelection.MESHGROUP_CHILD_HIERARCHY.ChildMeshes)
+				{
+					//메시 탭
+					isMeshTab = true;
+				}
+				else
+				{
+					//본 탭
+					isBoneTab = true;
+				}
+			}
+			else
+			{
+				//타임라인이 있다면
+				//컨트롤 파라미터 타입에서는 검색 불가
+				if(AnimTimeline._linkType == apAnimClip.LINK_TYPE.AnimatedModifier)
+				{
+					if(_meshGroupChildHierarchy_Anim == apSelection.MESHGROUP_CHILD_HIERARCHY.ChildMeshes)
+					{
+						//메시 탭
+						isMeshTab = true;
+					}
+					else
+					{
+						//본 탭
+						isBoneTab = true;
+					}
+				}
+			}
+
+			if(!isMeshTab && !isBoneTab)
+			{
+				return null;
+			}
+
+			bool isResult = Editor.Hierarchy_AnimClip.RequestOpenSearchDialog(isMeshTab);
+
+			if (!isResult)
+			{
+				return null;
+			}
+			return apHotKey.HotKeyResult.MakeResult();
+		}
+
 
 		/// <summary>
 		/// 메시 그룹 Right 2 UI : 단축키(F2)를 눌러서 본 이름 바꾸기
@@ -1742,7 +2008,12 @@ namespace AnyPortrait
 			}
 
 			//대상이 동일한가
-			if(SubObjects.SelectedObject != paramObj)
+			
+			//버그 : 본과 함께 메시 등이 선택된 상태에서는 SelectedObject가 메시를 리턴하기 때문에 이름을 바꿀 수 없었던 버그
+			//if(SubObjects.SelectedObject != paramObj)
+
+			//수정 v1.4.7 : 
+			if(SubObjects.Bone != paramObj)
 			{
 				return null;
 			}
@@ -2143,7 +2414,33 @@ namespace AnyPortrait
 		}
 
 		
-		
+		/// <summary>
+		/// Rigging 단축키 : 포즈 테스트 토글
+		/// </summary>
+		private apHotKey.HotKeyResult OnHotKeyEvent_ToggleRiggingPoseTest(object paramObject)
+		{
+			if(_exclusiveEditing != EX_EDIT.ExOnly_Edit)
+			{
+				return null;
+			}
+
+			_rigEdit_isTestPosing = !_rigEdit_isTestPosing;
+
+			SetBoneRiggingTest();
+			apEditorUtil.ReleaseGUIFocus();
+			return apHotKey.HotKeyResult.MakeResult();
+		}
+
+		/// <summary>
+		/// Rigging 단축키 : 포즈 테스트 리셋
+		/// </summary>
+		private apHotKey.HotKeyResult OnHotKeyEvent_ResetPoseTest(object paramObject)
+		{
+			ResetRiggingTestPose();
+
+			apEditorUtil.ReleaseGUIFocus();
+			return apHotKey.HotKeyResult.MakeResult();
+		}
 		
 
 

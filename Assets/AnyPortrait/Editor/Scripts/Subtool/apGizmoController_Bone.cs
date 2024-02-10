@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -110,24 +110,6 @@ namespace AnyPortrait
 																null);
 
 			return apGizmos.GizmoEventSet.I;
-
-			//이전
-			//return new apGizmos.GizmoEventSet(Select__Bone_MeshGroupMenu,
-			//									Unselect__Bone_MeshGroupMenu,
-			//									null,
-			//									null,
-			//									null,
-			//									null,
-			//									null,
-			//									null,
-			//									null,
-			//									null,
-			//									null,
-			//									PivotReturn__Bone_Default,
-			//									null, null, null, null, null, null,
-			//									apGizmos.TRANSFORM_UI.None,
-			//									FirstLink__Bone,
-			//									null);
 		}
 
 		public apGizmos.GizmoEventSet GetEventSet_Bone_Default()
@@ -322,7 +304,9 @@ namespace AnyPortrait
 				}
 			}
 
-			if (!isAnyClick)
+			if (!isAnyClick 
+				&& selectType == apGizmos.SELECT_TYPE.New//추가 v1.4.7
+				)
 			{
 				Editor.Select.SelectBone(null, multiSelect);
 			}

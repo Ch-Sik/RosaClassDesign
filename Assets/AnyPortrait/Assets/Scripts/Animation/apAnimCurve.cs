@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -237,25 +237,38 @@ namespace AnyPortrait
 
 		public apAnimCurve(apAnimCurve srcCurve_Prev, apAnimCurve srcCurve_Next, int keyIndex)
 		{
+			//이전
 			//Prev는 Next의 Prev를 사용한다.
-			_prevTangentType = srcCurve_Next._prevTangentType;
+			//_prevTangentType = srcCurve_Next._prevTangentType;
 
-			_prevSmoothX = srcCurve_Next._prevSmoothX;
-			_prevSmoothY = srcCurve_Next._prevSmoothY;
+			//_prevSmoothX = srcCurve_Next._prevSmoothX;
+			//_prevSmoothY = srcCurve_Next._prevSmoothY;
 
-			
+			//변경 v1.4.7
+			//Prev는 Prev의 Next로의 Tangent Type을 그대로 복사하고, Smooth는 기본값을 그대로 이용한다.
+			_prevTangentType = srcCurve_Prev._nextTangentType;
+
+			_prevSmoothX = 0.5f;
+			_prevSmoothY = 0.0f;
 
 			_prevLinkedCurveKey = srcCurve_Next._prevLinkedCurveKey;
 
+			//이전
 			//Next는 Prev의 Next를 사용한다.
-			_nextTangentType = srcCurve_Prev._nextTangentType;
+			//_nextTangentType = srcCurve_Prev._nextTangentType;
 
-			_nextSmoothX = srcCurve_Prev._nextSmoothX;
-			_nextSmoothY = srcCurve_Prev._nextSmoothY;
+			//_nextSmoothX = srcCurve_Prev._nextSmoothX;
+			//_nextSmoothY = srcCurve_Prev._nextSmoothY;			
 
-			
+			//변경 v1.4.7
+			//Next는 Next의 Prev로의 Tangent Type을 그대로 복사하고, Smooth는 기본값을 그대로 이용한다.
+			_nextTangentType = srcCurve_Next._prevTangentType;
+
+			_nextSmoothX = 0.5f;
+			_nextSmoothY = 0.0f;
 
 			_nextLinkedCurveKey = srcCurve_Prev._nextLinkedCurveKey;
+
 			//_keyItpType = srcCurve._keyItpType;
 
 			_keyIndex = keyIndex;//<키 인덱스만 따로 분리해서 복사한다.

@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -548,6 +548,9 @@ namespace AnyPortrait
 			GUI_Button_EditPin_Enabled,
 			GUI_Button_EditPin_EnabledRollOver,
 
+			GUI_Button_FixSpike,
+			GUI_Button_FixSpike_Roll,
+
 			GUI_ViewStat_BoneHidden,
 			GUI_ViewStat_BoneOutline,
 			GUI_ViewStat_DisablePhysics,
@@ -620,6 +623,8 @@ namespace AnyPortrait
 
 			SyncSettingToFile16px,
 			SyncSettingToFile12px,
+
+			Unity_Transform,
 
 			
 		}
@@ -1256,6 +1261,9 @@ namespace AnyPortrait
 			CheckImageAndLoad(PRESET.GUI_Button_EditPin_Enabled,	"GUI_Button_EditPin_Enabled");
 			CheckImageAndLoad(PRESET.GUI_Button_EditPin_EnabledRollOver,	"GUI_Button_EditPin_EnabledRollOver");
 
+			CheckImageAndLoad(PRESET.GUI_Button_FixSpike,			"GUI_Button_FixSpike");
+			CheckImageAndLoad(PRESET.GUI_Button_FixSpike_Roll,		"GUI_Button_FixSpike_RollOver");
+
 			CheckImageAndLoad(PRESET.GUI_ViewStat_BoneHidden,		"GUI_ViewStat_BoneHidden");
 			CheckImageAndLoad(PRESET.GUI_ViewStat_BoneOutline,		"GUI_ViewStat_BoneOutline");
 			CheckImageAndLoad(PRESET.GUI_ViewStat_DisablePhysics,	"GUI_ViewStat_DisablePhysics");
@@ -1331,6 +1339,9 @@ namespace AnyPortrait
 
 			CheckImageAndLoad(PRESET.SyncSettingToFile16px,		"SyncSettingToFile16px");
 			CheckImageAndLoad(PRESET.SyncSettingToFile12px,		"SyncSettingToFile12px");
+
+			CheckImageAndLoad(PRESET.Unity_Transform,		"Unity_Transform");
+			
 			
 			if(!_isAllLoaded)
 			{

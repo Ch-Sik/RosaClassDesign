@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -59,6 +59,25 @@ namespace AnyPortrait
 		private string[] _vrRTSizeLabel = new string[] { "By Mesh Setting", "By Eye Texture Setting (Not Supported)" };
 #endif
 
+
+		//v1.4.7
+		private string[] _meshUpdateFrequencyLabel = new string[]
+		{
+			"Every Frame", "Per Time (Not Sync)", "Per Time (Sync)"
+		};
+
+		//v1.4.8
+		private string[] _mainLogicEventLabel = new string[]
+		{
+			"LateUpdate (Default)", "Update"
+		};
+
+		private string[] _rootMotionModeLabel = new string[]
+		{
+			"None", "Lock to Center", "Move Parent Transform"
+		};
+
+
 		//추가 : 탭으로 분류하자
 		//private Vector2 _scroll_Bake = Vector2.zero;
 		private Vector2 _scroll_Options = Vector2.zero;
@@ -75,6 +94,14 @@ namespace AnyPortrait
 		private apGUIContentWrapper _guiContent_Setting_IsImportant = null;
 		private apGUIContentWrapper _guiContent_Setting_FPS = null;
 
+		private apGUIContentWrapper _guiContent_Setting_MeshUpdateFrequency = null;
+		private apGUIContentWrapper _guiContent_Setting_MeshFreqFPS = null;
+
+		private apGUIContentWrapper _guiContent_Setting_ProcessEvent = null;
+
+		
+
+
 		private apGUIContentWrapper _guiContent_BakeBtn_Normal = null;
 		private apGUIContentWrapper _guiContent_BakeBtn_Optimized = null;
 
@@ -88,7 +115,8 @@ namespace AnyPortrait
 		private GUIStyle _guiStyle_LabelWrapText_Changed = null;
 
 		private GUIStyle _guiStyle_BoxMessage = null;
-		
+		private int _layoutLeftLabelWidth = 170;
+
 
 		// Show Window
 		//------------------------------------------------------------------
@@ -107,7 +135,7 @@ namespace AnyPortrait
 			object loadKey = new object();
 			if (curTool != null && curTool != s_window)
 			{
-				int width = 350;
+				int width = 370;
 				int height = 380;
 				s_window = curTool;
 				s_window.position = new Rect((editor.position.xMin + editor.position.xMax) / 2 - (width / 2),
@@ -159,6 +187,9 @@ namespace AnyPortrait
 		{
 			int width = (int)position.width;
 			int height = (int)position.height;
+
+			_layoutLeftLabelWidth = Mathf.Max((width / 2) - 5, 50);
+
 			if (_editor == null || _targetPortrait == null)
 			{
 				CloseDialog();
@@ -904,6 +935,10 @@ namespace AnyPortrait
 
 			DrawDelimeter(width);
 
+			//업데이트 옵션 포괄
+			EditorGUILayout.LabelField(_editor.GetText(TEXT.UpdateOption));
+			GUILayout.Space(5);
+
 			if (_guiContent_Setting_IsImportant == null)
 			{
 				_guiContent_Setting_IsImportant = apGUIContentWrapper.Make(_editor.GetText(TEXT.DLG_Setting_IsImportant), false, "When this setting is on, it always updates and the physics effect works.");
@@ -913,6 +948,33 @@ namespace AnyPortrait
 				_guiContent_Setting_FPS = apGUIContentWrapper.Make(_editor.GetText(TEXT.DLG_Setting_FPS), false, "This setting is used when <Important> is off");
 			}
 
+			if(_guiContent_Setting_ProcessEvent == null)
+			{
+				_guiContent_Setting_ProcessEvent = apGUIContentWrapper.Make(_editor.GetText(TEXT.MainLogicEvent), false, "Unity’s event function where the main logic of apPortrait is executed.");
+			}
+			//Process Event
+			apPortrait.PROCESS_EVENT_ON nextProcessEvent = (apPortrait.PROCESS_EVENT_ON)Layout_Popup(_guiContent_Setting_ProcessEvent.Content,
+																										(int)_targetPortrait._mainProcessEvent,
+																										_mainLogicEventLabel,
+																										width,
+																										isDefaultSaved,
+																										(int)_editor.ProjectSettingData.Common_MainProcessEvent);
+			if(nextProcessEvent != _targetPortrait._mainProcessEvent)
+			{
+				apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+													_editor,
+													_targetPortrait,
+													//null, 
+													false,
+													apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+				_targetPortrait._mainProcessEvent = nextProcessEvent;
+				apEditorUtil.SetEditorDirty();
+			}
+
+			GUILayout.Space(5);
+
+			//Important 먼저
 
 
 			//4. Important
@@ -961,12 +1023,80 @@ namespace AnyPortrait
 					}
 					_targetPortrait._FPS = nextFPS;
 					apEditorUtil.SetEditorDirty();
+					GUI.FocusControl(null);
+				}
+
+				GUILayout.Space(5);
+			}
+
+			GUILayout.Space(5);
+
+			//v1.4.7 : 메시 갱신 옵션 
+			if (_guiContent_Setting_MeshUpdateFrequency == null)
+			{
+				_guiContent_Setting_MeshUpdateFrequency = apGUIContentWrapper.Make(_editor.GetText(TEXT.MeshUpdateFrequency), false, "This option determines whether meshes are updated every frame or at regular intervals.");
+			}
+			if (_guiContent_Setting_MeshFreqFPS == null)
+			{
+				_guiContent_Setting_MeshFreqFPS = apGUIContentWrapper.Make(_editor.GetText(TEXT.DLG_Setting_FPS), false, "This is the FPS option when the mesh is updated at regular intervals. (1~30)");
+			}
+
+			int nextMeshUpdateFreqOption = Layout_Popup(	_guiContent_Setting_MeshUpdateFrequency.Content,
+															(int)_targetPortrait._meshRefreshRateOption,
+															_meshUpdateFrequencyLabel,
+															width,
+															isDefaultSaved,
+															(int)_editor.ProjectSettingData.Common_MeshUpdateFrequency);
+
+			if (nextMeshUpdateFreqOption != (int)_targetPortrait._meshRefreshRateOption)
+			{
+				apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+													_editor,
+													_targetPortrait,
+													//null, 
+													false,
+													apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+				_targetPortrait._meshRefreshRateOption = (apPortrait.MESH_UPDATE_FREQUENCY)nextMeshUpdateFreqOption;
+				apEditorUtil.SetEditorDirty();
+			}
+
+
+			if(_targetPortrait._meshRefreshRateOption != apPortrait.MESH_UPDATE_FREQUENCY.EveryFrames)
+			{
+				//일정 시간마다 업데이트 하는 경우
+
+				//변경 [v1.4.2]
+				int nextMeshUpdateFPS = Layout_DelayedInt(	_guiContent_Setting_MeshFreqFPS.Content,
+															_targetPortrait._meshRefreshRateFPS,
+															width,
+															isDefaultSaved,
+															_editor.ProjectSettingData.Common_MeshUpdateFPS);
+
+				if (_targetPortrait._meshRefreshRateFPS != nextMeshUpdateFPS)
+				{
+					apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+														_editor,
+														_targetPortrait,
+														//null, 
+														false,
+														apEditorUtil.UNDO_STRUCT.ValueOnly);
+					if(nextMeshUpdateFPS < 1)
+					{
+						nextMeshUpdateFPS = 1;
+					}
+					else if(nextMeshUpdateFPS > 30)
+					{
+						nextMeshUpdateFPS = 30;
+					}
+					_targetPortrait._meshRefreshRateFPS = nextMeshUpdateFPS;
+					apEditorUtil.SetEditorDirty();
+					GUI.FocusControl(null);
 				}
 			}
 
 
 			DrawDelimeter(width);
-
 
 			//5. Billboard + Perspective
 
@@ -1270,6 +1400,162 @@ namespace AnyPortrait
 				}
 			}
 
+
+			DrawDelimeter(width);
+
+			//v1.4.8 : 루트 모션 옵션
+			EditorGUILayout.LabelField(_editor.GetText(TEXT.RootMotionOptions));
+			GUILayout.Space(5);
+
+			apPortrait.ROOT_MOTION_MODE nextRootMotionMode = (apPortrait.ROOT_MOTION_MODE)Layout_Popup(	_editor.GetText(TEXT.RootMotionMethod), 
+																										(int)_targetPortrait._rootMotionModeOption,
+																										_rootMotionModeLabel,
+																										width);
+
+			if(nextRootMotionMode != _targetPortrait._rootMotionModeOption)
+			{
+				apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+													_editor,
+													_targetPortrait,
+													//null, 
+													false,
+													apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+				_targetPortrait._rootMotionModeOption = nextRootMotionMode;
+
+				apEditorUtil.SetEditorDirty();
+				apEditorUtil.ReleaseGUIFocus();
+			}
+			if(_targetPortrait._rootMotionModeOption != apPortrait.ROOT_MOTION_MODE.None)
+			{
+				//루트 모션이 유효한 값을 가진다면
+				//축별 옵션을 보여준다.
+				GUILayout.Space(5);
+				EditorGUILayout.LabelField(_editor.GetText(TEXT.RootMotionPerAxis));
+				EditorGUI.BeginChangeCheck();
+
+				//X축 옵션
+				apPortrait.ROOT_MOTION_MOVE_TYPE_PER_AXIS nextOptX = (apPortrait.ROOT_MOTION_MOVE_TYPE_PER_AXIS)Layout_EnumPopup(	_editor.GetText(TEXT.RootMotionXOption ),
+																																	_targetPortrait._rootMotionAxisOption_X,
+																																	width);
+				//Y축 옵션
+				apPortrait.ROOT_MOTION_MOVE_TYPE_PER_AXIS nextOptY = (apPortrait.ROOT_MOTION_MOVE_TYPE_PER_AXIS)Layout_EnumPopup(	_editor.GetText(TEXT.RootMotionYOption ),
+																																	_targetPortrait._rootMotionAxisOption_Y,
+																																	width);
+
+
+				if(EditorGUI.EndChangeCheck())
+				{
+					if(nextOptX != _targetPortrait._rootMotionAxisOption_X
+						|| nextOptY != _targetPortrait._rootMotionAxisOption_Y)
+					{
+						//축별 옵션을 바꾼다.
+						apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+														_editor,
+														_targetPortrait,
+														//null, 
+														false,
+														apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+						_targetPortrait._rootMotionAxisOption_X = nextOptX;
+						_targetPortrait._rootMotionAxisOption_Y = nextOptY;
+
+						apEditorUtil.SetEditorDirty();
+						apEditorUtil.ReleaseGUIFocus();
+					}
+				}
+			}
+
+
+			//Move Parent Transform의 경우엔 Parent를 지정해야한다.
+			if(_targetPortrait._rootMotionModeOption == apPortrait.ROOT_MOTION_MODE.MoveParentTransform)
+			{
+				GUILayout.Space(5);
+
+				//루트 모션 옵션이 설정되었다면
+				//1. 타겟 Transform을 일반 Parent / 지정된 Transform 중에서 선택할 수 있다.
+				EditorGUI.BeginChangeCheck();
+				//Parent Transform 종류
+				apPortrait.ROOT_MOTION_TARGET_TRANSFORM nextRMTargetType = (apPortrait.ROOT_MOTION_TARGET_TRANSFORM)Layout_EnumPopup(	_editor.GetText(TEXT.RootMotion_ParentTransformType),
+																																		_targetPortrait._rootMotionTargetTransformType,
+																																		width);
+				if(EditorGUI.EndChangeCheck())
+				{
+					if(nextRMTargetType != _targetPortrait._rootMotionTargetTransformType)
+					{
+						apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+														_editor,
+														_targetPortrait,
+														//null, 
+														false,
+														apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+						_targetPortrait._rootMotionTargetTransformType = nextRMTargetType;
+
+						apEditorUtil.SetEditorDirty();
+						apEditorUtil.ReleaseGUIFocus();
+					}
+				}
+
+				if (_targetPortrait._rootMotionTargetTransformType == apPortrait.ROOT_MOTION_TARGET_TRANSFORM.SpecifiedTransform)
+				{
+					//특정 Transform을 지정
+					EditorGUI.BeginChangeCheck();
+					Transform nextRootMotionParentTransform = (Transform)Layout_Object<Transform>(	_editor.GetText(TEXT.RootMotion_SpecifiedParentTransform),
+																									_targetPortrait._rootMotionSpecifiedParentTransform,
+																									true, width);
+
+					if (EditorGUI.EndChangeCheck())
+					{
+						if (nextRootMotionParentTransform != _targetPortrait._rootMotionSpecifiedParentTransform)
+						{
+							//유효성을 테스트하자
+							if (nextRootMotionParentTransform == null)
+							{
+								_targetPortrait._rootMotionSpecifiedParentTransform = null;
+							}
+							else
+							{
+								if (!_targetPortrait.transform.IsChildOf(nextRootMotionParentTransform))
+								{
+									//"루트 모션의 기준이 되는 Transform은 부모여야 합니다."
+									EditorUtility.DisplayDialog(_editor.GetText(TEXT.DLG_RootMotionTransformFailed_Title),
+																_editor.GetText(TEXT.DLG_RootMotionTransformFailed_Body),
+																_editor.GetText(TEXT.Okay));
+								}
+								else
+								{
+									//유효하다.
+
+									apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+														_editor,
+														_targetPortrait,
+														//null, 
+														false,
+														apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+									_targetPortrait._rootMotionSpecifiedParentTransform = nextRootMotionParentTransform;
+
+									apEditorUtil.SetEditorDirty();
+									apEditorUtil.ReleaseGUIFocus();
+								}
+							}
+						}
+					}
+
+					if(Layout_RightButton(_editor.GetText(TEXT.DLG_Change), width))
+					{
+						_loadKey_RootMotionTranform = apDialog_SelectGameObjectInScene.ShowDialog(	_editor,
+																									_targetPortrait,
+																									apDialog_SelectGameObjectInScene.REQUEST_GAMEOBJECT.ParentsOfPortrait,
+																									OnSelectRootMotionTransform);
+					}
+
+				}
+				
+			}
+
+			//유효성을 테스트해서 메시지로 남긴다.
 
 			DrawDelimeter(width);
 
@@ -1660,11 +1946,41 @@ namespace AnyPortrait
 		}
 
 
+		private object _loadKey_RootMotionTranform = null;
+		private void OnSelectRootMotionTransform(bool isSuccess, object loadKey, Transform resultTransform)
+		{
+			if(!isSuccess
+				|| _loadKey_RootMotionTranform != loadKey
+				|| _targetPortrait == null)
+			{
+				_loadKey_RootMotionTranform = null;
+				return;
+			}
+			_loadKey_RootMotionTranform = null;
+
+			apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Portrait_SettingChanged,
+												_editor,
+												_targetPortrait,
+												//null, 
+												false,
+												apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+			_targetPortrait._rootMotionSpecifiedParentTransform = resultTransform;
+			apEditorUtil.SetEditorDirty();
+			apEditorUtil.ReleaseGUIFocus();
+
+			Repaint();
+			Focus();
+		}
+
+
 
 		// UI 코드 래핑
 		//------------------------------------------------------------------
 		private const int LEFT_MARGIN = 5;
-		private const int LABEL_WIDTH = 175;
+		//private const int LABEL_WIDTH = 175;//이거 동적으로 만들 수 있나
+		private int LABEL_WIDTH { get { return _layoutLeftLabelWidth; } }
+		
 		private const int LAYOUT_HEIGHT = 22;
 		private const int SYNC_BTN_WIDTH = 18;
 		private const int SYNC_BTN_HEIGHT = 18;
@@ -1681,6 +1997,20 @@ namespace AnyPortrait
 
 			return result;
 		}
+
+		private int Layout_Popup(GUIContent guiLabel, int curPopupIndex, string[] names, int width)
+		{
+			int valueWidth = width - (LEFT_MARGIN * 2 + LABEL_WIDTH);
+
+			EditorGUILayout.BeginHorizontal(GUILayout.Height(LAYOUT_HEIGHT), GUILayout.Width(width));
+			GUILayout.Space(LEFT_MARGIN);
+			EditorGUILayout.LabelField(guiLabel, _guiStyle_Label_Default, GUILayout.Width(LABEL_WIDTH));
+			int result = EditorGUILayout.Popup(curPopupIndex, names, GUILayout.Width(valueWidth));
+			EditorGUILayout.EndHorizontal();
+
+			return result;
+		}
+
 
 		//파일로 저장된 별도의 기본값이 있는 경우
 		private int Layout_Popup(string strLabel, int curPopupIndex, string[] names, int width, bool isDefaultSaved, int defaultIndex)
@@ -1701,6 +2031,43 @@ namespace AnyPortrait
 			EditorGUILayout.BeginHorizontal(GUILayout.Height(LAYOUT_HEIGHT), GUILayout.Width(width));
 			GUILayout.Space(LEFT_MARGIN);
 			EditorGUILayout.LabelField(	strLabel, 
+										(defaultIndex == curPopupIndex) ? _guiStyle_Label_Default : _guiStyle_Label_Changed,
+										GUILayout.Width(LABEL_WIDTH));
+			
+			int result = EditorGUILayout.Popup(curPopupIndex, names, GUILayout.Width(valueWidth));
+
+			if(isShowSyncBtn)
+			{
+				if(GUILayout.Button(_editor.ImageSet.Get(apImageSet.PRESET.SyncSettingToFile12px), _guiStyle_SyncBtn, GUILayout.Width(SYNC_BTN_WIDTH), GUILayout.Height(SYNC_BTN_HEIGHT)))
+				{
+					result = defaultIndex;
+				}
+			}
+
+			EditorGUILayout.EndHorizontal();
+
+			return result;
+		}
+
+
+		private int Layout_Popup(GUIContent guiLabel, int curPopupIndex, string[] names, int width, bool isDefaultSaved, int defaultIndex)
+		{
+			if (!isDefaultSaved)
+			{
+				return Layout_Popup(guiLabel, curPopupIndex, names, width);
+			}
+			
+			int valueWidth = width - (LEFT_MARGIN * 2 + LABEL_WIDTH);
+			bool isShowSyncBtn = false;
+			if(isDefaultSaved && curPopupIndex != defaultIndex)
+			{
+				isShowSyncBtn = true;
+				valueWidth -= SYNC_BTN_WIDTH + 3;
+			}
+
+			EditorGUILayout.BeginHorizontal(GUILayout.Height(LAYOUT_HEIGHT), GUILayout.Width(width));
+			GUILayout.Space(LEFT_MARGIN);
+			EditorGUILayout.LabelField(	guiLabel, 
 										(defaultIndex == curPopupIndex) ? _guiStyle_Label_Default : _guiStyle_Label_Changed,
 										GUILayout.Width(LABEL_WIDTH));
 			
@@ -2062,6 +2429,46 @@ namespace AnyPortrait
 
 			return result;
 		}
+
+
+		private UnityEngine.Object Layout_Object<T>(	string strLabel,
+														UnityEngine.Object curValue,
+														bool isInScene,
+														int width
+														)
+		{
+			int valueWidth = width - (LEFT_MARGIN * 2 + LABEL_WIDTH);
+			
+
+			EditorGUILayout.BeginHorizontal(GUILayout.Height(LAYOUT_HEIGHT), GUILayout.Width(width));
+			GUILayout.Space(LEFT_MARGIN);
+			EditorGUILayout.LabelField(	strLabel,
+										_guiStyle_Label_Default,
+										GUILayout.Width(LABEL_WIDTH));
+			
+			UnityEngine.Object result = EditorGUILayout.ObjectField(curValue, typeof(T), isInScene, GUILayout.Width(valueWidth));
+
+			EditorGUILayout.EndHorizontal();
+
+			return result;
+		}
+
+		private bool Layout_RightButton(string strLabel, int width)
+		{
+			int valueWidth = width - (LEFT_MARGIN * 2 + LABEL_WIDTH);
+			
+			bool isClick = false;
+			EditorGUILayout.BeginHorizontal(GUILayout.Height(LAYOUT_HEIGHT), GUILayout.Width(width));
+			GUILayout.Space(LEFT_MARGIN + LABEL_WIDTH + LEFT_MARGIN);
+			if(GUILayout.Button(strLabel, GUILayout.Width(valueWidth)))
+			{
+				isClick = true;
+			}
+			EditorGUILayout.EndHorizontal();
+
+			return isClick;
+		}
+
 	}
 
 }

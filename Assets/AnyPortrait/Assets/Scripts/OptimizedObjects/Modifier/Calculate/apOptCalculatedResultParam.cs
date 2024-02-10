@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -129,9 +129,16 @@ namespace AnyPortrait
 			//변경 19.5.24 : ModifiedMesh대신 ModifiedMeshSet을 사용하는 것으로 변경
 			public apOptModifiedMeshSet _modifiedMeshSet = null;
 
+			//v1.4.7 : Morph 등에서 VertexRequest를 이용하는 경우 (Opt 전용)
+			public apOptVertexRequest.ModWeightPair _linkedVertexRequestMWP = null;
+
 			public float _dist = -1.0f;
 			public float _weight = -1.0f;
-			public bool _isCalculated = false;
+			
+			//v1.4.7 : 삭제 (계산 여부 최적화)
+			//public bool _isCalculated = false;
+			
+			
 			public int _layerIndex = -1;
 
 			//추가 : RotationBias를 계산한다. : 기본값 false
@@ -165,6 +172,9 @@ namespace AnyPortrait
 				_animRotationBiasAngle = 0;
 				_animRotationBiasAngle_Prev = -1;
 				_animRotationBiasedMatrix = new apMatrix();
+
+				//v1.4.7 추가
+				_linkedVertexRequestMWP = null;
 			}
 
 
@@ -187,6 +197,9 @@ namespace AnyPortrait
 				_animRotationBiasAngle = 0;
 				_animRotationBiasAngle_Prev = -1;
 				_animRotationBiasedMatrix = new apMatrix();
+
+				//v1.4.7 추가
+				_linkedVertexRequestMWP = null;
 			}
 
 			/// <summary>
@@ -207,20 +220,33 @@ namespace AnyPortrait
 				_animRotationBiasAngle = 0;
 				_animRotationBiasAngle_Prev = -1;
 				_animRotationBiasedMatrix = new apMatrix();
+
+				//v1.4.7 추가
+				_linkedVertexRequestMWP = null;
 			}
 
-			public void ReadyToCalculate()
-			{
-				_dist = -1.0f;
-				_weight = -1.0f;
-				_isCalculated = false;
 
-				//RotationBias
-				_isAnimRotationBias = false;
-
-				//추가 12.5 : 애니메이션 키프레임 중 어디에 속했는지 계산
-				_animKeyPos = AnimKeyPos.NotCalculated;
+			//v1.4.7 추가 : _isCalculated를 삭제했으므로, 계산된 PKV에 대응하는 VertexRequest를 바로 참조할 수 있어야 한다.
+			public void LinkVertexRequestModWeightPair(apOptVertexRequest.ModWeightPair linkedModWeightPair)
+			{				
+				_linkedVertexRequestMWP = linkedModWeightPair;
 			}
+
+			//삭제 v1.4.7 : 이 함수는 사용되지 않는다.
+			//public void ReadyToCalculate()
+			//{
+			//	_dist = -1.0f;
+			//	_weight = -1.0f;
+
+			//	//v1.4.7 : 삭제
+			//	//_isCalculated = false;
+
+			//	//RotationBias
+			//	_isAnimRotationBias = false;
+
+			//	//추가 12.5 : 애니메이션 키프레임 중 어디에 속했는지 계산
+			//	_animKeyPos = AnimKeyPos.NotCalculated;
+			//}
 
 			/// <summary>
 			/// Keyframe에 Rotation Bias 설정이 있는 경우 관련 변수를 갱신한다.
@@ -314,6 +340,7 @@ namespace AnyPortrait
 
 		public List<OptParamKeyValueSet> _paramKeyValues = new List<OptParamKeyValueSet>();
 		public List<apOptCalculatedResultParamSubList> _subParamKeyValueList = new List<apOptCalculatedResultParamSubList>();
+		public int _nSubParamKeyValueList = 0;
 		public apOptCalculatedResultParamSubList[] _subParamKeyValueList_AnimSync = null;//추가 20.11.23 : 애니메이션 모디파이어는 이걸 사용하자. AnimClip의 순서와 동일하게 생성된 배열이다. (중요)
 
 		private bool _isVertexLocalMorph = false;
@@ -342,8 +369,20 @@ namespace AnyPortrait
 			_targetOptMesh = targetOptMesh;
 			_targetBone = targetBone;//<<추가
 
+
+			if (_paramKeyValues == null)
+			{
+				_paramKeyValues = new List<OptParamKeyValueSet>();
+			}
+			if (_subParamKeyValueList == null)
+			{
+				_subParamKeyValueList = new List<apOptCalculatedResultParamSubList>();
+			}
+
 			_paramKeyValues.Clear();
 			_subParamKeyValueList.Clear();
+
+			_nSubParamKeyValueList = 0;
 			_subParamKeyValueList_AnimSync = null;//애니메이션 리스트가 생기기 전까지는 null
 
 			//삭제 19.5.20 : 이 변수를 더이상 사용하지 않음
@@ -479,7 +518,7 @@ namespace AnyPortrait
 
 			apOptCalculatedResultParamSubList existSubList = _subParamKeyValueList.Find(delegate (apOptCalculatedResultParamSubList a)
 			{
-				   return a._keyParamSetGroup == paramSetGroup;
+				return a._keyParamSetGroup == paramSetGroup;
 			});
 
 			//같이 묶여서 작업할 SubList가 있는가
@@ -494,6 +533,7 @@ namespace AnyPortrait
 				targetSubList.SetParamSetGroup(paramSetGroup);
 
 				_subParamKeyValueList.Add(targetSubList);
+				_nSubParamKeyValueList += 1;
 
 				if (_isVertexLocalMorph || _isVertexRigging)
 				{
@@ -550,7 +590,9 @@ namespace AnyPortrait
 				return a._keyParamSetGroup._layerIndex - b._keyParamSetGroup._layerIndex;//오른차순 정렬
 			});
 
-			for (int i = 0; i < _subParamKeyValueList.Count; i++)
+			_nSubParamKeyValueList = _subParamKeyValueList.Count;
+
+			for (int i = 0; i < _nSubParamKeyValueList; i++)
 			{
 				_subParamKeyValueList[i].MakeMetaData();
 			}
@@ -635,7 +677,7 @@ namespace AnyPortrait
 		//--------------------------------------------
 		public void InitCalculate()
 		{
-			for (int i = 0; i < _subParamKeyValueList.Count; i++)
+			for (int i = 0; i < _nSubParamKeyValueList; i++)
 			{
 				_subParamKeyValueList[i].InitCalculate();
 			}
@@ -664,7 +706,7 @@ namespace AnyPortrait
 				//추가
 				//애니메이션 타입인 경우
 				//재정렬이 필요한지 체크한다.
-				for (int i = 0; i < _subParamKeyValueList.Count; i++)
+				for (int i = 0; i < _nSubParamKeyValueList; i++)
 				{
 					//여기서 애니메이션을 계산하고 UnitWeight를 LayerWeight로 저장한다.
 					if (_subParamKeyValueList[i].UpdateAnimLayer())
@@ -683,7 +725,7 @@ namespace AnyPortrait
 			}
 
 
-			for (int i = 0; i < _subParamKeyValueList.Count; i++)
+			for (int i = 0; i < _nSubParamKeyValueList; i++)
 			{
 				isResult = _subParamKeyValueList[i].Calculate();
 				if (isResult)

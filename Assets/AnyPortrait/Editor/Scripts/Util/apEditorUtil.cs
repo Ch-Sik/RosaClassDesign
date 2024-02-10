@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -51,8 +51,10 @@ namespace AnyPortrait
 			GUI.backgroundColor = s_delimeterColor;
 
 			//[v1.4.6] 폭이 4에서 2로 감소
-			GUILayout.Box(apGUIContentWrapper.Empty.Content, WhiteGUIStyle_Box, apGUILOFactory.I.Width(2), apGUILOFactory.I.Height(height));
+			GUILayout.Box(apGUIContentWrapper.Empty.Content, WhiteGUIStyle, apGUILOFactory.I.Width(2), apGUILOFactory.I.Height(height));
 			GUI.backgroundColor = prevColor;
+
+			
 		}
 
 		public static void GUI_DelimeterBoxH(int width)
@@ -69,7 +71,7 @@ namespace AnyPortrait
 			EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
 			
 			GUILayout.Space(4);
-			GUILayout.Box(apGUIContentWrapper.Empty.Content, WhiteGUIStyle_Box, apGUILOFactory.I.Width(width - 4), apGUILOFactory.I.Height(2));
+			GUILayout.Box(apGUIContentWrapper.Empty.Content, WhiteGUIStyle, apGUILOFactory.I.Width(width - 4), apGUILOFactory.I.Height(2));
 
 			EditorGUILayout.EndHorizontal();
 			GUI.backgroundColor = prevColor;
@@ -2263,68 +2265,112 @@ namespace AnyPortrait
 		{
 			get
 			{
-				if (EditorGUIUtility.isProSkin)
-				{
-					//return Color.white;
-					return GUI.skin.label.normal.textColor;
-				}
-				else
-				{
-					return GUI.skin.box.normal.textColor;
-				}
+				return EditorGUIUtility.isProSkin ?	GUI.skin.label.normal.textColor 
+													: GUI.skin.box.normal.textColor;
 			}
 		}
 
+		/// <summary>
+		/// 토글 박스의 색상 (선택됨)
+		/// </summary>
 		public static Color ToggleBoxColor_Selected
 		{
 			get
 			{
-				if (EditorGUIUtility.isProSkin)
-				{
-					return new Color(0.0f, 1.0f, 1.0f, 1.0f);
-				}
-				else
-				{
-					return new Color(0.0f, 0.2f, 0.3f, 1.0f);
-				}
+				return EditorGUIUtility.isProSkin ?	new Color(0.0f, 1.7f, 1.7f, 1.0f)
+													: new Color(0.0f, 0.2f, 0.3f, 1.0f);
 			}
 		}
 
+		/// <summary>
+		/// 이미지가 있는 토글 박스의 색상 (선택됨)
+		/// </summary>
 		public static Color ToggleBoxColor_SelectedWithImage
 		{
 			get
 			{
-				if (EditorGUIUtility.isProSkin)
-				{
-					return new Color(0.0f, 1.0f, 1.0f, 1.0f);
-				}
-				else
-				{
-					//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-					return new Color(0.3f, 1.0f, 1.0f, 1.0f);
-				}
+				return EditorGUIUtility.isProSkin ? new Color(0.0f, 1.7f, 1.7f, 1.0f)
+													: new Color(0.3f, 1.0f, 1.0f, 1.0f);
 			}
 		}
 
-
-
+		/// <summary>
+		/// 토글 박스의 색상 (사용 불가)
+		/// </summary>
 		public static Color ToggleBoxColor_NotAvailable
 		{
 			get
 			{
-
-				if (EditorGUIUtility.isProSkin)
-				{
-					return new Color(0.1f, 0.1f, 0.1f, 1.0f);
-				}
-				else
-				{
-					return new Color(0.5f, 0.5f, 0.5f, 1.0f);
-				}
+				return EditorGUIUtility.isProSkin ? new Color(0.1f, 0.1f, 0.1f, 1.0f)
+													: new Color(0.5f, 0.5f, 0.5f, 1.0f);
 			}
 		}
 
-		private static apGUIContentWrapper _sGUIContentWrapper = new apGUIContentWrapper(false);
+		/// <summary>
+		/// 토글 버튼/박스의 색상 (Ctrl 키를 누른 상태)
+		/// </summary>
+		public static Color ToggleButtonColor_CtrlPressed
+		{
+			get
+			{
+				return EditorGUIUtility.isProSkin ? new Color(1.5f, 0.0f, 1.5f, 1.0f)
+													: new Color(0.5f, 1.5f, 0.8f, 1.0f);
+			}
+		}
+
+		/// <summary>
+		/// 토글 버튼(2Side)의 색상 (사용 불가)
+		/// </summary>
+		public static Color Toggle2SideButtonColor_NotAvailable
+		{
+			get
+			{
+				return EditorGUIUtility.isProSkin ? new Color(0.4f, 0.4f, 0.4f, 1.0f)
+													: new Color(0.5f, 0.5f, 0.5f, 1.0f);
+			}
+		}
+
+		/// <summary>
+		/// 토글 버튼(2Side)의 색상 (선택됨)
+		/// </summary>
+		public static Color Toggle2SideButtonColor_Selected
+		{
+			get
+			{
+				return EditorGUIUtility.isProSkin ?	new Color(0.0f, 1.7f, 1.7f, 1.0f)
+													: new Color(0.2f, 0.9f, 1.6f, 1.0f);
+			}
+		}
+		/// <summary>
+		/// 토글 버튼의 색상 (다중 선택시 동기화가 안됨)
+		/// </summary>
+		public static Color ToggleButtonColor_NotSync
+		{
+			get
+			{
+				//핑크색의 보라색 색상 (Pro/Normal 둘다)
+				return EditorGUIUtility.isProSkin ? new Color(1.8f, 0.0f, 1.4f, 1.0f)
+													: new Color(1.1f, 0.3f, 1.0f, 1.0f);
+			}
+		}
+
+
+		/// <summary>
+		/// 토글 버튼(3Side)의 색상 (선택됨 - 서브)
+		/// </summary>
+		public static Color Toggle3SideButtonColor_SubSelected
+		{
+			get
+			{
+				//서브 선택의 경우는 보라색 계열이다.
+				return EditorGUIUtility.isProSkin ?	new Color(0.9f, 0.2f, 1.3f, 1.0f)
+													: new Color(1.1f, 0.3f, 1.2f, 1.0f);
+			}
+		}
+
+
+
+		private static apGUIContentWrapper s_GUIContentWrapper = new apGUIContentWrapper(false);
 
 
 		public static bool ToggledButton(string strText, bool isSelected, int width)
@@ -2339,28 +2385,7 @@ namespace AnyPortrait
 				Color prevColor = GUI.backgroundColor;
 				GUI.backgroundColor = ToggleBoxColor_Selected;
 
-				//이전
-				//GUI.skin.box
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
-				//guiStyle.normal.textColor = Color.white;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
-				//guiStyle.margin = GUI.skin.button.margin;
-
-				//if(EditorGUIUtility.isProSkin)
-				//{
-				//	//밝은 파랑 + 하늘색
-				//	guiStyle.normal.textColor = Color.cyan;
-				//}
-				//else
-				//{
-				//	//짙은 남색
-				//	//GUI.backgroundColor = new Color(0.0f, 0.2f, 0.3f, 1.0f);
-				//}
-
-				//GUILayout.Box(strText, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				GUILayout.Box(strText,
+				GUILayout.Box(	strText,
 								apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan,//<<이건 ProUI일때와 기본의 색이 다르다.
 								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -2383,59 +2408,23 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	textColor = Color.black;
-					//}
-					//else
-					//{
-					//	textColor = Color.white;
-					//}
 					GUI.backgroundColor = ToggleBoxColor_NotAvailable;
 
 				}
 				else if (isSelected)
 				{
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	//밝은 파랑 + 하늘색
-					//	textColor = Color.cyan;
-					//}
-					//else
-					//{
-					//	//짙은 남색 + 흰색
-					//	textColor = Color.white;
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_Selected;
-
 				}
-
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
-				//guiStyle.normal.textColor = textColor;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
-				//guiStyle.margin = GUI.skin.button.margin;
-
-				//GUILayout.Button(strText, guiStyle, GUILayout.Width(width), GUILayout.Height(height));//더미 버튼
-
+				
 				//변경
-				GUILayout.Button(strText,
-					(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
-					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));//더미 버튼
-
+				GUILayout.Button(	strText,
+									(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
+									apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));//더미 버튼
 				GUI.backgroundColor = prevColor;
 				return false;
 			}
 			else
 			{
-				//이전
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
-
-				//return GUILayout.Button(strText, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
 				return GUILayout.Button(strText, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
@@ -2446,73 +2435,33 @@ namespace AnyPortrait
 			if (isSelected || !isAvailable)
 			{
 				Color prevColor = GUI.backgroundColor;
-				//Color textColor = Color.white;
 
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	textColor = Color.black;
-					//}
-					//else
-					//{
-					//	textColor = Color.white;
-					//}
 					GUI.backgroundColor = ToggleBoxColor_NotAvailable;
 
 				}
 				else if (isSelected)
 				{
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	//밝은 파랑 + 하늘색
-					//	textColor = Color.cyan;
-					//}
-					//else
-					//{
-					//	//짙은 남색 + 흰색
-					//	textColor = Color.white;
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_Selected;
 
 				}
 
+				s_GUIContentWrapper.SetTextImageToolTip(strText, null, toolTip);
 
-				//GUI.skin.box
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
-				//guiStyle.normal.textColor = textColor;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
-				//guiStyle.margin = GUI.skin.button.margin;
-
-				//이전
-				//GUILayout.Button(new GUIContent(strText, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));//더미 버튼
-
-				//변경 19.11.20
-				_sGUIContentWrapper.SetTextImageToolTip(strText, null, toolTip);
-
-				GUILayout.Button(_sGUIContentWrapper.Content,
-					(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
-					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));//더미 버튼
+				GUILayout.Button(	s_GUIContentWrapper.Content,
+									(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
+									apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));//더미 버튼
 
 				GUI.backgroundColor = prevColor;
 				return false;
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
+				s_GUIContentWrapper.SetTextImageToolTip(strText, null, toolTip);
 
-				//이전
-				//return GUILayout.Button(new GUIContent(strText, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경 19.11.20
-				_sGUIContentWrapper.SetTextImageToolTip(strText, null, toolTip);
-
-				//return GUILayout.Button(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -2521,67 +2470,26 @@ namespace AnyPortrait
 			if (isSelected || !isAvailable)
 			{
 				Color prevColor = GUI.backgroundColor;
-				//Color textColor = Color.white;
 
 				if (!isAvailable)
 				{
-					//회색 (Pro는 글자도 진해짐)
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	textColor = Color.black;
-					//	//GUI.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-					//}
-					//else
-					//{
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_NotAvailable;
 
 				}
 				else if (isSelected)
 				{
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	//밝은 파랑 + 하늘색
-					//	textColor = Color.cyan;
-					//	//GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					//}
-					//else
-					//{
-					//	//"밝은" 남색 + 흰색
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_SelectedWithImage;
-
 				}
-
-
-				//GUI.skin.box
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
-				//guiStyle.normal.textColor = textColor;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
-				//guiStyle.margin = GUI.skin.button.margin;
-
-				//GUILayout.Box(texture, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				GUILayout.Box(texture,
-					(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
-					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				
+				GUILayout.Box(	texture,
+								(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
+								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 				return false;
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
-
-				//return GUILayout.Button(texture, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
 				return GUILayout.Button(texture, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
@@ -2592,79 +2500,30 @@ namespace AnyPortrait
 			if (isSelected || !isAvailable)
 			{
 				Color prevColor = GUI.backgroundColor;
-				//Color textColor = Color.white;
 
 				if (!isAvailable)
 				{
-					//회색 (Pro는 글자도 진해짐)
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	textColor = Color.black;
-					//	//GUI.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-					//}
-					//else
-					//{
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_NotAvailable;
-
 				}
 				else if (isSelected)
 				{
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	//밝은 파랑 + 하늘색
-					//	textColor = Color.cyan;
-					//	//GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					//}
-					//else
-					//{
-					//	//"밝은" 남색 + 흰색
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_SelectedWithImage;
-
 				}
 
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
 
-				//GUI.skin.box
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
-				//guiStyle.normal.textColor = textColor;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
-				//guiStyle.margin = GUI.skin.button.margin;
-
-				//이전
-				//GUILayout.Box(new GUIContent(texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-
-				//GUILayout.Box(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				GUILayout.Box(_sGUIContentWrapper.Content,
-					(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
-					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				GUILayout.Box(	s_GUIContentWrapper.Content,
+								(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
+								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 				return false;
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
 
-				//이전
-				//return GUILayout.Button(new GUIContent(texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-
-				//return GUILayout.Button(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -2675,7 +2534,6 @@ namespace AnyPortrait
 			if (isSelected || !isAvailable)
 			{
 				Color prevColor = GUI.backgroundColor;
-				//Color textColor = Color.white;
 
 				if (!isAvailable)
 				{
@@ -2688,10 +2546,9 @@ namespace AnyPortrait
 					GUI.backgroundColor = ToggleBoxColor_SelectedWithImage;
 				}
 
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
 
-				//GUILayout.Box(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				GUILayout.Box(_sGUIContentWrapper.Content,
+				GUILayout.Box(	s_GUIContentWrapper.Content,
 								apGUIStyleWrapper.I.Box_MiddleCenter_VerticalMargin0,
 								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -2700,9 +2557,9 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-				return GUILayout.Button(_sGUIContentWrapper.Content,
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+
+				return GUILayout.Button(s_GUIContentWrapper.Content,
 										apGUIStyleWrapper.I.Button_MiddleCenter_VerticalMargin0,
 										apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
@@ -2715,79 +2572,32 @@ namespace AnyPortrait
 			if (isSelected || !isAvailable)
 			{
 				Color prevColor = GUI.backgroundColor;
-				//Color textColor = Color.white;
 
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	textColor = Color.black;
-					//	//GUI.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-					//}
-					//else
-					//{
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					//}
 					GUI.backgroundColor = ToggleBoxColor_NotAvailable;
 
 				}
 				else if (isSelected)
 				{
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	//밝은 파랑 + 하늘색
-					//	textColor = Color.cyan;
-					//	//GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					//}
-					//else
-					//{
-					//	//"밝은" 남색 + 흰색
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_SelectedWithImage;
-
 				}
 
+				s_GUIContentWrapper.SetTextImageToolTip(strText, texture, null);
 
-				//GUI.skin.box
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
-				//guiStyle.normal.textColor = textColor;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
-				//guiStyle.margin = GUI.skin.button.margin;
-
-				//이전
-				//GUILayout.Box(new GUIContent(strText, texture), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strText, texture, null);
-
-				//GUILayout.Box(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				GUILayout.Box(_sGUIContentWrapper.Content,
-					(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
-					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				GUILayout.Box(	s_GUIContentWrapper.Content,
+								(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
+								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 				return false;
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
+				s_GUIContentWrapper.SetTextImageToolTip(strText, texture, null);
 
-				//이전
-				//return GUILayout.Button(new GUIContent(strText, texture), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strText, texture, null);
-
-				//return GUILayout.Button(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -2797,79 +2607,32 @@ namespace AnyPortrait
 			if (isSelected || !isAvailable)
 			{
 				Color prevColor = GUI.backgroundColor;
-				//Color textColor = Color.white;
-
+				
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	textColor = Color.black;
-					//	//GUI.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-					//}
-					//else
-					//{
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					//}
 					GUI.backgroundColor = ToggleBoxColor_NotAvailable;
 
 				}
 				else if (isSelected)
 				{
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	//밝은 파랑 + 하늘색
-					//	textColor = Color.cyan;
-					//	//GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					//}
-					//else
-					//{
-					//	//"밝은" 남색 + 흰색
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_SelectedWithImage;
-
 				}
 
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, null);
 
-				//GUI.skin.box
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
-				//guiStyle.normal.textColor = textColor;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
-				//guiStyle.margin = GUI.skin.button.margin;
-
-				//이전
-				//GUILayout.Box(new GUIContent(strText, texture), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, null);
-
-				//GUILayout.Box(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				GUILayout.Box(_sGUIContentWrapper.Content,
-					(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
-					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				GUILayout.Box(	s_GUIContentWrapper.Content,
+								(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
+								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 				return false;
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, null);
 
-				//이전
-				//return GUILayout.Button(new GUIContent(strText, texture), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, null);
-
-				//return GUILayout.Button(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -2880,58 +2643,21 @@ namespace AnyPortrait
 			if (isSelected || !isAvailable)
 			{
 				Color prevColor = GUI.backgroundColor;
-				//Color textColor = Color.white;
 
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	textColor = Color.black;
-					//	//GUI.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-					//}
-					//else
-					//{
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					//}
 					GUI.backgroundColor = ToggleBoxColor_NotAvailable;
 
 				}
 				else if (isSelected)
 				{
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	//밝은 파랑 + 하늘색
-					//	textColor = Color.cyan;
-					//	//GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					//}
-					//else
-					//{
-					//	//"밝은" 남색 + 흰색
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_SelectedWithImage;
-
 				}
 
+				s_GUIContentWrapper.SetTextImageToolTip(strText, texture, toolTip);
 
-				//GUI.skin.box
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
-				//guiStyle.normal.textColor = textColor;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
-				//guiStyle.margin = GUI.skin.button.margin;
-
-				//이전
-				//GUILayout.Box(new GUIContent(strText, texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strText, texture, toolTip);
-
-				//GUILayout.Box(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				GUILayout.Box(_sGUIContentWrapper.Content,
+				GUILayout.Box(	s_GUIContentWrapper.Content,
 								(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
 								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -2940,18 +2666,9 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
+				s_GUIContentWrapper.SetTextImageToolTip(strText, texture, toolTip);
 
-				//이전
-				//return GUILayout.Button(new GUIContent(strText, texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strText, texture, toolTip);
-
-				//return GUILayout.Button(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -2972,11 +2689,10 @@ namespace AnyPortrait
 					GUI.backgroundColor = ToggleBoxColor_SelectedWithImage;
 
 				}
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, toolTip);
+				
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, toolTip);
 
-				//GUILayout.Box(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				GUILayout.Box(_sGUIContentWrapper.Content,
+				GUILayout.Box(	s_GUIContentWrapper.Content,
 								(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
 								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -2985,18 +2701,9 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, toolTip);
 
-				//이전
-				//return GUILayout.Button(new GUIContent(strText, texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, toolTip);
-
-				//return GUILayout.Button(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -3012,22 +2719,10 @@ namespace AnyPortrait
 			if (isSelected || !isAvailable)
 			{
 				Color prevColor = GUI.backgroundColor;
-				//Color textColor = Color.white;
 
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	textColor = Color.black;
-					//	//GUI.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-					//}
-					//else
-					//{
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_NotAvailable;
 
 				}
@@ -3061,10 +2756,10 @@ namespace AnyPortrait
 				//GUILayout.Box(new GUIContent(texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
 
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
 
 				//GUILayout.Box(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				GUILayout.Box(_sGUIContentWrapper.Content,
+				GUILayout.Box(s_GUIContentWrapper.Content,
 								(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
 								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -3077,27 +2772,25 @@ namespace AnyPortrait
 				if (isCtrl)
 				{
 					//Ctrl 키를 누르면 버튼 색이 바뀐다.
-					if (EditorGUIUtility.isProSkin)
-					{
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
-					}
+					//이전
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
+					//}
+
+
+					//변경 v1.4.7
+					GUI.backgroundColor = ToggleButtonColor_CtrlPressed;
+					
 				}
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
+				
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
 
-				//이전
-				//bool isBtnResult = GUILayout.Button(new GUIContent(texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-
-				//bool isBtnResult = GUILayout.Button(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				bool isBtnResult = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				bool isBtnResult = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -3131,9 +2824,9 @@ namespace AnyPortrait
 				}
 
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
 
-				GUILayout.Box(_sGUIContentWrapper.Content,
+				GUILayout.Box(s_GUIContentWrapper.Content,
 								apGUIStyleWrapper.I.Box_MiddleCenter_VerticalMargin0_White2Cyan,
 								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -3146,19 +2839,22 @@ namespace AnyPortrait
 				if (isCtrl)
 				{
 					//Ctrl 키를 누르면 버튼 색이 바뀐다.
-					if (EditorGUIUtility.isProSkin)
-					{
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7
+					GUI.backgroundColor = ToggleButtonColor_CtrlPressed;
 				}
 
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
 
-				bool isBtnResult = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_VerticalMargin0, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				bool isBtnResult = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_VerticalMargin0, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -3182,59 +2878,21 @@ namespace AnyPortrait
 			if (isSelected || !isAvailable)
 			{
 				Color prevColor = GUI.backgroundColor;
-				//Color textColor = Color.white;
 
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	textColor = Color.black;
-					//	//GUI.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-					//}
-					//else
-					//{
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_NotAvailable;
 
 				}
 				else if (isSelected)
 				{
-					//if(EditorGUIUtility.isProSkin)
-					//{
-					//	//밝은 파랑 + 하늘색
-					//	textColor = Color.cyan;
-					//	//GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					//}
-					//else
-					//{
-					//	//"밝은" 남색 + 흰색
-					//	textColor = Color.white;
-					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-					//}
-
 					GUI.backgroundColor = ToggleBoxColor_SelectedWithImage;
-
 				}
 
+				s_GUIContentWrapper.SetTextImageToolTip(strText, null, toolTip);
 
-				//GUI.skin.box
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
-				//guiStyle.normal.textColor = textColor;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
-				//guiStyle.margin = GUI.skin.button.margin;
-
-				//이전
-				//GUILayout.Box(new GUIContent(strText, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strText, null, toolTip);
-
-				//GUILayout.Box(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				GUILayout.Box(_sGUIContentWrapper.Content,
+				GUILayout.Box(	s_GUIContentWrapper.Content,
 								(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
 								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -3247,28 +2905,22 @@ namespace AnyPortrait
 				if (isCtrl)
 				{
 					//Ctrl 키를 누르면 버튼 색이 바뀐다.
-					if (EditorGUIUtility.isProSkin)
-					{
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7
+					GUI.backgroundColor = ToggleButtonColor_CtrlPressed;
 				}
 
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.alignment = TextAnchor.MiddleCenter;
+				s_GUIContentWrapper.SetTextImageToolTip(strText, null, toolTip);
 
-				//이전
-				//bool isBtnResult = GUILayout.Button(new GUIContent(strText, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strText, null, toolTip);
-
-				//bool isBtnResult = GUILayout.Button(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				bool isBtnResult = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				bool isBtnResult = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -3302,10 +2954,9 @@ namespace AnyPortrait
 
 
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, toolTip);
 
-				//GUILayout.Box(_sGUIContentWrapper.Content, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-				GUILayout.Box(_sGUIContentWrapper.Content,
+				GUILayout.Box(	s_GUIContentWrapper.Content,
 								(isAvailable == false ? apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Black : apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan),
 								apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -3318,19 +2969,22 @@ namespace AnyPortrait
 				if (isCtrl)
 				{
 					//Ctrl 키를 누르면 버튼 색이 바뀐다.
-					if (EditorGUIUtility.isProSkin)
-					{
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7
+					GUI.backgroundColor = ToggleButtonColor_CtrlPressed;
 				}
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strText, texture, toolTip);
 
-				bool isBtnResult = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				bool isBtnResult = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -3352,39 +3006,41 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 
 				}
 
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//GUILayout.Box(texture, guiStyle, GUILayout.Width(width), GUILayout.Height(height));
 				bool isBtn = GUILayout.Button(texture, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
@@ -3398,8 +3054,6 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
 				return GUILayout.Button(texture, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
@@ -3415,43 +3069,43 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 
 				}
 
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//이전
-				//bool isBtn = GUILayout.Button(new GUIContent(texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -3464,15 +3118,8 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//이전
-				//return GUILayout.Button(new GUIContent(texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -3489,31 +3136,37 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content,
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content,
 												apGUIStyleWrapper.I.Button_MiddleCenter_VerticalMargin0,
 												apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -3529,8 +3182,8 @@ namespace AnyPortrait
 			else
 			{
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-				return GUILayout.Button(_sGUIContentWrapper.Content,
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				return GUILayout.Button(s_GUIContentWrapper.Content,
 											apGUIStyleWrapper.I.Button_MiddleCenter_VerticalMargin0,
 											apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
@@ -3546,36 +3199,39 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
-				}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
 
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
+				}
 
 				bool isBtn = GUILayout.Button(textureSelected, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -3590,8 +3246,6 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
 				return GUILayout.Button(textureNotSelected, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
@@ -3607,43 +3261,42 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//이전
-				//bool isBtn = GUILayout.Button(new GUIContent(textureSelected, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, textureSelected, toolTip);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(null, textureSelected, toolTip);
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -3656,15 +3309,8 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//이전
-				//return GUILayout.Button(new GUIContent(textureNotSelected, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, textureNotSelected, toolTip);
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(null, textureNotSelected, toolTip);
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -3678,46 +3324,43 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.normal.textColor = textColor;
-
-
-				//이전
-				//bool isBtn = GUILayout.Button(new GUIContent(strTextSelected, texture), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strTextSelected, texture, null);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content,
-					(isAvailable == false ? apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Black : apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Cyan),
-					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(strTextSelected, texture, null);
+				bool isBtn = GUILayout.Button(	s_GUIContentWrapper.Content,
+												(isAvailable == false ? apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Black : apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Cyan),
+												apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -3730,15 +3373,8 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//이전
-				//return GUILayout.Button(new GUIContent(strTextNotSelected, texture), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strTextNotSelected, texture, null);
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(strTextNotSelected, texture, null);
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -3755,27 +3391,33 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
 				bool isBtn = GUILayout.Button(guiContentWrapper.Content,
@@ -3811,33 +3453,39 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
-				_sGUIContentWrapper.SetTextImageToolTip(strTextSelected, texture, null);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content,
+				s_GUIContentWrapper.SetTextImageToolTip(strTextSelected, texture, null);
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content,
 					apGUIStyleWrapper.I.Button_MiddleCenter_VerticalMargin0_White2Cyan,
 					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -3853,8 +3501,8 @@ namespace AnyPortrait
 			else
 			{
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strTextNotSelected, texture, null);
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_VerticalMargin0, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(strTextNotSelected, texture, null);
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_VerticalMargin0, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -3870,36 +3518,42 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected, texture, null);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content,
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected, texture, null);
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content,
 					(isAvailable == false ? apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Black : apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Cyan),
 					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -3915,8 +3569,8 @@ namespace AnyPortrait
 			else
 			{
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotSelected, texture, null);
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotSelected, texture, null);
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -3937,51 +3591,43 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.normal.textColor = textColor;
+				s_GUIContentWrapper.SetTextImageToolTip(strTextSelected, texture, toolTip);
 
-				//if (alignmentStyle != null)
-				//{
-				//	guiStyle.alignment = alignmentStyle.alignment;
-				//}
-
-
-				//이전
-				//bool isBtn = GUILayout.Button(new GUIContent(strTextSelected, texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strTextSelected, texture, toolTip);
-
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content,
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content,
 												(isAvailable == false ? apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Black : apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Cyan),
 												apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -3996,16 +3642,9 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
+				s_GUIContentWrapper.SetTextImageToolTip(strTextNotSelected, texture, toolTip);
 
-				//이전
-				//return GUILayout.Button(new GUIContent(strTextNotSelected, texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strTextNotSelected, texture, toolTip);
-
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -4027,39 +3666,45 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
 
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected, texture, toolTip);
 
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content,
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content,
 												(isAvailable == false ? apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Black : apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Cyan),
 												apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -4075,9 +3720,9 @@ namespace AnyPortrait
 			else
 			{
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotSelected, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotSelected, texture, toolTip);
 
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -4100,32 +3745,38 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
-				_sGUIContentWrapper.SetTextImageToolTip(strTextSelected, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(strTextSelected, texture, toolTip);
 
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content,
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content,
 												(isAvailable == false ? apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding_White2Black : apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding_White2Cyan),
 												apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -4140,9 +3791,9 @@ namespace AnyPortrait
 			}
 			else
 			{
-				_sGUIContentWrapper.SetTextImageToolTip(strTextNotSelected, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(strTextNotSelected, texture, toolTip);
 
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -4162,32 +3813,38 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected, texture, toolTip);
 
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content,
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content,
 												(isAvailable == false ? apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding_White2Black : apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding_White2Cyan),
 												apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -4202,9 +3859,9 @@ namespace AnyPortrait
 			}
 			else
 			{
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotSelected, texture, toolTip);
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotSelected, texture, toolTip);
 
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -4219,32 +3876,38 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
 				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
@@ -4283,37 +3946,39 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
-				}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
 
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.normal.textColor = textColor;
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
+				}
 
 				bool isBtn = GUILayout.Button(strText,
 					(isAvailable == false ? apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Black : apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Cyan),
@@ -4330,9 +3995,6 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
 				return GUILayout.Button(strText, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
@@ -4352,69 +4014,48 @@ namespace AnyPortrait
 
 			if (!isAvailable)
 			{
-				if (EditorGUIUtility.isProSkin)
-				{
-					//textColor = Color.black;
-					GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-				}
-				else
-				{
-					//textColor = Color.white;
-					GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-				}
-
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.box);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.normal.textColor = textColor;
-				//guiStyle.margin = GUI.skin.button.margin;
-
-				//if (alignmentStyle != null)
+				//if (EditorGUIUtility.isProSkin)
 				//{
-				//	guiStyle.alignment = alignmentStyle.alignment;
+				//	//textColor = Color.black;
+				//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+				//}
+				//else
+				//{
+				//	//textColor = Color.white;
+				//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
 				//}
 
-				//이전
-				//GUILayout.Box(new GUIContent(strTextNotAvailable, textureNotAvailable, tooltip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
+				//변경 v1.4.7 : 불가
+				GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strTextNotAvailable, textureNotAvailable, tooltip);
+				s_GUIContentWrapper.SetTextImageToolTip(strTextNotAvailable, textureNotAvailable, tooltip);
 
-				GUILayout.Box(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Box_MiddleLeft_BtnMargin_White2Black, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				GUILayout.Box(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Box_MiddleLeft_BtnMargin_White2Black, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 				return false;
 			}
 			else if (isSelected)
 			{
-				if (EditorGUIUtility.isProSkin)
-				{
-					//밝은 파랑 + 하늘색
-					//textColor = Color.cyan;
-					GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-				}
-				else
-				{
-					//청록색 + 흰색
-					//textColor = Color.white;
-					//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-					GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-				}
-
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-				//guiStyle.normal.textColor = textColor;
-
-				//if (alignmentStyle != null)
+				//if (EditorGUIUtility.isProSkin)
 				//{
-				//	guiStyle.alignment = alignmentStyle.alignment;
+				//	//밝은 파랑 + 하늘색
+				//	//textColor = Color.cyan;
+				//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+				//}
+				//else
+				//{
+				//	//청록색 + 흰색
+				//	//textColor = Color.white;
+				//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
+				//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
 				//}
 
-				//이전
-				//bool isBtn = GUILayout.Button(new GUIContent(strTextSelected, textureSelected, tooltip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
+				//변경 v1.4.7 : 선택됨
+				GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strTextSelected, textureSelected, tooltip);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding_White2Cyan, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(strTextSelected, textureSelected, tooltip);
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding_White2Cyan, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -4422,20 +4063,8 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//if (alignmentStyle != null)
-				//{
-				//	guiStyle.alignment = alignmentStyle.alignment;
-				//}
-
-				//이전
-				//return GUILayout.Button(new GUIContent(strTextNotSelected, textureNotSelected, tooltip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(strTextNotSelected, textureNotSelected, tooltip);
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(strTextNotSelected, textureNotSelected, tooltip);
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -4451,47 +4080,45 @@ namespace AnyPortrait
 
 			if (!isAvailable)
 			{
-				if (EditorGUIUtility.isProSkin)
-				{
-					//textColor = Color.black;
-					GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-				}
-				else
-				{
-					//textColor = Color.white;
-					GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-				}
+				//if (EditorGUIUtility.isProSkin)
+				//{
+				//	//textColor = Color.black;
+				//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+				//}
+				//else
+				//{
+				//	//textColor = Color.white;
+				//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+				//}
 
-				//이전
-				//GUILayout.Box(new GUIContent(strTextNotAvailable, textureNotAvailable, tooltip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
+				//변경 v1.4.7 : 불가
+				GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotAvailable, textureNotAvailable, tooltip);
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotAvailable, textureNotAvailable, tooltip);
 
-				GUILayout.Box(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Box_MiddleLeft_BtnMargin_White2Black, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				GUILayout.Box(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Box_MiddleLeft_BtnMargin_White2Black, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 				return false;
 			}
 			else if (isSelected)
 			{
-				if (EditorGUIUtility.isProSkin)
-				{
-					//밝은 파랑 + 하늘색
-					GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-				}
-				else
-				{
-					//청록색 + 흰색
-					GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-				}
+				//if (EditorGUIUtility.isProSkin)
+				//{
+				//	//밝은 파랑 + 하늘색
+				//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+				//}
+				//else
+				//{
+				//	//청록색 + 흰색
+				//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+				//}
 
-				//이전
-				//bool isBtn = GUILayout.Button(new GUIContent(strTextSelected, textureSelected, tooltip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
+				//변경 v1.4.7 : 선택됨
+				GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected, textureSelected, tooltip);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding_White2Cyan, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected, textureSelected, tooltip);
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding_White2Cyan, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -4499,12 +4126,8 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//이전
-				//return GUILayout.Button(new GUIContent(strTextNotSelected, textureNotSelected, tooltip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotSelected, textureNotSelected, tooltip);
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotSelected, textureNotSelected, tooltip);
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -4518,27 +4141,30 @@ namespace AnyPortrait
 
 			if (isSelected)
 			{
-				if (EditorGUIUtility.isProSkin)
-				{
-					//밝은 파랑 + 하늘색
-					GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-				}
-				else
-				{
-					//청록색 + 흰색
-					GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-				}
+				//if (EditorGUIUtility.isProSkin)
+				//{
+				//	//밝은 파랑 + 하늘색
+				//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+				//}
+				//else
+				//{
+				//	//청록색 + 흰색
+				//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+				//}
+
+				//변경 v1.4.7 : 선택됨
+				GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 
 				if (iSelected == 0)
 				{
-					_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected1, textureSelected1, tooltip);
+					s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected1, textureSelected1, tooltip);
 				}
 				else
 				{
-					_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected2, textureSelected2, tooltip);
+					s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextSelected2, textureSelected2, tooltip);
 				}
 
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding_White2Cyan, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding_White2Cyan, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -4546,8 +4172,8 @@ namespace AnyPortrait
 			}
 			else
 			{
-				_sGUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotSelected, textureNotSelected, tooltip);
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(nSpace, strTextNotSelected, textureNotSelected, tooltip);
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleLeft_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -4569,59 +4195,60 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isCtrl)
 				{
 					//추가 : Ctrl을 누르면 연녹색으로 바뀐다.
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : Ctrl 키
+					GUI.backgroundColor = ToggleButtonColor_CtrlPressed;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
 
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//이전
-				//bool isBtn = GUILayout.Button(new GUIContent(texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -4634,15 +4261,8 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//이전
-				//return GUILayout.Button(new GUIContent(texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -4664,52 +4284,61 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isCtrl)
 				{
 					//추가 : Ctrl을 누르면 연녹색으로 바뀐다.
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : Ctrl 키
+					GUI.backgroundColor = ToggleButtonColor_CtrlPressed;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 
 				}
 
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content,
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content,
 												apGUIStyleWrapper.I.Button_MiddleCenter_VerticalMargin0,
 												apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -4724,15 +4353,8 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//이전
-				//return GUILayout.Button(new GUIContent(texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
-				return GUILayout.Button(_sGUIContentWrapper.Content,
+				s_GUIContentWrapper.SetTextImageToolTip(null, texture, toolTip);
+				return GUILayout.Button(s_GUIContentWrapper.Content,
 											apGUIStyleWrapper.I.Button_MiddleCenter_VerticalMargin0,
 											apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
@@ -4756,48 +4378,57 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isCtrl)
 				{
 					//추가 : Ctrl을 누르면 연녹색으로 바뀐다.
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : Ctrl 키
+					GUI.backgroundColor = ToggleButtonColor_CtrlPressed;
 				}
 				else if (isSelected)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	//GUI.backgroundColor = new Color(prevColor.r * 0.6f, prevColor.g * 1.6f, prevColor.b * 1.6f, 1.0f);
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
 				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
@@ -4807,8 +4438,8 @@ namespace AnyPortrait
 				//bool isBtn = GUILayout.Button(new GUIContent(textureSelected, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
 
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, textureSelected, toolTip);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(null, textureSelected, toolTip);
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -4826,18 +4457,21 @@ namespace AnyPortrait
 				if (isCtrl)
 				{
 					//추가 : Ctrl을 누르면 연녹색으로 바뀐다.
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : Ctrl 키
+					GUI.backgroundColor = ToggleButtonColor_CtrlPressed;
 				}
 
 				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
@@ -4847,8 +4481,8 @@ namespace AnyPortrait
 				//bool isBtnResult = GUILayout.Button(new GUIContent(textureNotSelected, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
 
 				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(null, textureNotSelected, toolTip);
-				bool isBtnResult = GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(null, textureNotSelected, toolTip);
+				bool isBtnResult = GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
 
@@ -4873,43 +4507,52 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (!isSync)
 				{
 					//동기화가 안된 경우
-					if (EditorGUIUtility.isProSkin)
-					{
-						//보라색 + 하늘색
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//보라색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 1.0f, prevColor.g * 0.2f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//보라색 + 하늘색
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//보라색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 1.0f, prevColor.g * 0.2f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 동기화 안됨
+					GUI.backgroundColor = ToggleButtonColor_NotSync;
 				}
 				else if (isEnabled)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
 				bool isBtn = GUILayout.Button(strTextSelected,
@@ -4927,9 +4570,6 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
 				return GUILayout.Button(strTextNotSelected, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
@@ -4948,43 +4588,52 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (!isSync)
 				{
 					//동기화가 안된 경우
-					if (EditorGUIUtility.isProSkin)
-					{
-						//보라색 + 하늘색
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//보라색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 1.0f, prevColor.g * 0.2f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//보라색 + 하늘색
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//보라색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 1.0f, prevColor.g * 0.2f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 동기화 안됨
+					GUI.backgroundColor = ToggleButtonColor_NotSync;
 				}
 				else if (isEnabled)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
 				bool isBtn = GUILayout.Button(
@@ -4993,12 +4642,6 @@ namespace AnyPortrait
 					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
-
-				//여기서는 이게 없어진다.
-				//if (!isAvailable)
-				//{
-				//	return false;
-				//}
 
 				return isBtn;
 			}
@@ -5021,41 +4664,50 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (!isSync)
 				{
 					//동기화가 안된 경우
-					if (EditorGUIUtility.isProSkin)
-					{
-						//보라색 + 하늘색
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//보라색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 1.0f, prevColor.g * 0.2f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//보라색 + 하늘색
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//보라색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 1.0f, prevColor.g * 0.2f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 동기화 안됨
+					GUI.backgroundColor = ToggleButtonColor_NotSync;
 				}
 				else if (isEnabled)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
 				bool isBtn = GUILayout.Button(image,
@@ -5092,48 +4744,57 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (!isSync)
 				{
 					//동기화가 안된 경우
-					if (EditorGUIUtility.isProSkin)
-					{
-						//보라색 + 하늘색
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//보라색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 1.0f, prevColor.g * 0.2f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//보라색 + 하늘색
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//보라색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 1.0f, prevColor.g * 0.2f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 동기화 안됨
+					GUI.backgroundColor = ToggleButtonColor_NotSync;
 				}
 				else if (isEnabled)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
-				_sGUIContentWrapper.SetTextImageToolTip(strTextSelected, image, null);
+				s_GUIContentWrapper.SetTextImageToolTip(strTextSelected, image, null);
 
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content,
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content,
 					(isAvailable == false ? apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Black : apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_White2Cyan),
 					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
@@ -5148,8 +4809,8 @@ namespace AnyPortrait
 			}
 			else
 			{
-				_sGUIContentWrapper.SetTextImageToolTip(strTextNotSelected, image, null);
-				return GUILayout.Button(_sGUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
+				s_GUIContentWrapper.SetTextImageToolTip(strTextNotSelected, image, null);
+				return GUILayout.Button(s_GUIContentWrapper.Content, apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
 		}
 
@@ -5161,48 +4822,56 @@ namespace AnyPortrait
 			if (isEnabled || !isAvailable || !isSync)
 			{
 				Color prevColor = GUI.backgroundColor;
-				//Color textColor = Color.white;
 
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (!isSync)
 				{
 					//동기화가 안된 경우
-					if (EditorGUIUtility.isProSkin)
-					{
-						//보라색 + 하늘색
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//보라색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 1.0f, prevColor.g * 0.2f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//보라색 + 하늘색
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//보라색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 1.0f, prevColor.g * 0.2f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 동기화 안됨
+					GUI.backgroundColor = ToggleButtonColor_NotSync;
 				}
 				else if (isEnabled)
 				{
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 				}
 
 				bool isBtn = GUILayout.Button(contentWrapper.Content,
@@ -5264,79 +4933,83 @@ namespace AnyPortrait
 				if (!isAvailable)
 				{
 					//회색 (Pro는 글자도 진해짐)
-					if (EditorGUIUtility.isProSkin)
-					{
-						//textColor = Color.black;
-						GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
-					}
-					else
-					{
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//textColor = Color.black;
+					//	GUI.backgroundColor = new Color(0.4f, 0.4f, 0.4f, 1.0f);
+					//}
+					//else
+					//{
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 불가
+					GUI.backgroundColor = Toggle2SideButtonColor_NotAvailable;
 				}
 				else if (isCtrl)
 				{
 					//추가 : Ctrl을 누르면 연녹색으로 바뀐다.
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 1.5f, prevColor.b * 0.5f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : Ctrl
+					GUI.backgroundColor = ToggleButtonColor_CtrlPressed;
 				}
 				else if (selectionType == 1)
 				{
 					//메인 선택 : 파란색 또는 청록색
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//청록색 + 흰색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//청록색 + 흰색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 0.2f, prevColor.g * 0.8f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨 (메인)
+					GUI.backgroundColor = Toggle2SideButtonColor_Selected;
 
 				}
 				else if (selectionType == 2)
 				{
 					//서브 선택 : 보라색
-					if (EditorGUIUtility.isProSkin)
-					{
-						//밝은 파랑 + 하늘색
-						//textColor = Color.cyan;
-						GUI.backgroundColor = new Color(0.8f, 0.0f, 1.0f, 1.0f);
-					}
-					else
-					{
-						//보라색
-						//textColor = Color.white;
-						GUI.backgroundColor = new Color(prevColor.r * 1.1f, prevColor.g * 0.3f, prevColor.b * 1.1f, 1.0f);
-					}
+					//if (EditorGUIUtility.isProSkin)
+					//{
+					//	//밝은 파랑 + 하늘색
+					//	//textColor = Color.cyan;
+					//	GUI.backgroundColor = new Color(0.8f, 0.0f, 1.0f, 1.0f);
+					//}
+					//else
+					//{
+					//	//보라색
+					//	//textColor = Color.white;
+					//	GUI.backgroundColor = new Color(prevColor.r * 1.1f, prevColor.g * 0.3f, prevColor.b * 1.1f, 1.0f);
+					//}
+
+					//변경 v1.4.7 : 선택됨 (서브)
+					GUI.backgroundColor = Toggle3SideButtonColor_SubSelected;
 
 				}
 
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//이전
-				//bool isBtn = GUILayout.Button(new GUIContent(texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(text, null, toolTip);
-				bool isBtn = GUILayout.Button(_sGUIContentWrapper.Content,
+				s_GUIContentWrapper.SetTextImageToolTip(text, null, toolTip);
+				bool isBtn = GUILayout.Button(s_GUIContentWrapper.Content,
 					apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding,
-					//isColoredText ? apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_Orange2Yellow : apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding, 
 					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 
 				GUI.backgroundColor = prevColor;
@@ -5350,16 +5023,8 @@ namespace AnyPortrait
 			}
 			else
 			{
-				//GUIStyle guiStyle = new GUIStyle(GUI.skin.button);
-				//guiStyle.padding = GUI.skin.box.padding;
-
-				//이전
-				//return GUILayout.Button(new GUIContent(texture, toolTip), guiStyle, GUILayout.Width(width), GUILayout.Height(height));
-
-				//변경
-				_sGUIContentWrapper.SetTextImageToolTip(text, null, toolTip);
-				return GUILayout.Button(_sGUIContentWrapper.Content,
-					//isColoredText ? apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding_Orange2Yellow : apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding,
+				s_GUIContentWrapper.SetTextImageToolTip(text, null, toolTip);
+				return GUILayout.Button(s_GUIContentWrapper.Content,
 					apGUIStyleWrapper.I.Button_MiddleCenter_BoxPadding,
 					apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(height));
 			}
@@ -5737,7 +5402,8 @@ namespace AnyPortrait
 
 			//이걸 활용하는 GUIStyle도 초기화
 			_whiteGUIStyle = null;
-			_whiteGUIStyle_Box = null;
+			//_whiteGUIStyle_Box = null;
+			_whiteGUIStyle_BoxIcon = null;
 		}
 
 
@@ -5801,26 +5467,44 @@ namespace AnyPortrait
 		}
 
 		//삭제 v1.4.6 : WhiteGUIStyle로 대체한다.
-		private static GUIStyle _whiteGUIStyle_Box = null;
-		public static GUIStyle WhiteGUIStyle_Box
+		//private static GUIStyle _whiteGUIStyle_Box = null;
+		//public static GUIStyle WhiteGUIStyle_Box
+		//{
+		//	get
+		//	{
+		//		if (_whiteGUIStyle_Box == null)
+		//		{
+		//			//_whiteGUIStyle_Box = new GUIStyle(GUI.skin.box);
+
+		//			//[v1.4.6] 버그 해결 용. GUI.skin.box가 외부 요인으로 오엽되었을 수 있다.
+		//			_whiteGUIStyle_Box = new GUIStyle(GUIStyle.none);//이거 사용처가 Box와 상관 없는 곳이 많아서 이래도 될 듯
+		//			_whiteGUIStyle_Box.normal.background = WhiteTexture;
+
+		//			//Color debugColor = _whiteGUIStyle_Box.normal.background.GetPixel(2, 2);
+		//			//Debug.Log("GUI Style Debug Color : " + debugColor + " / Dimension : " + _whiteGUIStyle_Box.normal.background.dimension);
+					
+					
+		//		}
+
+		//		return _whiteGUIStyle_Box;
+		//	}
+		//}
+
+		//작은 색상 사각형 아이콘의 경우
+		private static GUIStyle _whiteGUIStyle_BoxIcon = null;
+
+		/// <summary>작은 박스형 아이콘에 사용하자</summary>
+		public static GUIStyle WhiteGUIStyle_BoxIcon
 		{
 			get
 			{
-				if (_whiteGUIStyle_Box == null)
+				if (_whiteGUIStyle_BoxIcon == null)
 				{
-					//_whiteGUIStyle_Box = new GUIStyle(GUI.skin.box);
-
-					//[v1.4.6] 버그 해결 용. GUI.skin.box가 외부 요인으로 오엽되었을 수 있다.
-					_whiteGUIStyle_Box = new GUIStyle(GUIStyle.none);//이거 사용처가 Box와 상관 없는 곳이 많아서 이래도 될 듯
-					_whiteGUIStyle_Box.normal.background = WhiteTexture;
-
-					//Color debugColor = _whiteGUIStyle_Box.normal.background.GetPixel(2, 2);
-					//Debug.Log("GUI Style Debug Color : " + debugColor + " / Dimension : " + _whiteGUIStyle_Box.normal.background.dimension);
-					
-					
+					_whiteGUIStyle_BoxIcon = new GUIStyle(GUI.skin.box);//이거 사용처가 Box와 상관 없는 곳이 많아서 이래도 될 듯
+					_whiteGUIStyle_BoxIcon.normal.background = WhiteTexture;
 				}
 
-				return _whiteGUIStyle_Box;
+				return _whiteGUIStyle_BoxIcon;
 			}
 		}
 
@@ -6892,8 +6576,8 @@ namespace AnyPortrait
 
 
 		//--------------------------------------------------------------------------------------
-		private static Color _highlightColor_Normal = new Color(0.1f, 1.0f, 0.9f, 1.0f);
-		private static Color _highlightColor_Pro = new Color(0.3f, 1.0f, 1.0f, 1.0f);
+		private static Color _highlightColor_Normal = new Color(0.1f, 1.2f, 0.9f, 1.0f);
+		private static Color _highlightColor_Pro = new Color(0.3f, 1.7f, 1.3f, 1.0f);//v1.4.7 : 더 밝게 변경
 
 		private static Color _highlightHierarchyUnitColor_Pro_A = new Color(0.0f, 0.45f, 0.5f, 1.0f);
 		private static Color _highlightHierarchyUnitColor_Pro_B = new Color(0.0f, 0.25f, 0.3f, 1.0f);
@@ -6989,7 +6673,7 @@ namespace AnyPortrait
 					GUI.backgroundColor = GetAnimatedHighlightHierarchyUnitColor();//이건 반짝이는 색상 이용
 					break;
 			}
-			GUI.Box(new Rect(posX, posY, width, height), NO_TEXT, WhiteGUIStyle_Box);
+			GUI.Box(new Rect(posX, posY, width, height), NO_TEXT, WhiteGUIStyle);
 
 			GUI.backgroundColor = prevColor;
 		}
@@ -6999,7 +6683,7 @@ namespace AnyPortrait
 		{
 			Color prevColor = GUI.backgroundColor;
 			GUI.backgroundColor = customBGColor;
-			GUI.Box(new Rect(posX, posY, width, height), NO_TEXT, WhiteGUIStyle_Box);
+			GUI.Box(new Rect(posX, posY, width, height), NO_TEXT, WhiteGUIStyle);
 
 			GUI.backgroundColor = prevColor;
 		}
