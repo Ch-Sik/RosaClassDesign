@@ -249,7 +249,7 @@ public class PlayerMovement : MonoBehaviour
 
     internal void StopClimb(Vector2 inputVector)
     {
-        if (moveVector.x != 0)
+        if (moveVector.x != 0 && !isStopControl)
         {
             if(!DetectWall() && climbTimer != null)
             {

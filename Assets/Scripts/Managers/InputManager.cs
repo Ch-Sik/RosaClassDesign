@@ -50,7 +50,7 @@ public class InputManager : MonoBehaviour
     
     // 상태
     [SerializeField, ReadOnly] public PlayerMoveState _moveState = PlayerMoveState.GROUNDED;
-    [SerializeField, ReadOnly] private PlayerActionState _actionState = PlayerActionState.DEFAULT;
+    [SerializeField, ReadOnly] public PlayerActionState _actionState = PlayerActionState.DEFAULT;
     [SerializeField, ReadOnly] private UiState _uiState = UiState.IN_GAME;
 
     private void Awake()
