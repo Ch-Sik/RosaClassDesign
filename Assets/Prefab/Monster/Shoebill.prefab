@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 3904818252537098650}
   - component: {fileID: 5013105644517910399}
   - component: {fileID: 1790626090463474080}
-  - component: {fileID: 2017669238332781248}
+  - component: {fileID: 5657901806261330865}
   m_Layer: 0
   m_Name: AIPerception
   m_TagString: Untagged
@@ -105,8 +105,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 3549201638025795251}
---- !u!61 &2017669238332781248
-BoxCollider2D:
+--- !u!58 &5657901806261330865
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -138,18 +138,8 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 12, y: 10}
-  m_EdgeRadius: 0
+  m_Radius: 7
 --- !u!1 &3158601471185591566
 GameObject:
   m_ObjectHideFlags: 0
@@ -199,7 +189,7 @@ GameObject:
   - component: {fileID: 4996447804770055123}
   - component: {fileID: 1666916584344856952}
   - component: {fileID: 3649995109400119642}
-  - component: {fileID: 4615658933237724122}
+  - component: {fileID: 2125947684990837678}
   - component: {fileID: 1870944607072788904}
   m_Layer: 23
   m_Name: FlyingEnemy_Tackle
@@ -331,7 +321,7 @@ MonoBehaviour:
   patrolStopTime: 1
   patrolSpeed: 5
   terrainSensor: {fileID: 3158601471185591566}
-  terrainSensorOffset: 0.5
+  terrainSensorOffset: 1
   drawPatrolCenter: 0
   drawDestDecision: 1
   drawDestPoint: 0
@@ -352,7 +342,7 @@ MonoBehaviour:
   acceptableRadius: 5
   chaseSpeed: {x: 1, y: 1}
   terrainSensor: {fileID: 3158601471185591566}
-  terrainSensorOffset: 0.5
+  terrainSensorOffset: 1
 --- !u!114 &1666916584344856952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -367,7 +357,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 3549201638025795251}
   superArmourOnActiveTime: 0
-  startupDuration: 0.5
+  startupDuration: 1
   activeDuration: 0.8
   recoveryDuration: 1
   currentState: 0
@@ -378,7 +368,8 @@ MonoBehaviour:
   wallStunEnabled: 1
   wallStunDuration: 0
   terrainSensor: {fileID: 3158601471185591566}
-  terrainSensorOffset: 0.5
+  terrainSensorOffset: 1
+  enemy: {fileID: 0}
 --- !u!114 &3649995109400119642
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -393,8 +384,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
   hittReactionTime: 0
---- !u!61 &4615658933237724122
-BoxCollider2D:
+--- !u!58 &2125947684990837678
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -426,18 +417,8 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0.15625, y: 0.15625, z: 0.15625, w: 0.15625}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
+  m_Radius: 0.7
 --- !u!50 &1870944607072788904
 Rigidbody2D:
   serializedVersion: 4
@@ -507,7 +488,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5583020702702528783}
   m_Layer: 23
-  m_Name: FlyingEnemy_Tackle
+  m_Name: Shoebill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

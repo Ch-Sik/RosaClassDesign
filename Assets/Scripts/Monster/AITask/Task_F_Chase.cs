@@ -100,4 +100,10 @@ public class Task_F_Chase : Task_Base
         // TODO: 플레이어의 넉백과 충돌하지 않는지 확인 필요
         rigidbody.velocity = Vector2.zero;
     }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, acceptableRadius);
+    }
 }
