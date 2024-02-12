@@ -308,6 +308,7 @@ public class PlayerAnimation : MonoBehaviour
     }
 
     Rect leftHalfScreen = new Rect(0, 0, 0.5f, 1f);
+    Rect rightHalfScreen = new Rect(0.5f, 0, 0.5f, 1f);
     Rect wholeScreen = new Rect(0, 0, 1f, 1f);
 
     private Vector2 headDirection = new Vector2(0, 0);
@@ -317,9 +318,18 @@ public class PlayerAnimation : MonoBehaviour
         Vector3 mousePosition = Input.mousePosition;
         Vector3 viewportPosition = Camera.main.ScreenToViewportPoint(mousePosition);
 
-        // Viewport 좌표를 (-1, -1)에서 (1, 1) 범위로 매핑
-        headDirection = MapToRange(viewportPosition, leftHalfScreen.min, leftHalfScreen.max, new Vector2(-1, -1), new Vector2(1, 1));
-        eyeDirection = MapToRange(viewportPosition, wholeScreen.min, wholeScreen.max, new Vector2(-1, -1), new Vector2(1, 1));
+        if(gameObject.transform.localScale.x == -1)
+        {
+            // Viewport 좌표를 (-1, -1)에서 (1, 1) 범위로 매핑
+            headDirection = MapToRange(viewportPosition, rightHalfScreen.min, rightHalfScreen.max, new Vector2(-1, -1), new Vector2(1, 1));
+            eyeDirection = MapToRange(viewportPosition, wholeScreen.min, wholeScreen.max, new Vector2(-1, -1), new Vector2(1, 1));
+        }
+        else
+        {
+            // Viewport 좌표를 (-1, -1)에서 (1, 1) 범위로 매핑
+            headDirection = MapToRange(viewportPosition, leftHalfScreen.min, leftHalfScreen.max, new Vector2(1, -1), new Vector2(-1, 1));
+            eyeDirection = MapToRange(viewportPosition, wholeScreen.min, wholeScreen.max, new Vector2(1, -1), new Vector2(-1, 1));
+        }
 
         portrait.SetControlParamVector2("Head Direction", headDirection);
         portrait.SetControlParamVector2("Eye Direction", eyeDirection);
