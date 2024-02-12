@@ -16,6 +16,13 @@ public class MonsterAOE : MonoBehaviour
     [SerializeField, Tooltip("공격이 완료/취소되었을 때 참이면 오브젝트 삭제, 거짓이면 오브젝트 비활성화")]
     private bool destroyOnAttackEnd = true;
 
+    // 현재 디버깅용으로 공격활성화 시각화를 단순히 스프라이트 컬러 바꾸는 걸로 처리하는데 그거 처리용.
+    // 공격 이펙트 제대로 적용되면 이건 삭제할 것.
+    [SerializeField]
+    private Color startupColor;
+    [SerializeField]
+    private Color activatedColor;
+
     public void Init()
     {
         gameObject.SetActive(true);
@@ -25,6 +32,8 @@ public class MonsterAOE : MonoBehaviour
             Debug.Assert(collider != null, $"{gameObject.name}: Collider2D를 찾을 수 없음");
         }
         collider.enabled = false;
+        // TODO: 공격 활성화의 시각화를 제대로 된 공격 이펙트로 바꾸기
+        renderer.color = startupColor;
     }
 
     public void ExecuteAttack()
@@ -32,7 +41,7 @@ public class MonsterAOE : MonoBehaviour
         Debug.Log("범위 공격 수행");
         collider.enabled = true;
         // TODO: 공격 활성화의 시각화를 제대로 된 공격 이펙트로 바꾸기
-        renderer.color = new Color(0.6f, 1, 0.6f);
+        renderer.color = activatedColor;
         if (destroyOnAttackEnd)
             Destroy(gameObject, 1f);
         else

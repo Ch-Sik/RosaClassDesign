@@ -11,17 +11,33 @@ tree("Phase0")
                 isHpOverPhaseLimit(0)           // HP 체크하고 만약 HP가 기준 아래(=fail)일 경우 Phase2로 이행
                 mute                            // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지
                     random                      // 체력이 충분하다면 랜덤 패턴 수행
-                        ShockwaveAttack()
-                        TackleAttack()
+                        parallel
+                            MeleeAttack()
+                            sequence
+                                Wait(1.6)
+                                MultipleHowitzerAttack()
+                        parallel                // 패턴 1: 충격파 & 낙하물
+                            ShockwaveAttack()
+                            sequence
+                                Wait(1.8)
+                                FallingObjectsAttack(3)
+                        TackleAttack()          // 패턴 2: 몸통박치기
 
 tree("PhaseChange")
-    MeleeAttack()
+    RoarAttack()
 
 tree("Phase1")
     repeat                                      // 마지막 Phase에서는 HP 체크할 필요 없음.
         mute
-            random                                
+            random
+                parallel
+                    MeleeAttack()
+                    sequence
+                        Wait(1.6)
+                        MultipleHowitzerAttack()
                 TackleAttack()
-                sequence
+                parallel
                     ShockwaveCombo()
-                    StalactiteAttack()
+                    sequence
+                        Wait(1.8)
+                        FallingObjectsAttack(5)

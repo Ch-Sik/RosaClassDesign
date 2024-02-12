@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Panda;
 
-public class Task_A_Melee : Task_A_Base
+// 참고: 이 클래스는 일부 함수의 이름을 제외하고는 Task_A_Melee와 완벽하게 일치함.
+public class Task_A_Roar : Task_A_Base
 {
     // MonsterAOE랑 melee attack이랑 역할이 겹치는 것 같은데... 애초에 두 공격 방식을 하나로 통합해봐도 좋을 듯?
     [SerializeField, Tooltip("공격 범위를 나타내는 자식오브젝트 컴포넌트")]
@@ -20,7 +21,7 @@ public class Task_A_Melee : Task_A_Base
     }
 
     [Task]
-    private void MeleeAttack()
+    private void RoarAttack()
     {
         ExecuteAttack();
     }
@@ -34,23 +35,20 @@ public class Task_A_Melee : Task_A_Base
 
     protected override void OnStartupBegin()
     {
-        GameObject enemy;
-        blackboard.TryGet(BBK.Enemy, out enemy);
-        Debug.Assert(enemy != null, "근접공격 패턴: 적을 찾을 수 없음!");
-
-        LookAt2D(enemy.transform.position);
-
+        Debug.Log("공격 대기");
         attackInstance.Init();
     }
 
     protected override void OnActiveBegin()
     {
         // 공격 범위 미리보기를 실제 공격으로 변환
+        Debug.Log("공격 수행");
         attackInstance.ExecuteAttack();
     }
 
     protected override void OnRecoveryBegin()
     {
+        Debug.Log("공격 종료");
         attackInstance.gameObject.SetActive(false);
     }
 }

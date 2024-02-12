@@ -9,6 +9,7 @@ using UnityEngine;
 public class MonsterStalactite : MonoBehaviour
 {
     private new Rigidbody2D rigidbody;
+    private new Collider2D collider;
 
     [SerializeField]
     private float dropSpeed = 3f;
@@ -16,12 +17,14 @@ public class MonsterStalactite : MonoBehaviour
     public void Init()
     {
         rigidbody = GetComponent<Rigidbody2D>();
+        collider = GetComponent<Collider2D>();
         rigidbody.isKinematic = true;
     }
 
     public void Launch()
     {
         rigidbody.velocity = Vector2.down * dropSpeed;
+        rigidbody.isKinematic = false;
     }
 
     private void DoDestroy()
@@ -33,6 +36,9 @@ public class MonsterStalactite : MonoBehaviour
     {
         if(collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
+            rigidbody.isKinematic = true;
+            rigidbody.velocity = Vector2.zero;
+            collider.enabled = false;
             DoDestroy();
         }
     }
