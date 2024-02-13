@@ -53,8 +53,12 @@ public class Task_A_MultipleMortar : Task_A_Base
     }
 
     [Task]
-    private void MultipleHowitzerAttack()
+    private void MultipleMortarAttack(int projectileCount = -1)
     {
+        if(projectileCount > 0)
+        {
+            this.projectileCount = projectileCount;
+        }
         ExecuteAttack();
     }
 

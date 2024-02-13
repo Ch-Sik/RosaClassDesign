@@ -4,40 +4,63 @@ tree("Root")
         tree("PhaseChange")
         tree("Phase1")
 
-tree("Phase0")
-    not                                         // Phase 종료 조건 달성했을 때 Fail 대신 Succeed 반환하도록 not 게이트 사용
-        repeat
-            sequence
-                isHpOverPhaseLimit(0)           // HP 체크하고 만약 HP가 기준 아래(=fail)일 경우 Phase2로 이행
-                mute                            // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지
-                    random                      // 체력이 충분하다면 랜덤 패턴 수행
-                        parallel
-                            MeleeAttack()
-                            sequence
-                                Wait(1.6)
-                                MultipleHowitzerAttack()
-                        parallel                // 패턴 1: 충격파 & 낙하물
-                            ShockwaveAttack()
-                            sequence
-                                Wait(1.8)
-                                FallingObjectsAttack(3)
-                        TackleAttack()          // 패턴 2: 몸통박치기
+// 1페이즈
+tree("Phase0") 
+  not                          // Phase 종료 조건 달성했을 때 Fail 대신 Succeed 반환하도록 not 게이트 사용
+    repeat 
+      sequence
+        isHpOverPhaseLimit(0)           // HP 체크하고 만약 HP가 기준 아래(=fail)일 경우 Phase2로 이행
+        mute                            // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지   
+            fallback
+                sequence
+                    isEnemyCloserThan(5.0)  // 적이 5M보다 가깝다면 근접 패턴,
+                    tree("Melee1")
+                random                      // 아니라면 나머지 2패턴 중 랜덤 수행
+                    tree("Shockwave1")      // 패턴: 충격파 & 낙하물
+                    TackleAttack()          // 패턴: 몸통박치기
 
+// 페이즈 전환 시
 tree("PhaseChange")
     RoarAttack()
 
+// 2페이즈
 tree("Phase1")
-    repeat                                      // 마지막 Phase에서는 HP 체크할 필요 없음.
-        mute
-            random
-                parallel
-                    MeleeAttack()
-                    sequence
-                        Wait(1.6)
-                        MultipleHowitzerAttack()
-                TackleAttack()
-                parallel
-                    ShockwaveCombo()
-                    sequence
-                        Wait(1.8)
-                        FallingObjectsAttack(5)
+  repeat                                      // 마지막 Phase에서는 HP 체크할 필요 없음.
+    mute
+        fallback
+            sequence
+                isEnemyCloserThan(5.0)      // 적이 5M보다 가깝다면 근접 패턴,
+                tree("Melee2")
+            random                          // 아니라면 나머지 2패턴 중 랜덤
+                tree("Shockwave2")          // 패턴: 강화 충격파 & 낙하물
+                TackleAttack()              // 패턴: 몸통박치기
+
+
+// 여기서부터는 각각의 공격패턴만 따로 구현한 서브트리들
+tree("Melee1")
+    parallel
+        MeleeAttack()
+        sequence
+            Wait(1.6)
+            MultipleMortarAttack(3)
+
+tree("Melee2")
+    parallel
+        MeleeAttack()
+        sequence
+            Wait(1.6)
+            MultipleMortarAttack(5)
+
+tree("Shockwave1")
+    parallel                
+        ShockwaveAttack()
+        sequence
+            Wait(1.8)
+            FallingObjectsAttack(3)
+
+tree("Shockwave2")
+    parallel
+        ShockwaveCombo()
+        sequence
+            Wait(1.8)
+            FallingObjectsAttack(5)
