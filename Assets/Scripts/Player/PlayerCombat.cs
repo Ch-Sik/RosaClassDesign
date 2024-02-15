@@ -5,6 +5,7 @@ using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
+using Utilities;
 
 /// <summary>
 /// ButterFlyAction을 위해서라도, 얘는 최종부모에 넣어두자.
@@ -20,6 +21,7 @@ public class PlayerCombat : MonoBehaviour
     public bool isAttack = false;                   //공격중이라면 true, 아니라면 false;
     public bool isFly = false;                      //나비를 타고 있다면 true, 아니라면 false;
     public bool canInteraction = true;              //좌클릭으로 인터렉션 가능하면 true, 아니라면 false //공격시 범위 내에 적이 있다면 false
+    public bool canAttack = true;                   //쿨타임 계산
 
     [Header("CombatOptions")]
     public LayerMask wall;
@@ -42,6 +44,7 @@ public class PlayerCombat : MonoBehaviour
     {
         attackObject = attackEntity.GetComponent<PlayerDamageInflictor>();
         attackObject.Init(this, wall, attackableObjects, butterfly);
+        attackObject.gameObject.SetActive(false);
         aimInput = InputManager.Instance._inputAsset.FindActionMap("ActionDefault").FindAction("Aim");
     }
 
@@ -53,8 +56,11 @@ public class PlayerCombat : MonoBehaviour
         mouse = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPos2.x, mouseScreenPos2.y, zDistance));   //마우스의 월드 좌표 반환
         angle = Mathf.Atan2(mouse.y - transform.position.y, mouse.x - transform.position.x) * Mathf.Rad2Deg;    //해당 좌표 데이터를 기반으로 각도 얻음
         direction = new Vector2(mouse.x - transform.position.x, mouse.y - transform.position.y).normalized;     //해당 좌표 데이터를 기반으로 방향벡터 얻음
+        
+        /*
         if (transform.lossyScale.x < 0)
             direction = new Vector2(-1 * direction.x, direction.y);
+        */
     }
 
     //공격 함수
@@ -64,11 +70,20 @@ public class PlayerCombat : MonoBehaviour
         if (isAttack)
             return;
 
+        //공격 쿨이라면, 리턴
+        if (!canAttack)
+            return;
+
         isAttack = true;
+
+        //공격 쿨다운
+        canAttack = false;
+        Invoke("AttackCooldown", attackCooltime);
 
         //공격전에 마우스 데이터를 추출한다.
         SetData();
 
+        /*
         //바라보는 방향 == 공격방향을 확인
         bool isPlayerLookAttackDirection = IsPlayerLookAttackDirection(angle);
         //공격방향을 바라보도록 플립
@@ -83,7 +98,7 @@ public class PlayerCombat : MonoBehaviour
             angle *= -1;
             direction.x *= -1;
         }
-
+        */
         //시퀀스를 할당한다.
         attack = DOTween.Sequence()
         //공격 준비시간을 적용
@@ -91,7 +106,9 @@ public class PlayerCombat : MonoBehaviour
         //공격전 이벤트와 함께, 공격판정체의 방향을 변경해주고(사실 의미 없으나 일단 넣은 것입니다.), 충돌체를 켜준다.
         .AppendCallback(() =>
         {
+            attackEntity.SetActive(true);
             OnStartAttack();
+            attackEntity.transform.position = this.transform.position;
             attackEntity.transform.rotation = Quaternion.Euler(0f, 0f, angle);
             attackObject.StartAttack();
         })
@@ -102,6 +119,7 @@ public class PlayerCombat : MonoBehaviour
         //시퀀스가 끝나며, 공격끝 이벤트와 함께 공격판정체의 충돌체를 끈다.
         .OnComplete(() =>
         {
+            /*
             //방향 전환을 원상태로 복구한다.
             if (!isPlayerLookAttackDirection)
             {
@@ -109,10 +127,14 @@ public class PlayerCombat : MonoBehaviour
                 theScale.x *= -1;
                 transform.localScale = theScale;
             }
+            */
             attackObject.EndAttack();
+            attackEntity.SetActive(false);
             OnEndAttack();
         });
     }
+
+    private void AttackCooldown() { canAttack = true; }
 
     [Button]
     //플레이어가 바라보는 방향과 공격방향이 동일한지를 따진다.
@@ -134,6 +156,7 @@ public class PlayerCombat : MonoBehaviour
         attackEntity.transform.localPosition = Vector2.zero;
         attackObject.EndAttack();
         OnEndAttack();
+        attackEntity.SetActive(false);
     }
 
     //공격 시작 이벤트
@@ -188,30 +211,4 @@ public class PlayerCombat : MonoBehaviour
         Gizmos.DrawWireCube(Vector3.zero, Vector3.one); // 회전된 직사각형 그리기
         Gizmos.matrix = Matrix4x4.identity; // 다음 Gizmo에 영향을 미치지 않도록 기본 매트릭스로 돌아가기
     }
-
-    /*
-    private void OnDrawGizmos()
-    {
-        if (!showGizmo)
-            return;
-
-        Vector3 direction = new Vector2(mouse.x - transform.position.x, mouse.y - transform.position.y).normalized;
-        Vector3 center = transform.position + direction * (attackDistance / 2);
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-
-        // 기즈모에서 그린 영역과 겹치는 충돌체 검사
-        bool isHit = Physics2D.OverlapBox(center, new Vector2(attackDistance, 1), angle, LayerMask.GetMask("YourCollisionLayer"));
-
-        // 기즈모 색상 설정
-        Gizmos.color = isHit ? Color.red : Color.green;
-
-        // 회전된 직사각형 그리기
-        Matrix4x4 rotationMatrix = Matrix4x4.TRS(center, Quaternion.Euler(0, 0, angle), new Vector3(attackDistance, 1, 1));
-        Gizmos.matrix = rotationMatrix;
-        Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
-
-        // 다음 Gizmo에 영향을 미치지 않도록 기본 매트릭스로 돌아가기
-        Gizmos.matrix = Matrix4x4.identity;
-    }
-     */
 }
