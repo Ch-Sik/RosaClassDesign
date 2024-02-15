@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -72,12 +72,26 @@ namespace AnyPortrait
 		[SerializeField, NonBackupField]//백업하진 않는다. 다시 Bake하세염
 		public apOptSortedRenderBuffer _sortedRenderBuffer = new apOptSortedRenderBuffer();
 
+
+		//추가 v1.4.8 : 루트 모션을 위한 본. 없을 수도 있다.
+		[SerializeField] public int _rootMotionBoneID = -1;
+		[NonSerialized] private apOptBone _linkedRootMotionBone = null;
+		public apOptBone RootMotionBone { get { return _linkedRootMotionBone; } }
+
+
+
 		//추가 2.25 : Flipped 체크
 		private bool _isFlipped_X = false;
 		private bool _isFlipped_Y = false;
-		//private bool _isFlipped_X_Prev = false;
-		//private bool _isFlipped_Y_Prev = false;
+		
 		//private bool _isFlipped = false;
+
+		//v1.4.7 : 이전의 Flip 여부가 체크되었는지 여부 + 값을 저장한다.
+		//값이 변한다면 메시 갱신에 변화가 있기 때문
+		private bool _isFlippedCheckedPrev = false;
+		private bool _isFlipped_X_Prev = false;
+		private bool _isFlipped_Y_Prev = false;
+
 
 		private bool _isFirstFlippedCheck = true;
 		//private Vector3 _defaultScale = Vector3.one;
@@ -86,6 +100,12 @@ namespace AnyPortrait
 		[NonSerialized]
 		public bool _isVisible = false;
 		
+
+		//추가 v1.4.8 : 루트모션용 변수와 함수 대리자
+		private apOptRootMotionData _rootMotionData = null;
+		public delegate void FUNC_ROOTMOTION_UPDATE(apOptRootUnit rootUnit);
+
+
 
 
 
@@ -102,6 +122,11 @@ namespace AnyPortrait
 			//_isFlipped = false;
 
 			_isFirstFlippedCheck = true;
+
+			//v1.4.7
+			_isFlippedCheckedPrev = false;
+			_isFlipped_X_Prev = false;
+			_isFlipped_Y_Prev = false;
 		}
 
 		void Start()
@@ -181,6 +206,21 @@ namespace AnyPortrait
 			{
 				_optTransforms[i].SetExtraDepthChangedEvent(OnExtraDepthChanged);
 			}
+			
+			//v1.4.8
+			//루트 모션용 본도 체크하자
+			_linkedRootMotionBone = null;
+			if(_rootMotionBoneID >= 0)
+			{
+				if(_rootOptTransform != null)
+				{
+					_linkedRootMotionBone = _rootOptTransform.GetBone(_rootMotionBoneID);
+				}
+			}
+
+			//v1.4.8 루트 모션 초기화
+			if(_rootMotionData == null) { _rootMotionData = new apOptRootMotionData(); }
+			_rootMotionData.ResetData();
 		}
 
 		//추가 19.5.28 : Async용으로 다시 작성된 함수
@@ -193,6 +233,21 @@ namespace AnyPortrait
 				_optTransforms[i].SetExtraDepthChangedEvent(OnExtraDepthChanged);
 			}
 
+			//v1.4.8
+			//루트 모션용 본도 체크하자
+			_linkedRootMotionBone = null;
+			if(_rootMotionBoneID >= 0)
+			{
+				if(_rootOptTransform != null)
+				{
+					_linkedRootMotionBone = _rootOptTransform.GetBone(_rootMotionBoneID);
+				}
+			}
+
+			//v1.4.8 루트 모션 초기화
+			if(_rootMotionData == null) { _rootMotionData = new apOptRootMotionData(); }
+			_rootMotionData.ResetData();
+
 			if(asyncTimer.IsYield())
 			{
 				yield return asyncTimer.WaitAndRestart();
@@ -201,7 +256,9 @@ namespace AnyPortrait
 
 		// Functions
 		//------------------------------------------------
-		public void UpdateTransforms(float tDelta)
+		public void UpdateTransforms(	float tDelta, 
+										bool isMeshRefreshFrame,//추가 v1.4.7 : 메시가 간헐적으로 갱신될 수 있기 때문에 실제 갱신 프레임을 알려준다.
+										FUNC_ROOTMOTION_UPDATE rootMotionEvent)
 		{
 			if (_rootOptTransform == null)
 			{
@@ -209,14 +266,25 @@ namespace AnyPortrait
 			}
 
 			//추가 : Flipped 체크
-			CheckFlippedTransform();
+			bool isFlipChanged = CheckFlippedTransform();
+
+			//v1.4.7
+			if(isFlipChanged)
+			{
+				//이번 프레임에 Flip 여부가 변경되었다면
+				//무조건 메시를 갱신하자
+				isMeshRefreshFrame = true;
+			}
 
 
+			//추가 v1.4.8
+			//루트 모션이 필요한 경우 업데이트하기
+			if(rootMotionEvent != null)
+			{
+				_rootMotionData.ReadyToUpdate();
+			}
 
 			//---------------------------------------------------------
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.BeginSample("Root Unit - Ready To Update Bones");
-//#endif
 
 			//추가 12.6
 			//Sorted Buffer 업데이트 준비
@@ -225,91 +293,62 @@ namespace AnyPortrait
 			//본 업데이트 1단계
 			_rootOptTransform.ReadyToUpdateBones();
 
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.EndSample();
-//#endif
 			//---------------------------------------------------------
-
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.BeginSample("Root Unit - Update Modifier");
-//#endif
 
 			//1. Modifer부터 업데이트 (Pre)
 			_rootOptTransform.UpdateModifier_Pre(tDelta);
 
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.EndSample();
-//#endif
-
 			//---------------------------------------------------------
 
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.BeginSample("Root Unit - Calculate Pre");
-//#endif
-
-
-			//2. 실제로 업데이트
+			//2. 모디파이어값 적용 (Pre)
 			_rootOptTransform.ReadyToUpdate();
-			_rootOptTransform.UpdateCalculate_Pre();//Post 작성할 것
-
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.EndSample();
-//#endif
+			_rootOptTransform.UpdateCalculate_Pre();
 
 
-			//추가 12.6
 			//Extra-Depth Changed 이벤트 있을 경우 처리 - Pre에서 다 계산되었을 것이다.
 			_sortedRenderBuffer.UpdateDepthChangedEventAndBuffers();
 
 			//---------------------------------------------------------
 
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.BeginSample("Root Unit - Update Bones World Matrix");
-//#endif
-
-			//Bone World Matrix Update
+			//3. Bone World Matrix 업데이트
 			//인자로는 지글본에 적용될 물리 값(시간과 여부)을 넣는다.
 			_rootOptTransform.UpdateBonesWorldMatrix(	_portrait.PhysicsDeltaTime, 
 														_portrait._isImportant && _portrait._isPhysicsPlay_Opt,
-														_portrait._isCurrentTeleporting//추가 22.7.7
+														_portrait._isCurrentTeleporting || _portrait._isCurrentRootUnitChanged//추가 22.7.7 + 추가 v1.4.7
 													);
-
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.EndSample();
-//#endif
 
 			//------------------------------------------------------------
 
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.BeginSample("Root Unit - Calculate Post (Modifier)");
-//#endif
-
-			//Modifier 업데이트 (Post)
+			//4. Modifier 업데이트 (Post)
 			_rootOptTransform.UpdateModifier_Post(tDelta);
 
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.EndSample();
-//#endif
-
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.BeginSample("Root Unit - Calculate Post (Update)");
-//#endif
-
+			//5. 모디파이어값 적용 (Post)
 			_rootOptTransform.UpdateCalculate_Post();//Post Calculate
 
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.EndSample();
-//#endif
 
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.BeginSample("Root Unit - Update Meshes");
-//#endif
-			_rootOptTransform.UpdateMeshes();//추가 20.4.2 : UpdateCalculate_Post() 함수의 일부 코드가 뒤로 빠졌다.
 
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.EndSample();
-//#endif
+			//6. 루트 모션
+			if(rootMotionEvent != null)
+			{
+				_rootMotionData.CalculateRootMotion();//루트모션 이동 계산
+				rootMotionEvent(this);
+			}
 
+
+
+			//7. 메시 갱신
+			if(isMeshRefreshFrame)
+			{
+				//현재 메시가 갱신되는 프레임이라면 (기본)
+				//추가 20.4.2 : UpdateCalculate_Post() 함수의 일부 코드가 뒤로 빠졌다.
+				_rootOptTransform.UpdateMeshes();
+			}
+			else
+			{
+				//메시는 갱신되지 않는 프레임이라면, 마스크 메시만 갱신하자
+				_rootOptTransform.UpdateMaskMeshes();
+			}
+			
 
 
 		}
@@ -359,7 +398,9 @@ namespace AnyPortrait
 			_rootOptTransform.UpdateModifier_Post(tDelta);
 
 			_rootOptTransform.UpdateCalculate_Post();//Post Calculate
-			_rootOptTransform.UpdateMeshes();//추가 20.4.2 : UpdateCalculate_Post() 함수의 일부 코드가 뒤로 빠졌다.
+
+			//추가 20.4.2 : UpdateCalculate_Post() 함수의 일부 코드가 뒤로 빠졌다.
+			_rootOptTransform.UpdateMeshes();
 
 		}
 
@@ -385,7 +426,7 @@ namespace AnyPortrait
 		/// </summary>
 		/// <param name="tDelta"></param>
 		/// <param name="isSyncBones"></param>
-		public void UpdateTransformsAsSyncChild(float tDelta, bool isSyncBones)
+		public void UpdateTransformsAsSyncChild(float tDelta, bool isSyncBones, bool isMeshRefreshFrame, FUNC_ROOTMOTION_UPDATE rootMotionEvent)
 		{
 			if (_rootOptTransform == null)
 			{
@@ -393,10 +434,25 @@ namespace AnyPortrait
 			}
 
 			//추가 : Flipped 체크
-			CheckFlippedTransform();
+			bool isFlipChanged = CheckFlippedTransform();
+
+			//v1.4.7
+			if(isFlipChanged)
+			{
+				//이번 프레임에 Flip 여부가 변경되었다면
+				//무조건 메시를 갱신하자
+				isMeshRefreshFrame = true;
+			}
 
 
 			//Sync Child의 업데이트에서는 일부 코드가 바뀐다.
+
+			//추가 v1.4.8
+			//루트 모션이 필요한 경우 업데이트하기
+			if(rootMotionEvent != null)
+			{
+				_rootMotionData.ReadyToUpdate();
+			}
 
 			//---------------------------------------------------------
 			//Sorted Buffer 업데이트 준비
@@ -430,7 +486,7 @@ namespace AnyPortrait
 				_rootOptTransform.UpdateBonesWorldMatrixAsSyncBones(
 														_portrait.PhysicsDeltaTime, 
 														_portrait._isImportant && _portrait._isPhysicsPlay_Opt,
-														_portrait._isCurrentTeleporting
+														_portrait._isCurrentTeleporting || _portrait._isCurrentRootUnitChanged//추가 22.7.7 + 추가 v1.4.7
 														);
 			}
 			else
@@ -438,7 +494,7 @@ namespace AnyPortrait
 				//일반
 				_rootOptTransform.UpdateBonesWorldMatrix(	_portrait.PhysicsDeltaTime, 
 															_portrait._isImportant && _portrait._isPhysicsPlay_Opt,
-															_portrait._isCurrentTeleporting
+															_portrait._isCurrentTeleporting || _portrait._isCurrentRootUnitChanged//추가 22.7.7 + 추가 v1.4.7
 															);
 			}
 			
@@ -452,8 +508,29 @@ namespace AnyPortrait
 			//_rootOptTransform.UpdateCalculate_Post();//Post Calculate
 			_rootOptTransform.UpdateCalculate_Post_AsSyncChild();//[Sync]
 
-			_rootOptTransform.UpdateMeshes();//추가 20.4.2 : UpdateCalculate_Post() 함수의 일부 코드가 뒤로 빠졌다.
 
+
+			//루트 모션
+			if(rootMotionEvent != null)
+			{
+				_rootMotionData.CalculateRootMotion();
+				rootMotionEvent(this);
+			}
+
+			//추가 20.4.2 : UpdateCalculate_Post() 함수의 일부 코드가 뒤로 빠졌다.
+			//추가 v1.4.7 : 메시 갱신이 간헐적으로 될 수 있다.
+
+			if(isMeshRefreshFrame)
+			{
+				//현재 메시가 갱신되는 프레임이라면 (기본)
+				//추가 20.4.2 : UpdateCalculate_Post() 함수의 일부 코드가 뒤로 빠졌다.
+				_rootOptTransform.UpdateMeshes();
+			}
+			else
+			{
+				//메시는 갱신되지 않는 프레임이라면, 마스크 메시만 갱신하자
+				_rootOptTransform.UpdateMaskMeshes();
+			}
 		}
 
 
@@ -475,6 +552,14 @@ namespace AnyPortrait
 			_rootOptTransform.Show(true);
 
 			_isVisible = true;//추가 21.4.3
+
+
+			//v1.4.7 : Flip 체크 여부 초기화
+			_isFlippedCheckedPrev = false;
+
+			//v1.4.8 : 루트 모션 데이터
+			if(_rootMotionData == null) { _rootMotionData = new apOptRootMotionData(); }
+			_rootMotionData.ResetData();//기존까지의 정보는 리셋
 		}
 
 		public void ShowWhenBake()
@@ -487,6 +572,12 @@ namespace AnyPortrait
 			_rootOptTransform.ShowWhenBake(true);
 
 			_isVisible = true;//추가 21.4.3
+
+			//v1.4.7 : Flip 체크 여부 초기화
+			_isFlippedCheckedPrev = false;
+
+			if(_rootMotionData == null) { _rootMotionData = new apOptRootMotionData(); }
+			_rootMotionData.ResetData();//기존까지의 정보는 리셋
 		}
 
 
@@ -501,6 +592,12 @@ namespace AnyPortrait
 			_rootOptTransform.Hide(true);
 			
 			_isVisible = false;//추가 21.4.3
+
+			//v1.4.7 : Flip 체크 여부 초기화
+			_isFlippedCheckedPrev = false;
+
+			if(_rootMotionData == null) { _rootMotionData = new apOptRootMotionData(); }
+			_rootMotionData.ResetData();//기존까지의 정보는 리셋
 
 		}
 
@@ -530,42 +627,46 @@ namespace AnyPortrait
 
 		// 추가 2.25 : Flipped 관련 처리
 		//-------------------------------------------------------------
-		private void CheckFlippedTransform()
+
+		//v1.4.7 변경 : 이전 프레임과 비교하여 Flip 여부가 변경되었다면 true 리턴
+		private bool CheckFlippedTransform()
 		{
-			if(_isFirstFlippedCheck)
+			if (_isFirstFlippedCheck)
 			{
 				_transform = transform;
-				//_defaultScale = _transform.localScale;
-
-				//_isFlipped_X_Prev = _isFlipped_X;
-				//_isFlipped_Y_Prev = _isFlipped_Y;
 			}
 
 			_isFlipped_X = _portrait._transform.lossyScale.x < 0.0f;
 			_isFlipped_Y = _portrait._transform.lossyScale.y < 0.0f;
 
-			//Debug.Log("Check Flipped Transform : " + _portrait._transform.lossyScale);
 
-			//일단 이부분 미적용
-			//if (_isFlipped_X_Prev != _isFlipped_X ||
-			//	_isFlipped_Y_Prev != _isFlipped_Y ||
-			//	_isFirstFlippedCheck)
-			//{
-			//	_transform.localScale = new Vector3(
-			//		(_isFlipped_X ? -_defaultScale.x : _defaultScale.x),
-			//		(_isFlipped_Y ? -_defaultScale.y : _defaultScale.y),
-			//		_defaultScale.z
-			//		);
+			bool isChanged = false;
+			if (!_isFlippedCheckedPrev || _isFirstFlippedCheck)
+			{
+				//이전에 비교를 한 적이 없다면
+				//무조건 변화된 것으로 체크
+				isChanged = true;
+			}
+			else
+			{
+				//이전 프레임과 비교해서 Flip 값이 변경되었다면
+				if(_isFlipped_X != _isFlipped_X_Prev
+					|| _isFlipped_Y != _isFlipped_Y_Prev)
+				{
+					//값 비교후 변화를 체크
+					isChanged = true;
+				}
 
-			//	_isFlipped_X_Prev = _isFlipped_X;
-			//	_isFlipped_Y_Prev = _isFlipped_Y;
+			}
 
-			//	_rootOptTransform.SetRootFlipped(_isFlipped_X, _isFlipped_Y);
+			_isFlippedCheckedPrev = true;//계산이 되었고
+			_isFirstFlippedCheck = false;//IsFirst는 지났다.
 
-			//	//Debug.LogWarning("Flip Changed");
-			//}
+			//Prev에 저장
+			_isFlipped_X_Prev = _isFlipped_X;
+			_isFlipped_Y_Prev = _isFlipped_Y;
 
-			_isFirstFlippedCheck = false;
+			return isChanged;
 		}
 		
 		public bool IsFlippedX { get { return _isFlipped_X; } }
@@ -601,6 +702,39 @@ namespace AnyPortrait
 				return;
 			}
 			_sortedRenderBuffer.SetSortingOrderOption(sortingOrderOption, sortingOrderPerDepth);
+		}
+
+
+
+		// 추가 v1.4.8 : 루트 모션
+		//-------------------------------------------------
+		public void AddRootMotionData(apAnimClip animClip, ref Vector2 modDeltaPos, float weight)
+		{
+			if(_rootMotionData == null || animClip == null)
+			{
+				return;
+			}
+
+			//루트 모션에 데이터를 넣는다.
+			_rootMotionData.AddAnimModInfo(animClip, ref modDeltaPos, weight);
+		}
+
+		public Vector2 GetRootMotionDeltaPos()
+		{
+			return _rootMotionData.ResultDeltaPos;
+		}
+
+		//애니메이션 시작시, 루트 모션에 의한 움직임 정보를 한번 리셋해야한다.
+		public void OnAnimStartAndRootMotionDataReset(apAnimClip animClip)
+		{
+			if(_rootMotionData == null
+				|| animClip == null
+				|| _portrait._rootMotionValidatedMode != apPortrait.ROOT_MOTION_MODE.MoveParentTransform)
+			{
+				return;
+			}
+
+			_rootMotionData.ResetAnimModInfo(animClip);
 		}
 
 		// Get / Set

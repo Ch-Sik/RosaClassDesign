@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -156,7 +156,7 @@ namespace AnyPortrait
 				_tRecord += deltaTime;
 				_totalFPS += 1.0f / deltaTime;
 
-				if(_tRecord > RECORD_TIME_LENGTH)
+				if(_tRecord > RECORD_TIME_LENGTH && _nRecords > 5)
 				{
 					_result_AvgFPS = (int)(_totalFPS / (float)_nRecords);
 

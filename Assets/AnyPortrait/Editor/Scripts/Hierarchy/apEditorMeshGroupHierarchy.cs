@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -4287,6 +4287,45 @@ namespace AnyPortrait
 
 			Editor.RefreshControllerAndHierarchy(false);
 		}
+
+
+
+
+
+		//외부에서 오브젝트 찾기 창을 여는 것을 요청한 경우
+		public bool RequestOpenSearchDialog(bool isMeshTab)
+		{
+			//리깅, 물리 모디파이어에서는 다중 선택이 불가능하다.
+			bool isRiggingPhysicsModifier = false;
+
+			if(Editor.Select.Modifier != null)
+			{
+				if(Editor.Select.Modifier.ModifierType == apModifierBase.MODIFIER_TYPE.Rigging)
+				{
+					isRiggingPhysicsModifier = true;
+				}
+				else if(Editor.Select.Modifier.ModifierType == apModifierBase.MODIFIER_TYPE.Physic)
+				{
+					isRiggingPhysicsModifier = true;
+				}
+			}
+
+			apMeshGroup curMeshGroup = Editor.Select.MeshGroup;
+			if(curMeshGroup == null)
+			{
+				return false;
+			}
+			_requestMeshGroup = curMeshGroup;
+			_loadKey_Search = apDialog_SearchObjects.ShowDialog_SubObjects(	_editor,
+																			curMeshGroup,
+																			isMeshTab,
+																			!isRiggingPhysicsModifier,
+																			OnObjectSearched, OnMultipleObjectSearched);
+
+			return true;
+		}
+
+		
 
 
 		//오브젝트 찾기 다이얼로그 결과

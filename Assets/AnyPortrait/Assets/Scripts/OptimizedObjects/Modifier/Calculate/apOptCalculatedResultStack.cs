@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -65,6 +65,9 @@ namespace AnyPortrait
 		private apMatrix3x3 _tmpMatrix = apMatrix3x3.identity;
 		private apOptVertexRequest.VertRigWeightTable _tmpVertRigWeightTable = null;
 		private float _tmpWeight = 0.0f;
+
+		private List<apOptVertexRequest.ModWeightPair> _tmpCalculatedModWeightPairs = null;
+		private int _tmpNumCalculatedModWeightPairs = 0;
 
 		//Rigging Result
 		//public Vector2[] _result_Rigging = null;//<<이건 사용하지 않는다.
@@ -1321,10 +1324,7 @@ namespace AnyPortrait
 							if (!_cal_resultParam.IsModifierAvailable || _cal_curWeight <= 0.001f)
 							{ continue; }
 
-							//if(_cal_resultParam._result_Matrix._scale.magnitude < 0.3f)
-							//{
-							//	Debug.LogError("[" + targetBone.name + "] 너무 작은 Cal Matrix : " + _cal_resultParam._linkedModifier._name);
-							//}
+							
 							// Blend 방식에 맞게 Matrix를 만들자 하자
 							if (_cal_resultParam.ModifierBlendMethod == apModifierBase.BLEND_METHOD.Interpolation || _iCalculatedParam == 0)
 							{
@@ -1813,6 +1813,10 @@ namespace AnyPortrait
 		{
 			_tmpPos = Vector2.zero;
 
+			//v1.4.7 : 계산된 ModWeightPair 결과 리스트
+			_tmpCalculatedModWeightPairs = null;
+			_tmpNumCalculatedModWeightPairs = 0;
+
 			for (int iParam = 0; iParam < _resultParams_VertLocal.Count; iParam++)
 			{
 				_cal_resultParam = _resultParams_VertLocal[iParam];
@@ -1828,15 +1832,31 @@ namespace AnyPortrait
 						continue;
 					}
 
-					for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
-					{
-						_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
-						if (!_cal_vertRequestModWeightPair._isCalculated)
-						{
-							continue;
+					//v1.4.7 : _isCalculated를 사용하지 않는 전략을 적용하자
+					//이전
+					//for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
+					//{
+					//	_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
+					//	if (!_cal_vertRequestModWeightPair._isCalculated)
+					//	{
+					//		continue;
 
-						}
-						//_tmpPos += _cal_vertRequestModWeightPair._modMesh._vertices[vertexIndex]._deltaPos * _cal_vertRequestModWeightPair._weight;
+					//	}
+					//	_tmpPos += _cal_vertRequestModWeightPair._modMesh._vertices[vertexIndex]._deltaPos * _cal_vertRequestModWeightPair._weight * _cal_vertRequest._totalWeight;//<<수정
+
+					//}
+
+					//변경. 계산된 결과 리스트만 받아오자 (_isCalculated 필요 없음)
+					_tmpCalculatedModWeightPairs = _cal_vertRequest.CalculatedModWeightPairs;
+					_tmpNumCalculatedModWeightPairs = _cal_vertRequest.NumCalculatedModWeightPairs;
+					if(_tmpNumCalculatedModWeightPairs == 0)
+					{
+						continue;
+					}
+
+					for (int iModPair = 0; iModPair < _tmpNumCalculatedModWeightPairs; iModPair++)
+					{
+						_cal_vertRequestModWeightPair = _tmpCalculatedModWeightPairs[iModPair];
 						_tmpPos += _cal_vertRequestModWeightPair._modMesh._vertices[vertexIndex]._deltaPos * _cal_vertRequestModWeightPair._weight * _cal_vertRequest._totalWeight;//<<수정
 
 					}
@@ -1853,6 +1873,10 @@ namespace AnyPortrait
 		{
 			_tmpPos = Vector2.zero;
 
+			//v1.4.7 : 계산된 ModWeightPair 결과 리스트
+			_tmpCalculatedModWeightPairs = null;
+			_tmpNumCalculatedModWeightPairs = 0;
+
 			for (int iParam = 0; iParam < _resultParams_VertLocal.Count; iParam++)
 			{
 				_cal_resultParam = _resultParams_VertLocal[iParam];
@@ -1868,16 +1892,31 @@ namespace AnyPortrait
 						continue;
 					}
 
-					for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
-					{
-						_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
-						if (!_cal_vertRequestModWeightPair._isCalculated)
-						{
-							continue;
+					//v1.4.7 : _isCalculated를 사용하지 않는 전략을 적용하자
+					//이전
+					//for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
+					//{
+					//	_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
+					//	if (!_cal_vertRequestModWeightPair._isCalculated)
+					//	{
+					//		continue;
 
-						}
-						//이전
-						//_tmpPos += _cal_vertRequestModWeightPair._modMesh._vertices[vertexIndex]._deltaPos * _cal_vertRequestModWeightPair._weight * _cal_vertRequest._totalWeight;//<<수정
+					//	}
+					//	//ModMeshSet을 이용하는 것으로 변경						
+					//	_tmpPos += _cal_vertRequestModWeightPair._modMeshSet_Vertex._vertDeltaPos[vertexIndex] * _cal_vertRequestModWeightPair._weight * _cal_vertRequest._totalWeight;//<<수정
+					//}
+
+					//변경. 계산된 결과 리스트만 받아오자 (_isCalculated 필요 없음)
+					_tmpCalculatedModWeightPairs = _cal_vertRequest.CalculatedModWeightPairs;
+					_tmpNumCalculatedModWeightPairs = _cal_vertRequest.NumCalculatedModWeightPairs;
+					if(_tmpNumCalculatedModWeightPairs == 0)
+					{
+						continue;
+					}
+
+					for (int iModPair = 0; iModPair < _tmpNumCalculatedModWeightPairs; iModPair++)
+					{
+						_cal_vertRequestModWeightPair = _tmpCalculatedModWeightPairs[iModPair];
 
 						//ModMeshSet을 이용하는 것으로 변경						
 						_tmpPos += _cal_vertRequestModWeightPair._modMeshSet_Vertex._vertDeltaPos[vertexIndex] * _cal_vertRequestModWeightPair._weight * _cal_vertRequest._totalWeight;//<<수정
@@ -1910,6 +1949,11 @@ namespace AnyPortrait
 			float weight_VertRequest = 0.0f;
 			float weight_ModWeightPair = 0.0f;
 
+
+			//v1.4.7 : 계산된 ModWeightPair 결과 리스트
+			_tmpCalculatedModWeightPairs = null;
+			_tmpNumCalculatedModWeightPairs = 0;
+
 			for (int iParam = 0; iParam < _resultParams_VertLocal.Count; iParam++)
 			{
 				_cal_resultParam = _resultParams_VertLocal[iParam];
@@ -1927,15 +1971,38 @@ namespace AnyPortrait
 
 					weight_VertRequest = _cal_vertRequest._totalWeight;
 
-					for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
+					//v1.4.7 : _isCalculated를 사용하지 않는 전략
+					//이전
+					//for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
+					//{
+					//	_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
+					//	if (!_cal_vertRequestModWeightPair._isCalculated)
+					//	{
+					//		continue;
+
+					//	}
+
+					//	weight_ModWeightPair = _cal_vertRequestModWeightPair._weight;
+
+					//	for (int iVert = 0; iVert < nVerts; iVert++)
+					//	{
+					//		vertLocal[iVert] += _cal_vertRequestModWeightPair._modMesh._vertices[iVert]._deltaPos * weight_ModWeightPair * weight_VertRequest;
+					//	}
+					//}
+
+					//변경
+					_tmpCalculatedModWeightPairs = _cal_vertRequest.CalculatedModWeightPairs;
+					_tmpNumCalculatedModWeightPairs = _cal_vertRequest.NumCalculatedModWeightPairs;
+					
+					if(_tmpNumCalculatedModWeightPairs == 0)
 					{
-						_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
-						if (!_cal_vertRequestModWeightPair._isCalculated)
-						{
-							continue;
+						continue;
+					}
 
-						}
-
+					for (int iModPair = 0; iModPair < _tmpNumCalculatedModWeightPairs; iModPair++)
+					{
+						_cal_vertRequestModWeightPair = _tmpCalculatedModWeightPairs[iModPair];
+						
 						weight_ModWeightPair = _cal_vertRequestModWeightPair._weight;
 
 						for (int iVert = 0; iVert < nVerts; iVert++)
@@ -1961,6 +2028,10 @@ namespace AnyPortrait
 			float weight_VertRequest = 0.0f;
 			float weight_ModWeightPair = 0.0f;
 
+			//v1.4.7 : 계산된 ModWeightPair 결과 리스트
+			_tmpCalculatedModWeightPairs = null;
+			_tmpNumCalculatedModWeightPairs = 0;
+
 			for (int iParam = 0; iParam < _resultParams_VertLocal.Count; iParam++)
 			{
 				_cal_resultParam = _resultParams_VertLocal[iParam];
@@ -1977,21 +2048,44 @@ namespace AnyPortrait
 
 					weight_VertRequest = _cal_vertRequest._totalWeight;
 
-					for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
-					{
-						_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
-						if (!_cal_vertRequestModWeightPair._isCalculated)
-						{
-							continue;
-						}
+					//v1.4.7 : _isCalculated를 사용하지 않는 전략
+					//이전
+					//for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
+					//{
+					//	_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
+					//	if (!_cal_vertRequestModWeightPair._isCalculated)
+					//	{
+					//		continue;
+					//	}
 
+					//	weight_ModWeightPair = _cal_vertRequestModWeightPair._weight;
+
+					//	for (int iVert = 0; iVert < nVerts; iVert++)
+					//	{
+					//		vertLocal[iVert] += _cal_vertRequestModWeightPair._modMeshSet_Vertex._vertDeltaPos[iVert] * weight_ModWeightPair * weight_VertRequest;
+					//	}
+						
+					//}
+
+					//변경
+					_tmpCalculatedModWeightPairs = _cal_vertRequest.CalculatedModWeightPairs;
+					_tmpNumCalculatedModWeightPairs = _cal_vertRequest.NumCalculatedModWeightPairs;
+					
+					if(_tmpNumCalculatedModWeightPairs == 0)
+					{
+						continue;
+					}
+
+					for (int iModPair = 0; iModPair < _tmpNumCalculatedModWeightPairs; iModPair++)
+					{
+						_cal_vertRequestModWeightPair = _tmpCalculatedModWeightPairs[iModPair];
+						
 						weight_ModWeightPair = _cal_vertRequestModWeightPair._weight;
 
 						for (int iVert = 0; iVert < nVerts; iVert++)
 						{
 							vertLocal[iVert] += _cal_vertRequestModWeightPair._modMeshSet_Vertex._vertDeltaPos[iVert] * weight_ModWeightPair * weight_VertRequest;
 						}
-						
 					}
 				}
 

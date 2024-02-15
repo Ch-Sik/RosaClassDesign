@@ -1,15 +1,14 @@
 ﻿/*
-*	Copyright (c) 2017-2022. RainyRizzle. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
 *	AnyPortrait can not be copied and/or distributed without
-*	the express perission of [Seungjik Lee].
+*	the express permission of [Seungjik Lee] of [RainyRizzle team].
 *
-*	Unless this file is downloaded from the Unity Asset Store or RainyRizzle homepage,
-*	this file and its users are illegal.
-*	In that case, the act may be subject to legal penalties.
+*	It is illegal to download files from other than the Unity Asset Store and RainyRizzle homepage.
+*	In that case, the act could be subject to legal sanctions.
 */
 
 Shader "AnyPortrait/Transparent/Linear/Colored Texture (2X) Additive"

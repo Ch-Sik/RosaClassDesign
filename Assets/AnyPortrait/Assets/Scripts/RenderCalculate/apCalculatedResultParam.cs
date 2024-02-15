@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -202,8 +202,19 @@ namespace AnyPortrait
 			//계산시에 쓰이는 Weight값
 			public float _dist = -1.0f;
 			public float _weight = -1.0f;
-			public float _weightBase = -1.0f;//전체 Weight를 계산하기 전에 "보간식 자체의 가중치"를 지정할때 사용하는 값
-			public bool _isCalculated = false;
+
+			//삭제 v1.4.7 : 사용 안함
+			//public float _weightBase = -1.0f;//전체 Weight를 계산하기 전에 "보간식 자체의 가중치"를 지정할때 사용하는 값
+			
+			//이전
+			//public bool _isCalculated = false;//v1.4.7 : 이 변수를 사용하지 않도록 만드는 방법이 있을까
+
+			//[v1.4.7 최적화] : 계산되어 보간 대상이 되는 경우에 isCalculated를 가능한 사용하지 않도록 변경.
+			//대신, 상위의 SubParamList의 변수를 가능한 활용하기 위해, 별도의 인덱스를 지정하자
+			//public int _indexOfSubParamList = -1;//상위 SubParamList의 리스트 변수 내에서의 인덱스
+			//public int _calRandKey = -100;//<<랜덤키 여부로 판단. 이것도 삭제
+
+
 
 			public int _layerIndx = -1;
 
@@ -232,6 +243,10 @@ namespace AnyPortrait
 				_animRotationBiasAngle = 0;
 				_animRotationBiasAngle_Prev = -1;
 				_animRotationBiasedMatrix = new apMatrix();
+
+				//v1.4.7 : 상위 객체로의 인덱스 초기 값은 -1
+				//_indexOfSubParamList = -1;				
+				//_calRandKey = -100;//랜덤키 방식
 			}
 			public ParamKeyValueSet(apModifierParamSetGroup keyParamSetGroup, apModifierParamSet paramSet, apModifiedBone modifiedValue)
 			{
@@ -246,20 +261,35 @@ namespace AnyPortrait
 				_animRotationBiasAngle = 0;
 				_animRotationBiasAngle_Prev = -1;
 				_animRotationBiasedMatrix = new apMatrix();
+
+				//v1.4.7 : 상위 객체로의 인덱스 초기 값은 -1
+				//_indexOfSubParamList = -1;
+				//_calRandKey = -100;//랜덤키 방식
 			}
 
-			public void ReadyToCalculate()
-			{
-				_dist = -1.0f;
-				_weight = -1.0f;
-				_isCalculated = false;
+			///// <summary>
+			///// v1.4.7 : SubParamList에 넣을 때의 인덱스
+			///// </summary>
+			///// <param name="index"></param>
+			//public void SetIndexOfSubParamList(int index)
+			//{
+			//	_indexOfSubParamList = index;
+			//}
 
-				//RotationBias
-				_isAnimRotationBias = false;
 
-				//추가 11.29 : 애니메이션의 키프레임 중 어디에 속했는지 계산하여 이후에 Extra Option에 이용한다.
-				_animKeyPos = AnimKeyPos.NotCalculated;
-			}
+			//삭제 v1.4.7 : 이 함수는 사용되지 않는다.
+			//public void ReadyToCalculate() //v1.4.6 : 이 함수는 사용되지 않음
+			//{
+			//	_dist = -1.0f;
+			//	_weight = -1.0f;
+			//	//_isCalculated = false;//v1.4.7 삭제
+
+			//	//RotationBias
+			//	_isAnimRotationBias = false;
+
+			//	//추가 11.29 : 애니메이션의 키프레임 중 어디에 속했는지 계산하여 이후에 Extra Option에 이용한다.
+			//	_animKeyPos = AnimKeyPos.NotCalculated;
+			//}
 
 			/// <summary>
 			/// Keyframe에 Rotation Bias 설정이 있는 경우 관련 변수를 갱신한다.
@@ -343,7 +373,10 @@ namespace AnyPortrait
 
 		public List<ParamKeyValueSet> _paramKeyValues = new List<ParamKeyValueSet>();
 		public List<apCalculatedResultParamSubList> _subParamKeyValueList = new List<apCalculatedResultParamSubList>();
-		//public List<ParamKeyValueSet> _paramKeyValues = new List<ParamKeyValueSet>();
+		
+
+		
+
 
 
 		// Init
@@ -581,65 +614,6 @@ namespace AnyPortrait
 				//Debug.LogError("AddParamSetAndModifiedMesh : Add New SubList");
 			}
 
-
-			#region [미사용 코드]
-			//switch (paramSetGroup._syncTarget)
-			//{
-			//	case apModifierParamSetGroup.SYNC_TARGET.Controller:
-			//		{
-			//			if (paramSetGroup._keyControlParam != null)
-			//			{
-			//				//같이 묶여서 작업할 SubList가 있는가
-			//				apCalculatedResultParamSubList existSubList = _subParamKeyValueList.Find(delegate (apCalculatedResultParamSubList a)
-			//				{
-			//					return a._controlParam == paramSetGroup._keyControlParam;
-			//				});
-
-			//				if (existSubList != null)
-			//				{
-			//					targetSubList = existSubList;
-			//				}
-			//				else
-			//				{
-			//					targetSubList = new apCalculatedResultParamSubList(this);
-			//					targetSubList.SetParamSetGroup(paramSetGroup);
-			//					//targetSubList.SetControlParam(paramSetGroup._keyControlParam);
-
-			//					_subParamKeyValueList.Add(targetSubList);
-			//				}
-			//			}
-			//		}
-			//		break;
-
-			//	case apModifierParamSetGroup.SYNC_TARGET.KeyFrame:
-			//		{
-			//			//...TODO
-			//			Debug.LogError("TODO : KeyFrame 타입의 CalculateResultParam의 SubList 처리할 것");
-			//			//??
-			//		}
-			//		break;
-
-			//	case apModifierParamSetGroup.SYNC_TARGET.Static:
-			//		{
-			//			//Static은 1개만 있다.
-			//			if(_subParamKeyValueList.Count == 0)
-			//			{
-			//				//새로 만들자.
-			//				targetSubList = new apCalculatedResultParamSubList(this);
-			//				targetSubList.SetStatic();
-
-			//				_subParamKeyValueList.Add(targetSubList);
-			//			}
-			//			else
-			//			{
-			//				//있는거 사용하자
-			//				targetSubList = _subParamKeyValueList[0];
-			//			}
-			//		}
-			//		break;
-			//} 
-			#endregion
-
 			//해당 SubList에 위에서 만든 KeyValueSet을 추가하자
 			if (targetSubList != null)
 			{
@@ -705,7 +679,6 @@ namespace AnyPortrait
 			{
 				_subParamKeyValueList[i].Calculate();
 			}
-
 		}
 
 

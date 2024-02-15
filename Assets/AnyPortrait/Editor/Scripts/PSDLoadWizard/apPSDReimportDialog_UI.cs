@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -89,7 +89,7 @@ namespace AnyPortrait
 			string str_NoFile = "< " + _editor.GetText(TEXT.DLG_PSD_NoFile) + " >";
 			string str_NoPath = "< " + _editor.GetText(TEXT.DLG_PSD_NoPath) + " >";
 			string str_InvalidFile = "< " + _editor.GetText(TEXT.DLG_PSD_InvalidFile) + " >";
-			string str_InvalidPath = "< " + _editor.GetText(TEXT.DLG_PSD_InvalidPath) + " >";
+			//string str_InvalidPath = "< " + _editor.GetText(TEXT.DLG_PSD_InvalidPath) + " >";
 			string str_Select = _editor.GetText(TEXT.DLG_PSD_Select);
 			string str_Selected = _editor.GetText(TEXT.DLG_PSD_Selected);
 
@@ -99,37 +99,68 @@ namespace AnyPortrait
 			if (nPSDSets > 0)
 			{
 				apPSDSet psdSet = null;
+				
+				bool isValidPath = false;
+				string fileName = null;
+				string filePath = null;
+				FileInfo fi = null;
+
 				for (int i = 0; i < nPSDSets; i++)
 				{
 					psdSet = _portrait._bakedPsdSets[i];
 					EditorGUILayout.BeginHorizontal(GUILayout.Width(width_Half - 20), GUILayout.Height(height_PSDSet));
 					GUILayout.Space(5);
 
-
-					string fileName = str_NoFile;
-					string filePath = str_NoPath;
-
-					FileInfo fi = null;
 					if (_psdSet2FileInfo.ContainsKey(psdSet))
 					{
 						fi = _psdSet2FileInfo[psdSet];
 
+						//이전
+						//if (fi.Exists)
+						//{
+						//	fileName = fi.Name;
+						//	filePath = fi.FullName;
+						//}
+						//else
+						//{
+						//	fileName = str_InvalidFile;
+						//	filePath = str_InvalidPath;
+						//}
+
+						//변경 v1.4.7 : 유효하지 않더라도 표기는 하자
 						if (fi.Exists)
 						{
 							fileName = fi.Name;
 							filePath = fi.FullName;
+							isValidPath = true;
 						}
 						else
 						{
+							
 							fileName = str_InvalidFile;
-							filePath = str_InvalidPath;
+							filePath = psdSet._filePath;//파일정보가 유효하지 않으므로, 기본 정보에서 가져온다.
+							isValidPath = false;
 						}
+					}
+					else
+					{
+						fileName = str_NoFile;
+						filePath = str_NoPath;
+						isValidPath = false;
 					}
 					
 					EditorGUILayout.LabelField(_guiContent_PSDSetIcon.Content, guiStyle_Label, GUILayout.Width(height_PSDSet), GUILayout.Height(height_PSDSet));
 					GUILayout.Space(5);
 					EditorGUILayout.LabelField(fileName, guiStyle_Label, GUILayout.Width(200), GUILayout.Height(height_PSDSet));
+
+					if(!isValidPath)
+					{
+						//붉은색 배경
+						GUI.backgroundColor = new Color(1.5f, 0.5f, 0.5f, 1.0f);
+					}
 					EditorGUILayout.TextField(filePath, guiStyle_TextBox, GUILayout.Width(width_Half - (5 + height_PSDSet + 5 + 220 + 5 + 100 + 20)), GUILayout.Height(height_PSDSet));
+					GUI.backgroundColor = prevColor;
+
 					GUILayout.Space(5);
 					if (apEditorUtil.ToggledButton_2Side(str_Selected, str_Select, _selectedPSDSet == psdSet, true, 100, height_PSDSet))
 					{
@@ -154,36 +185,69 @@ namespace AnyPortrait
 			if(nPSDSecondary > 0)
 			{	
 				apPSDSecondarySet psdSecondary = null;
+
+				bool isValidPath = false;
+				string fileName = null;
+				string filePath = null;
+				FileInfo fi = null;
+
 				for (int i = 0; i < nPSDSecondary; i++)
 				{
 					psdSecondary = _portrait._bakedPsdSecondarySet[i];
 					EditorGUILayout.BeginHorizontal(GUILayout.Width(width_Half - 20), GUILayout.Height(height_PSDSet));
 					GUILayout.Space(5);
-					string fileName = str_NoFile;
-					string filePath = str_NoPath;
+					
 
-					FileInfo fi = null;
 					if (_psdSecondary2FileInfo.ContainsKey(psdSecondary))
 					{
 						fi = _psdSecondary2FileInfo[psdSecondary];
 
+						//이전
+						//if (fi.Exists)
+						//{
+						//	fileName = fi.Name;
+						//	filePath = fi.FullName;
+						//}
+						//else
+						//{
+						//	fileName = str_InvalidFile;
+						//	filePath = str_InvalidPath;
+						//}
+
+						//변경 v1.4.7
 						if (fi.Exists)
 						{
 							fileName = fi.Name;
 							filePath = fi.FullName;
+							isValidPath = true;
 						}
 						else
 						{
 							fileName = str_InvalidFile;
-							filePath = str_InvalidPath;
+							filePath = psdSecondary._psdFilePath;
+							isValidPath = true;
 						}
+					}
+					else
+					{
+						fileName = str_NoFile;
+						filePath = str_NoPath;
+						isValidPath = false;
 					}
 
 
 					EditorGUILayout.LabelField(_guiContent_PSDSecondaryIcon.Content, guiStyle_Label, GUILayout.Width(height_PSDSet), GUILayout.Height(height_PSDSet));
 					GUILayout.Space(5);
 					EditorGUILayout.LabelField(fileName, guiStyle_Label, GUILayout.Width(200), GUILayout.Height(height_PSDSet));
+
+					if(!isValidPath)
+					{
+						//붉은색 배경
+						GUI.backgroundColor = new Color(1.5f, 0.5f, 0.5f, 1.0f);
+					}
 					EditorGUILayout.TextField(filePath, guiStyle_TextBox, GUILayout.Width(width_Half - (5 + height_PSDSet + 5 + 220 + 5 + 100 + 20)), GUILayout.Height(height_PSDSet));
+					GUI.backgroundColor = prevColor;
+
 					GUILayout.Space(5);
 					if (apEditorUtil.ToggledButton_2Side(str_Selected, str_Select, _selectedPSDSecondary == psdSecondary, true, 100, height_PSDSet))
 					{
@@ -231,23 +295,50 @@ namespace AnyPortrait
 				//- 데이터 삭제
 
 				FileInfo fi = null;
+				
 				if(_psdSet2FileInfo.ContainsKey(_selectedPSDSet))
 				{
 					fi = _psdSet2FileInfo[_selectedPSDSet];
 				}
 
-				string selectedPSDFileName = "< " + _editor.GetText(TEXT.DLG_PSD_NoPSDFile) + " >";//"< No PSD File >";
-				string selectedPSDPath = "< " + _editor.GetText(TEXT.DLG_PSD_NoPSDFile) + " >"; //"< No PSD File >";
+				//이전 : 파일이 없을 경우 No PSD File이 뜬다.
+				//string selectedPSDFileName = "< " + _editor.GetText(TEXT.DLG_PSD_NoPSDFile) + " >";//"< No PSD File >";
+				//string selectedPSDPath = "< " + _editor.GetText(TEXT.DLG_PSD_NoPSDFile) + " >"; //"< No PSD File >";
+
+
+				//변경 v1.4.7 : 경로 자체는 뜬다. 다만 붉은색 UI로 경고
+				string selectedPSDFileName = null;
+				string selectedPSDPath = null;
+				bool isValidPath = false;
+
 				if(fi != null && fi.Exists)
 				{
+					//파일이 유효한 경우
 					selectedPSDFileName = fi.Name;
 					selectedPSDPath = fi.FullName;
+					isValidPath = true;
+				}
+				else
+				{
+					//파일이 유효하지 않는 경우 (전체 경로는 저장된 값을 이용)
+					selectedPSDFileName = "< " + _editor.GetText(TEXT.DLG_PSD_NoPSDFile) + " >";//"< No PSD File >";
+					selectedPSDPath = _selectedPSDSet._filePath;//v1.4.7 : 저장된 파일 경로값을 이용한다.
+					isValidPath = false;
 				}
 
 				EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_PSD_PSDFileName) + " : " + selectedPSDFileName, GUILayout.Width(width_Half));//PSD File Name
 				EditorGUILayout.BeginHorizontal(GUILayout.Width(width_Half), GUILayout.Height(20));
 				GUILayout.Space(5);
+				if(!isValidPath)
+				{
+					//붉은색 배경
+					GUI.backgroundColor = new Color(1.5f, 0.5f, 0.5f, 1.0f);
+				}
+
 				EditorGUILayout.TextField(selectedPSDPath, guiStyle_TextBox, GUILayout.Width(width_Half - (90 + 25)));
+				
+				GUI.backgroundColor = prevColor;
+
 				if (GUILayout.Button(_editor.GetText(TEXT.DLG_Change), GUILayout.Width(90), GUILayout.Height(20)))//Change
 				{
 					//PSD 여는 Dialog
@@ -262,6 +353,26 @@ namespace AnyPortrait
 							if (prevFi.Exists)
 							{
 								prevFileDir = prevFi.Directory.FullName;
+							}
+							else
+							{
+								//v1.4.7
+								//유효하지 않다면,
+								//디렉토리만이라도 찾자
+								string strTmpDirPath = _selectedPSDSet._filePath;
+								strTmpDirPath = strTmpDirPath.Replace("\\", "/");
+								int lastDirIndex = strTmpDirPath.LastIndexOf("/");
+								if(lastDirIndex > 0)
+								{
+									//마지막 파일의 폴더만 가져온다.
+									strTmpDirPath = strTmpDirPath.Substring(0, lastDirIndex);
+								}
+								DirectoryInfo prevDi = new DirectoryInfo(strTmpDirPath);
+								if(prevDi.Exists)
+								{
+									//디렉토리는 멀쩡하넹. 여기서 파일을 찾아보자
+									prevFileDir = prevDi.FullName;
+								}
 							}
 						}
 
@@ -286,15 +397,19 @@ namespace AnyPortrait
 									MakeRemappingList();
 								}
 							}
+
+							apEditorUtil.SetEditorDirty();
 						}
 					}
 					catch (Exception ex)
 					{
-						Debug.LogError("GUI_Center_FileLoad Exception : " + ex);
+						Debug.LogError("AnyPortrait : PSD Reimport Exception : " + ex);
 					}
 
 					//경로에 관한 FileInfo 리스트도 다시 갱신한다.
 					RefreshPSDFileInfo();
+
+					GUI.FocusControl(null);
 				}
 				EditorGUILayout.EndHorizontal();
 				
@@ -476,18 +591,43 @@ namespace AnyPortrait
 					fi = _psdSecondary2FileInfo[_selectedPSDSecondary];
 				}
 
-				string selectedPSDFileName = "< " + _editor.GetText(TEXT.DLG_PSD_NoPSDFile) + " >";//"< No PSD File >";
-				string selectedPSDPath = "< " + _editor.GetText(TEXT.DLG_PSD_NoPSDFile) + " >"; //"< No PSD File >";
+				//string selectedPSDFileName = "< " + _editor.GetText(TEXT.DLG_PSD_NoPSDFile) + " >";//"< No PSD File >";
+				//string selectedPSDPath = "< " + _editor.GetText(TEXT.DLG_PSD_NoPSDFile) + " >"; //"< No PSD File >";
+
+				//변경 v1.4.7 : 경로 자체는 뜬다. 다만 붉은색 UI로 경고
+				string selectedPSDFileName = null;
+				string selectedPSDPath = null;
+				bool isValidPath = false;
+
 				if(fi != null && fi.Exists)
 				{
+					//파일이 유효한 경우
 					selectedPSDFileName = fi.Name;
 					selectedPSDPath = fi.FullName;
+					isValidPath = true;
+				}
+				else
+				{
+					//파일이 유효하지 않는 경우 (전체 경로는 저장된 값을 이용)
+					selectedPSDFileName = "< " + _editor.GetText(TEXT.DLG_PSD_NoPSDFile) + " >";//"< No PSD File >";
+					selectedPSDPath = _selectedPSDSecondary._psdFilePath;//v1.4.7 : 저장된 파일 경로값을 이용한다.
+					isValidPath = false;
 				}
 
 				EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_PSD_PSDFileName) + " : " + selectedPSDFileName, GUILayout.Width(width_Half));//PSD File Name
 				EditorGUILayout.BeginHorizontal(GUILayout.Width(width_Half), GUILayout.Height(20));
 				GUILayout.Space(5);
+
+				if(!isValidPath)
+				{
+					//붉은색 배경
+					GUI.backgroundColor = new Color(1.5f, 0.5f, 0.5f, 1.0f);
+				}
+				
 				EditorGUILayout.TextField(selectedPSDPath, guiStyle_TextBox, GUILayout.Width(width_Half - (90 + 25)));
+
+				GUI.backgroundColor = prevColor;
+
 				if (GUILayout.Button(_editor.GetText(TEXT.DLG_Change), GUILayout.Width(90), GUILayout.Height(20)))//Change
 				{
 					//PSD 여는 Dialog
@@ -502,6 +642,26 @@ namespace AnyPortrait
 							if (prevFi.Exists)
 							{
 								prevFileDir = prevFi.Directory.FullName;
+							}
+							else
+							{
+								//v1.4.7
+								//유효하지 않다면,
+								//디렉토리만이라도 찾자
+								string strTmpDirPath = _selectedPSDSecondary._psdFilePath;
+								strTmpDirPath = strTmpDirPath.Replace("\\", "/");
+								int lastDirIndex = strTmpDirPath.LastIndexOf("/");
+								if(lastDirIndex > 0)
+								{
+									//마지막 파일의 폴더만 가져온다.
+									strTmpDirPath = strTmpDirPath.Substring(0, lastDirIndex);
+								}
+								DirectoryInfo prevDi = new DirectoryInfo(strTmpDirPath);
+								if(prevDi.Exists)
+								{
+									//디렉토리는 멀쩡하넹. 여기서 파일을 찾아보자
+									prevFileDir = prevDi.FullName;
+								}
 							}
 						}
 
@@ -535,11 +695,15 @@ namespace AnyPortrait
 					}
 					catch (Exception ex)
 					{
-						Debug.LogError("GUI_Center_FileLoad Exception : " + ex);
+						Debug.LogError("AnyPortrait : PSD Reimport Exception : " + ex);
 					}
 
 					//경로에 관한 FileInfo 리스트도 다시 갱신한다.
 					RefreshPSDFileInfo();
+
+					apEditorUtil.SetEditorDirty();
+
+					GUI.FocusControl(null);
 				}
 				EditorGUILayout.EndHorizontal();
 				

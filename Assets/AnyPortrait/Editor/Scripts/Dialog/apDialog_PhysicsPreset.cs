@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -135,7 +135,7 @@ namespace AnyPortrait
 				int height_List = height - 480;
 				Color prevColor = GUI.backgroundColor;
 				GUI.backgroundColor = new Color(0.9f, 0.9f, 0.9f);
-				GUI.Box(new Rect(0, 156, width, height_List), "");
+				GUI.Box(new Rect(0, 156 - 11, width, height_List + 2), "");
 				GUI.backgroundColor = prevColor;
 
 				EditorGUILayout.BeginVertical();

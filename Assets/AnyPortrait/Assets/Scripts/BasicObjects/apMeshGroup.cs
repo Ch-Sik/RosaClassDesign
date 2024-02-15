@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -186,6 +186,13 @@ namespace AnyPortrait
 		private bool _isUpdate_BoneIKRigging = false;//
 		
 		public bool IsRiggingWithIK { get { return _isUpdate_BoneIKMatrix && _isUpdate_BoneIKRigging; } }
+
+		//추가 v1.4.8 : 루트 모션을 위해서 메시 그룹의 루트 본을 저장한다. (루트
+		//메시 그룹당 1개의 루트 본을 가지며, 
+		[SerializeField] public int _rootMotionBoneID = -1;
+
+
+
 
 		// Init
 		//------------------------------------

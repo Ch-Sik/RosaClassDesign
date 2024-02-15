@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -19,6 +19,7 @@ using System;
 
 
 using AnyPortrait;
+using System.IO;
 
 namespace AnyPortrait
 {
@@ -66,7 +67,7 @@ namespace AnyPortrait
 			if (curTool != null && curTool != s_window)
 			{
 				int width = 700;
-				int height = 500;
+				int height = 600;
 				s_window = curTool;
 				s_window.position = new Rect((editor.position.xMin + editor.position.xMax) / 2 - (width / 2),
 												(editor.position.yMin + editor.position.yMax) / 2 - (height / 2),
@@ -174,8 +175,10 @@ namespace AnyPortrait
 			int width_Value_Right = width_Right - (width_Label + 10 + 4);
 			int width_Value_Left_Half = (width_Value_Left / 2) - 2;
 
-			int height_LeftScroll = height - (159 + 28);
-			int height_RightScroll = height - (170 + 34);
+			//int height_LeftScroll = height - (159 + 28);
+			//int height_RightScroll = height - (170 + 34);
+			int height_LeftScroll = height - (159 + 43);
+			int height_RightScroll = height - (170 + 49);
 
 			int height_ListItem = 30;
 
@@ -186,7 +189,7 @@ namespace AnyPortrait
 			Color guiColor_NotSelected = GUI.backgroundColor * new Color(0.5f, 0.5f, 0.5f, 1.0f);
 
 			GUI.backgroundColor = guiColor_Default;
-			GUI.Box(new Rect(5, 149 - (25 + 23 - 28), width_Left + 1, height_LeftScroll + 2), apStringFactory.I.None);//왼쪽 위 리스트
+			GUI.Box(new Rect(5, 149 - (25 + 23 - 28 - 22), width_Left + 1, height_LeftScroll + 2), apStringFactory.I.None);//왼쪽 위 리스트
 			GUI.backgroundColor = prevColor;
 
 			GUI.backgroundColor = _selectedImageSet != null ? guiColor_Default : guiColor_ListNoEditible;
@@ -257,7 +260,42 @@ namespace AnyPortrait
 				isAnyChanged = true;
 			}
 
+
+			//상하 반전 여부
+			int width_Value_Left_Reverse = ((width_Value_Left - 30) / 2) - 38;
+
+			EditorGUILayout.BeginHorizontal(GUILayout.Width(width_Left - 8));
+			GUILayout.Space(5);
+			
+			EditorGUILayout.LabelField(_editor.GetText(TEXT.ScaleReverse), GUILayout.Width(width_Label));
+			EditorGUILayout.LabelField(apStringFactory.I.X, GUILayout.Width(width_Value_Left_Reverse));
+			bool nextScaleReverse_X = EditorGUILayout.Toggle(_editor.Rotoscoping._scaleReverseX, GUILayout.Width(30));
+			
 			GUILayout.Space(10);
+
+			EditorGUILayout.LabelField(apStringFactory.I.Y, GUILayout.Width(width_Value_Left_Reverse));
+			bool nextScaleReverse_Y = EditorGUILayout.Toggle(_editor.Rotoscoping._scaleReverseY, GUILayout.Width(30));
+
+			EditorGUILayout.EndHorizontal();
+
+
+			if(_editor.Rotoscoping._scaleReverseX != nextScaleReverse_X
+				|| _editor.Rotoscoping._scaleReverseY != nextScaleReverse_Y)
+			{
+				_editor.Rotoscoping._scaleReverseX = nextScaleReverse_X;
+				_editor.Rotoscoping._scaleReverseY = nextScaleReverse_Y;
+				apEditorUtil.ReleaseGUIFocus();
+				isAnyChanged = true;
+			}
+
+
+
+			GUILayout.Space(10);
+
+
+
+
+
 			if(GUILayout.Button(_editor.GetText(TEXT.DLG_Setting_RestoreDefaultSetting), GUILayout.Height(20)))
 			{
 				//기본 값을 초기화
@@ -265,6 +303,8 @@ namespace AnyPortrait
 				_editor.Rotoscoping._posOffset_Y = 0;		
 				_editor.Rotoscoping._opacity = 128;//255면 불투명
 				_editor.Rotoscoping._scaleWithinScreen = 80;//작업 공간 대비 80% 비율로 들어간다. 세로 기준
+				_editor.Rotoscoping._scaleReverseX = false;
+				_editor.Rotoscoping._scaleReverseY = false;
 				apEditorUtil.ReleaseGUIFocus();
 				isAnyChanged = true;
 			}
@@ -297,7 +337,7 @@ namespace AnyPortrait
 			EditorGUILayout.EndVertical();
 			EditorGUILayout.EndScrollView();
 
-			if(GUILayout.Button(_editor.GetText(TEXT.AddNewRotoscopingData), GUILayout.Height(30)))//"Add New Rotoscoping Data"
+			if(GUILayout.Button(_editor.GetText(TEXT.AddNewRotoscopingData), GUILayout.Height(34)))//"Add New Rotoscoping Data"
 			{
 				_selectedImageSet = _editor.Rotoscoping.AddNewImageSet();
 				isAnyChanged = true;
@@ -561,16 +601,215 @@ namespace AnyPortrait
 					if (!string.IsNullOrEmpty(path))
 					{
 						//추가 21.7.3 : 이스케이프 문자 삭제
+						FileInfo fi = new FileInfo(path);
+						if(fi != null && fi.Exists)
+						{
+							path = fi.FullName;
+						}
+						
+						path = path.Replace('\\', '/');
 						path = apUtil.ConvertEscapeToPlainText(path);
 
-						_selectedImageSet.AddImageFile(path);
-						isAnyChanged = true;
+						bool isThisFileAlreadyAdded = false;
+						if(_selectedImageSet.IsContainFile(path))
+						{
+							//이미 추가되었다.
+							isThisFileAlreadyAdded = true;
+						}
+
+						bool isAddFile = false;
+						if(isThisFileAlreadyAdded)
+						{
+							//이미 추가된 파일의 경우 물어보자
+							bool result = EditorUtility.DisplayDialog(	_editor.GetText(TEXT.DLG_RotoLoadFile_Title),
+																		_editor.GetText(TEXT.DLG_RotoLoadFile_Body_IsAlreadyAdded),
+																		_editor.GetText(TEXT.IgnoreAndAdd),
+																		_editor.GetText(TEXT.Cancel));
+
+							if(result)
+							{
+								//추가하자
+								isAddFile = true;
+							}
+						}
+						else
+						{
+							// 새파일은 무조건 추가
+							isAddFile = true;
+						}
+						if (isAddFile)
+						{
+							_selectedImageSet.AddImageFile(path);//이건 중복 체크 없이 추가가능
+							isAnyChanged = true;
+						}
+						
+
+
+						//변경 v1.4.7 : 이 디렉토리의 파일 리스트를 열어보고, 확장자+마지막 글자가 숫자인 경우, 연속된 이미지일 수 있다.
+						//연속된 이미지를 한번에 로드할지 물어보자
+						//FileInfo fi = new FileInfo(path);
+						if(fi != null && fi.Exists)
+						{
+							DirectoryInfo di = fi.Directory;
+							if(di != null && di.Exists)
+							{
+								//파일 리스트를 찾자
+								FileInfo[] otherFileInfos = di.GetFiles();
+								FileInfo otherFile = null;
+
+								int nOtherFiles = otherFileInfos != null ? otherFileInfos.Length : 0;
+								if(nOtherFiles > 1)
+								{
+									//다른 파일들이 많다.
+									//파일 이름이 거의 비슷하며, 마지막의 숫자만 다른 파일들을 모으자
+									//> 숫자를 제외한 글자가 모두 같다면 오케이
+									List<string> similarFiles_NewAdded = new List<string>();//이미 추가된것은 제외
+									List<string> similarFiles_All = new List<string>();//전체
+									int nOtherAlreadyAdded = 0;
+									string srcFileName_WONum = GetFileNameExceptNumbers(fi.Name);
+									string curFileName_WONum = null;
+
+									for (int iOtherFile = 0; iOtherFile < nOtherFiles; iOtherFile++)
+									{
+										otherFile = otherFileInfos[iOtherFile];
+										if(string.Equals(otherFile.FullName, fi.FullName))
+										{
+											//이미 추가한 파일과 같으면 제외
+											continue;
+										}
+
+										//숫자를 제외한 파일명이 같으면 유사 파일로 넣자
+										curFileName_WONum = GetFileNameExceptNumbers(otherFile.Name);
+										if(string.Equals(curFileName_WONum, srcFileName_WONum))
+										{
+											string otherPath = otherFile.FullName;
+											otherPath = otherPath.Replace('\\', '/');
+											otherPath = apUtil.ConvertEscapeToPlainText(otherPath);
+
+
+											//전체 Other 리스트에 추가
+											similarFiles_All.Add(otherPath);
+											
+											//만약 이번에 추가된 것이라면 New에선 제외
+											if (_selectedImageSet.IsContainFile(otherPath))
+											{
+												//이미 추가된 파일이다.
+												nOtherAlreadyAdded += 1;
+											}
+											else
+											{
+												//새로운 파일이다.
+												similarFiles_NewAdded.Add(otherPath);
+											}
+										}
+									}
+
+									if(similarFiles_All.Count > 0)
+									{
+										//정렬을 하자
+										similarFiles_All.Sort(delegate(string a, string b)
+										{
+											return string.Compare(a, b);
+										});
+
+										similarFiles_NewAdded.Sort(delegate(string a, string b)
+										{
+											return string.Compare(a, b);
+										});
+
+										//이름이 유사한 전체 파일이 있다.
+										bool isAddMore = EditorUtility.DisplayDialog(	_editor.GetText(TEXT.DLG_RotoLoadFile_Title),
+																						_editor.GetTextFormat(TEXT.DLG_RotoLoadFile_Body_MoreFiles, similarFiles_All.Count),
+																						_editor.GetText(TEXT.AddAll),
+																						_editor.GetText(TEXT.Cancel));
+										if(isAddMore)
+										{
+											//만약 이미 추가된게 있다면,
+											//추가된(=중복된)건 빼고 넣을지, 아니면 전체 다 넣을지 결정
+											bool isAddMoreAll = false;
+											bool isAddOnlyNew = false;
+											if(nOtherAlreadyAdded > 0)
+											{
+												int iBtn = EditorUtility.DisplayDialogComplex(_editor.GetText(TEXT.DLG_RotoLoadFile_Title),
+																						_editor.GetTextFormat(TEXT.DLG_RotoLoadFile_Body_MoreAndAlready, nOtherAlreadyAdded),
+																						_editor.GetText(TEXT.AddAll),//모두 추가하기
+																						_editor.GetText(TEXT.SkipDuplicates),//중복은 빼기
+																						_editor.GetText(TEXT.Cancel));//취소
+												if(iBtn == 0)
+												{
+													//모두 추가하기
+													isAddMoreAll = true;
+												}
+												else if(iBtn == 1)
+												{
+													//중복은 제외하고 추가하기
+													isAddOnlyNew = true;
+												}
+											}
+											else
+											{
+												//전부 다 넣는다.
+												isAddMoreAll = true;
+											}
+
+											if (isAddMoreAll)
+											{
+												//모두 추가하기의 경우
+												for (int iSim = 0; iSim < similarFiles_All.Count; iSim++)
+												{
+													string otherPath = similarFiles_All[iSim];
+													//다른 파일도 추가하자
+													_selectedImageSet.AddImageFile(otherPath);
+												}
+
+												isAnyChanged = true;
+											}
+											else if(isAddOnlyNew)
+											{
+												//중복은 제외하고 추가하기
+												if(similarFiles_NewAdded.Count > 0)
+												{
+													for (int iSim = 0; iSim < similarFiles_NewAdded.Count; iSim++)
+													{
+														string otherPath = similarFiles_NewAdded[iSim];
+														//다른 파일도 추가하자
+														_selectedImageSet.AddImageFile(otherPath);
+													}
+												}
+												isAnyChanged = true;
+											}
+											
+										}
+									}
+								}
+							}
+						}
 
 						apEditorUtil.SetLastExternalOpenSaveFilePath(path, apEditorUtil.SAVED_LAST_FILE_PATH.Rotoscoping);
 					}
 				}
 				
 			}
+
+			//Sorting 버튼
+			EditorGUILayout.BeginHorizontal(GUILayout.Width(width_Right - 9));
+			if(GUILayout.Button(_editor.GetText(TEXT.Sort) + " ▲", GUILayout.Height(20)))
+			{
+				//오름차순
+				_selectedImageSet.SortByName(false);
+				isAnyChanged = true;
+				GUI.FocusControl(null);
+			}
+
+			if(GUILayout.Button(_editor.GetText(TEXT.Sort) + " ▼", GUILayout.Height(20)))
+			{
+				//내림차순
+				_selectedImageSet.SortByName(true);
+				isAnyChanged = true;
+				GUI.FocusControl(null);
+			}
+			
+			EditorGUILayout.EndHorizontal();
 			
 
 
@@ -586,6 +825,30 @@ namespace AnyPortrait
 				_editor.Rotoscoping.Save();
 			}
 		}
+
+
+
+		private string GetFileNameExceptNumbers(string strSrc)
+		{
+			string strResult = strSrc;
+			strResult = strResult.Replace('\\', '/');
+			strResult = strResult.Replace('0', ' ');
+			strResult = strResult.Replace('1', ' ');
+			strResult = strResult.Replace('2', ' ');
+			strResult = strResult.Replace('3', ' ');
+			strResult = strResult.Replace('4', ' ');
+			strResult = strResult.Replace('5', ' ');
+			strResult = strResult.Replace('6', ' ');
+			strResult = strResult.Replace('7', ' ');
+			strResult = strResult.Replace('8', ' ');
+			strResult = strResult.Replace('9', ' ');
+			strResult = strResult.Replace('-', ' ');
+			strResult = strResult.Replace('_', ' ');
+			strResult = strResult.Replace('.', ' ');
+			strResult = strResult.Replace(" ", "");
+			return strResult;
+		}
+
 
 
 		private bool DrawImageSetData(apRotoscoping.ImageSetData imageSetData, bool isSelected, int width, int height, float scrollX)

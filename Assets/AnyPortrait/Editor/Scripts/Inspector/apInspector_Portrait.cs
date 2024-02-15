@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -44,6 +44,13 @@ namespace AnyPortrait
 		private bool _isFold_AnimationEvents = false;
 		private bool _isFold_Sockets = false;
 		private bool _isFold_Images = false;
+
+		private bool _isFold_UpdateOption = false;
+		private bool _isFold_Sorting = false;
+		private bool _isFold_Billboard = false;
+		private bool _isFold_RootMotion = false;
+		private bool _isFold_Prefab = false;
+
 
 		//추가 3.4
 #if UNITY_2017_1_OR_NEWER
@@ -214,6 +221,23 @@ namespace AnyPortrait
 		private MonoBehaviour _targetBatchMonoListener = null;
 
 
+		//드롭다운 메뉴 레이블
+		private string[] _meshUpdateFrequencyLabel = new string[]
+		{
+			"Every Frame", "Per Time (Not Sync)", "Per Time (Sync)"
+		};
+
+		private string[] _mainLogicEventLabel = new string[]
+		{
+			"LateUpdate (Default)", "Update"
+		};
+
+		private string[] _rootMotionModeLabel = new string[]
+		{
+			"None", "Lock to Center", "Move Parent Transform"
+		};
+
+
 		void OnEnable()
 		{
 			_targetPortrait = null;
@@ -226,6 +250,12 @@ namespace AnyPortrait
 			_isFold_AnimationEvents = true;
 			_isFold_Sockets = true;
 			_isFold_Images = true;
+
+			_isFold_UpdateOption = true;
+			_isFold_Sorting = true;
+			_isFold_Billboard = true;
+			_isFold_RootMotion = true;
+			_isFold_Prefab = true;
 
 			
 
@@ -802,6 +832,12 @@ namespace AnyPortrait
 			_isFold_Sockets = true;
 			_isFold_Images = true;
 
+			_isFold_UpdateOption = true;
+			_isFold_Sorting = true;
+			_isFold_Billboard = true;
+			_isFold_RootMotion = true;
+			_isFold_Prefab = true;
+
 			_controlParams = null;
 			if (_targetPortrait._controller != null)
 			{
@@ -855,261 +891,466 @@ namespace AnyPortrait
 			//1. 기본 설정들
 			DrawSubTitle(_guiContent_BasicSettings, width, new Color(0.0f, 0.8f, 1.0f));
 
-
-
-			EditorGUI.BeginChangeCheck();
-			
-			bool next_isImportant = EditorGUILayout.Toggle("Is Important", _targetPortrait._isImportant);
-
-			if(EditorGUI.EndChangeCheck())
+			_isFold_UpdateOption = EditorGUILayout.Foldout(_isFold_UpdateOption, "Update Options");
+			if(_isFold_UpdateOption)
 			{
-				if (next_isImportant != _targetPortrait._isImportant)
-				{
-					RecordUndo();
-					_targetPortrait._isImportant = next_isImportant;
-				}
-			}
+				//[ 업데이트 옵션들 ]
 
-			GUILayout.Space(10);
-
-
-			//2. Sorting Layer 설정
-			string[] sortingLayerName = new string[SortingLayer.layers.Length];
-			int layerIndex = -1;
-			for (int i = 0; i < SortingLayer.layers.Length; i++)
-			{
-				sortingLayerName[i] = SortingLayer.layers[i].name;
-				if (SortingLayer.layers[i].id == _targetPortrait._sortingLayerID)
-				{
-					layerIndex = i;
-				}
-			}
-
-			EditorGUI.BeginChangeCheck();
-			int nextLayerIndex = EditorGUILayout.Popup("Sorting Layer", layerIndex, sortingLayerName);
-			apPortrait.SORTING_ORDER_OPTION nextSortingOption = (apPortrait.SORTING_ORDER_OPTION)EditorGUILayout.EnumPopup("Sorting Order Option", _targetPortrait._sortingOrderOption);
-			if(EditorGUI.EndChangeCheck())
-			{
-				
-				if (nextLayerIndex != layerIndex)
-				{
-					RecordUndo();
-
-					//Sorting Layer를 바꾸자
-					if (nextLayerIndex >= 0 && nextLayerIndex < SortingLayer.layers.Length)
-					{
-						string nextLayerName = SortingLayer.layers[nextLayerIndex].name;
-						_targetPortrait.SetSortingLayer(nextLayerName);
-					}
-				}
-
-				if (nextSortingOption != _targetPortrait._sortingOrderOption)
-				{
-					RecordUndo();
-
-					//Sorting Order를 바꾸자
-					_targetPortrait._sortingOrderOption = nextSortingOption;
-					//변경된 Sorting Order Option에 따라서 바로 Sorting을 해야한다.
-					_targetPortrait.ApplySortingOptionToOptRootUnits();
-
-					switch (_targetPortrait._sortingOrderOption)
-					{
-						case apPortrait.SORTING_ORDER_OPTION.SetOrder:
-							_targetPortrait.SetSortingOrder(_targetPortrait._sortingOrder);
-							break;
-
-						case apPortrait.SORTING_ORDER_OPTION.DepthToOrder:
-						case apPortrait.SORTING_ORDER_OPTION.ReverseDepthToOrder:
-							_targetPortrait.SetSortingOrderChangedAutomatically(true);
-							_targetPortrait.RefreshSortingOrderByDepth();
-							break;
-					}
-				}
-			}
-
-
-			if (_targetPortrait._sortingOrderOption == apPortrait.SORTING_ORDER_OPTION.SetOrder)
-			{
 				EditorGUI.BeginChangeCheck();
+				apPortrait.PROCESS_EVENT_ON next_MainLogicEvent = (apPortrait.PROCESS_EVENT_ON)EditorGUILayout.Popup(	"Main Logic Event",
+																														(int)_targetPortrait._mainProcessEvent,
+																														_mainLogicEventLabel);
 
-				int nextLayerOrder = EditorGUILayout.DelayedIntField("Sorting Order", _targetPortrait._sortingOrder);
-
-				if (EditorGUI.EndChangeCheck())
+				if(EditorGUI.EndChangeCheck())
 				{
-					if (nextLayerOrder != _targetPortrait._sortingOrder)
+					if(next_MainLogicEvent != _targetPortrait._mainProcessEvent)
 					{
 						RecordUndo();
-
-						_targetPortrait.SetSortingOrder(nextLayerOrder);
+						_targetPortrait._mainProcessEvent = next_MainLogicEvent;
 					}
-
 					GUI.FocusControl(null);
 				}
-			}
-			else if (_targetPortrait._sortingOrderOption == apPortrait.SORTING_ORDER_OPTION.DepthToOrder
-				|| _targetPortrait._sortingOrderOption == apPortrait.SORTING_ORDER_OPTION.ReverseDepthToOrder)
-			{
+
+				GUILayout.Space(10);
+
+
 				EditorGUI.BeginChangeCheck();
+			
+			
 
-				//추가 21.1.31 : Depth To Order일때, 1씩만 증가하는게 아닌 더 큰값으로 증가할 수도 있게 만들자
-				int nextOrderPerDepth = EditorGUILayout.DelayedIntField("Order Per Depth", _targetPortrait._sortingOrderPerDepth);
+				bool next_isImportant = EditorGUILayout.Toggle("Is Important", _targetPortrait._isImportant);
 
-				if (EditorGUI.EndChangeCheck())
+				if(EditorGUI.EndChangeCheck())
 				{
-					if (nextOrderPerDepth != _targetPortrait._sortingOrderPerDepth)
+					if (next_isImportant != _targetPortrait._isImportant)
 					{
 						RecordUndo();
+						_targetPortrait._isImportant = next_isImportant;					
+					}
+					GUI.FocusControl(null);
+				}
 
-						if (nextOrderPerDepth < 1)
+				if(!_targetPortrait._isImportant)
+				{
+					EditorGUI.BeginChangeCheck();
+					int next_NotImportantFPS = EditorGUILayout.DelayedIntField("FPS (Not Important)", _targetPortrait._FPS);				
+				
+					if(EditorGUI.EndChangeCheck())
+					{
+						if(next_NotImportantFPS < 10)
 						{
-							nextOrderPerDepth = 1;
+							next_NotImportantFPS = 10;
 						}
 
-						_targetPortrait._sortingOrderPerDepth = nextOrderPerDepth;
-
-						//변경된 Sorting Order Option에 따라서 바로 Sorting을 해야한다.
-						_targetPortrait.ApplySortingOptionToOptRootUnits();
+						if(_targetPortrait._FPS != next_NotImportantFPS)
+						{
+							RecordUndo();
+							_targetPortrait._FPS = next_NotImportantFPS;
+						}
+						GUI.FocusControl(null);
 					}
+				}
 
+				GUILayout.Space(10);
+
+
+				//추가 v1.4.7 : 메시 업데이트 빈도
+				apPortrait.MESH_UPDATE_FREQUENCY next_MeshUpdateFrequency = (apPortrait.MESH_UPDATE_FREQUENCY)EditorGUILayout.Popup(
+																									"Mesh Update Frequency", 
+																									(int)_targetPortrait._meshRefreshRateOption,
+																									_meshUpdateFrequencyLabel);
+				if(next_MeshUpdateFrequency != _targetPortrait._meshRefreshRateOption)
+				{
+					RecordUndo();
+					_targetPortrait._meshRefreshRateOption = next_MeshUpdateFrequency;
 					GUI.FocusControl(null);
 				}
+
+				if(next_MeshUpdateFrequency != apPortrait.MESH_UPDATE_FREQUENCY.EveryFrames)
+				{
+					EditorGUI.BeginChangeCheck();
+					int next_MeshUpdateFPS = EditorGUILayout.DelayedIntField("FPS", _targetPortrait._meshRefreshRateFPS);				
+				
+					if(EditorGUI.EndChangeCheck())
+					{
+						if(next_MeshUpdateFPS < 1) { next_MeshUpdateFPS = 1; }
+						else if(next_MeshUpdateFPS > 30) { next_MeshUpdateFPS = 30; }
+
+						if(_targetPortrait._meshRefreshRateFPS != next_MeshUpdateFPS)
+						{
+							RecordUndo();
+							_targetPortrait._meshRefreshRateFPS = next_MeshUpdateFPS;
+						}
+						GUI.FocusControl(null);
+					}
+				
+				}
 			}
+			
+
 			GUILayout.Space(10);
 
 
 
-
-			//3. 빌보드
-
-			EditorGUI.BeginChangeCheck();
-
-			apPortrait.BILLBOARD_TYPE nextBillboard = (apPortrait.BILLBOARD_TYPE)EditorGUILayout.EnumPopup("Billboard Type", _targetPortrait._billboardType);
-
-			if (EditorGUI.EndChangeCheck())
+			_isFold_Sorting = EditorGUILayout.Foldout(_isFold_Sorting, "Sorting Options");
+			if(_isFold_Sorting)
 			{
-				if (nextBillboard != _targetPortrait._billboardType)
+				// [ Sorting 옵션들 ]
+				//2. Sorting Layer 설정
+				string[] sortingLayerName = new string[SortingLayer.layers.Length];
+				int layerIndex = -1;
+				for (int i = 0; i < SortingLayer.layers.Length; i++)
 				{
-					RecordUndo();
+					sortingLayerName[i] = SortingLayer.layers[i].name;
+					if (SortingLayer.layers[i].id == _targetPortrait._sortingLayerID)
+					{
+						layerIndex = i;
+					}
+				}
 
-					_targetPortrait._billboardType = nextBillboard;
+				EditorGUI.BeginChangeCheck();
+				int nextLayerIndex = EditorGUILayout.Popup("Sorting Layer", layerIndex, sortingLayerName);
+				apPortrait.SORTING_ORDER_OPTION nextSortingOption = (apPortrait.SORTING_ORDER_OPTION)EditorGUILayout.EnumPopup("Sorting Order Option", _targetPortrait._sortingOrderOption);
+				if(EditorGUI.EndChangeCheck())
+				{
+				
+					if (nextLayerIndex != layerIndex)
+					{
+						RecordUndo();
+
+						//Sorting Layer를 바꾸자
+						if (nextLayerIndex >= 0 && nextLayerIndex < SortingLayer.layers.Length)
+						{
+							string nextLayerName = SortingLayer.layers[nextLayerIndex].name;
+							_targetPortrait.SetSortingLayer(nextLayerName);
+						}
+					}
+
+					if (nextSortingOption != _targetPortrait._sortingOrderOption)
+					{
+						RecordUndo();
+
+						//Sorting Order를 바꾸자
+						_targetPortrait._sortingOrderOption = nextSortingOption;
+						//변경된 Sorting Order Option에 따라서 바로 Sorting을 해야한다.
+						_targetPortrait.ApplySortingOptionToOptRootUnits();
+
+						switch (_targetPortrait._sortingOrderOption)
+						{
+							case apPortrait.SORTING_ORDER_OPTION.SetOrder:
+								_targetPortrait.SetSortingOrder(_targetPortrait._sortingOrder);
+								break;
+
+							case apPortrait.SORTING_ORDER_OPTION.DepthToOrder:
+							case apPortrait.SORTING_ORDER_OPTION.ReverseDepthToOrder:
+								_targetPortrait.SetSortingOrderChangedAutomatically(true);
+								_targetPortrait.RefreshSortingOrderByDepth();
+								break;
+						}
+					}
+				}
+
+
+				if (_targetPortrait._sortingOrderOption == apPortrait.SORTING_ORDER_OPTION.SetOrder)
+				{
+					EditorGUI.BeginChangeCheck();
+
+					int nextLayerOrder = EditorGUILayout.DelayedIntField("Sorting Order", _targetPortrait._sortingOrder);
+
+					if (EditorGUI.EndChangeCheck())
+					{
+						if (nextLayerOrder != _targetPortrait._sortingOrder)
+						{
+							RecordUndo();
+
+							_targetPortrait.SetSortingOrder(nextLayerOrder);
+						}
+
+						GUI.FocusControl(null);
+					}
+				}
+				else if (_targetPortrait._sortingOrderOption == apPortrait.SORTING_ORDER_OPTION.DepthToOrder
+					|| _targetPortrait._sortingOrderOption == apPortrait.SORTING_ORDER_OPTION.ReverseDepthToOrder)
+				{
+					EditorGUI.BeginChangeCheck();
+
+					//추가 21.1.31 : Depth To Order일때, 1씩만 증가하는게 아닌 더 큰값으로 증가할 수도 있게 만들자
+					int nextOrderPerDepth = EditorGUILayout.DelayedIntField("Order Per Depth", _targetPortrait._sortingOrderPerDepth);
+
+					if (EditorGUI.EndChangeCheck())
+					{
+						if (nextOrderPerDepth != _targetPortrait._sortingOrderPerDepth)
+						{
+							RecordUndo();
+
+							if (nextOrderPerDepth < 1)
+							{
+								nextOrderPerDepth = 1;
+							}
+
+							_targetPortrait._sortingOrderPerDepth = nextOrderPerDepth;
+
+							//변경된 Sorting Order Option에 따라서 바로 Sorting을 해야한다.
+							_targetPortrait.ApplySortingOptionToOptRootUnits();
+						}
+
+						GUI.FocusControl(null);
+					}
 				}
 			}
 
-			GUILayout.Space(20);
+			
+			GUILayout.Space(10);
+
+
+			_isFold_Billboard = EditorGUILayout.Foldout(_isFold_Billboard, "Billboard");
+			if (_isFold_Billboard)
+			{
+				// [ 빌보드 ]
+
+				//3. 빌보드
+				EditorGUI.BeginChangeCheck();
+
+				apPortrait.BILLBOARD_TYPE nextBillboard = (apPortrait.BILLBOARD_TYPE)EditorGUILayout.EnumPopup("Billboard Type", _targetPortrait._billboardType);
+
+				if (EditorGUI.EndChangeCheck())
+				{
+					if (nextBillboard != _targetPortrait._billboardType)
+					{
+						RecordUndo();
+
+						_targetPortrait._billboardType = nextBillboard;
+					}
+				}
+			}
+
+
+			GUILayout.Space(10);
+
+
+			//루트 모션
+			_isFold_RootMotion = EditorGUILayout.Foldout(_isFold_RootMotion, "Root Motion");
+			if(_isFold_RootMotion)
+			{	
+				//루트 모션 모드
+				apPortrait.ROOT_MOTION_MODE nextRootMotionMode = (apPortrait.ROOT_MOTION_MODE)EditorGUILayout.Popup("Root Motion Method",
+																													(int)_targetPortrait._rootMotionModeOption,
+																													_rootMotionModeLabel);
+
+				if(_targetPortrait._rootMotionModeOption != nextRootMotionMode)
+				{
+					RecordUndo();
+					_targetPortrait._rootMotionModeOption = nextRootMotionMode;
+				}
+
+				//축별 옵션
+				if(_targetPortrait._rootMotionModeOption != apPortrait.ROOT_MOTION_MODE.None)
+				{
+					GUILayout.Space(5);
+					//X축 옵션
+					apPortrait.ROOT_MOTION_MOVE_TYPE_PER_AXIS nextOptX = (apPortrait.ROOT_MOTION_MOVE_TYPE_PER_AXIS)EditorGUILayout.EnumPopup("X-axis Option",
+																																		_targetPortrait._rootMotionAxisOption_X);
+					//Y축 옵션
+					apPortrait.ROOT_MOTION_MOVE_TYPE_PER_AXIS nextOptY = (apPortrait.ROOT_MOTION_MOVE_TYPE_PER_AXIS)EditorGUILayout.EnumPopup(	"Y-axis Option",
+																																		_targetPortrait._rootMotionAxisOption_Y);
+
+					if(_targetPortrait._rootMotionAxisOption_X != nextOptX
+						|| _targetPortrait._rootMotionAxisOption_Y != nextOptY)
+					{
+						RecordUndo();
+						_targetPortrait._rootMotionAxisOption_X = nextOptX;
+						_targetPortrait._rootMotionAxisOption_Y = nextOptY;
+					}
+				}
+
+				//Move Parent인 경우에
+				if(_targetPortrait._rootMotionModeOption == apPortrait.ROOT_MOTION_MODE.MoveParentTransform)
+				{
+					GUILayout.Space(5);
+
+					//부모 지정 방식
+					apPortrait.ROOT_MOTION_TARGET_TRANSFORM nextRMTargetType = (apPortrait.ROOT_MOTION_TARGET_TRANSFORM)EditorGUILayout.EnumPopup(	"Parent Tranform Type",
+																																					_targetPortrait._rootMotionTargetTransformType);
+
+					if(_targetPortrait._rootMotionTargetTransformType != nextRMTargetType)
+					{
+						RecordUndo();
+						_targetPortrait._rootMotionTargetTransformType = nextRMTargetType;
+					}
+
+					//부모 지정 방식 -> "직접 지정"인 경우
+					if(_targetPortrait._rootMotionTargetTransformType == apPortrait.ROOT_MOTION_TARGET_TRANSFORM.SpecifiedTransform)
+					{
+						try
+						{
+							Transform nextRootMotionParentTransform = (Transform)EditorGUILayout.ObjectField("Specified Parent Transform",
+																												_targetPortrait._rootMotionSpecifiedParentTransform,
+																												typeof(Transform),
+																												true);
+
+							if (_targetPortrait._rootMotionSpecifiedParentTransform != nextRootMotionParentTransform)
+							{
+								//유효성을 테스트하자
+								if (nextRootMotionParentTransform == null)
+								{
+									//Null 지정 가능
+									RecordUndo();
+									_targetPortrait._rootMotionSpecifiedParentTransform = nextRootMotionParentTransform;
+									;
+								}
+								else
+								{
+									//부모 객체인지 확인한다.
+									if (!_targetPortrait.transform.IsChildOf(nextRootMotionParentTransform))
+									{
+										//"루트 모션의 기준이 되는 Transform은 부모여야 합니다."
+										EditorUtility.DisplayDialog("Transform change failed",
+																	"Transform for Root Motion must be the parent of apPortrait.",
+																	"Okay");
+									}
+									else
+									{
+										//유효하다.
+										RecordUndo();
+										_targetPortrait._rootMotionSpecifiedParentTransform = nextRootMotionParentTransform;
+									}
+								}
+							}
+						}
+						catch(Exception) { }
+					}
+				}
+			}
+
+			GUILayout.Space(10);
+
 
 			//4. 프리팹 (선택)
 			if (_isPrefabInstance)
 			{
+				GUILayout.Space(10);
+
 				DrawSubTitle(_guiContent_Prefab, width, new Color(0.0f, 0.5f, 1.0f));
 
-				//연결 상태를 보여주자
-				string strStatus = null;
-				switch (_prefabStatus)
+				_isFold_Prefab = EditorGUILayout.Foldout(_isFold_Prefab, "Prefab");
+				if (_isFold_Prefab)
 				{
-					case apEditorUtil.PREFAB_STATUS.Connected:
-						GUI.backgroundColor = new Color(0.7f, 1.0f, 1.0f, 1.0f);
-						strStatus = "Source Prefab";
-						break;
 
-					case apEditorUtil.PREFAB_STATUS.Disconnected:
-						GUI.backgroundColor = new Color(1.0f, 0.7f, 0.7f, 1.0f);
-						strStatus = "(Disconnected)";
-						break;
+					//연결 상태를 보여주자
+					string strStatus = null;
+					switch (_prefabStatus)
+					{
+						case apEditorUtil.PREFAB_STATUS.Connected:
+							GUI.backgroundColor = new Color(0.7f, 1.0f, 1.0f, 1.0f);
+							strStatus = "Source Prefab";
+							break;
 
-					case apEditorUtil.PREFAB_STATUS.Asset://v1.4.2
-						GUI.backgroundColor = new Color(1.0f, 0.7f, 0.7f, 1.0f);
-						strStatus = "(Not Instance)";
-						break;
+						case apEditorUtil.PREFAB_STATUS.Disconnected:
+							GUI.backgroundColor = new Color(1.0f, 0.7f, 0.7f, 1.0f);
+							strStatus = "(Disconnected)";
+							break;
 
-					case apEditorUtil.PREFAB_STATUS.Missing:
-					default:
-						GUI.backgroundColor = new Color(1.0f, 0.7f, 0.7f, 1.0f);
-						strStatus = "(Missing)";
-						break;
-				}
-				EditorGUILayout.ObjectField(strStatus, _srcPrefabObject, typeof(UnityEngine.Object), false);
-				EditorGUILayout.ObjectField("Root GameObject", _rootGameObjAsPrefabInstance, typeof(GameObject), false);
-				GUI.backgroundColor = prevColor;
+						case apEditorUtil.PREFAB_STATUS.Asset://v1.4.2
+							GUI.backgroundColor = new Color(1.0f, 0.7f, 0.7f, 1.0f);
+							strStatus = "(Not Instance)";
+							break;
 
-				int width_PrefabButtons = (width / 2) - 4;
+						case apEditorUtil.PREFAB_STATUS.Missing:
+						default:
+							GUI.backgroundColor = new Color(1.0f, 0.7f, 0.7f, 1.0f);
+							strStatus = "(Missing)";
+							break;
+					}
+					EditorGUILayout.ObjectField(strStatus, _srcPrefabObject, typeof(UnityEngine.Object), false);
+					EditorGUILayout.ObjectField("Root GameObject", _rootGameObjAsPrefabInstance, typeof(GameObject), false);
+					GUI.backgroundColor = prevColor;
 
-				EditorGUILayout.BeginHorizontal();
-				GUILayout.Space(5);
-				if (GUILayout.Button("Apply", GUILayout.Width(width_PrefabButtons)))
-				{
-					//프리팹 변경 내용을 저장하자
-					apEditorUtil.ApplyPrefab(_targetPortrait);
-					RefreshPrefabStatus();
-				}
-				if (GUILayout.Button("Refresh", GUILayout.Width(width_PrefabButtons)))
-				{
-					//프리팹 연결 정보를 갱신한다.
-					RefreshPrefabStatus();
-				}
+					int width_PrefabButtons = (width / 2) - 4;
+
+					EditorGUILayout.BeginHorizontal();
+					GUILayout.Space(5);
+					if (GUILayout.Button("Apply", GUILayout.Width(width_PrefabButtons)))
+					{
+						//프리팹 변경 내용을 저장하자
+						apEditorUtil.ApplyPrefab(_targetPortrait);
+						RefreshPrefabStatus();
+					}
+					if (GUILayout.Button("Refresh", GUILayout.Width(width_PrefabButtons)))
+					{
+						//프리팹 연결 정보를 갱신한다.
+						RefreshPrefabStatus();
+					}
 
 
-				EditorGUILayout.EndHorizontal();
+					EditorGUILayout.EndHorizontal();
 
-				//Disconnect를 할 수 있다.
-				//Legacy : 단순 Disconnect를 할 수 있다.
-				//2018.3 : Disconnect를 한 후, 복원 정보를 모두 삭제할 수 있다.
+					//Disconnect를 할 수 있다.
+					//Legacy : 단순 Disconnect를 할 수 있다.
+					//2018.3 : Disconnect를 한 후, 복원 정보를 모두 삭제할 수 있다.
 #if UNITY_2018_3_OR_NEWER
-				EditorGUILayout.BeginHorizontal();
-				GUILayout.Space(5);
+					EditorGUILayout.BeginHorizontal();
+					GUILayout.Space(5);
 					
-				if (GUILayout.Button("Disconnect", GUILayout.Width(width_PrefabButtons)))
-				{
-					//Disconnect를 하되, 연결 정보는 남겨둔다.
-					if(EditorUtility.DisplayDialog(
-											"Disconnecting from Prefab", 
-											"Are you sure you want to disconnect this Portrait from the Prefab Asset?", 
-											"Disconnect", "Cancel"))
+					if (GUILayout.Button("Disconnect", GUILayout.Width(width_PrefabButtons)))
 					{
-						apEditorUtil.CheckAndRefreshPrefabInfo(_targetPortrait);
-						apEditorUtil.DisconnectPrefab(_targetPortrait);
-						RefreshPrefabStatus();
-					}
+						//Disconnect를 하되, 연결 정보는 남겨둔다.
+						if(EditorUtility.DisplayDialog(
+												"Disconnecting from Prefab", 
+												"Are you sure you want to disconnect this Portrait from the Prefab Asset?", 
+												"Disconnect", "Cancel"))
+						{
+							apEditorUtil.CheckAndRefreshPrefabInfo(_targetPortrait);
+							apEditorUtil.DisconnectPrefab(_targetPortrait);
+							RefreshPrefabStatus();
+						}
 						
-				}
+					}
 
-				if (GUILayout.Button("Clear", GUILayout.Width(width_PrefabButtons)))
-				{
-					//Disconnect를 하고, 연결 정보를 삭제한다.
-					if(EditorUtility.DisplayDialog(
-											"Disconnecting from Prefab", 
-											"Are you sure you want to disconnect this Portrait from the Prefab Asset?\nThis completely deletes the connection data with the Prefab.", 
-											"Disconnect and Clear", "Cancel"))
+					if (GUILayout.Button("Clear", GUILayout.Width(width_PrefabButtons)))
 					{
-						apEditorUtil.DisconnectPrefab(_targetPortrait, true);
-						RefreshPrefabStatus();
+						//Disconnect를 하고, 연결 정보를 삭제한다.
+						if(EditorUtility.DisplayDialog(
+												"Disconnecting from Prefab", 
+												"Are you sure you want to disconnect this Portrait from the Prefab Asset?\nThis completely deletes the connection data with the Prefab.", 
+												"Disconnect and Clear", "Cancel"))
+						{
+							apEditorUtil.DisconnectPrefab(_targetPortrait, true);
+							RefreshPrefabStatus();
+						}
 					}
-				}
-				EditorGUILayout.EndHorizontal();
+					EditorGUILayout.EndHorizontal();
 #else
-				EditorGUILayout.BeginHorizontal();
-				GUILayout.Space(5);
-				
-				if (GUILayout.Button("Disconnect", GUILayout.Width(width - 4)))
-				{
-					//Disconnect를 하되, 연결 정보는 남겨둔다.
-					if (EditorUtility.DisplayDialog(
-											"Disconnecting from Prefab",
-											"Are you sure you want to disconnect this Portrait from the Prefab Asset?",
-											"Disconnect", "Cancel"))
+					EditorGUILayout.BeginHorizontal();
+					GUILayout.Space(5);
+
+					if (GUILayout.Button("Disconnect", GUILayout.Width(width - 4)))
 					{
-						apEditorUtil.CheckAndRefreshPrefabInfo(_targetPortrait);
-						apEditorUtil.DisconnectPrefab(_targetPortrait);
-						RefreshPrefabStatus();
+						//Disconnect를 하되, 연결 정보는 남겨둔다.
+						if (EditorUtility.DisplayDialog(
+												"Disconnecting from Prefab",
+												"Are you sure you want to disconnect this Portrait from the Prefab Asset?",
+												"Disconnect", "Cancel"))
+						{
+							apEditorUtil.CheckAndRefreshPrefabInfo(_targetPortrait);
+							apEditorUtil.DisconnectPrefab(_targetPortrait);
+							RefreshPrefabStatus();
+						}
 					}
-				}
-				EditorGUILayout.EndHorizontal();
+					EditorGUILayout.EndHorizontal();
 #endif
 
-				GUILayout.Space(20);
+					
+				}
+				
+				GUILayout.Space(10);
+				
 			}
 			
 
 
+			
+
+			GUILayout.Space(10);
 			
 			return isChanged;
 		}
