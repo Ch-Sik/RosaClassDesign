@@ -2,11 +2,10 @@ using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Loading;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
-using Utilities;
 
 /// <summary>
 /// 하부의 LoadingZone에서 플레이어를 감지한 순간 로드씬을 배치하고, 언로드 씬을 제거함.
@@ -152,13 +151,13 @@ public class MapLoader : MonoBehaviour
     private void UploadMapData()
     {
         TrackingMapDataState();
-
+        data.tileData = this.sceneMapData;
         MapLoadManager.Instance.UploadSceneData(data);
     }
 
     private void DownloadMapData(int index)
     {
-        data = MapLoadManager.Instance.DownloadeSceneData(index);
+        data = MapLoadManager.Instance.DownloadSceneData(index);
 
         CollectMapData();
         ApplyMapData();
@@ -212,6 +211,7 @@ public class MapLoader : MonoBehaviour
         sceneMapData.anchor = anchor;
         sceneMapData.size = size;
         sceneMapData.scene = thisScene;
+        EditorUtility.SetDirty(sceneMapData);
     }
 
     private List<Vector2Int> GetTilesPositionInTilemap(Tilemap tileMap)

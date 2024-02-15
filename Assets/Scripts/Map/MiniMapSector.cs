@@ -5,11 +5,10 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
-public class MinmiMapSector : MonoBehaviour
+public class MiniMapSector : MonoBehaviour
 {
     public Image image;
 
-    [Button]
     public void SetMapSector(SO_SceneMapData data, float scale = 3)
     {
         image.sprite = GetSceneSprite(data.size, data.tiles);
@@ -19,8 +18,6 @@ public class MinmiMapSector : MonoBehaviour
         rect.anchoredPosition = new Vector2(
                                     data.anchor.x,
                                     data.anchor.y) * scale;
-
-        Debug.Log($"Anchor = {data.anchor}, RectsAnchor = {rect.anchoredPosition}, Size = {data.size}, RectsSize = {rect.sizeDelta}");
     }
 
     public Sprite GetSceneSprite(Vector2Int size, List<Vector2Int> tiles)

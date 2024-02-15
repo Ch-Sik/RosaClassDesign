@@ -18,7 +18,7 @@ public class SceneData
 {
     public SceneField scene;
 
-    public SO_SceneMapData data;
+    public SO_SceneMapData tileData;
 
     public List<bool> dropItems = new List<bool>();
     public List<bool> cages = new List<bool>();
