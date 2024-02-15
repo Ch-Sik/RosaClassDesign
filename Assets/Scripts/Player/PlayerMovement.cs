@@ -73,6 +73,7 @@ public class PlayerMovement : MonoBehaviour
     // 플래그
     [ReadOnly, SerializeField] public bool isFacingWall = false;
     [ReadOnly, SerializeField] public bool isWallClimbing = false;      // 벽에 붙어서 이동중
+    [ReadOnly, SerializeField] public bool isWallJumpReady = false;      // 벽에 붙어서 이동중
     [ReadOnly, SerializeField] public bool isWallClimbingTop = false;      // 벽에 붙어서 이동중 정상도달
     [ReadOnly, SerializeField] public bool isWallJumping = false;       // 벽 점프 중인지
     [ReadOnly, SerializeField] public bool isDoingMagic = false;
@@ -157,8 +158,11 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
+            if (playerControl.currentMoveState == PlayerMoveState.CLIMBING && !isWallJumpReady)
+            {
+                UnstickFromWall();
+            }
             isWallClimbingTop = false;
-            
         }
         
     }
@@ -232,6 +236,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 Debug.Log("start Timer");
                 climbTimer = Timer.StartTimer();
+                isWallJumpReady = true;
             }
         }
         else
@@ -259,18 +264,24 @@ public class PlayerMovement : MonoBehaviour
                     UnstickFromWall();
                     Flip();
                     isFalling = true;
+                    isWallJumpReady = false;
                 }
             }
         }
         moveVector = inputVector;
+        isWallJumpReady = false;
     }
 
 
     internal void JumpUp()
     {
-        //playerAnim.SetTrigger("JumpTrigger");
-        rb.velocity = new Vector2(rb.velocity.x, jumpPower);
-        jumpTimer = Timer.StartTimer();
+        if(!isStopControl)
+        {
+            //playerAnim.SetTrigger("JumpTrigger");
+            rb.velocity = new Vector2(rb.velocity.x, jumpPower);
+            jumpTimer = Timer.StartTimer();
+        }
+        
     }
 
     /// <summary>
@@ -278,12 +289,16 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void FinishJumpUp()
     {
-        if (jumpTimer.duration > minJumpUpDuration) // 최소 점프 시간에 도달
+        if (!isStopControl)
         {
-            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y < 0 ? rb.velocity.y : 0);
+            if (jumpTimer.duration > minJumpUpDuration) // 최소 점프 시간에 도달
+            {
+                rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y < 0 ? rb.velocity.y : 0);
+            }
+            else
+                StartCoroutine(ReserveFinishJumpUp());
         }
-        else
-            StartCoroutine(ReserveFinishJumpUp());
+        
 
         IEnumerator ReserveFinishJumpUp()
         {
@@ -331,22 +346,27 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void WallJump()
     {
-        isWallJumping = true;
-        UnstickFromWall();
-        //playerAnim.SetTrigger("JumpTrigger");
-        playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
+        if(!isStopControl)
+        {
+            isWallJumping = true;
+            UnstickFromWall();
+            isWallJumpReady = false;
+            //playerAnim.SetTrigger("JumpTrigger");
+            playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
 
-        if(!isFalling)
-        {
-            float xDirection = facingDirection.isRIGHT() ? -1 : 1;  // 보고 있는 방향의 반대방향으로 점프
-            rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
-            Flip();
+            if (!isFalling)
+            {
+                float xDirection = facingDirection.isRIGHT() ? -1 : 1;  // 보고 있는 방향의 반대방향으로 점프
+                rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
+                Flip();
+            }
+            else
+            {
+                float xDirection = facingDirection.isRIGHT() ? 1 : -1;  // 보고 있는 방향으로 점프
+                rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
+            }
         }
-        else
-        {
-            float xDirection = facingDirection.isRIGHT() ? 1 : -1;  // 보고 있는 방향으로 점프
-            rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
-        }
+        
 
         
 
@@ -564,6 +584,11 @@ public class PlayerMovement : MonoBehaviour
 
         Debug.Log(knockbackDirection);
         
+        if(playerControl.currentMoveState == PlayerMoveState.CLIMBING)
+        {
+            UnstickFromWall();
+        }
+
         GetComponent<Rigidbody2D>().AddForce(knockbackDirection * knockbackStrength, ForceMode2D.Impulse);
 
         StartCoroutine(Knockback());
