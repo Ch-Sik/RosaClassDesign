@@ -19,8 +19,10 @@ public class PlayerCombat : MonoBehaviour
     public PlayerDamageInflictor attackObject;      //공격 이벤트를 위한 PlayerDamageInflictor
     public bool isAttack = false;                   //공격중이라면 true, 아니라면 false;
     public bool isFly = false;                      //나비를 타고 있다면 true, 아니라면 false;
+    public bool canInteraction = true;              //좌클릭으로 인터렉션 가능하면 true, 아니라면 false //공격시 범위 내에 적이 있다면 false
 
     [Header("CombatOptions")]
+    public LayerMask wall;
     public LayerMask attackableObjects;             //공격가능한 대상 레이어 마스크
     public LayerMask butterfly;                     //나비 레이어 마스크
 
@@ -39,7 +41,7 @@ public class PlayerCombat : MonoBehaviour
     private void Start()
     {
         attackObject = attackEntity.GetComponent<PlayerDamageInflictor>();
-        attackObject.Init(this, attackableObjects, butterfly);
+        attackObject.Init(this, wall, attackableObjects, butterfly);
         aimInput = InputManager.Instance._inputAsset.FindActionMap("ActionDefault").FindAction("Aim");
     }
 
@@ -143,6 +145,7 @@ public class PlayerCombat : MonoBehaviour
     private void OnEndAttack()
     {
         isAttack = false;
+        canInteraction = true;
         //쿨타임은 여기 넣자.
     }
 
@@ -174,11 +177,41 @@ public class PlayerCombat : MonoBehaviour
         // 직사각형의 회전 각도 계산
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
+        // 기즈모에서 그린 영역과 겹치는 충돌체 검사
+        canInteraction = !Physics2D.OverlapBox(center, new Vector2(attackDistance, 1), angle, LayerMask.GetMask("Monster"));
+        // 기즈모 색상 설정
+        Gizmos.color = canInteraction ? Color.green : Color.red;
+
         // 회전된 직사각형 그리기
         Matrix4x4 rotationMatrix = Matrix4x4.TRS(center, Quaternion.Euler(0, 0, angle), new Vector3(attackDistance, 1, 1));
         Gizmos.matrix = rotationMatrix;
-        Gizmos.color = Color.red; // 직사각형 색상 설정
         Gizmos.DrawWireCube(Vector3.zero, Vector3.one); // 회전된 직사각형 그리기
         Gizmos.matrix = Matrix4x4.identity; // 다음 Gizmo에 영향을 미치지 않도록 기본 매트릭스로 돌아가기
     }
+
+    /*
+    private void OnDrawGizmos()
+    {
+        if (!showGizmo)
+            return;
+
+        Vector3 direction = new Vector2(mouse.x - transform.position.x, mouse.y - transform.position.y).normalized;
+        Vector3 center = transform.position + direction * (attackDistance / 2);
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+        // 기즈모에서 그린 영역과 겹치는 충돌체 검사
+        bool isHit = Physics2D.OverlapBox(center, new Vector2(attackDistance, 1), angle, LayerMask.GetMask("YourCollisionLayer"));
+
+        // 기즈모 색상 설정
+        Gizmos.color = isHit ? Color.red : Color.green;
+
+        // 회전된 직사각형 그리기
+        Matrix4x4 rotationMatrix = Matrix4x4.TRS(center, Quaternion.Euler(0, 0, angle), new Vector3(attackDistance, 1, 1));
+        Gizmos.matrix = rotationMatrix;
+        Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+
+        // 다음 Gizmo에 영향을 미치지 않도록 기본 매트릭스로 돌아가기
+        Gizmos.matrix = Matrix4x4.identity;
+    }
+     */
 }

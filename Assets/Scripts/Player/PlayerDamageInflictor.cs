@@ -12,13 +12,15 @@ public class PlayerDamageInflictor : MonoBehaviour
 {
     Collider2D col;                                 //오브젝트의 충돌 컴포넌트
     PlayerCombat playerCombat;                      //PlayerCombat과 이벤트 전달을 위해 직접 연결
+    LayerMask layer_wall;
     LayerMask layer_attackable;                    //attackable한 objects의 layermask
     LayerMask layer_butterfly;                      //butterfly인식을 위한 layermask
 
     //PlayerCombat에서 Init해준다. 기본적으로 
-    public void Init(PlayerCombat playerCombat, LayerMask attackableObjects, LayerMask butterfly)
+    public void Init(PlayerCombat playerCombat, LayerMask wall, LayerMask attackableObjects, LayerMask butterfly)
     {
         this.playerCombat = playerCombat;
+        layer_wall = wall;
         layer_attackable = attackableObjects;
         layer_butterfly = butterfly;
     }
@@ -43,9 +45,26 @@ public class PlayerDamageInflictor : MonoBehaviour
         col.enabled = false;
     }
 
+    public void OnTriggerStay2D(Collider2D collision)
+    {
+        if ((layer_wall & 1 << collision.gameObject.layer) > 0)
+        {
+            Debug.Log("벽 충돌로 인한 공격 취소");
+            playerCombat.StopAttack();
+        }
+    }
+
     //충돌 감지
     public void OnTriggerEnter2D(Collider2D collision)
     {
+        // if (playerCombat.canInteraction) 상호작용이 필요한 오브젝트에 적용할 것.
+        if ((layer_wall & 1 << collision.gameObject.layer) > 0)
+        {
+            Debug.Log("벽 충돌로 인한 공격 취소");
+            playerCombat.StopAttack();
+        }
+
+
         // 몬스터 등등과 충돌한다면,
         if ((layer_attackable & 1 << collision.gameObject.layer) != 0)
         {
@@ -55,7 +74,8 @@ public class PlayerDamageInflictor : MonoBehaviour
         }
 
         //나비와 충돌한다면,
-        if ((layer_butterfly.value & 1 << collision.gameObject.layer) > 0)
+        if ((layer_butterfly.value & 1 << collision.gameObject.layer) > 0 &&
+            playerCombat.canInteraction)
         {
             Debug.Log("나비와 충돌됨");
             //PlayerCombat에 RideButterFly함수를 실행시키며, 나비의 부모 데이터를 전달한다.
