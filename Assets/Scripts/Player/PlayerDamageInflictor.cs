@@ -77,6 +77,8 @@ public class PlayerDamageInflictor : MonoBehaviour
         if ((layer_butterfly.value & 1 << collision.gameObject.layer) > 0 &&
             playerCombat.canInteraction)
         {
+            if (collision.GetComponent<Butterfly>().isCaged)
+                return;
             Debug.Log("나비와 충돌됨");
             //PlayerCombat에 RideButterFly함수를 실행시키며, 나비의 부모 데이터를 전달한다.
             playerCombat.RideButterFly(collision.transform.parent.GetComponentInChildren<Butterfly>());
