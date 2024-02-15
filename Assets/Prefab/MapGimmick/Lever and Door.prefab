@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 2665570870530438330}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.965, z: 0}
+  m_LocalPosition: {x: 0, y: 0.65, z: 0}
   m_LocalScale: {x: 0.36560497, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -309,7 +309,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MEMO: "\u2606\uC0AC\uC6A9\uBC95\u2606\n\uC774 \uC624\uBE0C\uC81D\uD2B8\uC758 \uC790\uC2DD\uC73C\uB85C
     \uC788\uB294 Lever\uC640 Door\uB97C \uC801\uC808\uD55C \uC704\uCE58\uB85C \uC774\uB3D9\uC2DC\uD0A4\uACE0
-    \uD14C\uC2A4\uD2B8\uD55C\uB2E4. \uB05D."
+    \uD14C\uC2A4\uD2B8\uD55C\uB2E4. \uB05D.\n\nLever \uC2A4\uD06C\uB9BD\uD2B8 \uB0B4\uBD80
+    cinematicSettings \uC5D0 \uC694\uC18C \uCD94\uAC00 \uD544\uC694\neaseInDur =
+    \uC90C \uC778 \uC2DC\uAC04 \nholdDur = \uADF8 \uC704\uCE58\uC5D0\uC11C \uC815\uC9C0
+    \uD558\uB294 \uC2DC\uAC04\nzoomAmount = \uC5BC\uB9C8\uB098 \uC90C\uC778 \uD560\uC9C0"
 --- !u!1 &5430793222405000366
 GameObject:
   m_ObjectHideFlags: 0
@@ -412,6 +415,15 @@ MonoBehaviour:
   leverActivated: 0
   leverGear: {fileID: 7522399094622398035}
   leverHandle: {fileID: 1349749870521942713}
+  cam: {fileID: 0}
+  cinematics: {fileID: 0}
+  cinematicsSettings:
+  - easeInDur: 1
+    holdDur: 0.5
+    zoomAmount: 2
+  - easeInDur: 1
+    holdDur: 0.5
+    zoomAmount: 2
 --- !u!61 &2443753693961101565
 BoxCollider2D:
   m_ObjectHideFlags: 0

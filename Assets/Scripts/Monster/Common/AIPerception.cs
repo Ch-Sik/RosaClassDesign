@@ -35,7 +35,7 @@ public class AIPerception : MonoBehaviour
     {
         if (col.CompareTag("Player"))
         {
-            blackboard.Set("Enemy", null);
+            blackboard.Set<GameObject>("Enemy", null);
         }
     }
 }

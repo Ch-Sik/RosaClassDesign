@@ -11,6 +11,11 @@ public class PlayerController : MonoBehaviour
         get { return inputManager._moveState; }
     }
 
+    public PlayerActionState currentActionState
+    {
+        get { return inputManager._actionState; }
+    }
+
     // 컴포넌트
     [ReadOnly, SerializeField] public InputActionAsset inputAsset;
     [ReadOnly, SerializeField] PlayerMovement playerMove;
@@ -132,8 +137,21 @@ public class PlayerController : MonoBehaviour
             if (moveVector.y >= 0 || !(playerMove.platformBelow?.CompareTag("Platform") == true))
             {
                 Debug.Log(playerMove.platformBelow?.tag);
+                
                 isJumpingUp = true;
                 playerMove.JumpUp();        // 상향 점프
+                /*
+                Transform parentTransform = playerMove.platformBelow?.transform.parent;
+                if (parentTransform != null)
+                {
+                    BreakablePlatform component = parentTransform.GetComponent<BreakablePlatform>();
+
+                    if (component != null)
+                    {
+                        component.ColBreak();
+                    }
+                }
+                */
             }
             else
             {

@@ -186,7 +186,11 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                rb.velocity = new Vector2(moveVector.x * moveSpeed, rb.velocity.y);
+                if(!isWallJumping)
+                {
+                    rb.velocity = new Vector2(moveVector.x * moveSpeed, rb.velocity.y);
+                }
+                
                 if ((moveVector.x > 0 && facingDirection.isLEFT())
                 || (moveVector.x < 0 && facingDirection.isRIGHT()))
                 {
@@ -245,7 +249,7 @@ public class PlayerMovement : MonoBehaviour
 
     internal void StopClimb(Vector2 inputVector)
     {
-        if (moveVector.x != 0)
+        if (moveVector.x != 0 && !isStopControl)
         {
             if(!DetectWall() && climbTimer != null)
             {

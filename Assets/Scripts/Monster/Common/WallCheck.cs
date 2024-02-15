@@ -25,10 +25,15 @@ public class WallCheck : MonoBehaviour
             if (blackboard == null)
                 Debug.LogError($"{gameObject.name}: Blackboard를 찾을 수 없음!");
         }
+        overlappingCollider = 0;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        // 공통의 부모를 가지고 있는 경우(=Parent Constraint로 묶여 있는경우) 무시함.
+        if(collision.gameObject.transform.parent == transform.parent)
+            return;
+
         if (overlappingCollider <= 0)
         {
             isStuckAtWall = true;
@@ -40,6 +45,10 @@ public class WallCheck : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        // 공통의 부모를 가지고 있는 경우(=Parent Constraint로 묶여 있는경우) 무시함.
+        if (collision.gameObject.transform.parent == transform.parent)
+            return;
+
         overlappingCollider--;
         if (overlappingCollider <= 0)
         {
