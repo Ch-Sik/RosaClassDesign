@@ -12,26 +12,27 @@ using UnityEngine.InputSystem;
 
 public class PlayerCombat : MonoBehaviour
 {
-    public bool showGizmo = false;          //기즈모 가시 여부
+    public bool showGizmo = false;                  //기즈모 가시 여부
 
-    Sequence attack;                        //공격 시퀀스
-    public GameObject attackEntity;         //공격을 위한 AttackObject의 게임오브젝트
-    public PlayerDamageInflictor attackObject;       //공격 이벤트를 위한 PlayerDamageInflictor
-    public bool isAttack = false;           //공격중이라면 true, 아니라면 false;
-    public bool isFly = false;              //나비를 타고 있다면 true, 아니라면 false;
+    Sequence attack;                                //공격 시퀀스
+    public GameObject attackEntity;                 //공격을 위한 AttackObject의 게임오브젝트
+    public PlayerDamageInflictor attackObject;      //공격 이벤트를 위한 PlayerDamageInflictor
+    public bool isAttack = false;                   //공격중이라면 true, 아니라면 false;
+    public bool isFly = false;                      //나비를 타고 있다면 true, 아니라면 false;
 
     [Header("CombatOptions")]
-    public LayerMask attackableObjects;     //공격가능한 대상 레이어 마스크
-    public LayerMask butterfly;             //나비 레이어 마스크
+    public LayerMask attackableObjects;             //공격가능한 대상 레이어 마스크
+    public LayerMask butterfly;                     //나비 레이어 마스크
 
     [Header("Combat Properties")]
-    public float attackDistance;            //공격 사거리
-    public float attackTime;                //공격 시간
-    public float attackCooltime;            //공격을 위한 쿨타임
+    public float attackReadyTime = 0.25f;                   //공격 준비 시간
+    public float attackDistance;                    //공격 사거리
+    public float attackTime = 0.15f;                        //공격 시간
+    public float attackCooltime;                    //공격을 위한 쿨타임
 
-    public float angle;                         //마우스의 Euler Angle
-    [HideInInspector] public Vector2 mouse;     //마우스 월드 좌표
-    public Vector2 direction;                   //방향벡터
+    public float angle;                             //마우스의 Euler Angle
+    [HideInInspector] public Vector2 mouse;         //마우스 월드 좌표
+    public Vector2 direction;                       //방향벡터
     private InputAction aimInput;
 
     //시작하면서 AttackEntity에 존재하는 attackObject를 얻어오며, attackObject를 Init해준다.
@@ -61,11 +62,30 @@ public class PlayerCombat : MonoBehaviour
         if (isAttack)
             return;
 
+        isAttack = true;
+
         //공격전에 마우스 데이터를 추출한다.
         SetData();
 
+        //바라보는 방향 == 공격방향을 확인
+        bool isPlayerLookAttackDirection = IsPlayerLookAttackDirection(angle);
+        //공격방향을 바라보도록 플립
+        if (!isPlayerLookAttackDirection)
+        {
+            Vector3 theScale = transform.localScale;
+            theScale.x *= -1;
+            transform.localScale = theScale;
+
+            //공격방향과 바라보는 방향이 다를 때, angle과 direction을 모두 변경한다.
+            //굳이 둘 다 변경하는 이유는, angle은 넉백방향에 direction은 공격방향에 영향을 주기 때문이다.
+            angle *= -1;
+            direction.x *= -1;
+        }
+
         //시퀀스를 할당한다.
         attack = DOTween.Sequence()
+        //공격 준비시간을 적용
+        .AppendInterval(attackReadyTime)
         //공격전 이벤트와 함께, 공격판정체의 방향을 변경해주고(사실 의미 없으나 일단 넣은 것입니다.), 충돌체를 켜준다.
         .AppendCallback(() =>
         {
@@ -80,9 +100,28 @@ public class PlayerCombat : MonoBehaviour
         //시퀀스가 끝나며, 공격끝 이벤트와 함께 공격판정체의 충돌체를 끈다.
         .OnComplete(() =>
         {
+            //방향 전환을 원상태로 복구한다.
+            if (!isPlayerLookAttackDirection)
+            {
+                Vector3 theScale = transform.localScale;
+                theScale.x *= -1;
+                transform.localScale = theScale;
+            }
             attackObject.EndAttack();
             OnEndAttack();
         });
+    }
+
+    [Button]
+    //플레이어가 바라보는 방향과 공격방향이 동일한지를 따진다.
+    public bool IsPlayerLookAttackDirection(float angle)
+    {
+        if (transform.localScale.x > 0 && Mathf.Abs(angle) < 90)
+            return true;
+        else if (transform.localScale.x < 0 && Mathf.Abs(angle) > 90)
+            return true;
+        else
+            return false;
     }
 
     [Button]
@@ -98,7 +137,6 @@ public class PlayerCombat : MonoBehaviour
     //공격 시작 이벤트
     private void OnStartAttack()
     {
-        isAttack = true;
     }
 
     //공격 종료 이벤트
