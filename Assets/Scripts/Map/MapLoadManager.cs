@@ -1,9 +1,10 @@
-using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
+using UnityEngine.UI;
 
 /// <summary>
 /// 맵 데이터를 관리하는 매니저 클래스
@@ -37,7 +38,10 @@ public class MapLoadManager : MonoBehaviour
         }
     }
 
+    [SerializeField] private SceneField mainScene;
     [ShowInInspector] private List<SceneData> sceneDatas = new List<SceneData>();
+
+    public SceneField GetMainScene() { return mainScene; }
 
     //씬이 있는지 파악하는 함수, 없다면 -1 있다면 인덱스 반환
     public int HaveScene(SceneField scene)
@@ -58,5 +62,8 @@ public class MapLoadManager : MonoBehaviour
             sceneDatas[index] = sceneData;
     }
 
-    public SceneData GetSceneData(int index) { return sceneDatas[index]; } 
+    public SceneData DownloadeSceneData(int i)
+    {
+        return sceneDatas[i];
+    }
 }

@@ -55,16 +55,15 @@ public class ButterflyCage : MonoBehaviour
         //butterfly.transform.parent.parent = transform.parent;
         GetComponent<SpriteRenderer>().enabled = false;
         GetComponent<BoxCollider2D>().enabled = false;
-        butterfly.transform.position = butterflyReleasePosition;
         butterfly.isCaged = false;
-        //Destroy(gameObject);
+        butterfly.transform.position = butterfly.waypointsTransform.GetChild(0).position;
     }
 
     private void ReleaseButterfly()
     {
         isRelease = true;
         // Destroy 전에 나비를 자식오브젝트가 아니도록 설정
-        butterfly.transform.parent.parent = transform.parent;       // butterfly module 계층 구조 고려
+        //butterfly.transform.parent.parent = transform.parent;       // butterfly module 계층 구조 고려
 
         Sequence releaseSequence = DOTween.Sequence()
             .AppendCallback(() =>

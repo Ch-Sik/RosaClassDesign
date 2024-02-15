@@ -5,6 +5,8 @@ using System.Linq;
 using Unity.Loading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Tilemaps;
+using Utilities;
 
 /// <summary>
 /// 하부의 LoadingZone에서 플레이어를 감지한 순간 로드씬을 배치하고, 언로드 씬을 제거함.
@@ -14,9 +16,13 @@ using UnityEngine.SceneManagement;
 
 public class MapLoader : MonoBehaviour
 {
+    [Button]
+    public void BakeMap() { ResearchScene(); }
+
+    [SerializeField] public Tilemap map;
+    [SerializeField] public SO_SceneMapData sceneMapData;
     [SerializeField] private SceneField thisScene;          //맵 로더가 포함된 씬
     [SerializeField] private SceneField[] scenesToLoad;     //로드해올 씬
-    [SerializeField] private SceneField[] scenesToUnload;   //언로드할 씬
     [SerializeField] private SceneData data;
 
     #region 씬 내의 저장해야하는 오브젝트
@@ -44,6 +50,7 @@ public class MapLoader : MonoBehaviour
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
+        map = FindFirstObjectByType<Tilemap>();
     }
 
     public SceneField GetScene() { return thisScene; }
@@ -74,18 +81,27 @@ public class MapLoader : MonoBehaviour
     public void SceneUnloader()
     {
         MapLoader[] mapLoaders = GameObject.FindObjectsOfType<MapLoader>();
-        for (int i = 0; i < scenesToUnload.Length; i++)
+
+        string mainScene = MapLoadManager.Instance.GetMainScene().SceneName;
+
+        for (int j = 0; j < SceneManager.sceneCount; j++)
         {
-            for (int j = 0; j < SceneManager.sceneCount; j++)
+            Scene loadedScene = SceneManager.GetSceneAt(j);
+
+            bool isUnloadScene = true;
+
+            for (int i = 0; i < scenesToLoad.Length; i++)
+                if (loadedScene.name == scenesToLoad[i].SceneName ||
+                    loadedScene.name == mainScene)
+                    isUnloadScene = false;
+
+            if (isUnloadScene)
             {
-                Scene loadedScene = SceneManager.GetSceneAt(j);
-                if (loadedScene.name == scenesToUnload[i].SceneName)
-                {
-                    for (int k = 0; k < mapLoaders.Length; k++)
-                        if (mapLoaders[k].GetScene().SceneName == scenesToUnload[i].SceneName)
-                            mapLoaders[k].UploadMapData();
-                    SceneManager.UnloadSceneAsync(scenesToUnload[i]);
-                }
+                for (int k = 0; k < mapLoaders.Length; k++)
+                    if (mapLoaders[k].GetScene().SceneName == loadedScene.name)
+                        mapLoaders[k].UploadMapData();
+
+                SceneManager.UnloadSceneAsync(loadedScene);
             }
         }
     }
@@ -141,8 +157,8 @@ public class MapLoader : MonoBehaviour
     }
 
     private void DownloadMapData(int index)
-    { 
-        data = MapLoadManager.Instance.GetSceneData(index);
+    {
+        data = MapLoadManager.Instance.DownloadeSceneData(index);
 
         CollectMapData();
         ApplyMapData();
@@ -160,6 +176,58 @@ public class MapLoader : MonoBehaviour
             if (cages[i].isRelease)
                 cages[i].ReleaseImmediate();
         }
+    }
+    #endregion
+
+    #region 미니맵 구성
+    public void ResearchScene()
+    {
+        List<Vector2Int> tilePosition = new List<Vector2Int>(GetTilesPositionInTilemap(map));
+        Debug.Log(tilePosition.Count);
+        int minX = 100000, maxX = -100000, minY = 100000, maxY = -100000;
+
+
+        Vector2 anchor = Vector2Int.zero;
+        Vector2Int size = Vector2Int.zero;
+
+        for (int i = 0; i < tilePosition.Count; i++)
+        {
+            if (minX > tilePosition[i].x)
+                minX = tilePosition[i].x;
+            if (maxX < tilePosition[i].x)
+                maxX = tilePosition[i].x;
+            if (minY > tilePosition[i].y)
+                minY = tilePosition[i].y;
+            if (maxY < tilePosition[i].y)
+                maxY = tilePosition[i].y;
+        }
+
+        anchor = map.CellToWorld(new Vector3Int(minX, minY));
+        size = new Vector2Int(maxX - minX + 1, maxY - minY + 1);
+
+        for (int i = 0; i < tilePosition.Count; i++)
+            tilePosition[i] += new Vector2Int(-1 * minX, -1 * minY);
+
+        sceneMapData.tiles = new List<Vector2Int>(tilePosition);
+        sceneMapData.anchor = anchor;
+        sceneMapData.size = size;
+        sceneMapData.scene = thisScene;
+    }
+
+    private List<Vector2Int> GetTilesPositionInTilemap(Tilemap tileMap)
+    {
+        List<Vector2Int> availablePlaces = new List<Vector2Int>();
+        for (int n = tileMap.cellBounds.xMin; n < tileMap.cellBounds.xMax; n++)
+        {
+            for (int p = tileMap.cellBounds.yMin; p < tileMap.cellBounds.yMax; p++)
+            {
+                Vector3Int localPlace = (new Vector3Int(n, p, (int)tileMap.transform.position.y));
+                if (tileMap.HasTile(localPlace))
+                    availablePlaces.Add((Vector2Int)localPlace);
+            }
+        }
+
+        return availablePlaces;
     }
     #endregion
 }

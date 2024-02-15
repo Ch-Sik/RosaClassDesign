@@ -18,21 +18,11 @@ public class SceneData
 {
     public SceneField scene;
 
+    public SO_SceneMapData data;
+
     public List<bool> dropItems = new List<bool>();
     public List<bool> cages = new List<bool>();
     public List<bool> mobs = new List<bool>();
     public List<bool> levers = new List<bool>();
     public List<bool> doors = new List<bool>();
-
-    public SceneData Copy()
-    {
-        return new SceneData()
-        {
-            dropItems = new List<bool>(dropItems),
-            cages = new List<bool>(cages),
-            mobs = new List<bool>(mobs),
-            levers = new List<bool>(levers),
-            doors = new List<bool>(doors)
-        };
-    }
 }
