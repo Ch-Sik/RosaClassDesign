@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -19554,165 +19554,168 @@ namespace AnyPortrait
 			Editor.SetRepaint();
 		}
 
-		public void DetachBoneFromChild(apBone bone, apBone detachedBone)
-		{
-			if (bone == null || detachedBone == null)
-			{
-				return;
-			}
-			//Undo
-			apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_DetachBoneFromChild, 
-												Editor, 
-												bone._meshGroup, 
-												//bone, 
-												false, false,
-												apEditorUtil.UNDO_STRUCT.StructChanged);
+		#region [미사용 코드] 정상적으로 동작하지 않는다. 대신 SetBoneAsParent에 parentBone을 null로 입력해서 사용하자
+		//public void DetachBoneFromChild(apBone bone, apBone detachedBone)
+		//{
+		//	if (bone == null || detachedBone == null)
+		//	{
+		//		return;
+		//	}
+		//	//Undo
+		//	apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_DetachBoneFromChild, 
+		//										Editor, 
+		//										bone._meshGroup, 
+		//										//bone, 
+		//										false, false,
+		//										apEditorUtil.UNDO_STRUCT.StructChanged);
 
-			apMeshGroup targetMeshGroup = bone._meshGroup;
+		//	apMeshGroup targetMeshGroup = bone._meshGroup;
 
-			//Child를 제거한다.
-			//Child는 Parent가 없어졌으므로 Root가 된다.
-			//Default Matrix 보존해줄 것
-			targetMeshGroup.RefreshForce();
-
-
-			//기존 방식
-			//apMatrix worldBoneMatrix_Prev = new apMatrix(detachedBone._worldMatrix);//<<변경 : 값을 복사해야한다.
-			
-			//변경된 방식 20.8.13 : Complex Matrix + Temp1 이용
-			//apComplexMatrix worldBoneMatrix_Prev = apComplexMatrix.TempMatrix_1;
-			//worldBoneMatrix_Prev.CopyFromComplexMatrix(detachedBone._worldMatrix);
-
-			//다시 변경된 방식 20.8.18 : BoneWorldMatrix
-			apBoneWorldMatrix worldBoneMatrix_Prev = detachedBone._worldMatrix;
+		//	//Child를 제거한다.
+		//	//Child는 Parent가 없어졌으므로 Root가 된다.
+		//	//Default Matrix 보존해줄 것
+		//	targetMeshGroup.RefreshForce();
 
 
+		//	//기존 방식
+		//	//apMatrix worldBoneMatrix_Prev = new apMatrix(detachedBone._worldMatrix);//<<변경 : 값을 복사해야한다.
 
-			bone._childBones.Remove(detachedBone);
-			bone._childBoneIDs.Remove(detachedBone._uniqueID);
+		//	//변경된 방식 20.8.13 : Complex Matrix + Temp1 이용
+		//	//apComplexMatrix worldBoneMatrix_Prev = apComplexMatrix.TempMatrix_1;
+		//	//worldBoneMatrix_Prev.CopyFromComplexMatrix(detachedBone._worldMatrix);
 
-			detachedBone._parentBone = null;
-			detachedBone._parentBoneID = -1;
-
-			//DetachedBone의 Parent가 없으므로 IK는 해제되고 Root에 들어가야 한다.
-			if (!targetMeshGroup._boneList_Root.Contains(detachedBone))
-			{
-				targetMeshGroup._boneList_Root.Add(detachedBone);
-			}
+		//	//다시 변경된 방식 20.8.18 : BoneWorldMatrix
+		//	//apBoneWorldMatrix worldBoneMatrix_Prev = detachedBone._worldMatrix;
+		//	apBoneWorldMatrix worldBoneMatrix_Prev = apBoneWorldMatrix.MakeTempWorldMatrix(0, Editor._portrait, detachedBone._worldMatrix_NonModified);
 
 
 
+		//	bone._childBones.Remove(detachedBone);
+		//	bone._childBoneIDs.Remove(detachedBone._uniqueID);
 
-			targetMeshGroup.LinkBoneListToChildMeshGroupsAndRenderUnits();
-			targetMeshGroup.RefreshForce(true);
+		//	detachedBone._parentBone = null;
+		//	detachedBone._parentBoneID = -1;
 
-			//Detached Bone의 Default Matrix를 갱신하자
-
-			//기본 default * local 변환값이 들어간 Local Bone Matrix를 구하자
-			//apMatrix localBoneMatrix = apMatrix.RMultiply(detachedBone._defaultMatrix, detachedBone._localMatrix);
-
-			//현재의 worldMatrix
-
-
-			//default (Prev) * localMatrix (고정) * parentMatrix (Prev) => World Matrix (동일)
-			//default (Next) * localMatrix (고정) * parentMatrix (Next) => World Matrix (동일)
-
-			//--------------------------------
-			// 기존 방식
-			//--------------------------------
-			//apMatrix nextParent_Matrix = null;
-			//if (bone._renderUnit != null)
-			//{
-			//	nextParent_Matrix = bone._renderUnit.WorldMatrixWrap;
-			//}
-			//else
-			//{
-			//	nextParent_Matrix = new apMatrix();
-			//}
-
-			//--------------------------------
-			// 변경된 방식 (20.8.13) : ComplexMatrix + Temp2
-			//--------------------------------
-			//apComplexMatrix nextParent_Matrix = apComplexMatrix.TempMatrix_2;
-			//if (bone._renderUnit != null)
-			//{
-			//	nextParent_Matrix.SetMatrix_Step2(bone._renderUnit.WorldMatrixWrap, true);
-			//}
-
-			//--------------------------------
-			// 다시 변경된 방식 (20.8.13) : ComplexMatrix + Temp2
-			//--------------------------------
-			//RenderUnit이 있는 경우에만 할당
-			//부모 본은 없어진 상태
-			apBoneWorldMatrix nextParent_Matrix = apBoneWorldMatrix.MakeTempParentWorldMatrix(
-													0, Editor._portrait,
-													null, 
-													((bone._renderUnit != null) ? bone._renderUnit.WorldMatrixWrap : null)
-													);
+		//	//DetachedBone의 Parent가 없으므로 IK는 해제되고 Root에 들어가야 한다.
+		//	if (!targetMeshGroup._boneList_Root.Contains(detachedBone))
+		//	{
+		//		targetMeshGroup._boneList_Root.Add(detachedBone);
+		//	}
 
 
-			// [Default (Next) * local Matrix] = World Matrix inv parentMatrix (Next)
-			// Default
-			//--------------------------------
-			// 기존 방식
-			//--------------------------------
-			//apMatrix newDefaultMatrix = apMatrix.RInverse(apMatrix.RInverse(worldBoneMatrix_Prev, nextParent_Matrix), detachedBone._localMatrix);
-			//newDefaultMatrix._angleDeg = apUtil.AngleTo180(newDefaultMatrix._angleDeg);
-			//detachedBone._defaultMatrix.SetMatrix(newDefaultMatrix);
-
-			//--------------------------------
-			// 변경된 방식 (20.8.13) : ComplexMatrix + Temp3
-			//--------------------------------
-			//apComplexMatrix newDefaultMatrix = apComplexMatrix.TempMatrix_3;
-			//newDefaultMatrix.CopyFromComplexMatrix(worldBoneMatrix_Prev);
-			//newDefaultMatrix.Inverse(nextParent_Matrix);
-			//newDefaultMatrix.RInverse(detachedBone._localMatrix);
-			//newDefaultMatrix._angleDeg_Step1 = apUtil.AngleTo180(newDefaultMatrix._angleDeg_Step1);
-			//detachedBone._defaultMatrix.SetTRS(newDefaultMatrix._pos_Step1, newDefaultMatrix._angleDeg_Step1, newDefaultMatrix._scale_Step1);
 
 
-			//--------------------------
-			// 다시 변경된 방식 20.8.18 : 래핑된 BoneWorldMatrix + Temp 이용
-			//--------------------------
-			apBoneWorldMatrix newDefaultMatrix = apBoneWorldMatrix.MakeDefaultMatrixFromWorld(
-														1, Editor._portrait,
-														worldBoneMatrix_Prev,
-														nextParent_Matrix, 
-														detachedBone._localMatrix);
+		//	targetMeshGroup.LinkBoneListToChildMeshGroupsAndRenderUnits();
+		//	targetMeshGroup.RefreshForce(true);
 
-			detachedBone._defaultMatrix.SetTRS(		newDefaultMatrix.Pos, 
-													apUtil.AngleTo180(newDefaultMatrix.Angle), 
-													newDefaultMatrix.Scale,
-													true);
+		//	//Detached Bone의 Default Matrix를 갱신하자
+
+		//	//기본 default * local 변환값이 들어간 Local Bone Matrix를 구하자
+		//	//apMatrix localBoneMatrix = apMatrix.RMultiply(detachedBone._defaultMatrix, detachedBone._localMatrix);
+
+		//	//현재의 worldMatrix
 
 
-			targetMeshGroup.LinkBoneListToChildMeshGroupsAndRenderUnits();
+		//	//default (Prev) * localMatrix (고정) * parentMatrix (Prev) => World Matrix (동일)
+		//	//default (Next) * localMatrix (고정) * parentMatrix (Next) => World Matrix (동일)
 
-			//targetMeshGroup.RefreshForce();
-			Editor._portrait.LinkAndRefreshInEditor(false, apUtil.LinkRefresh.Set_MeshGroup_ExceptAnimModifiers(targetMeshGroup));
-			targetMeshGroup.RefreshForce();
+		//	//--------------------------------
+		//	// 기존 방식
+		//	//--------------------------------
+		//	//apMatrix nextParent_Matrix = null;
+		//	//if (bone._renderUnit != null)
+		//	//{
+		//	//	nextParent_Matrix = bone._renderUnit.WorldMatrixWrap;
+		//	//}
+		//	//else
+		//	//{
+		//	//	nextParent_Matrix = new apMatrix();
+		//	//}
 
-			targetMeshGroup.UpdateBonesWorldMatrix();
+		//	//--------------------------------
+		//	// 변경된 방식 (20.8.13) : ComplexMatrix + Temp2
+		//	//--------------------------------
+		//	//apComplexMatrix nextParent_Matrix = apComplexMatrix.TempMatrix_2;
+		//	//if (bone._renderUnit != null)
+		//	//{
+		//	//	nextParent_Matrix.SetMatrix_Step2(bone._renderUnit.WorldMatrixWrap, true);
+		//	//}
 
-			apMeshGroup.BoneListSet boneSet = null;
-			for (int iSet = 0; iSet < targetMeshGroup._boneListSets.Count; iSet++)
-			{
-				boneSet = targetMeshGroup._boneListSets[iSet];
-
-				for (int iRoot = 0; iRoot < boneSet._bones_Root.Count; iRoot++)
-				{
-					boneSet._bones_Root[iRoot].MakeWorldMatrix(true);
-					boneSet._bones_Root[iRoot].GUIUpdate(true);
-				}
-			}
-
-			RefreshBoneHierarchy(targetMeshGroup);
-			RefreshBoneChaining(targetMeshGroup);
+		//	//--------------------------------
+		//	// 다시 변경된 방식 (20.8.13) : ComplexMatrix + Temp2
+		//	//--------------------------------
+		//	//RenderUnit이 있는 경우에만 할당
+		//	//부모 본은 없어진 상태
+		//	apBoneWorldMatrix nextParent_Matrix = apBoneWorldMatrix.MakeTempParentWorldMatrix(
+		//											0, Editor._portrait,
+		//											null, 
+		//											((bone._renderUnit != null) ? bone._renderUnit.WorldMatrixWrap : null)
+		//											);
 
 
-			Editor.Hierarchy_MeshGroup.ResetSubUnits();//<아예 리셋해야함
-			Editor.RefreshControllerAndHierarchy(false);
-		}
+		//	// [Default (Next) * local Matrix] = World Matrix inv parentMatrix (Next)
+		//	// Default
+		//	//--------------------------------
+		//	// 기존 방식
+		//	//--------------------------------
+		//	//apMatrix newDefaultMatrix = apMatrix.RInverse(apMatrix.RInverse(worldBoneMatrix_Prev, nextParent_Matrix), detachedBone._localMatrix);
+		//	//newDefaultMatrix._angleDeg = apUtil.AngleTo180(newDefaultMatrix._angleDeg);
+		//	//detachedBone._defaultMatrix.SetMatrix(newDefaultMatrix);
+
+		//	//--------------------------------
+		//	// 변경된 방식 (20.8.13) : ComplexMatrix + Temp3
+		//	//--------------------------------
+		//	//apComplexMatrix newDefaultMatrix = apComplexMatrix.TempMatrix_3;
+		//	//newDefaultMatrix.CopyFromComplexMatrix(worldBoneMatrix_Prev);
+		//	//newDefaultMatrix.Inverse(nextParent_Matrix);
+		//	//newDefaultMatrix.RInverse(detachedBone._localMatrix);
+		//	//newDefaultMatrix._angleDeg_Step1 = apUtil.AngleTo180(newDefaultMatrix._angleDeg_Step1);
+		//	//detachedBone._defaultMatrix.SetTRS(newDefaultMatrix._pos_Step1, newDefaultMatrix._angleDeg_Step1, newDefaultMatrix._scale_Step1);
+
+
+		//	//--------------------------
+		//	// 다시 변경된 방식 20.8.18 : 래핑된 BoneWorldMatrix + Temp 이용
+		//	//--------------------------
+		//	apBoneWorldMatrix newDefaultMatrix = apBoneWorldMatrix.MakeDefaultMatrixFromWorld(
+		//												1, Editor._portrait,
+		//												worldBoneMatrix_Prev,
+		//												nextParent_Matrix, 
+		//												detachedBone._localMatrix);
+
+		//	detachedBone._defaultMatrix.SetTRS(		newDefaultMatrix.Pos, 
+		//											apUtil.AngleTo180(newDefaultMatrix.Angle), 
+		//											newDefaultMatrix.Scale,
+		//											true);
+
+
+		//	targetMeshGroup.LinkBoneListToChildMeshGroupsAndRenderUnits();
+
+		//	//targetMeshGroup.RefreshForce();
+		//	Editor._portrait.LinkAndRefreshInEditor(false, apUtil.LinkRefresh.Set_MeshGroup_ExceptAnimModifiers(targetMeshGroup));
+		//	targetMeshGroup.RefreshForce();
+
+		//	targetMeshGroup.UpdateBonesWorldMatrix();
+
+		//	apMeshGroup.BoneListSet boneSet = null;
+		//	for (int iSet = 0; iSet < targetMeshGroup._boneListSets.Count; iSet++)
+		//	{
+		//		boneSet = targetMeshGroup._boneListSets[iSet];
+
+		//		for (int iRoot = 0; iRoot < boneSet._bones_Root.Count; iRoot++)
+		//		{
+		//			boneSet._bones_Root[iRoot].MakeWorldMatrix(true);
+		//			boneSet._bones_Root[iRoot].GUIUpdate(true);
+		//		}
+		//	}
+
+		//	RefreshBoneHierarchy(targetMeshGroup);
+		//	RefreshBoneChaining(targetMeshGroup);
+
+
+		//	Editor.Hierarchy_MeshGroup.ResetSubUnits();//<아예 리셋해야함
+		//	Editor.RefreshControllerAndHierarchy(false);
+		//} 
+		#endregion
 
 
 		public void SetBoneAsParent(apBone bone, apBone parentBone)
@@ -19743,7 +19746,7 @@ namespace AnyPortrait
 			//이전
 			//apMatrix worldBoneMatrix_Prev = new apMatrix(bone._worldMatrix_NonModified);
 
-			//변경 208.19 : 래핑된 코드
+			//변경 20.8.19 : 래핑된 코드
 			apBoneWorldMatrix worldBoneMatrix_Prev = apBoneWorldMatrix.MakeTempWorldMatrix(0, Editor._portrait, bone._worldMatrix_NonModified);
 
 			//1. 기존의 Parent에서 지금 Bone을 Child에서 뺀다.
@@ -21205,16 +21208,54 @@ namespace AnyPortrait
 
 			//프리셋 색상으로부터 범위를 정한다.
 			Color newBoneColor = Color.black;
-			if (bone._parentBone != null)
+
+			//이전
+			//if (bone._parentBone != null)
+			//{
+			//	//부모 본이 있다면, 아무리 프리셋을 적용한다고 해도 부모 본의 색상과는 다르게 만들자
+			//	newBoneColor = apEditorUtil.GetSimilarColorButDiff(presetColor, bone._parentBone._color, 0.7f, 1.0f, 0.6f, 1.0f);
+			//}
+			//else
+			//{
+			//	//부모 본이 없다면 프리셋 색상과 유사한 아무 색상이나 오케이
+			//	newBoneColor = apEditorUtil.GetSimilarColor(presetColor, 0.7f, 1.0f, 0.6f, 1.0f, false);
+			//}
+
+			//변경 v1.4.7
+			float hue = 0.0f;
+			float sat = 0.0f;
+			float val = 0.0f;
+
+			Color.RGBToHSV(presetColor, out hue, out sat, out val);
+
+			//채도, 밝기는 자동으로 설정한다.
+			sat = UnityEngine.Random.Range(0.7f, 1.4f);//일부러 범위를 오버시킴
+			val = UnityEngine.Random.Range(0.6f, 1.4f);
+
+			if(sat > 1.0f)
 			{
-				//부모 본이 있다면, 아무리 프리셋을 적용한다고 해도 부모 본의 색상과는 다르게 만들자
-				newBoneColor = apEditorUtil.GetSimilarColorButDiff(presetColor, bone._parentBone._color, 0.7f, 1.0f, 0.6f, 1.0f);
+				sat = 1.0f;
 			}
-			else
+			if(val > 1.0f)
 			{
-				//부모 본이 없다면 프리셋 색상과 유사한 아무 색상이나 오케이
-				newBoneColor = apEditorUtil.GetSimilarColor(presetColor, 0.7f, 1.0f, 0.6f, 1.0f, false);
+				val = 1.0f;
 			}
+			
+			//Hue는 약간의 바리에이션
+			//총 6개의 프리셋이 있으므로
+			//각각의 간격은 0.167, 즉, +- 0.083 만큼 랜덤 범위를 가진다.
+			//범위는 조금 더 줄여서 중간 영역에서 색을 만들지 말자
+			float randHue = UnityEngine.Random.Range(-0.07f, 0.07f);
+			hue += randHue;
+			if(hue < 0.0f)
+			{
+				hue += 1.0f;
+			}
+			else if(hue > 1.0f)
+			{
+				hue -= 1.0f;
+			}
+			newBoneColor = Color.HSVToRGB(hue, sat, val);
 
 			bone._color = newBoneColor;
 		}
@@ -27673,8 +27714,6 @@ namespace AnyPortrait
 				bool isRecycledRootUnit = false;
 				apOptRootUnit recycledOptRootUnit = GetRecycledRootUnit(rootUnit, prevOptRootUnits);
 
-
-
 				if (recycledOptRootUnit != null)
 				{
 
@@ -27780,7 +27819,7 @@ namespace AnyPortrait
 						}
 						else
 						{
-							MakeMeshGroupToOptTransform(rootRenderUnit,
+							MakeMeshGroupToOptTransform(	rootRenderUnit,
 															meshGroupTransform, optRootUnit.transform,
 															null,
 															optRootUnit,
@@ -27816,8 +27855,22 @@ namespace AnyPortrait
 				if (isRecycledRootUnit && bakeLinkManager != null)
 				{
 					bakeLinkManager.SetHierarchyNotRecycledObjects(groupObj_1_ReadyToRecycle, groupObj_2_RemoveTargets, groupObj_3_UnlinkedObjects, bakeResult);
-
 				}
+
+				//추가 v1.4.8 : 루트 모션 설정을 입력하자
+				optRootUnit._rootMotionBoneID = -1;
+				if(childMainMeshGroup != null)
+				{
+					//루트 모션용 본이 존재하는지 확인하자
+					apBone rootMotionBone = childMainMeshGroup.GetBone(childMainMeshGroup._rootMotionBoneID);
+					if(rootMotionBone != null)
+					{
+						//루트 모션 본이 존재한다면 ID를 할당한다.
+						optRootUnit._rootMotionBoneID = childMainMeshGroup._rootMotionBoneID;
+					}
+				}
+
+
 				//추가 12.6 : Bake 함수 추가 <<
 				optRootUnit.BakeComplete();
 
@@ -28009,7 +28062,7 @@ namespace AnyPortrait
 				for (int i = 0; i < targetPortrait._optRootUnitList.Count; i++)
 				{
 					//업데이트
-					targetPortrait._optRootUnitList[i].UpdateTransforms(0.0f);
+					targetPortrait._optRootUnitList[i].UpdateTransforms(0.0f, true, null);
 					
 				}
 
@@ -29861,6 +29914,11 @@ namespace AnyPortrait
 			if (targetPortrait._animator == null)
 			{
 				targetPortrait._animator = targetPortrait.gameObject.AddComponent<Animator>();
+
+				//추가 v1.4.8
+				//Root Motion 옵션을 켜서 오히려 위치가 (0, 0, 0)으로 강제되는 것을 막자
+				//원래는 false여야 위치가 강제되지 않는데, 여기서는 FBX가 아닌 애니메이션 키값에 원점 위치가 있어서 그걸 무시하기 위해서 true를 입력
+				targetPortrait._animator.applyRootMotion = true;
 			}
 
 			//3. AnimatorController 있는지 체크 > 없다면 만든다. 다만 있을 경우엔 더이상 수정하지 않는다.
@@ -30486,6 +30544,21 @@ namespace AnyPortrait
 			targetOptPortrait._teleportMovementDist = srcPortrait._teleportMovementDist;
 			targetOptPortrait._unspecifiedAnimControlParamOption = srcPortrait._unspecifiedAnimControlParamOption;
 
+
+			//추가 [v1.4.8] 옵션 복사
+			targetOptPortrait._meshRefreshRateOption = srcPortrait._meshRefreshRateOption;
+			targetOptPortrait._meshRefreshRateFPS = srcPortrait._meshRefreshRateFPS;
+			targetOptPortrait._mainProcessEvent = srcPortrait._mainProcessEvent;
+
+			targetOptPortrait._rootMotionModeOption = srcPortrait._rootMotionModeOption;			
+			targetOptPortrait._rootMotionAxisOption_X = srcPortrait._rootMotionAxisOption_X;
+			targetOptPortrait._rootMotionAxisOption_Y = srcPortrait._rootMotionAxisOption_Y;
+			targetOptPortrait._rootMotionTargetTransformType = srcPortrait._rootMotionTargetTransformType;
+
+			//주의 : 루트 모션 중 "지정된 Parent Transform 객체"는 복사하면 안된다.
+			//targetOptPortrait._rootMotionSpecifiedParentTransform = srcPortrait._rootMotionSpecifiedParentTransform;//<<이거 주석 풀지 말것.
+
+
 			//4-2. Material Set 복사
 			targetOptPortrait._materialSets.Clear();
 			for (int i = 0; i < srcPortrait._materialSets.Count; i++)
@@ -30834,6 +30907,19 @@ namespace AnyPortrait
 				}
 
 
+				//추가 v1.4.8 : 루트 모션 설정을 입력하자
+				optRootUnit._rootMotionBoneID = -1;
+				if(srcChildMainMeshGroup != null)
+				{
+					//루트 모션용 본이 존재하는지 확인하자
+					apBone rootMotionBone = srcChildMainMeshGroup.GetBone(srcChildMainMeshGroup._rootMotionBoneID);
+					if(rootMotionBone != null)
+					{
+						//루트 모션 본이 존재한다면 ID를 할당한다.
+						optRootUnit._rootMotionBoneID = srcChildMainMeshGroup._rootMotionBoneID;
+					}
+				}
+
 				//추가 12.6 : Bake 함수 추가 <<
 				optRootUnit.BakeComplete();
 
@@ -30995,7 +31081,7 @@ namespace AnyPortrait
 
 				for (int i = 0; i < targetOptPortrait._optRootUnitList.Count; i++)
 				{
-					targetOptPortrait._optRootUnitList[i].UpdateTransforms(0.0f);
+					targetOptPortrait._optRootUnitList[i].UpdateTransforms(0.0f, true, null);
 				}
 			}
 			//taretOptPortrait.ResetMeshesCommandBuffers(false);
@@ -32375,7 +32461,12 @@ namespace AnyPortrait
 			//1. 만약 MatSet이 아무것도 없다면, 기본값인 Unlit을 연결해줘야 한다.
 			if(matSets.Count == 0)
 			{
-				AddMaterialSet(matLibrary.Presets[0], true, true, false);
+				//이전
+				//AddMaterialSet(matLibrary.Presets[0], true, true, false);
+
+				//변경 v1.4.7 : 기존과 다른 Unlit v2를 넣자.
+				AddMaterialSet(matLibrary.GetDefaultPreset(), true, true, false);
+
 			}
 
 

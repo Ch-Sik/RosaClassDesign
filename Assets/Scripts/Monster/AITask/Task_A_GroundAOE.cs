@@ -37,14 +37,15 @@ public class Task_A_GroundAOE : Task_A_Base
         ExecuteAttack();
     }
 
-    protected override void OnStartupBegin()
+    protected override void OnActiveBegin()
     {
         Debug.Log("공격 소환");
         // 적(플레이어) 위치 파악
         GameObject enemy;
         if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
         {
-            Debug.LogError($"{gameObject.name}: Attack에서 적을 찾을 수 없음!");
+            Debug.LogWarning($"{gameObject.name}: Attack에서 적을 찾을 수 없음!");
+            Fail();
             return;
         }
 
@@ -60,7 +61,7 @@ public class Task_A_GroundAOE : Task_A_Base
         attackInstance.Init();
     }
 
-    protected override void OnActiveBegin()
+    protected override void OnRecoveryBegin()
     {
         // 공격 범위 미리보기를 실제 공격으로 변환
         attackInstance.ExecuteAttack();
@@ -69,8 +70,9 @@ public class Task_A_GroundAOE : Task_A_Base
     protected override void Fail()
     {
         base.Fail();
+        Debug.Log($"Fail in Task_A_GroundAOE, curAttackState: {attackState}");
         // 선딜레이 상황인 경우, 소환된 미리보기 오브젝트를 삭제
-        if(startupTimer != null)
+        if(attackInstance != null && (attackState == MonsterAtttackState.Startup || attackState == MonsterAtttackState.Null))
             attackInstance.CancelAttack();
     }
 }

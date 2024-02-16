@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -81,6 +81,12 @@ namespace AnyPortrait
 		private bool _cmn_TeleportCorrection = true;
 		private float _cmn_TeleportDist = 0.5f;
 
+		//메시 업데이트 빈도
+		private apPortrait.MESH_UPDATE_FREQUENCY _cmn_MeshUpdateFrequency = apPortrait.MESH_UPDATE_FREQUENCY.EveryFrames;
+		private int _cmn_MeshUpdateFPS = 24;
+
+		//메인 로직 위치
+		private apPortrait.PROCESS_EVENT_ON _cmn_MainLogicProcess = apPortrait.PROCESS_EVENT_ON.LateUpdate;
 
 
 		//저장/파싱 변수
@@ -142,7 +148,14 @@ namespace AnyPortrait
 
 			//텔레포트 보정
 			TeleportCorrection,
-			TeleportDist
+			TeleportDist,
+
+			//v1.4.7 : 업데이트 빈도
+			MeshUpdateFrequency,
+			MeshUpdateFPS,
+
+			//v1.4.8 : 메인 로직 업데이트 함수 위치
+			MainLogicEvent
 		}
 
 
@@ -225,6 +238,11 @@ namespace AnyPortrait
 
 			_cmn_TeleportCorrection = false;
 			_cmn_TeleportDist = 10.0f;
+
+			_cmn_MeshUpdateFrequency = apPortrait.MESH_UPDATE_FREQUENCY.EveryFrames;
+			_cmn_MeshUpdateFPS = 24;
+
+			_cmn_MainLogicProcess = apPortrait.PROCESS_EVENT_ON.LateUpdate;
 		}
 
 		private void InitKeyStrIDs()
@@ -282,6 +300,14 @@ namespace AnyPortrait
 			//텔레포트 보정
 			AddKeyStrID(KEY_TYPES.TeleportCorrection, "TeleportCorrection");
 			AddKeyStrID(KEY_TYPES.TeleportDist, "TeleportDist");
+
+			//메시 업데이트 빈도
+			AddKeyStrID(KEY_TYPES.MeshUpdateFrequency, "MeshUpdateFrequency");
+			AddKeyStrID(KEY_TYPES.MeshUpdateFPS, "MeshUpdateFPS");
+
+			//메인 로직 이벤트 위치
+			AddKeyStrID(KEY_TYPES.MainLogicEvent, "MainLogicEvent");
+
 		}
 
 		private void AddKeyStrID(KEY_TYPES key, string strID)
@@ -352,6 +378,12 @@ namespace AnyPortrait
 				SavePref_Bool(sw, KEY_TYPES.TeleportCorrection, _cmn_TeleportCorrection);
 				SavePref_Float(sw, KEY_TYPES.TeleportDist, _cmn_TeleportDist);
 
+				//메시 업데이트 빈도
+				SavePref_Int(sw, KEY_TYPES.MeshUpdateFrequency, (int)_cmn_MeshUpdateFrequency);
+				SavePref_Int(sw, KEY_TYPES.MeshUpdateFPS, _cmn_MeshUpdateFPS);
+
+				//메인 로직 이벤트
+				SavePref_Int(sw, KEY_TYPES.MainLogicEvent, (int)_cmn_MainLogicProcess);
 
 				//------------------------------
 
@@ -525,6 +557,13 @@ namespace AnyPortrait
 						//텔레포트 보정
 						case KEY_TYPES.TeleportCorrection: _cmn_TeleportCorrection = LoadPref_Bool(ref strValue); break;
 						case KEY_TYPES.TeleportDist: _cmn_TeleportDist = LoadPref_Float(ref strValue); break;
+
+						//메시 업데이트 빈도
+						case KEY_TYPES.MeshUpdateFrequency: _cmn_MeshUpdateFrequency = (apPortrait.MESH_UPDATE_FREQUENCY)LoadPref_Int(ref strValue); break;
+						case KEY_TYPES.MeshUpdateFPS: _cmn_MeshUpdateFPS = LoadPref_Int(ref strValue); break;
+
+						//메인 로직 이벤트
+						case KEY_TYPES.MainLogicEvent: _cmn_MainLogicProcess = (apPortrait.PROCESS_EVENT_ON)LoadPref_Int(ref strValue); break;
 					}
 				}
 
@@ -712,6 +751,21 @@ namespace AnyPortrait
 				isAnyChanged = true;
 			}
 
+			//메시 업데이트 빈도
+			if(_cmn_MeshUpdateFrequency != portrait._meshRefreshRateOption
+				|| _cmn_MeshUpdateFPS != portrait._meshRefreshRateFPS)
+			{
+				_cmn_MeshUpdateFrequency = portrait._meshRefreshRateOption;
+				_cmn_MeshUpdateFPS = portrait._meshRefreshRateFPS;
+				isAnyChanged = true;
+			}
+
+			if(_cmn_MainLogicProcess != portrait._mainProcessEvent)
+			{
+				_cmn_MainLogicProcess = portrait._mainProcessEvent;
+				isAnyChanged = true;
+			}
+
 			//저장을 하자
 			if (isAnyChanged)
 			{
@@ -762,6 +816,11 @@ namespace AnyPortrait
 
 			_cmn_TeleportCorrection = false;
 			_cmn_TeleportDist = 10.0f;
+
+			_cmn_MeshUpdateFrequency = apPortrait.MESH_UPDATE_FREQUENCY.EveryFrames;
+			_cmn_MeshUpdateFPS = 24;
+
+			_cmn_MainLogicProcess = apPortrait.PROCESS_EVENT_ON.LateUpdate;
 
 			//저장
 			Save();
@@ -816,6 +875,13 @@ namespace AnyPortrait
 			//텔레포트 보정
 			portrait._isTeleportCorrectionOption = _cmn_TeleportCorrection;
 			portrait._teleportMovementDist = _cmn_TeleportDist;
+
+			//메시 업데이트 빈도
+			portrait._meshRefreshRateOption = _cmn_MeshUpdateFrequency;
+			portrait._meshRefreshRateFPS = _cmn_MeshUpdateFPS;
+
+			//메인 로직 이벤트
+			portrait._mainProcessEvent = _cmn_MainLogicProcess;
 		}
 
 		/// <summary>
@@ -858,6 +924,9 @@ namespace AnyPortrait
 
 			portrait._isTeleportCorrectionOption = false;
 			portrait._teleportMovementDist = 10.0f;
+
+			portrait._meshRefreshRateOption = apPortrait.MESH_UPDATE_FREQUENCY.EveryFrames;
+			portrait._meshRefreshRateFPS = 24;
 		}
 
 
@@ -910,6 +979,13 @@ namespace AnyPortrait
 		//텔레포트 보정
 		public bool Common_TeleportCorrection { get { return _cmn_TeleportCorrection; } }
 		public float Common_TeleportDist { get { return _cmn_TeleportDist; } }
+
+		//메시 업데이트 빈도
+		public apPortrait.MESH_UPDATE_FREQUENCY Common_MeshUpdateFrequency { get { return _cmn_MeshUpdateFrequency; } }
+		public int Common_MeshUpdateFPS { get { return _cmn_MeshUpdateFPS; } }
+
+		//메인 로직 위치
+		public apPortrait.PROCESS_EVENT_ON Common_MainProcessEvent { get { return _cmn_MainLogicProcess; } }
 
 	}
 }

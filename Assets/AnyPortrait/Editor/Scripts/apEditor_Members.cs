@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -180,6 +180,10 @@ namespace AnyPortrait
 		//Morph 모디파이어 편집시 Pin <-> Vertex 편집 모드를 변경하는 GUI Button
 		private apGUIButton _guiButton_MorphEditVert = null;
 		private apGUIButton _guiButton_MorphEditPin = null;
+
+		//추가 v1.4.8 : 성능 문제 해결 버튼
+		private apGUIButton _guiButton_FixSpike = null;
+
 
 		//추가 21.2.18 : 현재 상태를 아이콘으로 통합적으로 표시하는 객체
 		private apGUIStatBox _guiStatBox = null;
@@ -487,7 +491,13 @@ namespace AnyPortrait
 		}
 
 		private LOW_CPU_STATUS _lowCPUStatus = LOW_CPU_STATUS.None;
-		//private Texture2D _imgLowCPUStatus = null;
+		//v1.4.8
+		//Low CPU도 마우스/키보드 입력시에는 일시적으로 성능이 올라가야 한다.
+		//마우스/키보드 입력은 OnGUI에서 받아야 하는데 처리는 Update에서 하므로, 변수를 이용하자
+		//단, 이동은 아니고 Pressed에서만 관여된다.
+		private bool _isAnyMouseKeyboardInput = false;
+		private float _tAnyMouseKeyboardInput = 0.0f;//일정 시간은 입력 상태가 유지되어 성능을 일시적으로 높인다.
+		private const float LOW_CPU_MOUSE_KEYBOARD_INPUT_TIME = 2.0f;//2초간은 성능 향상
 
 
 		//추가 21.5.13 : C++ 플러그인을 활용할 수 있다.
@@ -1114,6 +1124,28 @@ namespace AnyPortrait
 		// 이게 True일때만 Repaint된다. Repaint하고나면 이 값은 False가 됨
 		private bool _isRepaintTimerUsable = false;
 
+		//[v1.4.8] Spike가 너무 심하다면 검출하자
+		//- Unity 2023에서 발견된 이슈로, 외부 프로그램에 포커스가 갔다가 돌아오면 성능이 심각하게 나빠진다.
+		//- 해결법은 유니티 메인 View (주로 SceneView)로 포커스를 재빨리 옮겼다가 돌아오면 된다.
+		//- Spike를 검출하는 방법
+		//  > 포커스된 상태에서 20 FPS보다 낮은 성능이 발생하면 체커가 동작을 시작한다.
+		//  > 체커는 3초간 유지되며, 그 사이에 Spike가 발생하면 시간이 리셋(3초)되고 카운트가 올라간다.
+		//  > 이 방식으로 10번 연속 Spike가 연속으로 발생하면 Spike 해소 코드가 발생하고, 쿨타임이 동작한다. (쿨타임 10초)
+		// >> 해소 코드 대신 버튼을 출력하자
+		private enum SPIKE_CHECK_STATUS { None, Checking, Cooltime }
+		private SPIKE_CHECK_STATUS _spikeCheckStatus = SPIKE_CHECK_STATUS.None;
+		private int _nSpikeOccurred = 0;
+		private float _tSpikeWait = 0.0f;
+		private float _tSpikeCooltime = 0.0f;
+		private const float SPIKE_DELTA_TIME = 0.05f;//20FPS인 시간보다 Delta Time이 크다면 Spike로 간주한다.
+		private const float SPIKE_WAIT_TIME = 3.0f;//스파이크가 발생하면, 다음 스파이크까지 3초를 더 기다린다.
+		private const int NUM_SPIKES = 10;//연속으로 10번의 스파이크가 발생하면 포커스 이동을 일시적으로 한다.
+		private const float SPIKE_COOL_TIME = 10.0f;//이후 10초간 이 로직은 동작하지 않는다.
+		private bool _isFixSpikeButtonVisible = false;
+
+
+
+
 		// 이게 True일때 OnGUI의 Repaint 이벤트가 "제어가능한 유효한 호출"임을 나타낸다.
 		// (False일땐 유니티가 자체적으로 Repaint 한 것)
 		private bool _isValidGUIRepaint = false;
@@ -1370,6 +1402,10 @@ namespace AnyPortrait
 			Modifier_Add_Transform_Check_Multiple,
 			Modifier_Add_Transform_Check_Unselected,
 			Modifier_Add_Transform_Check__Rigging,
+			Modifier_Add_Transform_Check__Rigging_NoTarget,
+			Modifier_Add_Transform_Check__Rigging_Contained,
+			Modifier_Add_Transform_Check__Rigging_NotAddable,
+			Modifier_Add_Transform_Check__Rigging_Addable,
 			Rigging_UI_Info__MultipleVert,
 			Rigging_UI_Info__SingleVert,
 			Rigging_UI_Info__UnregRigData,

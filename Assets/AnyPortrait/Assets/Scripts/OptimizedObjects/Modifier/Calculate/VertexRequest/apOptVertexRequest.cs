@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -37,7 +37,7 @@ namespace AnyPortrait
 		//Local Morph의 경우
 		public class ModWeightPair
 		{
-			public bool _isCalculated = false;
+			//public bool _isCalculated = false;//TODO < 이거 삭제해야 한다. (v1.4.7의 최적화 방침에 의해)
 			public apOptModifiedMesh _modMesh = null;
 			public float _weight = 0.0f;
 
@@ -46,7 +46,7 @@ namespace AnyPortrait
 
 			public ModWeightPair(apOptModifiedMesh modMesh)
 			{
-				_isCalculated = false;
+				//_isCalculated = false;//v1.4.7 : 삭제됨
 				_modMesh = modMesh;
 				_modMeshSet_Vertex = null;
 				_weight = 0.0f;
@@ -55,28 +55,34 @@ namespace AnyPortrait
 			//추가 : ModMeshSet을 이용한다.
 			public ModWeightPair(apOptModifiedMesh_Vertex modMeshSet_Vertex)
 			{
-				_isCalculated = false;
+				//_isCalculated = false;//v1.4.7 : 삭제됨
 				_modMesh = null;
 				_modMeshSet_Vertex = modMeshSet_Vertex;
 				_weight = 0.0f;
 			}
 
-			public void InitCalculate()
-			{
-				_isCalculated = false;
-				_weight = 0.0f;
-			}
+			//v.1.4.7 삭제
+			//public void InitCalculate()
+			//{
+			//	//_isCalculated = false;//v1.4.7 : 삭제됨
+			//	_weight = 0.0f;
+			//}
 
-			public void SetWeight(float weight)
-			{
-				_isCalculated = true;
-				_weight = weight;
-			}
+			//v.1.4.7 삭제
+			//public void SetWeight(float weight)
+			//{
+			//	//_isCalculated = true;//v1.4.7 : 삭제됨
+			//	_weight = weight;
+			//}
 		}
 
-		
-		public List<ModWeightPair> _modWeightPairs = new List<ModWeightPair>();
-		public int _nModWeightPairs = 0;
+		//v1.4.7 : Private으로 변경 (계산된 결과 Pair와 구분하기 위해)
+		private List<ModWeightPair> _modWeightPairs = new List<ModWeightPair>();
+		//private int _nModWeightPairs = 0;//삭제 v1.4.7
+
+		//계산된 ModWeightPair
+		private List<ModWeightPair> _calculatedModWeightPairs = new List<ModWeightPair>();
+		private int _nCalculatedModWeightPairs = 0;
 
 
 		//Rigging의 경우
@@ -204,8 +210,18 @@ namespace AnyPortrait
 
 		public void Clear()
 		{
+			if(_modWeightPairs == null)
+			{
+				_modWeightPairs = new List<ModWeightPair>();
+			}
 			_modWeightPairs.Clear();
-			_nModWeightPairs = 0;
+			//_nModWeightPairs = 0;
+
+			if(_calculatedModWeightPairs == null)
+			{
+				_calculatedModWeightPairs = new List<ModWeightPair>();
+			}
+			_nCalculatedModWeightPairs = 0;
 
 			_rigBoneWeightTables = null;
 
@@ -215,21 +231,28 @@ namespace AnyPortrait
 
 		// Functions
 		//-----------------------------------------------
-		public void AddModMesh(apOptModifiedMesh modMesh)
+		/// <summary>
+		/// v1.4.7 변경 : 최적화를 위해 ParamKeyValue에 생성된 ModWeightPair를 연결해야한다.
+		/// (Rigging은 Static 타입이어서 연결할 필요 없음)
+		/// </summary>
+		public ModWeightPair AddModMesh(apOptModifiedMesh modMesh)
 		{
 			if (_requestType == REQUEST_TYPE.VertLocal)
 			{
-				_modWeightPairs.Add(new ModWeightPair(modMesh));
-				_nModWeightPairs = _modWeightPairs.Count;
+				ModWeightPair modWeightPair = new ModWeightPair(modMesh);
+				_modWeightPairs.Add(modWeightPair);
+				//_nModWeightPairs = _modWeightPairs.Count;
+
+				return modWeightPair;
 			}
 			else if(_requestType == REQUEST_TYPE.Rigging)
-			{
+			{	
 				if(_rigBoneWeightTables != null)
 				{
 					//??
 					//Rigging은 Static 타입이어서 ModMesh가 하나만 생성된다.
 					Debug.LogError("Overwritten Mod Mesh To Rigging");
-					return;
+					return null;
 				}
 				//_totalRiggingWeight = 0.0f;
 				_rigBoneWeightTables = new VertRigWeightTable[modMesh._vertRigs.Length];
@@ -240,16 +263,23 @@ namespace AnyPortrait
 					//_totalRiggingWeight += _rigBoneWeightTables[i]._totalRiggingWeight;//<<추가 RiggingWeight를 계산합시다.
 				}
 			}
+			return null;
 		}
 
 
-
-		public void AddModMeshSet(apOptModifiedMeshSet modMeshSet)
+		/// <summary>
+		/// v1.4.7 변경 : 최적화를 위해 ParamKeyValue에 생성된 ModWeightPair를 연결해야한다.
+		/// (Rigging은 Static 타입이어서 연결할 필요 없음)
+		/// </summary>
+		public ModWeightPair AddModMeshSet(apOptModifiedMeshSet modMeshSet)
 		{
 			if (_requestType == REQUEST_TYPE.VertLocal)
 			{	
-				_modWeightPairs.Add(new ModWeightPair(modMeshSet.SubModMesh_Vertex));
-				_nModWeightPairs = _modWeightPairs.Count;
+				ModWeightPair modWeightPair = new ModWeightPair(modMeshSet.SubModMesh_Vertex);
+				_modWeightPairs.Add(modWeightPair);
+				//_nModWeightPairs = _modWeightPairs.Count;
+
+				return modWeightPair;
 			}
 			else if(_requestType == REQUEST_TYPE.Rigging)
 			{
@@ -259,7 +289,7 @@ namespace AnyPortrait
 					//??
 					//Rigging은 Static 타입이어서 ModMesh가 하나만 생성된다.
 					Debug.LogError("Overwritten Mod Mesh To Rigging");
-					return;
+					return null;
 				}
 
 				//_totalRiggingWeight = 0.0f;
@@ -270,24 +300,35 @@ namespace AnyPortrait
 					_rigBoneWeightTables[i] = new VertRigWeightTable(i, modMeshSet, modMesh_Rigging);
 				}
 			}
+
+			return null;
 		}
 
 		
 
 		public void InitCalculate()
 		{
-			if (_requestType == REQUEST_TYPE.VertLocal)
-			{
-				for (int i = 0; i < _nModWeightPairs; i++)
-				{
-					_modWeightPairs[i].InitCalculate();
-				}
-			}
+			//v1.4.7 : _isCalculated 삭제를 하는 최적화 전략에 의해 다음의 코드도 변경된다.
+			//이전
+			//if (_requestType == REQUEST_TYPE.VertLocal)
+			//{
+			//	for (int i = 0; i < _nModWeightPairs; i++)
+			//	{
+			//		_modWeightPairs[i].InitCalculate();
+			//	}
+			//}
+
+			//변경. 일일이 _isCalculated를 false로 하는 것 보다, "계산 결과 리스트"를 초기화한다.
+			_calculatedModWeightPairs.Clear();
+			_nCalculatedModWeightPairs = 0;
+
 
 			_totalWeight = 1.0f;
 			_isCalculated = false;
 			//_strDebug ="<None>";
 		}
+
+
 
 		public void SetCalculated()
 		{
@@ -300,7 +341,42 @@ namespace AnyPortrait
 			_totalWeight *= weight;
 		}
 
+
+		//추가 v1.4.7
+		//계산된 PKV의 ModWeightPair를 직접 수정하지 않고 여기서 한다.
+		public void OnModWeightPairCalculated(ModWeightPair targetModWeightPair, float weight)
+		{
+			if(targetModWeightPair == null)
+			{
+				return;
+			}
+
+			//Weight를 지정하고
+			targetModWeightPair._weight = weight;
+
+			//리스트에 넣는다. (충돌 체크는 안한다. PKV가 고유하게 동작하므로)
+			_calculatedModWeightPairs.Add(targetModWeightPair);
+			_nCalculatedModWeightPairs += 1;
+		}
 		// Get / Set
 		//-----------------------------------------------
+		/// <summary>
+		/// v1.4.7 : 계산된 ModWeightPair들. 기존의 _isCalculated에 해당한다.
+		/// </summary>
+		public List<ModWeightPair> CalculatedModWeightPairs
+		{
+			get
+			{
+				return _calculatedModWeightPairs;
+			}
+		}
+
+		/// <summary>
+		/// v1.4.7 : 계산된 ModWeightPair들의 개수. 기존의 _isCalculated의 개수에 해당한다.
+		/// </summary>
+		public int NumCalculatedModWeightPairs
+		{
+			get { return _nCalculatedModWeightPairs; }
+		}
 	}
 }

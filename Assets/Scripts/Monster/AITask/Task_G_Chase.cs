@@ -107,6 +107,8 @@ public class Task_G_Chase : Task_Base
 
     private void MoveTo(float xCoord)
     {
+        blackboard.Set(BBK.isMoving, true);
+
         float moveDir;
         if (xCoord < transform.position.x)
             moveDir = -1;
@@ -118,6 +120,7 @@ public class Task_G_Chase : Task_Base
 
     private void StopMoving()
     {
+        blackboard.Set(BBK.isMoving, false);
         // TODO: 플레이어의 넉백과 충돌하지 않는지 확인 필요
         rigidbody.velocity = Vector2.zero;
     }

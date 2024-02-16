@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -854,6 +854,30 @@ namespace AnyPortrait
 		DLG_CaptureOverMaxSize_Body = 826,
 		DLG_CaptureTooLargeImageSize_Title = 827,
 		DLG_CaptureTooLargeImageSize_Body = 828,
+		DLG_CaptureCompatibilityIssue_Title = 829,
+		DLG_CaptureCompatibilityIssue_Body = 830,
+		MeshUpdateFrequency = 831,
+		DLG_RotoLoadFile_Title = 832,
+		DLG_RotoLoadFile_Body_MoreFiles = 833,
+		DLG_RotoLoadFile_Body_MoreAndAlready = 834,
+		DLG_RotoLoadFile_Body_IsAlreadyAdded = 835,
+		AddAll = 836,
+		IgnoreAndAdd = 837,
+		SkipDuplicates = 838,
+		Sort = 839,
+		ScaleReverse = 840,
+		UpdateOption = 841,
+		MainLogicEvent = 842,
+		RootMotionOptions = 843,
+		RootMotionMethod = 844,
+		RootMotion_ParentTransformType = 845,
+		RootMotion_SpecifiedParentTransform = 846,
+		DLG_RootMotionTransformFailed_Title = 847,
+		DLG_RootMotionTransformFailed_Body = 848,
+		TransformObjects = 849,
+		RootMotionPerAxis = 850,
+		RootMotionXOption = 851,
+		RootMotionYOption = 852,
 	}
 
 
@@ -1347,6 +1371,8 @@ namespace AnyPortrait
 		FilterMode = 481,
 		FocusOffset = 482,
 		PixelPerfect = 483,
+		RootMotionEnabled = 484,
+		RootMotionDisabled = 485,
 	}
 
 

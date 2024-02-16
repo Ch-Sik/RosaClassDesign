@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -107,7 +107,7 @@ namespace AnyPortrait
 			if (curTool != null)
 			{
 				int width = 300;
-				int height = 140;//Portrait모드에서는 Select All은 없다.
+				int height = 135;//Portrait모드에서는 Select All은 없다.
 
 				//[v1.4.5] 맥에서는 세로가 너무 짧으면 안된다.
 #if UNITY_EDITOR_OSX
@@ -145,7 +145,12 @@ namespace AnyPortrait
 			if (curTool != null)
 			{
 				int width = 300;
-				int height = isSelectAllBtnAvailable ? 160 : 120;//MeshGroup의 객체를 선택하는 모드에서는 Select All 버튼이 있어서 조금 더 길어야 한다.
+				int height = isSelectAllBtnAvailable ? 170 : 135;//MeshGroup의 객체를 선택하는 모드에서는 Select All 버튼이 있어서 조금 더 길어야 한다.
+
+#if UNITY_EDITOR_OSX
+				height += 20;
+#endif
+
 				s_window = curTool;
 				s_window.position = new Rect((editor.position.xMin + editor.position.xMax) / 2 - (width / 2),
 												(editor.position.yMin + editor.position.yMax) / 2 - (height / 2),

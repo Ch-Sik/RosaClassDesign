@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -322,7 +322,7 @@ namespace AnyPortrait
 						EditorGUILayout.BeginHorizontal(GUILayout.Width(itemWidth), GUILayout.Height(itemHeight));
 						GUILayout.Space(10);
 						GUI.backgroundColor = boneUnit._color;
-						GUILayout.Box("", apEditorUtil.WhiteGUIStyle_Box, GUILayout.Width(16), GUILayout.Height(16));
+						GUILayout.Box("", apEditorUtil.WhiteGUIStyle_BoxIcon, GUILayout.Width(16), GUILayout.Height(16));
 						GUI.backgroundColor = prevColor;
 
 						EditorGUILayout.LabelField(boneUnit._unitID.ToString(), guiStyle_ItemLabel, GUILayout.Width(30), GUILayout.Height(itemHeight));

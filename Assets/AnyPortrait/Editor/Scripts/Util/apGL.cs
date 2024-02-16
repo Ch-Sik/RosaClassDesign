@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -3580,6 +3580,94 @@ namespace AnyPortrait
 
 			float v_top = 0.0f;
 			float v_bottom = 1.0f;
+
+			Vector3 uv_0 = new Vector3(u_left, v_bottom, 0.0f);
+			Vector3 uv_1 = new Vector3(u_right, v_bottom, 0.0f);
+			Vector3 uv_2 = new Vector3(u_right, v_top, 0.0f);
+			Vector3 uv_3 = new Vector3(u_left, v_top, 0.0f);
+
+			//CW
+			// -------->
+			// | 0   1
+			// | 		
+			// | 3   2
+			//변경 21.5.18
+			_matBatch.BeginPass_Texture_Normal(GL.TRIANGLES, color2X, image, apPortrait.SHADER_TYPE.AlphaBlend);
+			
+			//_matBatch.SetClippingSize(_glScreenClippingSize);
+			//GL.Begin(GL.TRIANGLES);
+
+
+			GL.TexCoord(uv_0);	GL.Vertex(new Vector3(pos_0.x, pos_0.y, depth)); // 0
+			GL.TexCoord(uv_1);	GL.Vertex(new Vector3(pos_1.x, pos_1.y, depth)); // 1
+			GL.TexCoord(uv_2);	GL.Vertex(new Vector3(pos_2.x, pos_2.y, depth)); // 2
+
+			GL.TexCoord(uv_2);	GL.Vertex(new Vector3(pos_2.x, pos_2.y, depth)); // 2
+			GL.TexCoord(uv_3);	GL.Vertex(new Vector3(pos_3.x, pos_3.y, depth)); // 3
+			GL.TexCoord(uv_0);	GL.Vertex(new Vector3(pos_0.x, pos_0.y, depth)); // 0
+
+
+			//삭제 21.5.18
+			//GL.End();//<전환 완료>
+			//GL.Flush();
+			EndPass();
+		}
+
+
+
+
+		public static void DrawTextureGL(Texture2D image, Vector2 pos, float width, float height, Color color2X, float depth, bool isReverseX, bool isReverseY)
+		{
+			if (_matBatch.IsNotReady())
+			{
+				return;
+			}
+
+			float realWidth = width * _zoom;
+			float realHeight = height * _zoom;
+
+			float realWidth_Half = realWidth * 0.5f;
+			float realHeight_Half = realHeight * 0.5f;
+
+			//CW
+			// -------->
+			// | 0(--) 1
+			// | 		
+			// | 3   2 (++)
+			Vector2 pos_0 = new Vector2(pos.x - realWidth_Half, pos.y - realHeight_Half);
+			Vector2 pos_1 = new Vector2(pos.x + realWidth_Half, pos.y - realHeight_Half);
+			Vector2 pos_2 = new Vector2(pos.x + realWidth_Half, pos.y + realHeight_Half);
+			Vector2 pos_3 = new Vector2(pos.x - realWidth_Half, pos.y + realHeight_Half);
+
+
+			float widthResize = (pos_1.x - pos_0.x);
+			float heightResize = (pos_3.y - pos_0.y);
+
+			if (widthResize < 1.0f || heightResize < 1.0f)
+			{
+				return;
+			}
+
+
+			float u_left = 0.0f;
+			float u_right = 1.0f;
+
+			float v_top = 0.0f;
+			float v_bottom = 1.0f;
+
+			if(isReverseX)
+			{
+				//X축 UV를 뒤집기
+				u_left = 1.0f;
+				u_right = 0.0f;
+			}
+
+			if(isReverseY)
+			{
+				//Y축 UV를 뒤집기
+				v_top = 1.0f;
+				v_bottom = 0.0f;
+			}
 
 			Vector3 uv_0 = new Vector3(u_left, v_bottom, 0.0f);
 			Vector3 uv_1 = new Vector3(u_right, v_bottom, 0.0f);

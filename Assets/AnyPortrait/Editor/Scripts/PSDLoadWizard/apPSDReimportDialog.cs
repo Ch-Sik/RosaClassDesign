@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -413,7 +413,12 @@ namespace AnyPortrait
 					if(nearestTex == null)
 					{
 						//변환 정보가 없다면 새로 변환하자
-						nearestTex = new Texture2D(srcTexture.width, srcTexture.height, TextureFormat.RGBA32, false);
+						//nearestTex = new Texture2D(srcTexture.width, srcTexture.height, TextureFormat.RGBA32, false);
+
+						//[v1.4.7] 포맷 불일치에 따른 버그 발생 수정
+						nearestTex = new Texture2D(srcTexture.width, srcTexture.height, srcTexture.format, false);
+
+
 						nearestTex.LoadRawTextureData(srcTexture.GetRawTextureData());
 						nearestTex.wrapMode = TextureWrapMode.Clamp;
 						nearestTex.filterMode = FilterMode.Point;

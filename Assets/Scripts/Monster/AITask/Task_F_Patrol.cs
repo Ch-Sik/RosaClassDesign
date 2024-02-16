@@ -5,7 +5,7 @@ using Panda;
 using Sirenix.OdinInspector;
 using System;
 
-public class Task_F_Patroll : Task_Base
+public class Task_F_Patrol : Task_Base
 {
     [Title("컴포넌트 레퍼런스")]// 컴포넌트 레퍼런스
     [SerializeField]
@@ -147,7 +147,7 @@ public class Task_F_Patroll : Task_Base
         }
         else if (waitTimer.duration >= patrolStopTime)
         {
-            // 타이머 시간 다 되었으면 PatrolWait 종료
+            // 타이머 시간 다 되었으면 PatrolWaitOnEnd 종료
             waitTimer = null;
             ThisTask.Succeed();
         }
