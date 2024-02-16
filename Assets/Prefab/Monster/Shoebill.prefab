@@ -63,7 +63,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5583020702702528783}
+  m_Father: {fileID: 2327739208041830697}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1773428102 &5013105644517910399
 ParentConstraint:
@@ -140,6 +140,67 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 7
+--- !u!1 &2406607318800483101
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2327739208041830697}
+  - component: {fileID: 8657006785816354723}
+  m_Layer: 23
+  m_Name: AI Sensors
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2327739208041830697
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2406607318800483101}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children:
+  - {fileID: 1527714121119451536}
+  - {fileID: 3904818252537098650}
+  m_Father: {fileID: 5583020702702528783}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!50 &8657006785816354723
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2406607318800483101}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &3158601471185591566
 GameObject:
   m_ObjectHideFlags: 0
@@ -192,7 +253,7 @@ GameObject:
   - component: {fileID: 2125947684990837678}
   - component: {fileID: 1870944607072788904}
   m_Layer: 23
-  m_Name: FlyingEnemy_Tackle
+  m_Name: Shoebill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -279,6 +340,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 0
+  ignoreDuration: 2
 --- !u!114 &685520173691280890
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -294,6 +356,7 @@ MonoBehaviour:
   blackboard: {fileID: 0}
   monsterState: {fileID: 0}
   rigidbody: {fileID: 0}
+  portrait: {fileID: 7617992125002298964}
   isSuperArmour: 0
   isInvincible: 0
   knockbackCoeff: 5
@@ -321,7 +384,7 @@ MonoBehaviour:
   patrolStopTime: 1
   patrolSpeed: 5
   terrainSensor: {fileID: 3158601471185591566}
-  terrainSensorOffset: 1
+  terrainSensorOffset: 0.5
   drawPatrolCenter: 0
   drawDestDecision: 1
   drawDestPoint: 0
@@ -342,7 +405,7 @@ MonoBehaviour:
   acceptableRadius: 5
   chaseSpeed: {x: 1, y: 1}
   terrainSensor: {fileID: 3158601471185591566}
-  terrainSensorOffset: 1
+  terrainSensorOffset: 0.5
 --- !u!114 &1666916584344856952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -368,7 +431,7 @@ MonoBehaviour:
   wallStunEnabled: 1
   wallStunDuration: 0
   terrainSensor: {fileID: 3158601471185591566}
-  terrainSensorOffset: 1
+  terrainSensorOffset: 0.5
   enemy: {fileID: 0}
 --- !u!114 &3649995109400119642
 MonoBehaviour:
@@ -508,8 +571,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5294804466375868875}
-  - {fileID: 1527714121119451536}
-  - {fileID: 3904818252537098650}
+  - {fileID: 2327739208041830697}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6252223960851784911
@@ -524,7 +586,7 @@ GameObject:
   - component: {fileID: 7286191822476982174}
   - component: {fileID: 6339020573577873484}
   - component: {fileID: 4721243682746141556}
-  m_Layer: 9
+  m_Layer: 26
   m_Name: TerrainCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -544,7 +606,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5583020702702528783}
+  m_Father: {fileID: 2327739208041830697}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1773428102 &7286191822476982174
 ParentConstraint:
@@ -622,7 +684,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.7
 --- !u!1001 &2256559641999803827
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1271,6 +1333,10 @@ PrefabInstance:
       propertyPath: _renderVerts.Array.data[19]._matrix_ToWorld._m12
       value: 140.45665
       objectReference: {fileID: 0}
+    - target: {fileID: 1321230714155341706, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: a2e552b9fadaacd47ae0eb941de28dfe, type: 2}
     - target: {fileID: 1584961267322792983, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
       propertyPath: m_LocalScale.x
       value: -1
@@ -2565,7 +2631,7 @@ PrefabInstance:
       objectReference: {fileID: 3549201638025795251}
     - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
       propertyPath: parameters.Array.size
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
       propertyPath: parameters.Array.data[1].animParameter
@@ -2586,6 +2652,18 @@ PrefabInstance:
     - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
       propertyPath: parameters.Array.data[2].blackboardKey
       value: isHitt
+      objectReference: {fileID: 0}
+    - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
+      propertyPath: parameters.Array.data[3].animParameter
+      value: isStunned
+      objectReference: {fileID: 0}
+    - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
+      propertyPath: parameters.Array.data[3].blackboardKey
+      value: isStunned
+      objectReference: {fileID: 0}
+    - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
+      propertyPath: parameters.Array.data[3].parameterType
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4193174076842566136, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
       propertyPath: m_LocalScale.x
@@ -3997,3 +4075,14 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5939791513621467428, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
   m_PrefabInstance: {fileID: 2256559641999803827}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7617992125002298964 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8568206525114201063, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
+  m_PrefabInstance: {fileID: 2256559641999803827}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08e5468fa1bf05b4896cd7b2ef8664ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
