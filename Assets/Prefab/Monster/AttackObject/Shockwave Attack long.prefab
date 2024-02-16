@@ -49,9 +49,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rigidbody: {fileID: 616992587017311682}
-  collider: {fileID: 0}
-  frontSpeed: 7.3
-  backSpeed: 5
+  collider: {fileID: 2554714974980051149}
+  frontSpeed: 8
+  backSpeed: 6.3
 --- !u!114 &1964203919097936900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -65,6 +65,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 2
+  ignoreDuration: 2
 --- !u!50 &616992587017311682
 Rigidbody2D:
   serializedVersion: 4

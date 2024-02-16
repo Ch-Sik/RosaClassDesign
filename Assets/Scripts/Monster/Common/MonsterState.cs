@@ -44,13 +44,19 @@ public class MonsterState : MonoBehaviour
             Debug.LogError($"{gameObject.name}: 사망 시 멈출 pandaBT를 찾을 수 없음!");
             return;
         }
-        pandaBT.enabled = false;
 
         StartCoroutine(DieRoutine());
         IEnumerator DieRoutine()        // 사망 연출
         {
+            float frameTime;
+
             blackboard.Set(BBK.isDead, true);
-            yield return new WaitForSeconds(3.0f);
+            yield return 0;
+
+            pandaBT.enabled = false;
+            frameTime = Time.deltaTime;
+            yield return new WaitForSeconds(3.0f - frameTime);
+
             // TODO: 여기에 사망 연출 추가하기
             Destroy(gameObject);
         }

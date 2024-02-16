@@ -139,6 +139,7 @@ public class Task_G_PatrolGoAndStop : Task_Base
         else if (patrolTimer.duration < patrolGoTime + patrolStopTime)
         {
             // patrolStopTime 동안 휴식
+            PatrolHangOn();
         }
         else
         {
@@ -148,9 +149,19 @@ public class Task_G_PatrolGoAndStop : Task_Base
         }
     }
 
+    // 반대쪽 순찰범위 끝까지 가는 동안 중간에 잠깐 멈춰서기
+    [Task]
+    private void PatrolHangOn()
+    {
+        blackboard.Set(BBK.isMoving, false);
+    }
+
+    // 순찰 범위 끝까지 도달한 후 뒤돌아서기 전에 잠깐 멈추기
     [Task]
     private void PatrolWait()
     {
+        blackboard.Set(BBK.isMoving, false);
+
         // 피격당한 상황일 때 Fail -> SetNextDest로 인해 뒤돌아버리는 것 방지
         bool isHitt;
         if (blackboard.TryGet(BBK.isHitt, out isHitt) && isHitt)
@@ -159,7 +170,7 @@ public class Task_G_PatrolGoAndStop : Task_Base
             StopMoving();
             return;
         }
-        // BT 파일 재활용을 위해 PatrolWait 함수를 남겨두지만
+        // BT 파일 재활용을 위해 PatrolWaitOnEnd 함수를 남겨두지만
         // 이 함수는 실질적으로 아무것도 하지 않음
         ThisTask.Succeed();
     }
@@ -248,6 +259,8 @@ public class Task_G_PatrolGoAndStop : Task_Base
 
     private void MoveTo(float xCoord)
     {
+        blackboard.Set(BBK.isMoving, true);
+
         float moveDir;
         if (xCoord < transform.position.x)
             moveDir = -1;
@@ -264,6 +277,8 @@ public class Task_G_PatrolGoAndStop : Task_Base
 
     private void StopMoving()
     {
+        blackboard.Set(BBK.isMoving, false);
+
         // TODO: 플레이어의 넉백과 충돌하지 않는지 확인 필요
         rigidbody.velocity = Vector2.zero;
     }

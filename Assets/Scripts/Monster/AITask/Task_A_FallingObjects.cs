@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Panda;
 using System.Linq;
+using Sirenix.OdinInspector;
 
-public enum DropAttackSpawnMode 
+public enum FallingAttackSpawnMode 
 {
     /// <summary> 대상 머리 바로 위에 배치, 낙하물이 2개가 이상인 경우는 추천하지 않음 </summary>
     Target,
@@ -14,7 +15,7 @@ public enum DropAttackSpawnMode
     Evenly
 }
 
-public enum DropAttackLaunchMode
+public enum FallingAttackLaunchMode
 {
     /// <summary> 모든 오브젝트를 동시에 낙하 </summary>
     Parallel,
@@ -27,7 +28,7 @@ public enum DropAttackLaunchMode
 }
 
 // 패턴을 보스만 쓴다고 가정, 보스방에서만 실행되며 지형은 아무런 장애물이 없다고 가정함.
-public class Task_A_Stalactite : Task_A_Base
+public class Task_A_FallingObjects : Task_A_Base
 {
     [SerializeField]
     private GameObject attackPrefab;
@@ -36,9 +37,12 @@ public class Task_A_Stalactite : Task_A_Base
     [SerializeField, Tooltip("낙하물 소환 높이")]
     private float spawnHeight;
     [SerializeField, Tooltip("낙하 공격 소환 시의 위치 설정 옵션")]
-    private DropAttackSpawnMode spawnMode;
+    private FallingAttackSpawnMode spawnMode;
     [SerializeField, Tooltip("낙하 공격 발동 시의 순서 설정 옵션")]
-    private DropAttackLaunchMode launchMode;
+    private FallingAttackLaunchMode launchMode;
+    [SerializeField, ShowIf("spawnMode", Value = FallingAttackSpawnMode.Random)]
+    [Tooltip("낙하물끼리의 간격 최소값")]
+    private float minSpawnInterval = 0.3f;
 
     private float leftEnd, rightEnd;        // 보스방의 왼쪽/오른쪽 끝의 x좌표
     private float secondsPerDrop;           // 낙하물 하나 떨어뜨릴 때마다 시간 간격
@@ -53,8 +57,12 @@ public class Task_A_Stalactite : Task_A_Base
     }
 
     [Task]
-    protected void StalactiteAttack()
+    protected void FallingObjectsAttack(int count = -1)
     {
+        if(count > 0)
+        {
+            numOfInstance = count;
+        }
         ExecuteAttack();
     }
 
@@ -78,71 +86,102 @@ public class Task_A_Stalactite : Task_A_Base
 
     private void SpawnObjects()
     {
-        // 소환되어야할 좌표를 우선 산정. xPos 배열은 launch 순서를 반영함.
-        float[] xPos = new float[numOfInstance];
-        switch (spawnMode)
-        {
-            case DropAttackSpawnMode.Target:
-                GameObject enemy;
-                blackboard.TryGet(BBK.Enemy, out enemy);
-                for (int i = 0; i < numOfInstance; i++)
-                {
-                    xPos[i] = enemy.transform.position.x;
-                }
-                break;
-            case DropAttackSpawnMode.Random:
-                for (int i = 0; i < numOfInstance; i++)
-                {
-                    xPos[i] = Random.Range(leftEnd, rightEnd);
-                }
-                break;
-            case DropAttackSpawnMode.Evenly:
-                float bossRoomXSize = rightEnd - leftEnd;
-                float attackIntervalDist = numOfInstance == 1 ? 0 : bossRoomXSize / (numOfInstance);
-                switch (launchMode)
-                {
-                    case DropAttackLaunchMode.Parallel:
-                    case DropAttackLaunchMode.SerialFromLeft:
-                    case DropAttackLaunchMode.Random:
-                        for (int i = 0; i < numOfInstance; i++)
-                        {
-                            xPos[i] = leftEnd + (0.5f * attackIntervalDist) + i * attackIntervalDist;
-                        }
-                        if (launchMode == DropAttackLaunchMode.Random)
-                        {
-                            System.Random rand = new System.Random();
-                            xPos = xPos.OrderBy(e => rand.Next()).ToArray();
-                        }
-                        break;
-                    case DropAttackLaunchMode.SerialFromRight:
-                        for (int i = 0; i < numOfInstance; i++)
-                        {
-                            xPos[i] = rightEnd - (0.5f * attackIntervalDist) - i * attackIntervalDist;
-                        }
-                        break;
-                }
-                break;
-        }
+        // 소환되어야할 좌표를 우선 산정. spawnPosX 배열은 launch 순서를 반영함.
+        float[] spawnPosX = GetSpawnCoordinates();
 
         // 순서대로 스폰하고 attackInstance에 넣고 Init 수행시킴
         for (int i = 0; i < numOfInstance; i++)
         {
             GameObject instance = Instantiate(attackPrefab, 
-                        new Vector3(xPos[i], transform.position.y + spawnHeight, 0), Quaternion.identity);
+                        new Vector3(spawnPosX[i], transform.position.y + spawnHeight, 0), Quaternion.identity);
             attackInstance.Add(instance.GetComponent<MonsterStalactite>());
             instance.GetComponent<MonsterStalactite>().Init();
         }
     }
 
+    private float[] GetSpawnCoordinates()
+    {
+        float[] xCoords = new float[numOfInstance];
+        // 일단 소환되어야 할 좌표 산정
+        switch (spawnMode)
+        {
+            case FallingAttackSpawnMode.Target:
+                GameObject enemy;
+                blackboard.TryGet(BBK.Enemy, out enemy);
+                for (int i = 0; i < numOfInstance; i++)
+                {
+                    xCoords[i] = enemy.transform.position.x;
+                }
+                break;
+            case FallingAttackSpawnMode.Random:
+                List<Transform> instanceTransforms = new List<Transform>();
+                for (int i = 0; i < numOfInstance; i++)
+                {
+                    // 랜덤으로 위치 지정하더라도 서로 너무 가깝지 않도록 함.
+                    bool isCloseEnough = false;
+                    float newPos = Random.Range(leftEnd, rightEnd);
+                    foreach (float x in xCoords)
+                    {
+                        if (Mathf.Abs(x - newPos) < minSpawnInterval)
+                        {
+                            isCloseEnough = true;
+                            break;
+                        }
+                    }
+                    if (isCloseEnough)
+                    {
+                        i--;
+                        continue;
+                    }
+                    else
+                    {
+                        xCoords[i] = newPos;
+                    }
+                }
+                break;
+            case FallingAttackSpawnMode.Evenly:
+                float bossRoomXSize = rightEnd - leftEnd;
+                float attackIntervalDist = numOfInstance == 1 ? 0 : bossRoomXSize / (numOfInstance);
+                for (int i = 0; i < numOfInstance; i++)
+                {
+                    xCoords[i] = leftEnd + (0.5f * attackIntervalDist) + i * attackIntervalDist;
+                }
+                break;
+        }
+
+        // launchMode에 따라 xCoords 배열 정렬
+        switch (launchMode)
+        {
+            case FallingAttackLaunchMode.Parallel:
+                // 정렬 필요 없음.
+                break;
+            case FallingAttackLaunchMode.Random:
+                System.Random rand = new System.Random();
+                xCoords = xCoords.OrderBy(e => rand.Next()).ToArray();
+                break;
+            case FallingAttackLaunchMode.SerialFromLeft:
+                xCoords = xCoords.OrderBy(e => e).ToArray();
+                break;
+            case FallingAttackLaunchMode.SerialFromRight:
+                xCoords = xCoords.OrderByDescending(e => e).ToArray();
+                break;
+        }
+
+        return xCoords;
+    }
+
     protected override void OnActiveLast()
     {
         // 랜덤이던 왼쪽에서부터던 오른쪽에서부터건 순차적으로 내려와야 하는 경우
-        if (launchMode != DropAttackLaunchMode.Parallel)
+        if (launchMode != FallingAttackLaunchMode.Parallel)
         {
             float nextShockwaveEmit = secondsPerDrop * (curStalactiteCount);
             if (activeTimer.duration >= nextShockwaveEmit)
             {
-                attackInstance[curStalactiteCount].Launch();
+                // 소환 위치를 잘못설정해서 낙하물이 낙하하기도 전에 지형에 부딪혀 
+                // 파괴되는 경우를 대비해서 null check 해야 함.
+                if (attackInstance[curStalactiteCount] != null)
+                    attackInstance[curStalactiteCount].Launch();
                 curStalactiteCount++;
             }
         }
@@ -153,7 +192,9 @@ public class Task_A_Stalactite : Task_A_Base
             {
                 foreach (var instance in attackInstance)
                 {
-                    instance.Launch();
+                    // 여기도 동일하게 null check 필요
+                    if(instance != null)
+                        instance.Launch();
                 }
                 curStalactiteCount += numOfInstance + 1;
             }

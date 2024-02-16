@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -29,15 +29,6 @@ namespace AnyPortrait
 	{
 		// Const
 		//---------------------------------------------------
-		//이전
-
-		//private const int MAX_FPS = 60;
-		//private const int MIN_FPS = 2;
-		////private const int MAX_INV_LOW_FPS_RATIO = 4;
-
-		//private const int REMOVABLE_COUNT = 100;
-
-
 		//리뉴얼
 		//토큰의 FPS 범위
 		private const int MAX_TOKEN_FPS = 60;
@@ -50,22 +41,7 @@ namespace AnyPortrait
 		// SubClass
 		//---------------------------------------------------
 		public class UpdateToken
-		{
-			//이전
-			#region [미사용 코드]
-			//private int _FPS = -1;
-			//public int _delayedFrame = 0;
-
-
-			//private bool _result = false;
-			//private float _elapsedTime = 0.0f;
-			//private float _updatableTimeLength = 0.0f;
-
-			//private float _resultTime = 0.0f;
-			//private bool _isOverDelayed = false;
-			//private int _resultDelayedFrame = 0; 
-			#endregion
-
+		{	
 			//리뉴얼 코드
 			private int _FPS = -1;
 			private int _unusedCount = 0;
@@ -85,15 +61,7 @@ namespace AnyPortrait
 			public UpdateToken(int fps)
 			{
 				//이전
-				#region [미사용 코드]
-				//_FPS = Mathf.Clamp(fps, MIN_FPS, MAX_FPS);
-				//_delayedFrame = 0;
-				//_result = false;
-				//_elapsedTime = 0.0f;
-				//_resultTime = 0.0f;
-
-				//_updatableTimeLength = (1.0f / (float)_FPS) - 0.01f;//Bias만큼 약간 더 감소 
-				#endregion
+				
 
 				//리뉴얼
 				_FPS = fps;
@@ -108,14 +76,6 @@ namespace AnyPortrait
 
 			public bool SetFPS(int fps)
 			{
-				#region [미사용 코드]
-				//if(fps != _FPS)
-				//{
-				//	_FPS = Mathf.Clamp(fps, MIN_FPS, MAX_FPS);
-				//	_updatableTimeLength = (1.0f / (float)_FPS) - 0.01f;
-				//} 
-				#endregion
-
 				bool isChanged = (_FPS != fps);
 				_FPS = fps;
 				return isChanged;
@@ -126,12 +86,19 @@ namespace AnyPortrait
 				_parentTokenList = tokenList;
 			}
 
-			public void Update(float deltaTime)
+			public void Update(float deltaTime, bool isUpdatableFrame)
 			{
 				//_elapsedTime += deltaTime;
 				_elapsedTime += deltaTime;
 				_unusedCount = 0;//업데이트가 되었다면 카운트를 0으로 초기화
 
+				_isUpdatable = isUpdatableFrame;
+				if(_isUpdatable)
+				{
+					//업데이트가 될 것이라면 경과 시간을 갱신한다.
+					_resultElapsedTime = _elapsedTime;
+					_elapsedTime = 0.0f;
+				}
 			}
 
 			public void ReadyToUpdate()
@@ -145,16 +112,16 @@ namespace AnyPortrait
 				_slotIndex = nextSlotIndex;
 			}
 
-			public void SetUpdatable(bool isUpdatable)
-			{
-				_isUpdatable = isUpdatable;
-				if(_isUpdatable)
-				{
-					//업데이트가 될 것이라면 경과 시간을 갱신한다.
-					_resultElapsedTime = _elapsedTime;
-					_elapsedTime = 0.0f;
-				}
-			}
+			//public void SetUpdatable(bool isUpdatable)
+			//{
+			//	_isUpdatable = isUpdatable;
+			//	if(_isUpdatable)
+			//	{
+			//		//업데이트가 될 것이라면 경과 시간을 갱신한다.
+			//		_resultElapsedTime = _elapsedTime;
+			//		_elapsedTime = 0.0f;
+			//	}
+			//}
 
 
 			//Get
@@ -166,105 +133,12 @@ namespace AnyPortrait
 			public bool IsRemovable { get { return _unusedCount > MAX_TOKEN_UNUSED_COUNT; } }
 			public bool IsUpdatable { get { return _isUpdatable; } }
 
-			#region [미사용 코드]
-			//public bool IsUpdatable()
-			//{
-			//	return _elapsedTime > _updatableTimeLength;
-			//}
-
-			//public bool IsUpdatableInLowSceneFPS(float lowFPSRatio)
-			//{
-			//	return _elapsedTime > (_updatableTimeLength / lowFPSRatio) - 0.01f;//Bias만큼 약간 더 감소
-			//}
-
-			//public void ReadyToCalculate()
-			//{
-			//	_result = false;
-			//	_resultTime = 0.0f;
-			//	_isOverDelayed = false;
-			//	_resultDelayedFrame = 0;
-			//}
-
-			//public void SetSuccess(bool isOverDelayed)
-			//{
-			//	//_result = true;
-			//	//_resultTime = _elapsedTime;
-			//	//_elapsedTime = 0.0f;
-
-
-			//	//_resultDelayedFrame = _delayedFrame;
-			//	//_isOverDelayed = isOverDelayed;
-
-			//	//_delayedFrame = 0;
-			//}
-
-
-			//public bool SetFailIfNotCalculated()
-			//{
-			//	if(_result)
-			//	{
-			//		return false;
-			//	}
-
-			//	_resultTime = 0.0f;
-			//	_delayedFrame++;
-
-			//	return true;
-			//}
-
-			//public bool IsSuccess { get { return _result; } }
-			//public float ResultElapsedTime { get { return _resultTime; } }
-			//public bool IsOverDelayed { get { return _isOverDelayed; } }
-			//public int DelayedFrame {  get {  return _resultDelayedFrame; } } 
-			#endregion
 		}
 
 		public class TokenList
 		{
 			public int _FPS = -1;//키값이 되는 FPS
 
-			#region [미사용 코드]
-			//private List<UpdateToken> _tokens = null;
-
-			//private int _nRequest = 0;//<<요청 개수
-			//private int _maxDelay = 0;//<<몇개의 그룹으로 분할해야 하는가
-			////private int _maxDelayLowSceneFPS = 0;//<<몇개의 그룹으로 분할해야 하는가
-
-			//private int _maxCount = -1;
-			//private int _successCount = -1;
-
-			//private Dictionary<int, List<UpdateToken>> _delayedTokens = null;//바로 처리되지 못하고 잠시 딜레이된 토큰들. 계산용
-
-			////private float _tSceneFrame = 0.0f;//유니티 씬에서의 Frame 시간
-			//private int _sceneFPS = 0;
-
-			//private float _countBias = 1.0f;
-
-			//private float _tCycle = 0.0f;
-			//private float _tCycleLength = 0.0f;
-
-			//private int _cycle_totalRequests = 0;
-			//private int _cycle_totalFailed = 0;
-			//private int _cycle_totalMargin = 0;
-
-			////private int _prevBias = 0;
-
-			////만약 SceneFPS가 목표된 FPS보다 낮은 경우 (이건 Cycle마다 체크한다)
-			//private bool _isLowSceneFPS = false;
-			//private int _lowSceneFPS = 0;
-
-			////private int _lowFPS_Min = 0;
-
-			//private int _lowFPS = 0;
-			//private int _avgSceneFPS = 0;
-			//private int _nSceneFPSCount = 0;
-			//private float _lowFPSRatio = 0.0f;
-
-			////삭제 가능성
-			////긴 프레임동안 Request가 없었던 토큰 리스트는 삭제되어야 한다.
-			//private bool _isRemovable = false;
-			//private int _nNoRequestFrames = 0; 
-			#endregion
 
 			//전체 토큰 리스트
 			private List<UpdateToken> _tokens_All = new List<UpdateToken>();
@@ -287,29 +161,6 @@ namespace AnyPortrait
 
 			public TokenList(int fps)
 			{
-				#region [미사용 코드]
-				//_FPS = Mathf.Clamp(fps, MIN_FPS, MAX_FPS);
-				//_maxDelay = Mathf.Max((MAX_FPS / _FPS) + 1, 2);
-
-				//_tokens = new List<UpdateToken>();
-				//_delayedTokens = new Dictionary<int, List<UpdateToken>>();
-				//for (int i = 0; i < _maxDelay; i++)
-				//{
-				//	_delayedTokens.Add(i, new List<UpdateToken>());
-				//}
-
-				//_tCycle = 0.0f;
-				//_tCycleLength = 1.0f / (float)_FPS;
-
-				//_isLowSceneFPS = false;
-				//_lowSceneFPS = 0;
-				//_avgSceneFPS = 0;
-				//_nSceneFPSCount = 0;
-
-				//_isRemovable = false;
-				//_nNoRequestFrames = 0; 
-				#endregion
-
 				_FPS = fps;
 
 				if(_tokens_All == null)
@@ -328,306 +179,6 @@ namespace AnyPortrait
 				_unusedCount = 0;
 				_updateCursor = 0;
 			}
-
-			#region [미사용 코드]
-			//public void Reset(float deltaTime)
-			//{
-			//	_nRequest = 0;
-			//	_maxCount = 0;
-			//	_successCount = 0;
-
-			//	if(deltaTime > 0.0f)
-			//	{
-			//		_sceneFPS = (int)(1.0f / deltaTime);
-			//	}
-			//	else
-			//	{
-			//		_sceneFPS = MIN_FPS;
-			//	}
-
-			//	_avgSceneFPS += _sceneFPS;
-			//	_nSceneFPSCount++;
-
-			//	_tCycle += deltaTime;
-			//	if(_tCycle > _tCycleLength)
-			//	{
-			//		// 이 토큰의 사이클이 한바퀴 돌았다
-			//		//크기 보정 배수를 재계산하자
-			//		if(_cycle_totalRequests == 0)
-			//		{
-			//			_countBias = 1.0f;
-
-			//		}
-			//		else
-			//		{
-			//			//보정값
-			//			//처리 횟수
-			//			//성공 + 실패 = 전체
-			//			//maxSize대비 -> 
-			//			//1 + ((실패 - 잉여) / 전체) + 0.5 (Bias)
-			//			//단, 실패에 약간의 가중치가 더 붙는다.
-			//			//float newCountBias = 1.5f + ((float)(_cycle_totalFailed * 1.5f - _cycle_totalMargin * 0.5f) / (float)_cycle_totalRequests );
-			//			//float newCountBias = 1.0f;
-			//			//float prevBias = _countBias;
-			//			//float newCountBias = _countBias;
-			//			if (_cycle_totalFailed > 0)
-			//			{
-			//				//newCountBias += ((float)(_cycle_totalFailed) / (float)_cycle_totalRequests);
-			//				_countBias *= 1.1f;
-
-			//				//Debug.LogError("[" + _FPS  + "] 배수 증가 : " + prevBias + " > " + _countBias);
-
-			//			}
-			//			else if (_cycle_totalMargin > 0)
-			//			{
-			//				//newCountBias -= ((float)(_cycle_totalMargin) / (float)_cycle_totalRequests);
-			//				_countBias *= 0.95f;
-
-			//				//Debug.LogWarning("[" + _FPS  + "] 배수 감소 : " + prevBias + " > " + _countBias);
-			//			}
-			//		}
-			//		_cycle_totalRequests = 0;
-			//		_cycle_totalFailed = 0;
-			//		_cycle_totalMargin = 0;
-
-			//		_tCycle = 0.0f;
-
-			//		if(_nSceneFPSCount > 0)
-			//		{
-			//			_avgSceneFPS = _avgSceneFPS / _nSceneFPSCount;
-			//			if(_avgSceneFPS / 2 < _FPS)
-			//			{
-			//				//실행중인 프레임이 매우 낮아서 실제 업데이트되는 FPS를 낮추어야 한다.
-			//				//실제 FPS는 그 절반으로 낮추어야 한다.
-
-			//				_lowSceneFPS = _avgSceneFPS;
-			//				_lowFPS = _lowSceneFPS / 2;
-
-			//				if(_lowFPS < MIN_FPS)
-			//				{
-			//					_lowFPS = MIN_FPS;
-			//				}
-
-			//				_lowFPSRatio = (float)_lowFPS / (float)_FPS;
-
-			//				//if (!_isLowSceneFPS)
-			//				//{
-			//				//	Debug.LogWarning("[" + _FPS + "] Low Scene FPS : " + _FPS + " >> " + _lowFPS);
-			//				//}
-
-			//				_isLowSceneFPS = true;
-			//			}
-			//			else
-			//			{	
-			//				_lowSceneFPS = 0;
-			//				_lowFPSRatio = 1.0f;
-			//				_lowFPS = _FPS;
-
-			//				//if (_isLowSceneFPS)
-			//				//{
-			//				//	Debug.Log("[" + _FPS + "] Recover Scene FPS");
-			//				//}
-
-			//				_isLowSceneFPS = false;
-			//			}
-			//		}
-			//		else
-			//		{
-			//			_isLowSceneFPS = false;
-			//			_lowSceneFPS = 0;
-			//			_lowFPSRatio = 1.0f;
-			//			_lowFPS = _FPS;
-			//		}
-
-			//		_avgSceneFPS = 0;
-			//		_nSceneFPSCount = 0;
-			//	}
-
-			//	_tokens.Clear();
-
-			//	for (int i = 0; i < _maxDelay; i++)
-			//	{
-			//		_delayedTokens[i].Clear();
-			//	}
-			//}
-
-			//public void AddRequest(UpdateToken token)
-			//{
-			//	//token._result = false;//<<일단 False로 설정
-			//	//token.ReadyToCalculate();//계산 준비 //<< AddRequest가 호출되기 전에 이미 호출되었다.
-
-			//	if(_isLowSceneFPS)
-			//	{
-			//		//만약, 현재 Scene의 FPS가 낮다면,
-			//		//이 토큰의 업데이트 여부를 한번더 체크해야한다.
-			//		if(token.IsUpdatableInLowSceneFPS(_lowFPSRatio))
-			//		{
-			//			_nRequest++;
-			//			_tokens.Add(token);
-			//		}
-			//	}
-			//	else
-			//	{
-			//		_nRequest++;
-			//		_tokens.Add(token);
-			//	}
-
-
-			//}
-
-			//public bool Calculate()
-			//{
-			//	//이게 핵심. 
-			//	//- maxCount 결정 + curCount = 0
-
-			//	//- 요청된 토큰의 각각의 가중치를 보고 처리할 수 있는지 여부를 결정
-			//	//1. DelayedFrame이 divide를 넘었으면 무조건 처리 => Sort 필요 없음
-			//	//2. DelayedFrame이 큰것 부터 처리. curCount가 maxCount보다 크면 종료
-
-			//	//- result가 true인 토큰은 delayedFrame을 0으로 초기화
-			//	//- result가 false인 토큰은 delayedFrame을 1 증가
-
-			//	if(_nRequest == 0)
-			//	{
-			//		if (!_isRemovable)
-			//		{
-			//			_nNoRequestFrames++;
-
-			//			if (_nNoRequestFrames > REMOVABLE_COUNT)
-			//			{
-			//				_isRemovable = true;
-			//			}
-			//		}
-			//		return _isRemovable;
-			//	}
-
-			//	_isRemovable = false;
-			//	_nNoRequestFrames = 0;
-
-			//	UpdateToken token = null;
-
-			//	//프레임이 너무 낮은 경우 전부 OverDelayed를 하고 처리하자
-			//	if(_sceneFPS < MIN_FPS)
-			//	{
-			//		for (int i = 0; i < _tokens.Count; i++)
-			//		{
-			//			token = _tokens[i];
-			//			if (token == null)
-			//			{
-			//				return false;
-			//			}
-
-			//			token.SetSuccess(true);
-			//			_successCount++;
-			//		}
-
-			//		_cycle_totalFailed += _nRequest;
-			//		return false;
-			//	}
-
-			//	//Slot의 크기를 구하자
-			//	//- 기본 : 전체 요청 / (현재 프레임 / FPS) => (전체 요청 * FPS) / 현재 프레임
-
-			//	if(_isLowSceneFPS)
-			//	{
-			//		_maxCount = ((_nRequest * _lowFPS) / _sceneFPS) + 1;
-			//	}
-			//	else
-			//	{
-			//		_maxCount = ((_nRequest * _FPS) / _sceneFPS) + 1;
-			//	}
-
-			//	_maxCount = (int)(_maxCount * _countBias + 0.5f);//<<알아서 바뀌는 보정값으로 변경
-
-
-			//	_successCount = 0;
-
-			//	//1차로 : 무조건 처리해야하는거 찾기
-			//	for (int i = 0; i < _tokens.Count; i++)
-			//	{
-			//		token = _tokens[i];
-			//		if(token == null)
-			//		{
-			//			continue;
-			//		}
-
-			//		if (token._delayedFrame >= _maxDelay)
-			//		{
-			//			//한계치를 넘었다. > 무조건 성공
-			//			//token._result = true;
-			//			token.SetSuccess(true);
-			//			_successCount++;
-			//		}
-			//		else
-			//		{
-			//			//일단 뒤로 미루자
-			//			_delayedTokens[token._delayedFrame].Add(token);
-			//		}
-			//	}
-
-			//	if(_successCount < _maxCount)
-			//	{
-			//		//아직 더 처리할 수 있다면
-			//		//delayedFrame이 큰것부터 처리하자
-			//		List<UpdateToken> delayedList = null;
-			//		for (int iDelay = _maxDelay - 1; iDelay >= 0; iDelay--)
-			//		{	
-			//			delayedList = _delayedTokens[iDelay];
-			//			for (int i = 0; i < delayedList.Count; i++)
-			//			{
-			//				token = delayedList[i];
-			//				//token._result = true;
-			//				token.SetSuccess(false);
-			//				_successCount++;
-
-			//				//처리가 모두 끝났으면 리턴
-			//				if(_successCount >= _maxCount)
-			//				{
-			//					break;
-			//				}
-			//			}
-
-			//			//처리가 모두 끝났으면 리턴
-			//			if(_successCount >= _maxCount)
-			//			{
-			//				break;
-			//			}
-			//		}
-			//	}
-
-			//	int nFailed = 0;
-			//	for (int i = 0; i < _tokens.Count; i++)
-			//	{
-			//		token = _tokens[i];
-			//		//<<처리되지 않았다면 Fail 처리
-			//		if(token.SetFailIfNotCalculated())
-			//		{
-			//			nFailed++;
-			//		}
-			//	}
-
-			//	_cycle_totalRequests += _nRequest;
-
-			//	//실패값
-			//	if (_nRequest > _maxCount)
-			//	{
-			//		_cycle_totalFailed += _nRequest - _maxCount;
-			//	}
-
-			//	//잉여값
-			//	if (_nRequest < _maxCount)
-			//	{
-			//		_cycle_totalMargin += _maxCount - _nRequest;
-			//	}
-
-			//	return false;
-			//}
-
-			//public bool IsRemovable
-			//{
-			//	get { return _isRemovable; }
-			//} 
-			#endregion
 
 			/// <summary>
 			/// Update의 첫 계산에서 호출된다.
@@ -727,7 +278,7 @@ namespace AnyPortrait
 			}
 
 
-			public void AddAndUpdateToken(UpdateToken token)
+			public bool AddAndUpdateToken(UpdateToken token)
 			{
 				//추가하거나 이미 있다면 인덱스 체크 후 갱신
 				
@@ -781,6 +332,10 @@ namespace AnyPortrait
 
 				//토큰이 입력되었으니 업데이트 카운트를 초기화하자.
 				_unusedCount = 0;
+
+				//리턴시에는 "현재 재생되는 슬롯의 인덱스"와 같은지 여부를 리턴한다.
+				//같다면 이번 프레임에서 업데이트가 이루어진다.
+				return (_updateCursor == token.SlotIndex);
 			}
 
 			public void RemoveToken(UpdateToken token)
@@ -801,6 +356,7 @@ namespace AnyPortrait
 			
 			/// <summary>
 			/// 토큰들을 상대로 업데이트 되어야 할지, 삭제될지를 정하고, 토큰들에 기록을 해준다.
+			/// - 업데이트 여부는 여기서 정하지 말고 삭제 여부만 정하자
 			/// </summary>
 			public void UpdateCursorAndRemoveInvalidTokens()
 			{
@@ -808,7 +364,9 @@ namespace AnyPortrait
 				bool isAnyRemovable = false;
 				bool isAnyNullToken = false;//<<하나라도 null이 있다면 검출해서 삭제하자.
 				_removableTokens.Clear();
-				for (int i = 0; i < _tokens_All.Count; i++)
+
+				int nAllTokens = _tokens_All.Count;
+				for (int i = 0; i < nAllTokens; i++)
 				{
 					curToken = _tokens_All[i];
 					if(curToken == null)
@@ -822,15 +380,17 @@ namespace AnyPortrait
 						isAnyRemovable = true;
 						_removableTokens.Add(curToken);
 					}
-					else
-					{
-						//커서와 슬롯 인덱스가 같을 때에만 업데이트 된다.
-						curToken.SetUpdatable(_updateCursor == curToken.SlotIndex);
-					}
+
+					//이 부분 삭제 [v1.4.8]
+					//else
+					//{
+					//	//커서와 슬롯 인덱스가 같을 때에만 업데이트 된다.
+					//	curToken.SetUpdatable(_updateCursor == curToken.SlotIndex);
+					//}
 				}
 
 
-				_updateCursor++;//커서 증가
+				_updateCursor += 1;//커서 증가
 				if(_updateCursor >= _slotSize)
 				{
 					_updateCursor = 0;
@@ -1054,22 +614,18 @@ namespace AnyPortrait
 		/// <summary>
 		/// 이 함수를 Update에서 호출하자
 		/// 토큰이 없다면 null로 하되, 리턴값을 멤버로 가지고 있자
+		/// 여기서 IsUpdatable도 처리한다.
 		/// </summary>
 		/// <param name="token"></param>
 		/// <param name="fps"></param>
 		/// <returns></returns>
-		public UpdateToken AddRequest(UpdateToken token, int fps, float deltaTime)
+		public UpdateToken OnUpdate(UpdateToken token, int fps, float deltaTime)
 		{
 			//상태가 바뀌면 초기화를 해야한다.
 			if(_state != STATE.Update)
 			{
-//#if UNITY_EDITOR
-//				Profiler.BeginSample("AddRequest > Reset");
-//#endif
-				//_fps2Tokens.Clear();
 				foreach (KeyValuePair<int, TokenList> keyValuePair in _fps2Tokens)
 				{
-					//keyValuePair.Value.Reset(deltaTime);
 					keyValuePair.Value.ReadyToUpdate();
 				}
 
@@ -1086,52 +642,14 @@ namespace AnyPortrait
 						keyValuePair.Value.SetGameFPS(_curGameFPS);
 					}
 				}
-
-//#if UNITY_EDITOR
-//				Profiler.EndSample();
-//#endif
 			}
 
-			#region [미사용 코드 - 이전 로직]
-			//fps = Mathf.Clamp(fps, MIN_FPS, MAX_FPS);
-
-			//if(token == null)
-			//{
-			//	token = new UpdateToken(fps);
-			//}
-			//else
-			//{
-			//	token.SetFPS(fps);
-			//}
-			//token.UpdateTime(deltaTime);
-
-			//token.ReadyToCalculate();
-
-			//if (token.IsUpdatable())
-			//{
-			//	//업데이트될 수 있다면 토큰을 리스트에 넣자
-			//	if (_fps2Tokens.ContainsKey(fps))
-			//	{
-			//		_fps2Tokens[fps].AddRequest(token);
-			//	}
-			//	else
-			//	{
-			//		TokenList newTokenList = new TokenList(fps);
-
-			//		newTokenList.Reset(deltaTime);
-			//		_fps2Tokens.Add(fps, newTokenList);
-			//		newTokenList.AddRequest(token);
-
-			//		//Debug.Log("New Token List : " + fps);
-			//	}
-			//} 
-			#endregion
-
 			int tokenFPS = Mathf.Clamp(fps, MIN_TOKEN_FPS, MAX_TOKEN_FPS);
-
+			bool isNewToken = false;
 			if(token == null)
 			{
 				token = new UpdateToken(tokenFPS);
+				isNewToken = true;//새로운 토큰 발생시에는 그 프레임에서는 무조건 업데이트
 			}
 			else
 			{
@@ -1146,10 +664,10 @@ namespace AnyPortrait
 			}
 
 			//입력될 토큰 리스트를 찾자
-			
+			bool isUpdatedFrame = false;
 			if(_fps2Tokens.ContainsKey(tokenFPS))
 			{
-				_fps2Tokens[tokenFPS].AddAndUpdateToken(token);
+				isUpdatedFrame = _fps2Tokens[tokenFPS].AddAndUpdateToken(token);
 			}
 			else
 			{
@@ -1157,109 +675,65 @@ namespace AnyPortrait
 				TokenList newTokenList = new TokenList(tokenFPS);
 				newTokenList.SetGameFPS(_curGameFPS);//현재 기준으로 초기 크기도 지정해야한다.
 				
-				newTokenList.AddAndUpdateToken(token);
+				isUpdatedFrame = newTokenList.AddAndUpdateToken(token);
 
 				_fps2Tokens.Add(tokenFPS, newTokenList);
 			}
 
-			//시간도 업데이트 해주자
-			token.Update(deltaTime);
+			//시간도 업데이트 해주고, 업데이트 여부도 지정하자 [v1.4.8]
+			//첫 토큰 요청이거나 업데이트 프레임이면 업데이트가 이루어진다.
+			token.Update(deltaTime, isUpdatedFrame || isNewToken);
 
 			return token;
 		}
 
 		/// <summary>
-		/// 이 함수를 LateUpdate에서 호출하자. True면 업데이트 할 수 있다.
+		/// 이 함수를 LateUpdate에서 호출하자. 
 		/// </summary>
 		/// <param name="token"></param>
 		/// <returns></returns>
-		public bool GetUpdatable(UpdateToken token)
+		public void OnLateUpdate()
 		{
-			if(token == null)
+			if(_state == STATE.LateUpdate)
 			{
-				return false;
+				return;
 			}
-			if(_state != STATE.LateUpdate)
+
+			//Late Update의 첫 프레임에서는 "유효하지 않은 토큰"이나 "토큰 리스트"들을 삭제해야 한다.
+			TokenList curTokenList = null;
+			_removableTokenLists.Clear();
+			bool isAnyRemoveTokenList = false;
+			foreach (KeyValuePair<int, TokenList> keyValuePair in _fps2Tokens)
 			{
-//#if UNITY_EDITOR
-//				Profiler.BeginSample("Calculate > Reset");
-//#endif
-				//LateUpdate의 첫 처리
+				curTokenList = keyValuePair.Value;
+				if(curTokenList.IsRemovable)
+				{
+					//토큰 리스트가 삭제되어야 한다면
+					isAnyRemoveTokenList = true;
+					_removableTokenLists.Add(curTokenList);
+				}
+				else
+				{
+					//<중요!>
+					//그렇지 않다면 토큰 리스트 내부의 유효하지 않은 토큰들을 찾아서 삭제하자
+					//이 함수를 호출하면 토큰들의 "업데이트 여부"도 결정된다.
+					curTokenList.UpdateCursorAndRemoveInvalidTokens();//<<이거 수정해야함 v1.4.8
+				}
+			}
 
+			if(isAnyRemoveTokenList)
+			{
+				//삭제할 토큰리스트는 삭제하자
+				int nRemovedList = _removableTokenLists.Count;
+				for (int i = 0; i < _removableTokenLists.Count; i++)
+				{
+					_fps2Tokens.Remove(_removableTokenLists[i]._FPS);
+				}
 
-				#region [미사용 코드]
-				////_fps2Tokens.Clear();
-				//bool isAnyRemovableList = false;
-				//List<int> removalbeFPS = null;
-				//foreach (KeyValuePair<int, TokenList> keyValuePair in _fps2Tokens)
-				//{
-				//	if(keyValuePair.Value.Calculate())
-				//	{
-				//		//삭제할 게 있다.
-				//		isAnyRemovableList = true;
-				//		if(removalbeFPS == null)
-				//		{
-				//			removalbeFPS = new List<int>();
-				//		}
-				//		removalbeFPS.Add(keyValuePair.Key);
-				//	}
-				//}
-
-				////삭제해야할 때도 있다.
-				//if(isAnyRemovableList)
-				//{
-				//	for (int i = 0; i < removalbeFPS.Count; i++)
-				//	{
-				//		//Debug.Log("Token List 삭제 : " + removalbeFPS[i]);
-				//		_fps2Tokens.Remove(removalbeFPS[i]);
-				//	}
-				//} 
-				#endregion
-
-				//Late Update의 첫 프레임에서는 "유효하지 않은 토큰"이나 "토큰 리스트"들을 삭제해야 한다.
-				TokenList curTokenList = null;
 				_removableTokenLists.Clear();
-				bool isAnyRemoveTokenList = false;
-				foreach (KeyValuePair<int, TokenList> keyValuePair in _fps2Tokens)
-				{
-					curTokenList = keyValuePair.Value;
-					if(curTokenList.IsRemovable)
-					{
-						//토큰 리스트가 삭제되어야 한다면
-						isAnyRemoveTokenList = true;
-						_removableTokenLists.Add(curTokenList);
-					}
-					else
-					{
-						//<중요!>
-						//그렇지 않다면 토큰 리스트 내부의 유효하지 않은 토큰들을 찾아서 삭제하자
-						//이 함수를 호출하면 토큰들의 "업데이트 여부"도 결정된다.
-						curTokenList.UpdateCursorAndRemoveInvalidTokens();
-					}
-				}
-
-				if(isAnyRemoveTokenList)
-				{
-					//삭제할 토큰리스트는 삭제하자
-					int nRemovedList = _removableTokenLists.Count;
-					for (int i = 0; i < _removableTokenLists.Count; i++)
-					{
-						_fps2Tokens.Remove(_removableTokenLists[i]._FPS);
-					}
-
-					_removableTokenLists.Clear();
-
-					//Debug.LogError("Remove Token List : " + nRemovedList);;
-				}
-
-				_state = STATE.LateUpdate;
-
-//#if UNITY_EDITOR
-//				Profiler.EndSample();
-//#endif
 			}
 
-			return token.IsUpdatable;
+			_state = STATE.LateUpdate;
 		}
 
 

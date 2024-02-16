@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -52,6 +52,7 @@ namespace AnyPortrait
 		private apGUIContentWrapper _guiContent_Group__ModifierAnimEditing = null;
 		private apGUIContentWrapper _guiContent_Group__AnimPlayBack = null;
 		private apGUIContentWrapper _guiContent_Group__Rigging = null;
+		private apGUIContentWrapper _guiContent_Group__MeshGroup = null;
 
 		private GUIStyle _guiStyle_Label_Default = null;
 		private GUIStyle _guiStyle_Label_Reserved = null;
@@ -218,6 +219,7 @@ namespace AnyPortrait
 					case apHotKeyMapping.SPACE.Modifier_Anim_Editing: curGroupContent = _guiContent_Group__ModifierAnimEditing; break;
 					case apHotKeyMapping.SPACE.AnimPlayBack:	curGroupContent = _guiContent_Group__AnimPlayBack; break;
 					case apHotKeyMapping.SPACE.Rigging:		curGroupContent = _guiContent_Group__Rigging; break;
+					case apHotKeyMapping.SPACE.MeshGroup:	curGroupContent = _guiContent_Group__MeshGroup; break;
 				}
 
 				if(hotKeyUnits.Key != apHotKeyMapping.SPACE.Common)
@@ -568,6 +570,11 @@ namespace AnyPortrait
 			if(_guiContent_Group__Rigging == null)
 			{
 				_guiContent_Group__Rigging = apGUIContentWrapper.Make(_editor.GetText(TEXT.ShortcutSpace_Rigging), true);//"Editing the Rigging Modifier"
+			}
+
+			if(_guiContent_Group__MeshGroup == null)
+			{
+				_guiContent_Group__MeshGroup = apGUIContentWrapper.Make(_editor.GetUIWord(UIWORD.MeshGroup), true);
 			}
 
 			

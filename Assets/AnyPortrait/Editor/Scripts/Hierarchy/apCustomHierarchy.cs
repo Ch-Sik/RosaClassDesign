@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -78,7 +78,12 @@ namespace AnyPortrait
 			}
 			_targets.Clear();
 			
+			//v1.4.8 : Unity 2023용 함수 분기
+#if UNITY_2023_1_OR_NEWER
+			apPortrait[] portraits = UnityEngine.Object.FindObjectsByType<apPortrait>(FindObjectsSortMode.None);
+#else
 			apPortrait[] portraits = UnityEngine.Object.FindObjectsOfType<apPortrait>();
+#endif
 			
 			int nPortraits = portraits != null ? portraits.Length : 0;
 

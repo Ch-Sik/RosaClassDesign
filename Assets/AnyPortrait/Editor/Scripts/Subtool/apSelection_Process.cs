@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -310,11 +310,12 @@ namespace AnyPortrait
 		public void SelectRootUnitDefault(bool isRefreshHierarchy = true)
 		{
 			if (_portrait == null)
-			{
+			{	
 				return;
 			}
 
-			if (_portrait._rootUnits.Count == 0)
+			int rootUnits = _portrait._rootUnits != null ? _portrait._rootUnits.Count : 0;
+			if (rootUnits == 0)
 			{
 				SelectNone();
 
@@ -385,13 +386,15 @@ namespace AnyPortrait
 
 				//[v1.4.5] 변경 : Hierarchy 상의 순서와 동일
 				List<apObjectOrders.OrderSet> animClipOrderSet = null;
+				
+
 				if(_portrait._objectOrders != null)
 				{
 					animClipOrderSet = _portrait._objectOrders.AnimClips;
 
 					int nAnimOrderSets = animClipOrderSet != null ? animClipOrderSet.Count : 0;
 					if(nAnimOrderSets > 0)
-					{
+					{	
 						apObjectOrders.OrderSet curOrderSet = null;
 						apAnimClip animClip = null;
 						for (int i = 0; i < nAnimOrderSets; i++)
@@ -972,15 +975,18 @@ namespace AnyPortrait
 					//Debug.LogError("--------------------------------------------------");
 				}
 
-				_animClip.Pause_Editor();
+				//_animClip.Pause_Editor();
 
-				Editor.Gizmos.RevertFFDTransformForce();
+				//Editor.Gizmos.RevertFFDTransformForce();
 
 			}
 			
 			
 			_animClip = animClip;
 			_animClip._isSelectedInEditor = true;
+
+			_animClip.Pause_Editor();
+			Editor.SetMeshGroupChanged();//추가 v1.4.7 : 애니메이션 변경시 컨트롤 파라미터가 갱신되지 않는 문제 해결
 
 			_selectionType = SELECTION_TYPE.Animation;
 			

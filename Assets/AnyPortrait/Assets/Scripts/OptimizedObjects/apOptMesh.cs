@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -1455,7 +1455,10 @@ namespace AnyPortrait
 		/// <param name="isVertexLocal"></param>
 		/// <param name="isVertexWorld"></param>
 		/// <param name="isVisible"></param>
-		public void UpdateCalculate(bool isRigging, bool isVertexLocal, bool isVertexWorld, bool isOrthoCorrection)
+		public void UpdateCalculate(	bool isRigging,
+										bool isVertexLocal,
+										bool isVertexWorld,
+										bool isOrthoCorrection)
 		{
 			
 			//이 코드들은 UpdateVisibility() 함수로 이동한다.
@@ -1490,6 +1493,7 @@ namespace AnyPortrait
 			{
 				if(!_isVisible)
 				{
+					//Show여야 하는데 현재 숨겨진 경우 (토글)
 					Show();
 				}
 			}
@@ -1497,6 +1501,7 @@ namespace AnyPortrait
 			{
 				if(_isVisible)
 				{
+					//Hide여야 하는데 현재 숨겨진 경우 (토글)
 					Hide();
 				}
 			}
@@ -1645,25 +1650,7 @@ namespace AnyPortrait
 			}
 
 			if(isRigging)
-			{
-				//_cal_parentCalculateStack.GetDeferredRiggingWeight(i)
-				//if (!_isUseRiggingCache)
-				//{
-				//	_cal_rVert._matrix_Rigging.SetMatrixWithWeight(
-				//		_cal_parentCalculateStack.GetDeferredRiggingMatrix_WithLUT(i),
-				//		_cal_parentCalculateStack._result_RiggingWeight * _cal_parentCalculateStack.GetDeferredRiggingWeight(i)//<이 Weight는 런타임에서는 바뀌지 않는다.
-				//		);
-				//}
-				//else
-				//{
-				//	//캐시를 이용해서 Weight를 가져온다.
-				//	_cal_rVert._matrix_Rigging.SetMatrixWithWeight(
-				//		_cal_parentCalculateStack.GetDeferredRiggingMatrix_WithLUT(i),
-				//		_cal_parentCalculateStack._result_RiggingWeight * _cal_parentCalculateStack._result_RiggingVertWeight_Cache[i]//변경 21.5.22 : 직접 호출
-				//		);
-				//}
-
-				//_cal_parentCalculateStack.SetDeferredRiggingMatrix_WithLUT(_renderVertCal_RiggingMatrix);
+			{	
 				_cal_parentCalculateStack.SetDeferredRiggingMatrix_WithLUT();
 			}
 
@@ -2285,6 +2272,9 @@ namespace AnyPortrait
 		}
 
 
+		//테스트 : 낮은 프레임의 FPS
+		//private float testTime = 0.0f;
+
 		// Vertex Refresh
 		//------------------------------------------------
 		/// <summary>
@@ -2292,6 +2282,20 @@ namespace AnyPortrait
 		/// </summary>
 		public void RefreshMesh()
 		{
+			//테스트 코드
+			////불연속 낮은 FPS 테스트
+			//testTime += Time.deltaTime;
+			//if(testTime < 1.0f / 12.0f)
+			//{
+			//	//12 FPS보다 작으면
+			//	//Mesh 갱신 안함
+			//	return;
+			//}
+			//else
+			//{
+			//	testTime -= 1.0f / 12.0f;
+			//}
+
 			//if(_isMaskChild || _isMaskParent)
 			//{
 			//	return;
@@ -2934,6 +2938,13 @@ namespace AnyPortrait
 				{
 					//빌보드가 켜진 경우
 					isOptimizedMaskArea = true;
+
+					//버그 수정 v1.4.7
+					// : 빌보드가 켜진 경우 (Perspective)일 때 URP라면 Mask Optimized가 동작하지 않는다.
+					if (_isUseSRP)
+					{
+						isOptimizedMaskArea = false;
+					}
 				}
 				else
 				{
@@ -3347,13 +3358,31 @@ namespace AnyPortrait
 
 			bool isOptimizedMaskArea = false;
 
-			if (_renderCamera.IsAllCameraOrthographic
-				|| (_renderCamera.IsAllSameForward && _portrait._billboardType != apPortrait.BILLBOARD_TYPE.None))
+			//이전
+			//if (_renderCamera.IsAllCameraOrthographic
+			//	|| (_renderCamera.IsAllSameForward && _portrait._billboardType != apPortrait.BILLBOARD_TYPE.None))
+			//{
+			//	//다중 카메라인 경우
+			//	isOptimizedMaskArea = true;
+			//}
+
+			//변경 v1.4.7
+			//다중 카메라의 경우의 마스크 최적화 기능
+			if (_renderCamera.IsAllCameraOrthographic)
 			{
-				//다중 카메라인 경우
+				//모두 Orthographic일때
 				isOptimizedMaskArea = true;
 			}
-			
+			else if(_renderCamera.IsAllSameForward 
+					&& _portrait._billboardType != apPortrait.BILLBOARD_TYPE.None
+					&& !_isUseSRP//<<v1.4.7에서 수정됨
+					)
+			{
+				//Perspective인 상태에서 빌보드가 켜져있을 때 + URP가 아닐때 (v1.4.7에서 수정됨)
+				isOptimizedMaskArea = true;
+			}
+
+
 
 			//카메라마다 커맨드 버퍼를 갱신
 			int nCamera = _renderCamera.NumCamera;

@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -44,6 +44,7 @@ namespace AnyPortrait
 
 		//예약된 재질 설정
 		public const int RESERVED_MAT_ID__Unlit = 0;
+		public const int RESERVED_MAT_ID__Unlit_V2 = 2;//추가 v1.4.7 : 이게 기본이다
 		public const int RESERVED_MAT_ID__Lit = 11;
 		public const int RESERVED_MAT_ID__Bumped = 12;
 		public const int RESERVED_MAT_ID__Bumped_Specular = 13;
@@ -107,7 +108,7 @@ namespace AnyPortrait
 			//ClearPresets();
 
 			//1. 기본 Unlit 타입의 MaterialSet
-			MakeReservedPreset(RESERVED_MAT_ID__Unlit, "Unlit (Default)", apMaterialSet.ICON.Unlit,
+			MakeReservedPreset(RESERVED_MAT_ID__Unlit, "Unlit (Legacy)", apMaterialSet.ICON.Unlit,
 												"apShader_Transparent",
 												"apShader_Transparent_Additive",
 												"apShader_Transparent_SoftAdditive",
@@ -127,6 +128,27 @@ namespace AnyPortrait
 												"apShader_AlphaMask",
 												true);
 
+			//v1.4.7 : 새로운 Unlit. 완전히 라이팅을 받지 않는다.
+			MakeReservedPreset(RESERVED_MAT_ID__Unlit_V2, "Unlit (v2)", apMaterialSet.ICON.Unlit,
+												"Unlit 2/apShader_Unlit2_T_Alpha",
+												"Unlit 2/apShader_Unlit2_T_Add",
+												"Unlit 2/apShader_Unlit2_T_Soft",
+												"Unlit 2/apShader_Unlit2_T_Mul",
+												"Unlit 2/apShader_Unlit2_C_Alpha",
+												"Unlit 2/apShader_Unlit2_C_Add",
+												"Unlit 2/apShader_Unlit2_C_Soft",
+												"Unlit 2/apShader_Unlit2_C_Mul",
+												"Unlit 2/Linear/apShader_L_Unlit2_T_Alpha",
+												"Unlit 2/Linear/apShader_L_Unlit2_T_Add",
+												"Unlit 2/Linear/apShader_L_Unlit2_T_Soft",
+												"Unlit 2/Linear/apShader_L_Unlit2_T_Mul",
+												"Unlit 2/Linear/apShader_L_Unlit2_C_Alpha",
+												"Unlit 2/Linear/apShader_L_Unlit2_C_Add",
+												"Unlit 2/Linear/apShader_L_Unlit2_C_Soft",
+												"Unlit 2/Linear/apShader_L_Unlit2_C_Mul",
+												"Unlit 2/apShader_Unlit2_AlphaMask",
+												false);//이건 Black Ambient가 필요없다.
+			
 			
 
 
@@ -1304,6 +1326,8 @@ namespace AnyPortrait
 		}
 
 
+
+
 		// Save / Load
 		//------------------------------------------------------------------------------------------
 		public void Save()
@@ -1515,6 +1539,20 @@ namespace AnyPortrait
 			{
 				return _isFirstLoad && _presets.Count > 0;
 			}
+		}
+
+		//private List<apMaterialSet> _presets = new List<apMaterialSet>();
+		//public List<apMaterialSet> Presets { get {  return _presets; } }
+
+		//추가 v1.4.7 : 기본 프리셋을 리턴한다.
+		//이전에는 0번째인 Unlit (Default > Legacy)였다면, 이젠 Unlit (v2)를 리턴한다.
+		public apMaterialSet GetDefaultPreset()
+		{
+			if(_presets != null)
+			{
+				return GetPresetUnit(RESERVED_MAT_ID__Unlit_V2);
+			}
+			return null;
 		}
 	}
 }

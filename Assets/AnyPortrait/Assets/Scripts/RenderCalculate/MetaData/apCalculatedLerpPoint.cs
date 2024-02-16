@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -47,9 +47,13 @@ namespace AnyPortrait
 		private float _cal_CurRefWeight = 0.0f;
 
 
+		//v1.4.7 : 연결된 SubParamList. 이 LerpPoint를 가지고 있는 객체이다.
+		private apCalculatedResultParamSubList _parentCalParamSubList = null;
+
 		// Init
 		//-----------------------------------------
-		public apCalculatedLerpPoint(Vector2 vPos, bool isRealPoint)
+		public apCalculatedLerpPoint(	Vector2 vPos, bool isRealPoint,
+										apCalculatedResultParamSubList parentCalParamSubList)
 		{
 			_pos = vPos;
 			_isRealPoint = isRealPoint;
@@ -57,9 +61,12 @@ namespace AnyPortrait
 			_refParams.Clear();
 			_refWeights.Clear();
 			_nRefPoints = 0;
+
+			_parentCalParamSubList = parentCalParamSubList;//v1.4.7
 		}
 
-		public apCalculatedLerpPoint(float fPos, bool isRealPoint)
+		public apCalculatedLerpPoint(	float fPos, bool isRealPoint,
+										apCalculatedResultParamSubList parentCalParamSubList)
 		{
 			_pos.x = fPos;
 			_isRealPoint = isRealPoint;
@@ -67,9 +74,12 @@ namespace AnyPortrait
 			_refParams.Clear();
 			_refWeights.Clear();
 			_nRefPoints = 0;
+
+			_parentCalParamSubList = parentCalParamSubList;//v1.4.7
 		}
 
-		public apCalculatedLerpPoint(int iPos, bool isRealPoint)
+		public apCalculatedLerpPoint(	int iPos, bool isRealPoint,
+										apCalculatedResultParamSubList parentCalParamSubList)
 		{
 			_iPos = iPos;
 			_isRealPoint = isRealPoint;
@@ -77,6 +87,8 @@ namespace AnyPortrait
 			_refParams.Clear();
 			_refWeights.Clear();
 			_nRefPoints = 0;
+
+			_parentCalParamSubList = parentCalParamSubList;//v1.4.7
 		}
 
 
@@ -97,19 +109,23 @@ namespace AnyPortrait
 			}
 		}
 
-		public void CalculateITPWeight()
+		public void CalculateITPWeight(ref float totalWeight)//v1.4.7 : totalWeight 추가
 		{	
+			float curWeight = 0.0f;
 			for (int i = 0; i < _nRefPoints; i++)
 			{
-				//_refParams[i]._isCalculated = true;
-				//_refParams[i]._weight += _refWeights[i] * _calculatedWeight;
-
 				//v1.4.6 변경
 				_cal_CurRefParam = _refParams[i];
 				_cal_CurRefWeight = _refWeights[i];
 
-				_cal_CurRefParam._isCalculated = true;
-				_cal_CurRefParam._weight += _cal_CurRefWeight * _calculatedWeight;
+				//이전
+				//_cal_CurRefParam._isCalculated = true;
+				//_cal_CurRefParam._weight += _cal_CurRefWeight * _calculatedWeight;
+
+				//v1.4.7 : Weight를 ref Total 결과에 넣고, 계산된 PKV를 리스트에 넣는다.
+				curWeight = _cal_CurRefWeight * _calculatedWeight;
+				totalWeight += curWeight;
+				_parentCalParamSubList.OnParamKeyValueCalculated(_cal_CurRefParam, curWeight);
 			}
 		}
 

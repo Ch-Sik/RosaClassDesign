@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -42,10 +42,14 @@ namespace AnyPortrait
 
 		public float _calculatedWeight = 0.0f;
 
+		//v1.4.7 : 연결된 SubParamList. 이 LerpPoint를 가지고 있는 객체이다.
+		private apOptCalculatedResultParamSubList _parentCalParamSubList = null;
+		private float _cal_CurWeight = 0.0f;//임시 변수
 
 		// Init
 		//-----------------------------------------
-		public apOptCalculatedLerpPoint(Vector2 vPos, bool isRealPoint)
+		public apOptCalculatedLerpPoint(Vector2 vPos, bool isRealPoint,
+										apOptCalculatedResultParamSubList parentCalParamSubList)
 		{
 			_pos = vPos;
 			_isRealPoint = isRealPoint;
@@ -53,9 +57,12 @@ namespace AnyPortrait
 			_refParams.Clear();
 			_refWeights.Clear();
 			_nRefParams = 0;
+
+			_parentCalParamSubList = parentCalParamSubList;//v1.4.7
 		}
 
-		public apOptCalculatedLerpPoint(float fPos, bool isRealPoint)
+		public apOptCalculatedLerpPoint(float fPos, bool isRealPoint,
+										apOptCalculatedResultParamSubList parentCalParamSubList)
 		{
 			_pos.x = fPos;
 			_isRealPoint = isRealPoint;
@@ -63,9 +70,12 @@ namespace AnyPortrait
 			_refParams.Clear();
 			_refWeights.Clear();
 			_nRefParams = 0;
+
+			_parentCalParamSubList = parentCalParamSubList;//v1.4.7
 		}
 
-		public apOptCalculatedLerpPoint(int iPos, bool isRealPoint)
+		public apOptCalculatedLerpPoint(int iPos, bool isRealPoint,
+										apOptCalculatedResultParamSubList parentCalParamSubList)
 		{
 			_iPos = iPos;
 			_isRealPoint = isRealPoint;
@@ -73,6 +83,8 @@ namespace AnyPortrait
 			_refParams.Clear();
 			_refWeights.Clear();
 			_nRefParams = 0;
+
+			_parentCalParamSubList = parentCalParamSubList;//v1.4.7
 		}
 
 
@@ -93,15 +105,21 @@ namespace AnyPortrait
 			}
 		}
 
-		public void CalculateITPWeight()
+		public void CalculateITPWeight(ref float totalWeight)//v1.4.7 : totalWeight 추가
 		{
 			for (int i = 0; i < _nRefParams; i++)
 			{
 				_curRefPKV = _refParams[i];
 				_curRefWeight = _refWeights[i];
 
-				_curRefPKV._isCalculated = true;
-				_curRefPKV._weight += _curRefWeight * _calculatedWeight;
+				//이전
+				//_curRefPKV._isCalculated = true;
+				//_curRefPKV._weight += _curRefWeight * _calculatedWeight;
+
+				//v1.4.7 : Weight를 ref Total 결과에 넣고, 계산된 PKV를 리스트에 넣는다.
+				_cal_CurWeight = _curRefWeight * _calculatedWeight;
+				totalWeight += _cal_CurWeight;
+				_parentCalParamSubList.OnParamKeyValueCalculated(_curRefPKV, _cal_CurWeight);
 			}
 		}
 

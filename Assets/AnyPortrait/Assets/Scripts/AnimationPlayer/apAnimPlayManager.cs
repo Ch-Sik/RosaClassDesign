@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -1364,6 +1364,9 @@ namespace AnyPortrait
 
 			// > Root Unit이 바뀔 수 있으므로 Play Manager에도 신고를 해야한다.
 			SetOptRootUnit(playUnit._targetRootUnit);
+
+			//v1.4.8 : 루트 모션용 이벤트
+			playUnit._targetRootUnit.OnAnimStartAndRootMotionDataReset(playUnit._linkedAnimClip);
 		}
 
 		/// <summary>

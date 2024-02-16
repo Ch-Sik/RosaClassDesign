@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -1014,7 +1014,7 @@ namespace AnyPortrait
 				//GUILayout.Box(_guiContent_ModRegisted, _guiStyle_ModIcon, GUILayout.Width(8), GUILayout.Height(height));
 
 				//변경
-				GUILayout.Box(_guiContent_ModRegisted.Content, _guiStyle_ModIcon, _layoutOption_W_8, _layoutOption_H_Height);
+				GUILayout.Box(_guiContent_ModRegisted.Content, _guiStyle_ModIcon, _layoutOption_W_8, _layoutOption_H_Height);				
 			}
 			else
 			{
