@@ -874,6 +874,22 @@ PrefabInstance:
       propertyPath: blackboard
       value: 
       objectReference: {fileID: 355339716223630980}
+    - target: {fileID: 130447777513187458, guid: 98d8d9466f0b1e64592ab4c2401ddb21, type: 3}
+      propertyPath: parameters.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 130447777513187458, guid: 98d8d9466f0b1e64592ab4c2401ddb21, type: 3}
+      propertyPath: parameters.Array.data[4].animParameter
+      value: isStunned
+      objectReference: {fileID: 0}
+    - target: {fileID: 130447777513187458, guid: 98d8d9466f0b1e64592ab4c2401ddb21, type: 3}
+      propertyPath: parameters.Array.data[4].blackboardKey
+      value: isStunned
+      objectReference: {fileID: 0}
+    - target: {fileID: 130447777513187458, guid: 98d8d9466f0b1e64592ab4c2401ddb21, type: 3}
+      propertyPath: parameters.Array.data[4].parameterType
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 645556016504133598, guid: 98d8d9466f0b1e64592ab4c2401ddb21, type: 3}
       propertyPath: m_LocalScale.x
       value: -1

@@ -2631,7 +2631,7 @@ PrefabInstance:
       objectReference: {fileID: 3549201638025795251}
     - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
       propertyPath: parameters.Array.size
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
       propertyPath: parameters.Array.data[1].animParameter
@@ -2652,6 +2652,18 @@ PrefabInstance:
     - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
       propertyPath: parameters.Array.data[2].blackboardKey
       value: isHitt
+      objectReference: {fileID: 0}
+    - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
+      propertyPath: parameters.Array.data[3].animParameter
+      value: isStunned
+      objectReference: {fileID: 0}
+    - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
+      propertyPath: parameters.Array.data[3].blackboardKey
+      value: isStunned
+      objectReference: {fileID: 0}
+    - target: {fileID: 3958847872570804793, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
+      propertyPath: parameters.Array.data[3].parameterType
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4193174076842566136, guid: c4e19765b7546c448b6d38e44e4e630b, type: 3}
       propertyPath: m_LocalScale.x
