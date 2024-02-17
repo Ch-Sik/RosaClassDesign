@@ -76,6 +76,7 @@ public class ButterflyCage : MonoBehaviour
             .AppendCallback(() =>                                                       // 그리고 상호작용 활성화
             {
                 butterfly.isCaged = false;
+                butterfly.ShowDirection();
             });
     }
 }
