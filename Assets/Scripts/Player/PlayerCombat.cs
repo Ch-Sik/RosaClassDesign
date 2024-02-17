@@ -16,7 +16,7 @@ public class PlayerCombat : MonoBehaviour
 
     Sequence attack;                        //공격 시퀀스
     public GameObject attackEntity;         //공격을 위한 AttackObject의 게임오브젝트
-    public AttackObject attackObject;       //공격 이벤트를 위한 AttackObject
+    public PlayerDamageInflictor attackObject;       //공격 이벤트를 위한 PlayerDamageInflictor
     public bool isAttack = false;           //공격중이라면 true, 아니라면 false;
     public bool isFly = false;              //나비를 타고 있다면 true, 아니라면 false;
 
@@ -37,7 +37,7 @@ public class PlayerCombat : MonoBehaviour
     //시작하면서 AttackEntity에 존재하는 attackObject를 얻어오며, attackObject를 Init해준다.
     private void Start()
     {
-        attackObject = attackEntity.GetComponent<AttackObject>();
+        attackObject = attackEntity.GetComponent<PlayerDamageInflictor>();
         attackObject.Init(this, attackableObjects, butterfly);
         aimInput = InputManager.Instance._inputAsset.FindActionMap("ActionDefault").FindAction("Aim");
     }

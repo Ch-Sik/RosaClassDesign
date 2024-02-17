@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Ground
   - Monster
+  - Platform
   layers:
   - Default
   - TransparentFX
@@ -19,21 +20,21 @@ TagManager:
   - GroundCheck
   - Ground
   - HiddenRoom
-  - 
+  - Platform
   - 
   - Climbable
+  - Damageable
   - 
   - 
-  - WallCheck
   - 
   - 
   - DroppedItem
-  - AttackObject
+  - PlayerAttack
   - MapGimmick
   - Monster
   - Destroyable Props
-  - 
-  - 
+  - MonsterAttack
+  - MonsterGroundCheck
   - 
   - 
   - 

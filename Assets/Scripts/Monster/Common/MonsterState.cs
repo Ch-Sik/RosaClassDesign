@@ -11,9 +11,18 @@ public class MonsterState : MonoBehaviour
 {
     [SerializeField] private int maxHP = 5;
     [SerializeField, ReadOnly] private int currentHP;
+    [SerializeField] private Blackboard blackboard;
+
+    public int HP { get { return currentHP; } }
 
     private void Start()
     {
+        if(blackboard == null)
+        {
+            blackboard = GetComponent<Blackboard>();
+            Debug.Assert(blackboard != null, $"{gameObject.name}: Blackboard를 찾을 수 없음!");
+        }
+
         currentHP = maxHP;
     }
 
@@ -35,12 +44,19 @@ public class MonsterState : MonoBehaviour
             Debug.LogError($"{gameObject.name}: 사망 시 멈출 pandaBT를 찾을 수 없음!");
             return;
         }
-        pandaBT.enabled = false;
 
         StartCoroutine(DieRoutine());
         IEnumerator DieRoutine()        // 사망 연출
         {
-            yield return new WaitForSeconds(3.0f);
+            float frameTime;
+
+            blackboard.Set(BBK.isDead, true);
+            yield return 0;
+
+            pandaBT.enabled = false;
+            frameTime = Time.deltaTime;
+            yield return new WaitForSeconds(3.0f - frameTime);
+
             // TODO: 여기에 사망 연출 추가하기
             Destroy(gameObject);
         }

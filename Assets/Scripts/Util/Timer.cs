@@ -29,4 +29,6 @@ public class Timer
         this._startTime = Time.time;
         return this;
     }
+
+    public static implicit operator bool(Timer timer) { return timer != null; }
 }
