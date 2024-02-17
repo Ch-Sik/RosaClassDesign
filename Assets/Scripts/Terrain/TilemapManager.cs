@@ -11,7 +11,7 @@ public class TilemapManager : SerializedMonoBehaviour
     public static TilemapManager Instance;
 
     [SerializeField, ReadOnly]
-    public List<Tilemap> defaultTilemaps;
+    public List<Tilemap> tilemapList;
 
     public List<TileData> tileDatas;
     [SerializeField]
@@ -38,74 +38,68 @@ public class TilemapManager : SerializedMonoBehaviour
 
     private void Start()
     {
+        UpdateTilemapList();
+    }
+
+    public void UpdateTilemapList()
+    {
         // 맵에 존재하는 모든 타일맵 가져오기 (active GameObject Only)
         List<Tilemap> tilemaps = FindObjectsOfType<Tilemap>().ToList();
         // "Ground","HiddenRoom","TmpTerrain" 레이어를 가진 것들만 필터링
         int layerMask = LayerMask.GetMask("Ground", "HiddenRoom", "TmpTerrain");
         foreach (var tilemap in tilemaps)
         {
-            if((1 << tilemap.gameObject.layer & layerMask) == 0)
+            if ((1 << tilemap.gameObject.layer & layerMask) == 0)
             {
                 tilemaps.Remove(tilemap);
             }
         }
         // 기본 타일맵 설정
-        defaultTilemaps = tilemaps;
+        tilemapList = tilemaps;
     }
 
     public TileData GetTileDataByCellPosition(Vector3Int cellPosition)
     {
         Vector3 cellOffset = new Vector3(0.5f, 0.5f);
 
-        // 우선 기본 타일맵에서 가져오기 시도 (최적화)
+        // 가지고 있는 타일맵 리스트에서 가져오기 (최적화)
         TileBase selectedTile = null;
-        if(defaultTilemaps != null)
-        {
-            for(int i=0; i<defaultTilemaps.Count; i++)
-            {
-                // 삭제된 타일맵이 있다면 리스트에서 제거
-                if (defaultTilemaps[i] == null)
-                {
-                    defaultTilemaps.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-                // 타일맵이 유효하다면 그 타일맵에서 타일 가져오기 시도
-                selectedTile = defaultTilemaps[i].GetTile(cellPosition);
-                if (selectedTile != null)
-                    break;
-            }
-        }
-
-        // 기본 타일맵에 없다면 Overlap 사용해서 해당 위치에 다른 타일맵이 있는지 검사
-        if(selectedTile == null)
-        {
-            // 기본 타일맵에서 없다면... 가능성은
-            // 1. 보스 등의 몬스터 패턴으로 인한 지형 소환
-            Collider2D subTilemapCollider = Physics2D.OverlapPoint((Vector3)cellPosition + cellOffset, LayerMask.GetMask("Ground", "HiddenRoom", "TmpTerrain"));
-            //if(subTilemapCollider == null)
-            //{
-            //    Debug.Log("no subtilemap");
-            //}
-            //else
-            //    Debug.Log($"subTilemap: {subTilemapCollider.gameObject.name}");
-            if (subTilemapCollider != null)
-            {
-                selectedTile = subTilemapCollider.gameObject.GetComponentInChildren<Tilemap>().GetTile(cellPosition);
-            }
-            else return null;
-        }
+        selectedTile = SearchTileInTilemaps(cellPosition);
 
         // 타일을 찾았다면 해당 타일의 데이터 가져오기
         try
         {
             return dataFromTiles[selectedTile];
         }
-        catch(KeyNotFoundException)     // 혹시라도 타일데이터 설정을 빼먹은 경우
+        catch (KeyNotFoundException)     // 혹시라도 타일데이터 설정을 빼먹은 경우
         {
             Debug.LogWarning($"타일 데이터가 설정되어있지 않음! 기본 설정을 사용합니다\n위치: {cellPosition}");
             return defaultTileData;
         }
+    }
+
+    private TileBase SearchTileInTilemaps(Vector3Int cellPosition)
+    {
+        TileBase selectedTile = null;
+        if (tilemapList != null)
+        {
+            for (int i = 0; i < tilemapList.Count; i++)
+            {
+                // 삭제된 타일맵이 있다면 리스트에서 제거
+                if (tilemapList[i] == null)
+                {
+                    tilemapList.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+                // 타일맵이 유효하다면 그 타일맵에서 타일 가져오기 시도
+                selectedTile = tilemapList[i].GetTile(cellPosition);
+                if (selectedTile != null)
+                    break;
+            }
+        }
+
+        return selectedTile;
     }
 
     public TileData GetTileDataByWorldPosition(Vector3 worldPosition)
@@ -133,17 +127,17 @@ public class TilemapManager : SerializedMonoBehaviour
         Vector3 cellOffset = new Vector3(0.5f, 0.5f);
 
         TileBase selectedTile;
-        for (int i = 0; i < defaultTilemaps.Count; i++)
+        for (int i = 0; i < tilemapList.Count; i++)
         {
             // 삭제된 타일맵이 있다면 리스트에서 제거
-            if (defaultTilemaps[i] == null)
+            if (tilemapList[i] == null)
             {
-                defaultTilemaps.RemoveAt(i);
+                tilemapList.RemoveAt(i);
                 i--;
                 continue;
             }
             // 타일맵이 유효하다면 그 타일맵에서 타일 가져오기 시도
-            selectedTile = defaultTilemaps[i].GetTile(cellPosition);
+            selectedTile = tilemapList[i].GetTile(cellPosition);
             if(selectedTile != null && dataFromTiles[selectedTile].isSubstance) 
                 return true;
         }
@@ -168,6 +162,6 @@ public class TilemapManager : SerializedMonoBehaviour
 
     public Vector3Int WorldToCell(Vector2 worldPosition)
     {
-        return defaultTilemaps[0].WorldToCell(worldPosition);
+        return tilemapList[0].WorldToCell(worldPosition);
     }
 }
