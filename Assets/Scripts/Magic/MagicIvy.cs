@@ -95,13 +95,6 @@ public class MagicIvy : MonoBehaviour
             }
             yield return tick;
         }
-
-        // 마지막으로 끝까지 성장
-        points = edgeCol.points;
-        points[0] = new Vector2(-offset, cursor + 0.5f);
-        edgeCol.points = points;
-        // 스프라이트 업데이트 (콜라이더와 동기화)
-        spriteUp.size = new Vector2(spriteUp.size.x, cursor + 0.5f);
     }
 
     IEnumerator GrowVineDownway()
@@ -139,13 +132,6 @@ public class MagicIvy : MonoBehaviour
             }
             yield return tick;
         }
-
-        // 마지막으로 끝까지 성장
-        points = edgeCol.points;
-        points[1] = new Vector2(-offset, cursor - 0.5f);
-        edgeCol.points = points;
-        // 스프라이트 업데이트 (콜라이더와 동기화)
-        spriteDown.size = new Vector2(spriteDown.size.x, -(cursor - 0.5f));
     }
     
     // TODO: Destroy/OnDestroy 대신 별도의 함수를 사용하여 '사라지는 연출' 구현
