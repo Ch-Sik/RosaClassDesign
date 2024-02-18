@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9119730654470492266}
   - component: {fileID: 3038035395024846759}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: ButterFlyMoudle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -67,7 +67,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2722141996706358225}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: waypoint (3)
   m_TagString: Untagged
   m_Icon: {fileID: -5442936267250999957, guid: 0000000000000000d000000000000000, type: 0}
@@ -226,6 +226,9 @@ MonoBehaviour:
   showGizmo: 1
   gizmoColor: {r: 1, g: 0, b: 0, a: 1}
   waypointsTransform: {fileID: 5424032150892754904}
+  startPoint: {x: 0, y: 0}
+  endPoint: {x: 0, y: 0}
+  angle: 0
 --- !u!1 &4568794891569601723
 GameObject:
   m_ObjectHideFlags: 0
@@ -235,7 +238,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8314199589962362502}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: waypoint
   m_TagString: Untagged
   m_Icon: {fileID: -5442936267250999957, guid: 0000000000000000d000000000000000, type: 0}
@@ -266,7 +269,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5477552470332721517}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: waypoint (1)
   m_TagString: Untagged
   m_Icon: {fileID: -5442936267250999957, guid: 0000000000000000d000000000000000, type: 0}
@@ -297,7 +300,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5424032150892754904}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: WayPoints
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -333,7 +336,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6948583203986999417}
   - component: {fileID: 6357305629841197149}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: direction
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -416,7 +419,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7078631078596596169}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: waypoint (2)
   m_TagString: Untagged
   m_Icon: {fileID: -5442936267250999957, guid: 0000000000000000d000000000000000, type: 0}
