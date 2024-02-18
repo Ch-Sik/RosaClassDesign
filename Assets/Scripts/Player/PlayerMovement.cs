@@ -1,3 +1,4 @@
+using AnyPortrait;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -581,6 +582,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void PlayerDamageReceiver(GameObject target, int damage)
     {
+        playerRef.Animation.BlinkEffect();
+
         OnKnockback(new Vector3(target.transform.position.x,
                     target.transform.position.y - (target.transform.localScale.y / 2),
                     target.transform.position.z));
@@ -598,6 +601,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void PlayerDamageReceiver(GameObject target, int damage, float ignoreDur)
     {
+        playerRef.Animation.BlinkEffect();
+
         OnKnockback(new Vector3(target.transform.position.x,
                     target.transform.position.y - (target.transform.localScale.y / 2),
                     target.transform.position.z));
@@ -666,6 +671,8 @@ public class PlayerMovement : MonoBehaviour
             isStopControl = false;
         }
     }
+
+    
 
     public void Falling()
     {

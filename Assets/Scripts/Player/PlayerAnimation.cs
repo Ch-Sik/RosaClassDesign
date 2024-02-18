@@ -24,6 +24,8 @@ public class PlayerAnimation : MonoBehaviour
     bool isFirstFrame = true;
     bool isAttack = false;
 
+    Coroutine blinkCoroutine;
+    float reactionBrightness = 0.75f;
     private void Start()
     {
         GetComponents();
@@ -342,6 +344,33 @@ public class PlayerAnimation : MonoBehaviour
         result.y = Mathf.Lerp(toMin.y, toMax.y, Mathf.InverseLerp(fromMin.y, fromMax.y, value.y));
         return result;
     }
+
+    public void BlinkEffect()
+    {
+        if (portrait == null)
+            return;         // 아직 애니메이션이 적용되지 않은 녀석들 예외 처리
+
+        // 딱히 추가로 수정할 필요 없어보여서 수치들을 하드코딩했는데 필요하다면 필드값으로 빼낼 것
+        const float timePerBlink = 0.2f;
+        const int blinkCount = 8;
+        Color blinkColor = Color.gray * reactionBrightness;
+        blinkColor.a = 1;
+
+        blinkCoroutine = StartCoroutine(DoBlink());
+
+        IEnumerator DoBlink()
+        {
+            for (int i = 0; i < blinkCount; i++)
+            {
+                portrait.SetMeshColorAll(blinkColor);
+                yield return new WaitForSeconds(timePerBlink / 2);
+                portrait.ResetMeshMaterialToBatchAll();
+                yield return new WaitForSeconds(timePerBlink / 2);
+            }
+            blinkCoroutine = null;
+        }
+    }
+
     public void SetTrigger(string name)
     {
         anim.SetTrigger(name);
