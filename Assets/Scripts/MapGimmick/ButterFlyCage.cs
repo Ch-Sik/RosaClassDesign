@@ -41,10 +41,11 @@ public class ButterflyCage : MonoBehaviour
     // 플레이어의 공격에 닿았을 때, 나비를 해방한다.
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        ReleaseButterfly();
+        if (collision.gameObject.layer == LayerMask.NameToLayer("PlayerAttack"))
+            ReleaseButterfly();
 
         // TODO: 나비장 파괴되는 연출 추가
-        Destroy(gameObject, 1f);
+        //Destroy(gameObject, 1f);
     }
 
     //즉각적 해방, 내부에 존재하는 나비장내의 나비를 즉각적으로 해방시킨다. (맵 로더 에서 사용)

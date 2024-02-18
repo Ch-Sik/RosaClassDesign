@@ -96,6 +96,7 @@ public class MapLoadManager : MonoBehaviour
             //기존 씬의 로드
             sceneDatas[index] = sceneData;
         }
+        TilemapManager.Instance.UpdateTilemapList();
     }
 
     public SceneData DownloadSceneData(int i)
