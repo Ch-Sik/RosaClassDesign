@@ -13,6 +13,8 @@ public class MagicIvy : MonoBehaviour
     private TilemapManager tilemapManager;
     [SerializeField]
     private Vector3Int originCellPos;   // 담쟁이가 설치된 타일 위치
+    [SerializeField]
+    private AudioSource audioSource;
 
     [SerializeField]
     private SpriteRenderer spriteUp;
@@ -26,6 +28,8 @@ public class MagicIvy : MonoBehaviour
     private ParticleSystem particle1Down;
     [SerializeField]
     private ParticleSystem particle2Down;
+    [SerializeField]
+    private AudioClip[] sfx;
 
     [SerializeField, Tooltip("덩굴이 성장할 때의 틱 속도")]
     private float tickTime = 0.1f;
@@ -104,6 +108,9 @@ public class MagicIvy : MonoBehaviour
                     if(particle2Up != null)
                         particle2Up.Emit(5);
                 }
+
+                // 사운드 효과
+                PlaySFX();
             }
             else
             {
@@ -156,6 +163,9 @@ public class MagicIvy : MonoBehaviour
                     if(particle2Down != null)
                         particle2Down.Emit(5);
                 }
+
+                // 사운드 효과
+                PlaySFX();
             }
             else
             {
@@ -171,6 +181,13 @@ public class MagicIvy : MonoBehaviour
         edgeCol.points = points;
         // 스프라이트 업데이트 (콜라이더와 동기화)
         spriteDown.size = new Vector2(spriteDown.size.x, -(downLength - 0.5f));
+    }
+
+    private void PlaySFX()
+    {
+        if (audioSource == null || sfx == null || sfx.Length == 0)
+            return;
+        audioSource.PlayOneShot(sfx[Random.Range(0,sfx.Length)]);
     }
     
     // TODO: Destroy/OnDestroy 대신 별도의 함수를 사용하여 '사라지는 연출' 구현
