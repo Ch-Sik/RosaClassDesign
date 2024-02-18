@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -971,12 +971,13 @@ namespace AnyPortrait
 			//3. Mesh 업데이트 - 중요
 			//실제 Vertex의 위치를 적용
 			if (_childMesh != null)
-			{
+			{	
 				_childMesh.UpdateCalculate(_calculatedStack.IsRigging,
 											_calculatedStack.IsVertexLocal,
 											_calculatedStack.IsVertexWorld,
 											//_isVisible,
-											_isCamOrthoCorrection);
+											_isCamOrthoCorrection
+											);
 			}
 
 			//3. 자식 호출
@@ -1918,9 +1919,13 @@ namespace AnyPortrait
 				{
 					_boneID2Bone = new Dictionary<int, apOptBone>();
 
-					for (int i = 0; i < _boneList_All.Length; i++)
+					int nBoneList = _boneList_All.Length;
+					apOptBone curOptBone = null;
+
+					for (int i = 0; i < nBoneList; i++)
 					{
-						_boneID2Bone.Add(_boneList_All[i]._uniqueID, _boneList_All[i]);
+						curOptBone = _boneList_All[i];
+						_boneID2Bone.Add(curOptBone._uniqueID, curOptBone);
 					}
 				}
 				

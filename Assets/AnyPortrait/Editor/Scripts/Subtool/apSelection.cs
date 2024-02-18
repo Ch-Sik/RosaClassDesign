@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -848,11 +848,11 @@ namespace AnyPortrait
 
 		private object _physicModifier_prevSelectedTransform = null;
 		private bool _physicModifier_prevIsContained = false;
-
-		private object _riggingModifier_prevSelectedTransform = null;
-		private bool _riggingModifier_prevIsContained = false;
+				
 		private int _riggingModifier_prevNumBoneWeights = 0;
 		private int _riggingModifier_prevInfoMode = -1;
+
+		private enum MOD_RIGGING_TARGET_CHECK_MODE { NoTarget, Contained, NotAddable, Addable }
 
 		private object _loadKey_SinglePoseImport_Mod = null;
 		private object _loadKey_AddControlParam = null;

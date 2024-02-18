@@ -65,6 +65,6 @@ public class Task_A_SimpleProjectile : Task_A_Base
 
         // 공격 시전
         GameObject projectile = Instantiate(projectilePrefab, muzzle.position, Quaternion.identity);
-        projectile.GetComponent<MonsterProjectile>().InitProjectile(attackDir.normalized, enemy);
+        projectile.GetComponent<MonsterProjectile>().InitProjectile(attackDir.normalized);
     }
 }

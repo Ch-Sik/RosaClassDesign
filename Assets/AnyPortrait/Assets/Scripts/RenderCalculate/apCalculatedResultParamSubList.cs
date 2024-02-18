@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -40,6 +40,8 @@ namespace AnyPortrait
 
 
 		public List<apCalculatedResultParam.ParamKeyValueSet> _subParamKeyValues = new List<apCalculatedResultParam.ParamKeyValueSet>();
+		//private int _nSubParamKeyValues = 0;//삭제 v1.4.7
+		private Dictionary<apAnimKeyframe, apCalculatedResultParam.ParamKeyValueSet> _animKeyframe2ParamKeyValue = null;
 		
 
 
@@ -47,8 +49,7 @@ namespace AnyPortrait
 		//계산용
 		public float _totalWeight = 0.0f;
 
-		//추가 v1.4.6 : 계산된 ParamKeyValueSet을 리스트 형태로 가진다.
-		private List<apCalculatedResultParam.ParamKeyValueSet> _calculatedParamKeyValues = null;
+		
 
 
 
@@ -86,6 +87,33 @@ namespace AnyPortrait
 		//private apCalculatedAnimKeyLUT _animKeyLUT = null;
 
 
+		//[v1.4.7 추가]
+		//Calculate 함수 최적화 방안.
+		//_subParamKeyValues와 동일한 타입이지만, Calculate되는 
+		//이전에는 Calculate 함수를 통해서 "적용되는 CalParam_PKV의 isCalculated 속성을 true로 전환"하는 방식을 이용했다.
+		//새로운 방식에서는, 그냥 "Calculate되는 CalParam_PKV를 리스트"로 따로 모은다.
+		private int _nCalculatedParamKeyValues = 0;
+		private List<apCalculatedResultParam.ParamKeyValueSet> _calculatedParamKeyValues = null;
+		
+		//이미 추가된 PKV인지 여부는 기존의 _isCalculated (중간의 RandKey) 대신, 캐시 변수를 먼저 이용하자.
+		//캐시는 총 4개
+		private apCalculatedResultParam.ParamKeyValueSet _calculatedPKV_Cache_0 = null;
+		private apCalculatedResultParam.ParamKeyValueSet _calculatedPKV_Cache_1 = null;
+		private apCalculatedResultParam.ParamKeyValueSet _calculatedPKV_Cache_2 = null;
+		private apCalculatedResultParam.ParamKeyValueSet _calculatedPKV_Cache_3 = null;
+		private int _nCalculatedPKVCached = 0;
+		
+
+
+
+		//[v1.4.7 추가]
+		//애니메이션 키프레임 조회시 참조하는 캐시.
+		//캐시 정보가 현재 상태에 적합하면 재활용을 하고, 그렇지 않다면 새로 캐시를 계산한다.
+		private apCalculatedResultParam.ParamKeyValueSet _animCache_KeyframePKV_A = null;
+		private apCalculatedResultParam.ParamKeyValueSet _animCache_KeyframePKV_B = null;//Cur 키프레임에 정확히 맞다면 이게 없을 수도 있다.
+
+
+
 		// Init
 		//--------------------------------------------------
 		public apCalculatedResultParamSubList(apCalculatedResultParam parentResultParam)
@@ -97,13 +125,34 @@ namespace AnyPortrait
 				_subParamKeyValues = new List<apCalculatedResultParam.ParamKeyValueSet>();
 			}
 			_subParamKeyValues.Clear();
+			//_nSubParamKeyValues = 0;
 
-			//v1.4.6 추가
+			//v1.4.7 추가 : 애니메이션 키프레임으로의 매핑을 해서 참조를 더 빠르게 하자
+			if(_animKeyframe2ParamKeyValue == null)
+			{
+				_animKeyframe2ParamKeyValue = new Dictionary<apAnimKeyframe, apCalculatedResultParam.ParamKeyValueSet>();
+			}
+			_animKeyframe2ParamKeyValue.Clear();
+
+
+			//v1.4.7 추가 : 최적화
 			if(_calculatedParamKeyValues == null)
 			{
 				_calculatedParamKeyValues = new List<apCalculatedResultParam.ParamKeyValueSet>();
 			}
 			_calculatedParamKeyValues.Clear();
+			_nCalculatedParamKeyValues = 0;
+			
+			//v1.4.7 : 선택 캐시 초기화
+			_calculatedPKV_Cache_0 = null;
+			_calculatedPKV_Cache_1 = null;
+			_calculatedPKV_Cache_2 = null;
+			_calculatedPKV_Cache_3 = null;
+			_nCalculatedPKVCached = 0;
+
+			//애니메이션 캐시 초기화
+			_animCache_KeyframePKV_A = null;
+			_animCache_KeyframePKV_B = null;//Cur 키프레임에 정확히 맞다면 이게 없을 수도 있다.
 		}
 
 		public void SetParamSetGroup(apModifierParamSetGroup paramSetGroup)
@@ -118,16 +167,40 @@ namespace AnyPortrait
 		public void ClearParams()
 		{
 			_subParamKeyValues.Clear();
+			//_nSubParamKeyValues = 0;
 		}
 
+		
+		/// <summary>Param Key Value를 리스트에 추가한다.</summary>
 		public void AddParamKeyValueSet(apCalculatedResultParam.ParamKeyValueSet paramKeyValue)
 		{
 			if (_subParamKeyValues.Contains(paramKeyValue))
-			{
+			{	
 				return;
 			}
 			//Debug.Log("AddParamKeyValueSet");
+
+			//v1.4.7
+			//- isCalculated 맵에 매핑하기 위해 PKV의 "리스트 내에서의 인덱스"를 지정해줘야 한다.
+			//int curIndex = _subParamKeyValues.Count;
+			//paramKeyValue.SetIndexOfSubParamList(curIndex);
+
 			_subParamKeyValues.Add(paramKeyValue);
+			//_nSubParamKeyValues = _subParamKeyValues.Count;
+
+			//v1.4.7 : 애니메이션 키프레임 > ParamKeyValue 연결하는 매핑
+			if(_keyParamSetGroup._keyAnimTimelineLayer != null)
+			{
+				if(paramKeyValue._paramSet.SyncKeyframe != null)
+				{
+					apAnimKeyframe linkedKeyframe = paramKeyValue._paramSet.SyncKeyframe;
+					if (!_animKeyframe2ParamKeyValue.ContainsKey(linkedKeyframe))
+					{
+						_animKeyframe2ParamKeyValue.Add(linkedKeyframe, paramKeyValue);
+					}
+				}
+			}
+			
 		}
 
 
@@ -141,20 +214,19 @@ namespace AnyPortrait
 			{
 				case apModifierParamSetGroup.SYNC_TARGET.Controller:
 					{
+						if (_keyParamSetGroup._keyControlParam != null)
+						{
+							//보간을 위한 Key Point와 Area를 만들자.
+							if (_cpLerpPoints == null)	{ _cpLerpPoints = new List<apCalculatedLerpPoint>(); }
+							if (_cpLerpAreas == null)	{ _cpLerpAreas = new List<apCalculatedLerpArea>(); }
 
-					}
-					if (_keyParamSetGroup._keyControlParam != null)
-					{
-						//보간을 위한 Key Point와 Area를 만들자.
-						if (_cpLerpPoints == null) { _cpLerpPoints = new List<apCalculatedLerpPoint>(); }
-						if (_cpLerpAreas == null) { _cpLerpAreas = new List<apCalculatedLerpArea>(); }
+							_cpLerpPoint_A = null;
+							_cpLerpPoint_B = null;
 
-						_cpLerpPoint_A = null;
-						_cpLerpPoint_B = null;
+							_cpLerpAreaLastSelected = null;
 
-						_cpLerpAreaLastSelected = null;
-
-						MakeControlParamLerpAreas();
+							MakeControlParamLerpAreas();
+						}
 					}
 					break;
 
@@ -185,20 +257,33 @@ namespace AnyPortrait
 		{
 			_totalWeight = 0.0f;
 
-			int nSubParamKeyValues = _subParamKeyValues != null ? _subParamKeyValues.Count : 0;
+			//이전
+			//int nSubParamKeyValues = _subParamKeyValues != null ? _subParamKeyValues.Count : 0;
 
-			for (int i = 0; i < nSubParamKeyValues; i++)
-			{
-				_subParamKeyValues[i].ReadyToCalculate();
-			}
+			//for (int i = 0; i < nSubParamKeyValues; i++)
+			//{
+			//	_subParamKeyValues[i].ReadyToCalculate();
+			//}
+
+			//v1.4.7 변경. 전체 isCalculated를 초기화하는 대신, 몇개의 캐시로 이를 대체할 수 있다.
+			_calculatedParamKeyValues.Clear();
+			_nCalculatedParamKeyValues = 0;
+			
+			_calculatedPKV_Cache_0 = null;
+			_calculatedPKV_Cache_1 = null;
+			_calculatedPKV_Cache_2 = null;
+			_calculatedPKV_Cache_3 = null;
+			_nCalculatedPKVCached = 0;
+
 		}
 		public void Calculate()
 		{
-			int nSubParamKeyValues = _subParamKeyValues != null ? _subParamKeyValues.Count : 0;
+			//이전 : v1.4.7에서 삭제됨
+			//int nSubParamKeyValues = _subParamKeyValues != null ? _subParamKeyValues.Count : 0;
 
-			//v1.4.6 : 변경. 계산 결과를 여기에 저장하자
+			//v1.4.7 : 변경. 계산 결과를 여기에 저장하자
 			_calculatedParamKeyValues.Clear();
-
+			_nCalculatedParamKeyValues = 0;
 
 			if (_keyParamSetGroup == null)
 			{
@@ -206,10 +291,21 @@ namespace AnyPortrait
 			}
 
 			_totalWeight = 0.0f;
-			for (int i = 0; i < nSubParamKeyValues; i++)
-			{
-				_subParamKeyValues[i].ReadyToCalculate();
-			}
+			
+			//PKV 초기화
+			//이전
+			//for (int i = 0; i < nSubParamKeyValues; i++)
+			//{
+			//	_subParamKeyValues[i].ReadyToCalculate();
+			//}
+
+			//v1.4.7 변경. 전체 isCalculated를 초기화하는 대신, 몇개의 캐시로 이를 대체할 수 있다.
+			_calculatedPKV_Cache_0 = null;
+			_calculatedPKV_Cache_1 = null;
+			_calculatedPKV_Cache_2 = null;
+			_calculatedPKV_Cache_3 = null;
+			_nCalculatedPKVCached = 0;
+
 
 			//Sync 타입에 따라서 ParamSet의 Weight를 계산한다. [중요!]
 			switch (_keyParamSetGroup._syncTarget)
@@ -227,16 +323,129 @@ namespace AnyPortrait
 					CalculateWeight_Static();
 					break;
 			}
+
+			//v1.4.7 : 계산된 PKV의 개수
+			_nCalculatedParamKeyValues = _calculatedParamKeyValues.Count;
 		}
 
 
-		//[v1.4.6 변경] 계산된 결과를 단순히 각각의 PKV의 isCalculated로 구분할 것이 아니라, 리스트에 저장해서 참조할 수 있게 하자.
+
+		//[v1.4.7 변경] 계산된 결과를 단순히 각각의 PKV의 isCalculated로 구분할 것이 아니라, 리스트에 저장해서 참조할 수 있게 하자.
+		/// <summary>
+		/// v1.4.7 : 계산된 ParamKeyValue를 결과 리스트에 넣는다.
+		/// 이전 코드에서 isCalculated = true와 동일한 효과를 가진다.
+		/// </summary>
+		/// <param name="calculatedPKV"></param>
+		public void OnParamKeyValueCalculated(apCalculatedResultParam.ParamKeyValueSet calculatedPKV, float addedWeight)
+		{
+			bool isCalculated = false;
+
+			//이미 계산되었는지 여부 체크
+			//1. 캐시를 확인한다.
+			//2. 4개의 캐시를 모두 체크했다면, 리스트에서 Contains를 하자 (계산된 PKV 자체가 많지 않아서 이거 그렇게 안느리다)
+			
+			//새로 추가할 때는 캐시 개수가 남았다면 캐시에 추가한다.
+			if(_nCalculatedPKVCached > 0)
+			{
+				if(_calculatedPKV_Cache_0 == calculatedPKV)
+				{
+					//PKV는 이미 계산되었으며 "캐시 0"에 저장된 상태다
+					isCalculated = true;
+				}
+			}
+			if(!isCalculated && _nCalculatedPKVCached > 1)
+			{
+				if(_calculatedPKV_Cache_1 == calculatedPKV)
+				{
+					//PKV는 이미 계산되었으며 "캐시 1"에 저장된 상태다
+					isCalculated = true;
+				}
+			}
+			if(!isCalculated && _nCalculatedPKVCached > 2)
+			{
+				if(_calculatedPKV_Cache_2 == calculatedPKV)
+				{
+					//PKV는 이미 계산되었으며 "캐시 2"에 저장된 상태다
+					isCalculated = true;
+				}
+			}
+			if(!isCalculated && _nCalculatedPKVCached > 3)
+			{
+				if(_calculatedPKV_Cache_3 == calculatedPKV)
+				{
+					//PKV는 이미 계산되었으며 "캐시 3"에 저장된 상태다
+					isCalculated = true;
+				}
+			}
+			//4개 미만이면, 모두 캐시에서 찾을 수 있고, 못찾았다면 신규 값이다.
+			//캐시가 최대값이 4개인데도 계산 여부를 알 수 없다면, 리스트에서 직접 계산 여부를 알아내야한다.
+			if(!isCalculated && _nCalculatedPKVCached >= 4)
+			{
+				//만약 4개의 
+				//만약 캐시에서 계산 여부를 판정할 수 없다면 리스트에서 직접 찾아야 함
+				isCalculated = _calculatedParamKeyValues.Contains(calculatedPKV);
+
+				//Debug.Log("4개의 캐시에서 찾을 수 없었다. [" + _nCalculatedPKVCached + "] - " + isCalculated);
+			}
+
+			
+			if(isCalculated)
+			{
+				// [ 이미 계산되었다면 ]
+				// "계산된 리스트"에 추가하지 말고, 가중치만 더하기만 하자
+				calculatedPKV._weight += addedWeight;
+				return;
+			}
+			
+
+			// [ 새로운 계산된 PKV 라면 ]
+			//리스트에 추가하자
+			_calculatedParamKeyValues.Add(calculatedPKV);
+			_nCalculatedParamKeyValues += 1;
+
+			//- 처음 추가하는 것이므로 가중치는 바로 할당을 한다. (별도의 초기화가 없다)
+			calculatedPKV._weight = addedWeight;
+
+			//계산되었음을 저장하자
+			//_isCalculatedMap[calculatedPKV._indexOfSubParamList] = true;
+			//calculatedPKV._calRandKey = _calculateRandKey;//랜덤키 할당으로 변경
+
+			//캐시에 저장하기
+			if(_nCalculatedPKVCached < 4)//최대값 4개
+			{
+				//기존의 저장된 캐시 개수에 따라 캐시 대상을 결정한다.
+				switch (_nCalculatedPKVCached)
+				{
+					case 0: _calculatedPKV_Cache_0 = calculatedPKV; break;
+					case 1: _calculatedPKV_Cache_1 = calculatedPKV; break;
+					case 2: _calculatedPKV_Cache_2 = calculatedPKV; break;
+					case 3: _calculatedPKV_Cache_3 = calculatedPKV; break;
+				}
+				//Debug.Log("PKV 저장 > 캐시 : " + _nCalculatedPKVCached);
+				_nCalculatedPKVCached += 1;
+				
+			}
+			
+		}
+
+
+		/// <summary>
+		/// v1.4.7 : Calculated된 ParamKeyValues (기존의 isCalculated가 true인 ParamKeyValue들의 집합)
+		/// </summary>
 		public List<apCalculatedResultParam.ParamKeyValueSet> CalculatedParamKeyValues
 		{
 			get
 			{
 				return _calculatedParamKeyValues;
 			}
+		}
+
+		/// <summary>
+		/// v1.4.7 : Calcuated된 ParamKeyValues의 개수
+		/// </summary>
+		public int NumCalculatedParamKeyValues
+		{
+			get { return _nCalculatedParamKeyValues; }
 		}
 
 
@@ -596,17 +805,19 @@ namespace AnyPortrait
 				return;
 			}
 
-			int nSubParamKeyValues = _subParamKeyValues != null ? _subParamKeyValues.Count : 0;
+			//int nSubParamKeyValues = _subParamKeyValues != null ? _subParamKeyValues.Count : 0;
 
 			apControlParam controlParam = _keyParamSetGroup._keyControlParam;
 
 			apCalculatedResultParam.ParamKeyValueSet curParamKeyValue = null;
-			for (int i = 0; i < nSubParamKeyValues; i++)
-			{
-				curParamKeyValue = _subParamKeyValues[i];
-				curParamKeyValue._weight = 0.0f;
-				curParamKeyValue._isCalculated = false;//<<나중에 이것도 true로 올리자
-			}
+
+			//v1.4.7 삭제 : 초기화가 필요없다. 이미 CalculateWeight_ControlParam_1D 호출 전에 초기화를 했기 때문
+			//for (int i = 0; i < nSubParamKeyValues; i++)
+			//{
+			//	curParamKeyValue = _subParamKeyValues[i];
+			//	curParamKeyValue._weight = 0.0f;//<<이게 중요한데..
+			//	curParamKeyValue._isCalculated = false;//<<나중에 이것도 true로 올리자
+			//}
 
 			int nLerpPoints = _cpLerpPoints != null ? _cpLerpPoints.Count : 0;
 
@@ -617,11 +828,13 @@ namespace AnyPortrait
 
 			apCalculatedLerpPoint curLerpPoint = null;
 
+			_totalWeight = 0.0f;//v1.4.7 : Weight 계산이 Calcuate 중간에 바로 발생
+
 			if (nLerpPoints == 1)
 			{
 				curLerpPoint = _cpLerpPoints[0];
 				curLerpPoint._calculatedWeight = 1.0f;
-				curLerpPoint.CalculateITPWeight();
+				curLerpPoint.CalculateITPWeight(ref _totalWeight);//v1.4.7 : Total Weight 전달
 			}
 			else
 			{
@@ -704,7 +917,7 @@ namespace AnyPortrait
 				if (_cpLerpPoint_A == _cpLerpPoint_B)
 				{
 					_cpLerpPoint_A._calculatedWeight = 1.0f;
-					_cpLerpPoint_A.CalculateITPWeight();
+					_cpLerpPoint_A.CalculateITPWeight(ref _totalWeight);//v1.4.7 : Total Weight 전달 (인자 추가)
 				}
 				else
 				{
@@ -721,33 +934,46 @@ namespace AnyPortrait
 					_cpLerpPoint_A._calculatedWeight = itp;
 					_cpLerpPoint_B._calculatedWeight = 1.0f - itp;
 
-					_cpLerpPoint_A.CalculateITPWeight();
-					_cpLerpPoint_B.CalculateITPWeight();
-
+					//v1.4.7 : Total Weight 전달 (인자 추가)
+					_cpLerpPoint_A.CalculateITPWeight(ref _totalWeight);
+					_cpLerpPoint_B.CalculateITPWeight(ref _totalWeight);
 				}
 
-				_totalWeight = 0.0f;
+				//v1.4.7에서 삭제. Weight 계산은 위에서 바로 계산한다. (CalculateITPWeight)
+				//_totalWeight = 0.0f;
 
-				for (int i = 0; i < nSubParamKeyValues; i++)
-				{
-					curParamKeyValue = _subParamKeyValues[i];
+				////TODO : 이거 고민해볼것. 다시 루프 안돌고 바로 totalWeight를 계산할 수 있을까?
+				//for (int i = 0; i < nSubParamKeyValues; i++)
+				//{
+				//	curParamKeyValue = _subParamKeyValues[i];
 
-					if (!curParamKeyValue._isCalculated)
-					{
-						curParamKeyValue._weight = 0.0f;
-						continue;
-					}
+				//	if (!curParamKeyValue._isCalculated)
+				//	{
+				//		curParamKeyValue._weight = 0.0f;
+				//		continue;
+				//	}
 
-					_totalWeight += curParamKeyValue._weight;
-				}
+				//	_totalWeight += curParamKeyValue._weight;
+				//}
 
 				if (_totalWeight > 0.0f)
 				{
-					for (int i = 0; i < nSubParamKeyValues; i++)
+					//이전
+					//for (int i = 0; i < nSubParamKeyValues; i++)
+					//{
+					//	curParamKeyValue = _subParamKeyValues[i];
+					//	if (curParamKeyValue._isCalculated)
+					//	{
+					//		curParamKeyValue._weight /= _totalWeight;
+					//	}
+					//}
+
+					//변경 v1.4.7 : 모든 ParamKeyValue가 아닌 계산된 리스트만 골라서 나누자 (개수 차이가 크다)
+					if(_nCalculatedParamKeyValues > 0)
 					{
-						curParamKeyValue = _subParamKeyValues[i];
-						if (curParamKeyValue._isCalculated)
+						for (int i = 0; i < _nCalculatedParamKeyValues; i++)
 						{
+							curParamKeyValue = _calculatedParamKeyValues[i];
 							curParamKeyValue._weight /= _totalWeight;
 						}
 					}
@@ -768,24 +994,28 @@ namespace AnyPortrait
 			apControlParam controlParam = _keyParamSetGroup._keyControlParam;
 
 
-			int nSubParamKeyValues = _subParamKeyValues != null ? _subParamKeyValues.Count : 0;
+			//int nSubParamKeyValues = _subParamKeyValues != null ? _subParamKeyValues.Count : 0;
 
 			//1. Param의 Weight를 모두 0으로 세팅 (+ 연산으로 Weight를 추가하는 방식)
 			//2. 어느 RectArea에 있는지 결정한다.
 			//3. Rect 안에서 itp를 계산한다.
 			apCalculatedResultParam.ParamKeyValueSet curParamKeyValue = null;
-			for (int i = 0; i < nSubParamKeyValues; i++)
-			{
-				curParamKeyValue = _subParamKeyValues[i];
-				curParamKeyValue._weight = 0.0f;
-				curParamKeyValue._isCalculated = false;//<<나중에 이것도 true로 올리자
-			}
+			
+			//v1.4.7 삭제 : 이 함수 호출전에 이미 PKV는 초기화가 되었다.
+			//for (int i = 0; i < nSubParamKeyValues; i++)
+			//{
+			//	curParamKeyValue = _subParamKeyValues[i];
+			//	curParamKeyValue._weight = 0.0f;
+			//	curParamKeyValue._isCalculated = false;//<<나중에 이것도 true로 올리자
+			//}
 
 			Vector2 curValue = controlParam._vec2_Cur;
 
 
 			int nLerpAreas = _cpLerpAreas != null ? _cpLerpAreas.Count : 0;
 			apCalculatedLerpArea curLerpArea = null;
+
+			_totalWeight = 0.0f;//v1.4.7 : Weight 계산이 Calcuate 중간에 바로 발생
 
 			if (_cpLerpAreaLastSelected == null || !_cpLerpAreaLastSelected.IsInclude(curValue))
 			{
@@ -831,36 +1061,55 @@ namespace AnyPortrait
 			_cpLerpAreaLastSelected._pointLB._calculatedWeight = itpX * (1.0f - itpY);
 			_cpLerpAreaLastSelected._pointRB._calculatedWeight = (1.0f - itpX) * (1.0f - itpY);
 
-			_cpLerpAreaLastSelected._pointLT.CalculateITPWeight();
-			_cpLerpAreaLastSelected._pointRT.CalculateITPWeight();
-			_cpLerpAreaLastSelected._pointLB.CalculateITPWeight();
-			_cpLerpAreaLastSelected._pointRB.CalculateITPWeight();
+			//v1.4.7 : Total Weight 전달 (인자 추가)
+			_cpLerpAreaLastSelected._pointLT.CalculateITPWeight(ref _totalWeight);
+			_cpLerpAreaLastSelected._pointRT.CalculateITPWeight(ref _totalWeight);
+			_cpLerpAreaLastSelected._pointLB.CalculateITPWeight(ref _totalWeight);
+			_cpLerpAreaLastSelected._pointRB.CalculateITPWeight(ref _totalWeight);
 
-			_totalWeight = 0.0f;
 
-			// 여러개의 키값을 사용할 거라면
-			for (int i = 0; i < nSubParamKeyValues; i++)
-			{
-				curParamKeyValue = _subParamKeyValues[i];
+			//삭제 v1.4.7 : Weight 계산은 위에서 (CalculateITPWeight) 바로 계산한다.
+			//_totalWeight = 0.0f;
 
-				if (!curParamKeyValue._isCalculated)
-				{
-					curParamKeyValue._weight = 0.0f;
-					continue;
-				}
+			//// 여러개의 키값을 사용할 거라면
+			//for (int i = 0; i < nSubParamKeyValues; i++)
+			//{
+			//	curParamKeyValue = _subParamKeyValues[i];
 
-				//변경
-				//Weight 시작값이 기본 1이 아니라, 거리에 따른 가중치로 바뀐다.
-				_totalWeight += curParamKeyValue._weight;
-			}
+			//	if (!curParamKeyValue._isCalculated)
+			//	{
+			//		curParamKeyValue._weight = 0.0f;
+			//		continue;
+			//	}
 
+			//	//변경
+			//	//Weight 시작값이 기본 1이 아니라, 거리에 따른 가중치로 바뀐다.
+			//	_totalWeight += curParamKeyValue._weight;
+			//}
+
+
+			//이전
+			//if (_totalWeight > 0.0f)
+			//{
+			//	for (int i = 0; i < nSubParamKeyValues; i++)
+			//	{
+			//		curParamKeyValue = _subParamKeyValues[i];
+			//		if (curParamKeyValue._isCalculated)
+			//		{
+			//			curParamKeyValue._weight /= _totalWeight;
+			//		}
+			//	}
+			//}
+
+			//변경 v1.4.7 : 모든 ParamKeyValue가 아닌 계산된 리스트만 골라서 나누자 (개수 차이가 크다)
 			if (_totalWeight > 0.0f)
 			{
-				for (int i = 0; i < nSubParamKeyValues; i++)
+
+				if (_nCalculatedParamKeyValues > 0)
 				{
-					curParamKeyValue = _subParamKeyValues[i];
-					if (curParamKeyValue._isCalculated)
+					for (int i = 0; i < _nCalculatedParamKeyValues; i++)
 					{
+						curParamKeyValue = _calculatedParamKeyValues[i];
 						curParamKeyValue._weight /= _totalWeight;
 					}
 				}
@@ -901,7 +1150,7 @@ namespace AnyPortrait
 			_totalWeight = 0.0f;
 
 			apAnimKeyframe curKeyframe = null;
-			apAnimKeyframe prevKeyframe = null;
+			//apAnimKeyframe prevKeyframe = null;
 			apAnimKeyframe nextKeyframe = null;
 
 			int lengthFrames = timlineLayer._parentAnimClip.EndFrame - timlineLayer._parentAnimClip.StartFrame;
@@ -910,209 +1159,881 @@ namespace AnyPortrait
 			int nSubParamKeyValues = _subParamKeyValues != null ? _subParamKeyValues.Count : 0;
 
 
-			for (int i = 0; i < nSubParamKeyValues; i++)
+			//애니메이션 키프레임 PKV 순회 최적화 전략
+			//- 이전에는 매번 모든 키프레임들을 돌면서, isCalculated와 weight를 계산했다.
+
+
+
+
+
+			#region [미사용 코드] v1.4.7에서 개선됨.
+			//for (int i = 0; i < nSubParamKeyValues; i++)
+			//{
+			//	curParamKeyValue = _subParamKeyValues[i];
+			//	curParamKeyValue._dist = -10.0f;
+			//	curParamKeyValue._isCalculated = false;
+
+			//	//추가 11.29 : Animation Key 위치 타입이 추가되었다.
+			//	curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.NotCalculated;
+
+			//	//유효하지 않은 키프레임이면 처리하지 않는다.
+			//	if (curParamKeyValue._paramSet.SyncKeyframe == null ||
+			//		!curParamKeyValue._paramSet.SyncKeyframe._isActive ||
+			//		//!curParamKeyValue._isActive_InEditorExclusive
+			//		!curParamKeyValue.IsActive ||
+			//		!isPlayedAnimClip //<<애니메이션 재생 안될때는 여기서 생략이 되어야 하는데, 이게 왜 없었지;;
+			//		)
+			//	{
+			//		//Debug.Log("[" + i + "] Not Active or Null Keyframe");
+			//		continue;
+			//	}
+
+			//	curKeyframe = curParamKeyValue._paramSet.SyncKeyframe;
+			//	prevKeyframe = curParamKeyValue._paramSet.SyncKeyframe._prevLinkedKeyframe;
+			//	nextKeyframe = curParamKeyValue._paramSet.SyncKeyframe._nextLinkedKeyframe;
+
+
+			//	//1. 프레임이 같다. => 100%
+			//	if (curFrame == curKeyframe._frameIndex ||
+			//		((curKeyframe._isLoopAsStart || curKeyframe._isLoopAsEnd) && curFrame == curKeyframe._loopFrameIndex))
+			//	{
+			//		curParamKeyValue._dist = 0.0f;
+			//		curParamKeyValue._isCalculated = true;
+			//		curParamKeyValue._weight = 1.0f;
+			//		_totalWeight += 1.0f;
+
+			//		//추가 11.29 : AnimKeyPos - 동일 프레임
+			//		curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.ExactKey;
+			//	}
+			//	//else if(curFrame >= curKeyframe._activeFrameIndexMin &&
+			//	//		curFrame < curKeyframe._frameIndex)
+			//	else if (curKeyframe.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Prev))
+			//	{
+			//		//범위 안에 들었다. [Prev - Cur]
+			//		if (prevKeyframe != null)
+			//		{
+			//			//v1.4.6 : 재생되는 프레임이 Prev 키프레임에 딱맞는 상태라면 보간을 생략한다.
+			//			//["Loop + 마지막 키프레임" 버그 해결]
+			//			if(prevKeyframe._frameIndex == curFrame) { continue; }
+
+			//			//indexOffsetA = 0;
+			//			//indexOffsetB = 0;
+			//			//if(prevKeyframe._frameIndex > curKeyframe._frameIndex)
+			//			//{
+			//			//	//Loop인 경우 Prev가 더 클 수 있다.
+			//			//	indexOffsetA = -lengthFrames;
+			//			//}
+
+			//			tmpCurFrame = curFrame;
+			//			if (tmpCurFrame > curKeyframe._frameIndex)
+			//			{
+			//				tmpCurFrame -= lengthFrames;
+			//			}
+
+			//			//float itp = apAnimCurve.GetCurvedRelativeInterpolation(prevKeyframe._curveKey, curKeyframe._curveKey, curFrame, curKeyframe._curveKey._isPrevKeyUseDummyIndex, false);
+			//			//float itp = apAnimCurve.GetCurvedRelativeInterpolation(curKeyframe._curveKey, prevKeyframe._curveKey, tmpCurFrame, true);
+
+			//			//>> 변경
+			//			float itp = curKeyframe._curveKey.GetItp_Int(tmpCurFrame, true);
+
+			//			curParamKeyValue._dist = 0.0f;
+			//			curParamKeyValue._isCalculated = true;
+			//			curParamKeyValue._weight = itp;
+			//			_totalWeight += itp;
+
+			//			//추가 : Rotation Bias
+			//			//Prev와 연결되었다면 Prev 설정을 적용한다.
+			//			if (curKeyframe._prevRotationBiasMode != apAnimKeyframe.ROTATION_BIAS.None)
+			//			{
+			//				curParamKeyValue.SetAnimRotationBias(curKeyframe._prevRotationBiasMode, curKeyframe._prevRotationBiasCount);
+			//			}
+
+			//			//Debug.Log("[" + i + "] [Prev ~ Cur] " + itp);
+			//			//Debug.Log("Prev ~ Next : " + itp);
+
+			//			//추가 11.29 : AnimKeyPos - Next 프레임으로서 Prev 프레임과 보간이 된다.
+			//			curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.NextKey;
+			//		}
+			//		else
+			//		{
+			//			//연결된게 없다면 이게 100% 가중치를 갖는다.
+			//			curParamKeyValue._dist = 0.0f;
+			//			curParamKeyValue._isCalculated = true;
+			//			curParamKeyValue._weight = 1.0f;
+			//			_totalWeight += 1.0f;
+			//			//Debug.Log("[" + i + "] [Prev ?? ~ Cur] 1.0");
+
+			//			//추가 11.29 : AnimKeyPos - 동일 프레임
+			//			curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.ExactKey;
+			//		}
+
+			//	}
+			//	//else if(curFrame > curKeyframe._frameIndex &&
+			//	//		curFrame <= curKeyframe._activeFrameIndexMax)
+			//	else if (curKeyframe.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Next))
+			//	{
+			//		//범위안에 들었다 [Cur - Next]
+			//		if (nextKeyframe != null)
+			//		{
+			//			//v1.4.6 : 재생되는 프레임이 Next 키프레임에 딱맞는 상태라면 보간을 생략한다.
+			//			//["Loop + 마지막 키프레임" 버그 해결]
+			//			if(nextKeyframe._frameIndex == curFrame) { continue; }
+
+			//			//indexOffsetA = 0;
+			//			//indexOffsetB = 0;
+			//			//if(nextKeyframe._frameIndex < curKeyframe._frameIndex)
+			//			//{
+			//			//	//Loop인 경우 Next가 더 작을 수 있다.
+			//			//	indexOffsetB = lengthFrames;
+			//			//}
+
+			//			tmpCurFrame = curFrame;
+			//			if (tmpCurFrame < curKeyframe._frameIndex)
+			//			{
+			//				tmpCurFrame += lengthFrames;
+			//			}
+
+			//			//float itp = apAnimCurve.GetCurvedRelativeInterpolation(curKeyframe._curveKey, nextKeyframe._curveKey, curFrame, false, curKeyframe._curveKey._isNextKeyUseDummyIndex);
+			//			//float itp = apAnimCurve.GetCurvedRelativeInterpolation(curKeyframe._curveKey, nextKeyframe._curveKey, tmpCurFrame, false);
+
+			//			//>> 변경
+			//			float itp = curKeyframe._curveKey.GetItp_Int(tmpCurFrame, false);
+
+			//			//itp = 1.0f - itp;//결과가 B에 맞추어지므로 여기서는 Reverse
+
+			//			curParamKeyValue._dist = 0.0f;
+			//			curParamKeyValue._isCalculated = true;
+			//			curParamKeyValue._weight = itp;
+			//			_totalWeight += itp;
+
+			//			//추가 : Rotation Bias
+			//			//Next와 연결되었다면 Next 설정을 적용한다.
+			//			if (curKeyframe._nextRotationBiasMode != apAnimKeyframe.ROTATION_BIAS.None)
+			//			{
+			//				curParamKeyValue.SetAnimRotationBias(curKeyframe._nextRotationBiasMode, curKeyframe._nextRotationBiasCount);
+			//			}
+
+			//			//추가 11.29 : AnimKeyPos - Prev 프레임으로서 Next 프레임과 보간이 된다.
+			//			curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.PrevKey;
+			//		}
+			//		else
+			//		{
+			//			//연결된게 없다면 이게 100% 가중치를 갖는다.
+			//			curParamKeyValue._dist = 0.0f;
+			//			curParamKeyValue._isCalculated = true;
+			//			curParamKeyValue._weight = 1.0f;
+			//			_totalWeight += 1.0f;
+
+			//			//추가 11.29 : AnimKeyPos - 동일 프레임
+			//			curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.ExactKey;
+			//		}
+			//	}
+			//} 
+			#endregion
+
+
+			//[v1.4.7] 애니메이션 조회시 캐시를 이용하여 불필요하게 "전체 순회"를 하지 말자
+			bool isNeedFindNewCache = true;//이게 True라면 다시 전체 조회를 해야한다.
+
+			if(!isPlayedAnimClip)
 			{
-				curParamKeyValue = _subParamKeyValues[i];
-				curParamKeyValue._dist = -10.0f;
-				curParamKeyValue._isCalculated = false;
+				//v1.4.7에서는 Weight 초기화/isCalculated 등이 밖에서 이루어지므로,
+				//애니메이션 재생 중이 아닌 경우 바로 종료 가능하다.
+				return;
+			}
 
-				//추가 11.29 : Animation Key 위치 타입이 추가되었다.
-				curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.NotCalculated;
+			//캐시가 재활용 가능한지 체크하자
+			//둘다 존재하는 경우 : 구역 체크
+			//A 또는 B 하나만 존재하는 경우 : 단일 영역 체크 (루프가 아닌 경우 A없이 B만 존재하는 경우가 있다)
+			if (_animCache_KeyframePKV_A != null && _animCache_KeyframePKV_B != null)
+			{
+				//[A (Cur) ~ B (Next) 둘다 존재한다. > 키프레임 사이에서 보간이 되는 중]
+				if ( //[A - Cur]
+					_animCache_KeyframePKV_A._paramSet != null
+					&& _animCache_KeyframePKV_A._paramSet.SyncKeyframe != null
 
-				//유효하지 않은 키프레임이면 처리하지 않는다.
-				if (curParamKeyValue._paramSet.SyncKeyframe == null ||
-					!curParamKeyValue._paramSet.SyncKeyframe._isActive ||
-					//!curParamKeyValue._isActive_InEditorExclusive
-					!curParamKeyValue.IsActive ||
-					!isPlayedAnimClip //<<애니메이션 재생 안될때는 여기서 생략이 되어야 하는데, 이게 왜 없었지;;
+					//[B - Next]
+					&& _animCache_KeyframePKV_B._paramSet != null
+					&& _animCache_KeyframePKV_B._paramSet.SyncKeyframe != null)
+				{
+					//아래에서 이 키프레임들을 그대로 사용한다.
+					curKeyframe = _animCache_KeyframePKV_A._paramSet.SyncKeyframe;
+					nextKeyframe = _animCache_KeyframePKV_B._paramSet.SyncKeyframe;
+
+					//연결된 키프레임들이 활성화되어 있고, 서로 연결된 상태여야 한다.
+					if (curKeyframe._isActive
+						&& nextKeyframe._isActive
+						&& curKeyframe._nextLinkedKeyframe == nextKeyframe
+						&& nextKeyframe._prevLinkedKeyframe == curKeyframe)
+					{
+						//이제 위치를 체크하자
+						if (curKeyframe.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Next)
+							&& nextKeyframe.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Prev))
+						{
+							//Cur ~ Next 위치가 맞다.
+							isNeedFindNewCache = false;//캐시 재검색을 하지 않고 재활용을 하자
+						}
+					}
+				}
+			}
+			else if(_animCache_KeyframePKV_A != null && _animCache_KeyframePKV_B == null)
+			{
+				//PKV가 A만 존재하고 B는 존재하지 않는 경우.
+				//루프가 아닌 경우 A의 뒤쪽으로 키프레임이 없을 수 있다.
+				if( _animCache_KeyframePKV_A._paramSet != null
+					&& _animCache_KeyframePKV_A._paramSet.SyncKeyframe != null
 					)
 				{
-					//Debug.Log("[" + i + "] Not Active or Null Keyframe");
-					continue;
+					//아래에서 이 키프레임들을 그대로 사용한다.
+					curKeyframe = _animCache_KeyframePKV_A._paramSet.SyncKeyframe;
+					nextKeyframe = null;
+
+					//연결된 키프레임들이 활성화되어 있고, 서로 연결된 상태여야 한다.
+					if(curKeyframe._isActive)
+					{
+						//이제 위치를 체크하자
+						if (curKeyframe.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Next))
+						{
+							//Cur ~~~ 위치가 맞다.
+
+							//만약 Next 키프레임이 있다면, 그것도 캐시로 넣고 연결하자
+							if(curKeyframe._nextLinkedKeyframe != null)
+							{								
+								_animCache_KeyframePKV_B = null;
+								_animKeyframe2ParamKeyValue.TryGetValue(curKeyframe._nextLinkedKeyframe, out _animCache_KeyframePKV_B);
+
+								//B도 다시 캐시로서 연결했다.
+								if(_animCache_KeyframePKV_B != null)
+								{
+									nextKeyframe = curKeyframe._nextLinkedKeyframe;	
+								}
+							}
+
+							isNeedFindNewCache = false;//캐시 재검색을 하지 않고 재활용을 하자
+						}
+					}
+				}
+			}
+			else if(_animCache_KeyframePKV_A == null && _animCache_KeyframePKV_B != null)
+			{
+				//PKV가 B (Next)만 존재하고 A (Cur)는 존재하지 않는 경우.
+				//루프가 아닌 경우 첫번째 프레임의 경우 B에 해당하는 키프레임만 있을 수 있다.
+				if( _animCache_KeyframePKV_B._paramSet != null
+					&& _animCache_KeyframePKV_B._paramSet.SyncKeyframe != null
+					)
+				{
+					//아래에서 이 키프레임들을 그대로 사용한다.
+					curKeyframe = null;
+					nextKeyframe = _animCache_KeyframePKV_B._paramSet.SyncKeyframe;
+
+					//연결된 키프레임들이 활성화되어 있고, 서로 연결된 상태여야 한다.
+					if(nextKeyframe._isActive)
+					{
+						//이제 위치를 체크하자
+						if (nextKeyframe.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Prev))//<- Next를 기준으로 이전 영역을 검색한다.
+						{
+							//~~~ Next 위치가 맞다.
+
+							//만약 Cur 키프레임이 있다면, 그것도 캐시로 넣고 연결하자
+							if(nextKeyframe._prevLinkedKeyframe != null)
+							{								
+								_animCache_KeyframePKV_A = null;
+								_animKeyframe2ParamKeyValue.TryGetValue(nextKeyframe._prevLinkedKeyframe, out _animCache_KeyframePKV_A);
+
+								//A도 다시 캐시로서 연결했다.
+								if(_animCache_KeyframePKV_A != null)
+								{
+									curKeyframe = nextKeyframe._prevLinkedKeyframe;	
+								}
+							}
+
+							isNeedFindNewCache = false;//캐시 재검색을 하지 않고 재활용을 하자
+						}
+					}
+				}
+			}
+
+			//디버그
+			//if(isNeedFindNewCache)
+			//{
+			//	Debug.LogError("캐시 미스");
+			//}
+			//else
+			//{
+			//	string strDebug = "[" + curFrame + "] 캐시 적중 : ";
+			//	if(_animCache_KeyframePKV_A != null)
+			//	{
+			//		strDebug += "A : " + _animCache_KeyframePKV_A._paramSet.SyncKeyframe._frameIndex;
+			//	}
+			//	else
+			//	{
+			//		strDebug += "A : 없음";
+			//	}
+
+			//	if(_animCache_KeyframePKV_B != null)
+			//	{
+			//		strDebug += " / B : " + _animCache_KeyframePKV_B._paramSet.SyncKeyframe._frameIndex;
+			//	}
+			//	else
+			//	{
+			//		strDebug += " / B : 없음";
+			//	}
+			//	Debug.Log(strDebug);
+			//}
+
+			//캐시 미스가 발생하여, 다시 현재 프레임에 맞게 재검색을 해서 캐시를 생성해야한다.
+			if(isNeedFindNewCache)
+			{
+				//만약 캐시된 키프레임이 있었다면, 그 전후로 한번 체크를 한다.
+				bool isFindKeyframes = false;
+
+				//- 캐시 A가 있다면, A의 이전을 검색한다.
+				if(_animCache_KeyframePKV_A != null
+					&& _animCache_KeyframePKV_A._paramSet != null
+					&& _animCache_KeyframePKV_A._paramSet.SyncKeyframe != null)
+				{
+					apAnimKeyframe cacheKey_A = _animCache_KeyframePKV_A._paramSet.SyncKeyframe;
+					//이전을 검색하자
+					if(cacheKey_A.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Prev))
+					{
+						//기존의 KeyA가 B (Next)가 되고, A는 존재하는지 찾자
+						apCalculatedResultParam.ParamKeyValueSet cacheExistA = _animCache_KeyframePKV_A;
+						_animCache_KeyframePKV_A = null;
+						_animCache_KeyframePKV_B = cacheExistA;
+
+						curKeyframe = null;
+						nextKeyframe = cacheKey_A;
+
+						if(nextKeyframe._prevLinkedKeyframe != null)
+						{
+							//이전 키프레임 (Next의 Prev는 Cur)이 있다면 새로운 A를 찾아서 연결
+							curKeyframe = nextKeyframe._prevLinkedKeyframe;
+							_animKeyframe2ParamKeyValue.TryGetValue(curKeyframe, out _animCache_KeyframePKV_A);
+						}
+
+						//Debug.LogWarning(">> 기존의 A의 Prev 구역에서 찾음 : " 
+						//	+ (curKeyframe != null ? curKeyframe._frameIndex.ToString() : "[X]")
+						//	+ " ~ "
+						//	+ (nextKeyframe != null ? nextKeyframe._frameIndex.ToString() : "[X]")
+						//	);
+
+						isFindKeyframes = true;
+					}
 				}
 
-				curKeyframe = curParamKeyValue._paramSet.SyncKeyframe;
-				prevKeyframe = curParamKeyValue._paramSet.SyncKeyframe._prevLinkedKeyframe;
-				nextKeyframe = curParamKeyValue._paramSet.SyncKeyframe._nextLinkedKeyframe;
-
-
-				//1. 프레임이 같다. => 100%
-				if (curFrame == curKeyframe._frameIndex ||
-					((curKeyframe._isLoopAsStart || curKeyframe._isLoopAsEnd) && curFrame == curKeyframe._loopFrameIndex))
+				//- 캐시 B가 있다면, B의 다음을 검색한다.
+				if(!isFindKeyframes
+					&& _animCache_KeyframePKV_B != null
+					&& _animCache_KeyframePKV_B._paramSet != null
+					&& _animCache_KeyframePKV_B._paramSet.SyncKeyframe != null)
 				{
-					curParamKeyValue._dist = 0.0f;
-					curParamKeyValue._isCalculated = true;
-					curParamKeyValue._weight = 1.0f;
+					apAnimKeyframe cacheKey_B = _animCache_KeyframePKV_B._paramSet.SyncKeyframe;
+					//이전을 검색하자
+					if(cacheKey_B.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Next))
+					{
+						//기존의 KeyB가 A (Cur)가 되고, B는 존재하는지 찾자
+						apCalculatedResultParam.ParamKeyValueSet cacheExistB = _animCache_KeyframePKV_B;
+						_animCache_KeyframePKV_A = cacheExistB;
+						_animCache_KeyframePKV_B = null;
+
+						curKeyframe = cacheKey_B;
+						nextKeyframe = null;
+
+						if(curKeyframe._nextLinkedKeyframe != null)
+						{
+							//다음 키프레임 (Next의 Next)이 있다면 새로운 B를 찾아서 연결
+							nextKeyframe = curKeyframe._nextLinkedKeyframe;
+							_animKeyframe2ParamKeyValue.TryGetValue(nextKeyframe, out _animCache_KeyframePKV_B);
+						}
+
+						//Debug.LogWarning(">> 기존의 B의 Next 구역에서 찾음 : " 
+						//	+ (curKeyframe != null ? curKeyframe._frameIndex.ToString() : "[X]")
+						//	+ " ~ "
+						//	+ (nextKeyframe != null ? nextKeyframe._frameIndex.ToString() : "[X]")
+						//	);
+
+						isFindKeyframes = true;
+					}
+				}
+
+				//- 위에서 찾지 못했다면, 처음부터 전부 검색을 한다.
+				if(!isFindKeyframes)
+				{
+					_animCache_KeyframePKV_A = null;
+					_animCache_KeyframePKV_B = null;
+
+					apAnimKeyframe checkKey = null;
+
+					for (int i = 0; i < nSubParamKeyValues; i++)
+					{
+						curParamKeyValue = _subParamKeyValues[i];
+						if (curParamKeyValue._paramSet.SyncKeyframe == null)
+						{
+							continue;
+						}
+						checkKey = curParamKeyValue._paramSet.SyncKeyframe;
+						if (!checkKey._isActive)
+						{
+							continue;
+						}
+
+						//앞에서부터 하나라도 있다면 된다.
+						//Prev가 없다면, Prev 체크를 한다. 그 외에는 Next만 체크한다.
+						if (checkKey._prevLinkedKeyframe == null)
+						{
+							if (checkKey.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Prev))
+							{
+								//현재 키프레임의 이전 영역에서 재생중이다. (연결된 프레임 없음)
+								//A (Cur)는 없고 B (Next)만 있는 상태이다.
+								//루프 없는 첫 키프레임보다 이전에 프레임이 있는 경우
+								curKeyframe = null;
+								nextKeyframe = checkKey;
+
+								_animKeyframe2ParamKeyValue.TryGetValue(nextKeyframe, out _animCache_KeyframePKV_B);
+								isFindKeyframes = true;
+
+								break;//탐색 종료
+							}
+						}
+
+						//Next를 체크하자
+						if (checkKey.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Next))
+						{
+							//현재 프레임의 ~Next 영역에 해당한다.
+							//A (Cur)는 있고, 연결된 B (Next)가 있는지 확인한다.
+							curKeyframe = checkKey;
+							nextKeyframe = null;
+
+							_animKeyframe2ParamKeyValue.TryGetValue(curKeyframe, out _animCache_KeyframePKV_A);
+
+							if (checkKey._nextLinkedKeyframe != null)
+							{
+								//연결된 Next Keyframe이 있다.
+								nextKeyframe = checkKey._nextLinkedKeyframe;
+								_animKeyframe2ParamKeyValue.TryGetValue(curKeyframe, out _animCache_KeyframePKV_A);
+
+							}
+
+							isFindKeyframes = true;
+							break;//탐색 종료
+						}
+					}
+
+					//if(isFindKeyframes)
+					//{
+					//	Debug.LogWarning(">> 전체 다시 검색 : " 
+					//		+ (curKeyframe != null ? curKeyframe._frameIndex.ToString() : "[X]")
+					//		+ " ~ "
+					//		+ (nextKeyframe != null ? nextKeyframe._frameIndex.ToString() : "[X]")
+					//		);
+					//}
+					//else
+					//{
+					//	Debug.LogWarning(">> 전체 다시 검색 : 찾지 못함");
+					//}
+				}
+
+				
+			}
+
+
+			//이제 현재의 캐시 키프레임과 PKV을 대상으로 가중치와 Calculated를 하자
+			
+			curKeyframe = null;
+			nextKeyframe = null;
+			if(_animCache_KeyframePKV_A != null)
+			{
+				curKeyframe = _animCache_KeyframePKV_A._paramSet.SyncKeyframe;
+			}
+			if(_animCache_KeyframePKV_B != null)
+			{
+				nextKeyframe = _animCache_KeyframePKV_B._paramSet.SyncKeyframe;
+			}
+
+			//1. 정확한 프레임을 체크한다.
+			bool isAnyCalculated = false;
+			if(curKeyframe != null)
+			{
+				if(IsExactKeyFrame(curFrame, curKeyframe))
+				{
+					//키프레임 A에 프레임이 위치했다. 가중치 100%
+					_animCache_KeyframePKV_A._dist = 0.0f;
+					_animCache_KeyframePKV_A._weight = 1.0f;
+
 					_totalWeight += 1.0f;
 
-					//추가 11.29 : AnimKeyPos - 동일 프레임
-					curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.ExactKey;
+					//AnimKeyPos - 동일 프레임
+					_animCache_KeyframePKV_A._animKeyPos = apCalculatedResultParam.AnimKeyPos.ExactKey;
+
+					//계산되었다.
+					OnParamKeyValueCalculated(_animCache_KeyframePKV_A, 1.0f);
+
+					isAnyCalculated = true;
 				}
-				//else if(curFrame >= curKeyframe._activeFrameIndexMin &&
-				//		curFrame < curKeyframe._frameIndex)
-				else if (curKeyframe.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Prev))
+			}
+
+			if(!isAnyCalculated && nextKeyframe != null)
+			{
+				if(IsExactKeyFrame(curFrame, nextKeyframe))
+				{
+					//키프레임 B에 프레임이 위치했다. 가중치 100%
+					_animCache_KeyframePKV_B._dist = 0.0f;
+					_animCache_KeyframePKV_B._weight = 1.0f;
+
+					_totalWeight += 1.0f;
+
+					//AnimKeyPos - 동일 프레임
+					_animCache_KeyframePKV_B._animKeyPos = apCalculatedResultParam.AnimKeyPos.ExactKey;
+
+					//계산되었다.
+					OnParamKeyValueCalculated(_animCache_KeyframePKV_B, 1.0f);
+
+					isAnyCalculated = true;
+				}
+			}
+
+			//2. 보간을 하자
+			//다음의 순서로 체크
+			//> Cur의 Prev
+			//> Cur의 Next (Next Frame이 있다면 사이값)
+			//> Next의 Next
+
+
+			if(!isAnyCalculated && curKeyframe != null)
+			{
+				//> Cur의 Prev를 체크한다.
+				if (curKeyframe.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Prev))
 				{
 					//범위 안에 들었다. [Prev - Cur]
+					//- 사실 이 조건은 캐시 처리에 의해서 발생하지 않는게 정상. 캐시 특성상 Prev - Cur를 앞으로 옮겨서 다시 Cur - Next로 만들 것
+					//- 다만, 타임라인/키프레임 생성 등의 처리 과정에서 이 상태가 특수하게 나타날 수가 있다.
+
+					//Cur Keyframe의 Prev가 있는지 확인한다.
+					apAnimKeyframe prevKeyframe = curKeyframe._prevLinkedKeyframe;
 					if (prevKeyframe != null)
 					{
-						//v1.4.6 : 재생되는 프레임이 Prev 키프레임에 딱맞는 상태라면 보간을 생략한다.
-						//["Loop + 마지막 키프레임" 버그 해결]
-						if(prevKeyframe._frameIndex == curFrame) { continue; }
+						//[ Prev - Cur ]에 들었다면						
 
-						//indexOffsetA = 0;
-						//indexOffsetB = 0;
-						//if(prevKeyframe._frameIndex > curKeyframe._frameIndex)
-						//{
-						//	//Loop인 경우 Prev가 더 클 수 있다.
-						//	indexOffsetA = -lengthFrames;
-						//}
+						//Prev PKV를 찾자
+						apCalculatedResultParam.ParamKeyValueSet prevPKVSet = null;
+						_animKeyframe2ParamKeyValue.TryGetValue(prevKeyframe, out prevPKVSet);
 
-						tmpCurFrame = curFrame;
-						if (tmpCurFrame > curKeyframe._frameIndex)
+						if (prevPKVSet != null)
 						{
-							tmpCurFrame -= lengthFrames;
+							//Prev PKV도 유효하다.
+							tmpCurFrame = curFrame;
+							if (tmpCurFrame > curKeyframe._frameIndex)
+							{
+								//루프된 상태라면 보간을 위해 프레임 변경
+								tmpCurFrame -= lengthFrames;
+							}
+
+							//Lerp를 넣자
+							float curLerp = curKeyframe._curveKey.GetItp_Int(tmpCurFrame, true);//True : Prev 키와 비교
+							float prevLerp = 1.0f - curLerp;
+
+							//[Prev]
+							prevPKVSet._dist = 0.0f;
+							prevPKVSet._weight = prevLerp;
+
+							//[Cur]
+							_animCache_KeyframePKV_A._dist = 0.0f;
+							_animCache_KeyframePKV_A._weight = curLerp;
+
+							_totalWeight += 1.0f;//Prev + Cur = 1
+
+							//AnimKeyPos
+							prevPKVSet._animKeyPos = apCalculatedResultParam.AnimKeyPos.PrevKey;
+							_animCache_KeyframePKV_A._animKeyPos = apCalculatedResultParam.AnimKeyPos.NextKey;
+
+							//계산되었다.
+							OnParamKeyValueCalculated(prevPKVSet, prevLerp);
+							OnParamKeyValueCalculated(_animCache_KeyframePKV_A, curLerp);
+
+							//Debug.LogError("에러 : Prev - Cur 보간이 되었지만, 캐시 검색에서는 이 경우는 나와선 안된다.");
+
+							isAnyCalculated = true;
 						}
-
-						//float itp = apAnimCurve.GetCurvedRelativeInterpolation(prevKeyframe._curveKey, curKeyframe._curveKey, curFrame, curKeyframe._curveKey._isPrevKeyUseDummyIndex, false);
-						//float itp = apAnimCurve.GetCurvedRelativeInterpolation(curKeyframe._curveKey, prevKeyframe._curveKey, tmpCurFrame, true);
-
-						//>> 변경
-						float itp = curKeyframe._curveKey.GetItp_Int(tmpCurFrame, true);
-
-						curParamKeyValue._dist = 0.0f;
-						curParamKeyValue._isCalculated = true;
-						curParamKeyValue._weight = itp;
-						_totalWeight += itp;
-
-						//추가 : Rotation Bias
-						//Prev와 연결되었다면 Prev 설정을 적용한다.
-						if (curKeyframe._prevRotationBiasMode != apAnimKeyframe.ROTATION_BIAS.None)
-						{
-							curParamKeyValue.SetAnimRotationBias(curKeyframe._prevRotationBiasMode, curKeyframe._prevRotationBiasCount);
-						}
-
-						//Debug.Log("[" + i + "] [Prev ~ Cur] " + itp);
-						//Debug.Log("Prev ~ Next : " + itp);
-
-						//추가 11.29 : AnimKeyPos - Next 프레임으로서 Prev 프레임과 보간이 된다.
-						curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.NextKey;
 					}
-					else
+
+					if(!isAnyCalculated)
 					{
-						//연결된게 없다면 이게 100% 가중치를 갖는다.
-						curParamKeyValue._dist = 0.0f;
-						curParamKeyValue._isCalculated = true;
-						curParamKeyValue._weight = 1.0f;
+						//Prev-Keyframe이 없거나 Prev-PKV가 없다.
+						//주로 Loop가 아닌 경우의 첫 키프레임의 경우
+						
+						_animCache_KeyframePKV_A._dist = 0.0f;
+						_animCache_KeyframePKV_A._weight = 1.0f;
+
 						_totalWeight += 1.0f;
-						//Debug.Log("[" + i + "] [Prev ?? ~ Cur] 1.0");
 
-						//추가 11.29 : AnimKeyPos - 동일 프레임
-						curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.ExactKey;
+						//AnimKeyPos - Cur는 Next 키가 된다.
+						_animCache_KeyframePKV_A._animKeyPos = apCalculatedResultParam.AnimKeyPos.NextKey;
+
+						//계산되었다.
+						OnParamKeyValueCalculated(_animCache_KeyframePKV_A, 1.0f);
+						isAnyCalculated = true;
 					}
-
 				}
-				//else if(curFrame > curKeyframe._frameIndex &&
-				//		curFrame <= curKeyframe._activeFrameIndexMax)
 				else if (curKeyframe.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Next))
 				{
-					//범위안에 들었다 [Cur - Next]
-					if (nextKeyframe != null)
+					//> Cur의 Next를 체크한다.
+					//Next Keyframe은 PKV-B일 것이다.
+					if(nextKeyframe != null)
 					{
-						//v1.4.6 : 재생되는 프레임이 Next 키프레임에 딱맞는 상태라면 보간을 생략한다.
-						//["Loop + 마지막 키프레임" 버그 해결]
-						if(nextKeyframe._frameIndex == curFrame) { continue; }
-
-						//indexOffsetA = 0;
-						//indexOffsetB = 0;
-						//if(nextKeyframe._frameIndex < curKeyframe._frameIndex)
-						//{
-						//	//Loop인 경우 Next가 더 작을 수 있다.
-						//	indexOffsetB = lengthFrames;
-						//}
-
 						tmpCurFrame = curFrame;
 						if (tmpCurFrame < curKeyframe._frameIndex)
 						{
 							tmpCurFrame += lengthFrames;
 						}
 
-						//float itp = apAnimCurve.GetCurvedRelativeInterpolation(curKeyframe._curveKey, nextKeyframe._curveKey, curFrame, false, curKeyframe._curveKey._isNextKeyUseDummyIndex);
-						//float itp = apAnimCurve.GetCurvedRelativeInterpolation(curKeyframe._curveKey, nextKeyframe._curveKey, tmpCurFrame, false);
+						//Prev PKV도 유효하다.
+						//Lerp를 넣자
+						float curLerp = curKeyframe._curveKey.GetItp_Int(tmpCurFrame, false);//False : Next 키와 비교
+						float nextLerp = 1.0f - curLerp;
 
-						//>> 변경
-						float itp = curKeyframe._curveKey.GetItp_Int(tmpCurFrame, false);
+						//[Cur - A]
+						_animCache_KeyframePKV_A._dist = 0.0f;
+						_animCache_KeyframePKV_A._weight = curLerp;
 
-						//itp = 1.0f - itp;//결과가 B에 맞추어지므로 여기서는 Reverse
+						//[Next - B]
+						_animCache_KeyframePKV_B._dist = 0.0f;
+						_animCache_KeyframePKV_B._weight = nextLerp;
 
-						curParamKeyValue._dist = 0.0f;
-						curParamKeyValue._isCalculated = true;
-						curParamKeyValue._weight = itp;
-						_totalWeight += itp;
+						_totalWeight += 1.0f;//Cur + Next = 1
 
-						//추가 : Rotation Bias
-						//Next와 연결되었다면 Next 설정을 적용한다.
-						if (curKeyframe._nextRotationBiasMode != apAnimKeyframe.ROTATION_BIAS.None)
-						{
-							curParamKeyValue.SetAnimRotationBias(curKeyframe._nextRotationBiasMode, curKeyframe._nextRotationBiasCount);
-						}
+						//AnimKeyPos						
+						_animCache_KeyframePKV_A._animKeyPos = apCalculatedResultParam.AnimKeyPos.PrevKey;
+						_animCache_KeyframePKV_B._animKeyPos = apCalculatedResultParam.AnimKeyPos.NextKey;
 
-						//추가 11.29 : AnimKeyPos - Prev 프레임으로서 Next 프레임과 보간이 된다.
-						curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.PrevKey;
+						//계산되었다.						
+						OnParamKeyValueCalculated(_animCache_KeyframePKV_A, curLerp);
+						OnParamKeyValueCalculated(_animCache_KeyframePKV_B, nextLerp);
+						isAnyCalculated = true;
 					}
 					else
 					{
-						//연결된게 없다면 이게 100% 가중치를 갖는다.
-						curParamKeyValue._dist = 0.0f;
-						curParamKeyValue._isCalculated = true;
-						curParamKeyValue._weight = 1.0f;
+						//Next가 없다면 Cur에 100%가 적용된다.
+						_animCache_KeyframePKV_A._dist = 0.0f;
+						_animCache_KeyframePKV_A._weight = 1.0f;
+
 						_totalWeight += 1.0f;
 
-						//추가 11.29 : AnimKeyPos - 동일 프레임
-						curParamKeyValue._animKeyPos = apCalculatedResultParam.AnimKeyPos.ExactKey;
+						//AnimKeyPos - Cur는 Prev 키가 된다.
+						_animCache_KeyframePKV_A._animKeyPos = apCalculatedResultParam.AnimKeyPos.PrevKey;
+
+						//계산되었다.
+						OnParamKeyValueCalculated(_animCache_KeyframePKV_A, 1.0f);
+						isAnyCalculated = true;
 					}
 				}
 			}
 
-			if (_totalWeight > 0.0f)
-			{
-				//Debug.Log("Result --------------------------------");
-				//float prevWeight = 0.0f;
-				for (int i = 0; i < nSubParamKeyValues; i++)
+			//Cur Keyframe에서의 보간이 안되었다면, Next Keyframe (PKV-B)에서 보간을 체크하자.
+			if(!isAnyCalculated && nextKeyframe != null)
+			{				
+				if (nextKeyframe.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Prev))
 				{
-					curParamKeyValue = _subParamKeyValues[i];
+					//v1.4.8 버그 수정
+					//> Next의 Prev를 비교한다. (Loop가 아닌 경우 첫 키프레임보다 앞인 경우엔 null--NextKey인 경우가 존재한다.
 
-					if (curParamKeyValue._isCalculated)
+					//범위 안에 들었다. [Prev - Cur]
+					//- 사실 이 조건은 캐시 처리에 의해서 발생하지 않는게 정상. 캐시 특성상 Prev - Cur를 앞으로 옮겨서 다시 Cur - Next로 만들 것
+					//- 다만, 타임라인/키프레임 생성 등의 처리 과정에서 이 상태가 특수하게 나타날 수가 있다.
+
+					//Cur Keyframe의 Prev가 있는지 확인한다.
+					apAnimKeyframe prevKeyframe = nextKeyframe._prevLinkedKeyframe;
+					if (prevKeyframe != null)
 					{
-						curParamKeyValue._weight /= _totalWeight;
+						//[ Prev - Next ]에 들었다면
+
+						//Prev PKV를 찾자
+						apCalculatedResultParam.ParamKeyValueSet prevPKVSet = null;
+						_animKeyframe2ParamKeyValue.TryGetValue(prevKeyframe, out prevPKVSet);
+
+						if (prevPKVSet != null)
+						{
+							//Prev PKV도 유효하다.
+							tmpCurFrame = curFrame;
+							if (tmpCurFrame > nextKeyframe._frameIndex)
+							{
+								//루프된 상태라면 보간을 위해 프레임 변경
+								tmpCurFrame -= lengthFrames;
+							}
+
+							//Lerp를 넣자
+							float curLerp = nextKeyframe._curveKey.GetItp_Int(tmpCurFrame, true);//True : Prev 키와 비교
+							float prevLerp = 1.0f - curLerp;
+
+							//[Prev]
+							prevPKVSet._dist = 0.0f;
+							prevPKVSet._weight = prevLerp;
+
+							//[Next]
+							_animCache_KeyframePKV_B._dist = 0.0f;
+							_animCache_KeyframePKV_B._weight = curLerp;
+
+							_totalWeight += 1.0f;//Prev + Cur = 1
+
+							//AnimKeyPos
+							prevPKVSet._animKeyPos = apCalculatedResultParam.AnimKeyPos.PrevKey;
+							_animCache_KeyframePKV_B._animKeyPos = apCalculatedResultParam.AnimKeyPos.NextKey;
+
+							//계산되었다.
+							OnParamKeyValueCalculated(prevPKVSet, prevLerp);
+							OnParamKeyValueCalculated(_animCache_KeyframePKV_B, curLerp);
+
+							//Debug.LogError("에러 : Prev - Cur 보간이 되었지만, 캐시 검색에서는 이 경우는 나와선 안된다.");
+
+							isAnyCalculated = true;
+						}
 					}
-					else
+
+					if(!isAnyCalculated)
 					{
-						curParamKeyValue._weight = 0.0f;
+						//Prev-Keyframe이 없거나 Prev-PKV가 없다.
+						//주로 Loop가 아닌 경우의 첫 키프레임의 경우
+						
+						_animCache_KeyframePKV_B._dist = 0.0f;
+						_animCache_KeyframePKV_B._weight = 1.0f;
+
+						_totalWeight += 1.0f;
+
+						//AnimKeyPos - Cur는 Next 키가 된다.
+						_animCache_KeyframePKV_B._animKeyPos = apCalculatedResultParam.AnimKeyPos.NextKey;
+
+						//계산되었다.
+						OnParamKeyValueCalculated(_animCache_KeyframePKV_B, 1.0f);
+						isAnyCalculated = true;
 					}
 				}
-				//Debug.Log("-------------------------------------");
+				else if (nextKeyframe.IsFrameIn(curFrame, apAnimKeyframe.LINKED_KEY.Next))
+				{
+					//> Next의 Next를 비교한다.
+					//[Next - Next2의 영역에서 보간된다.]
+					//에러 : 보간은 되었지만 캐시 검색에서는 이 경우는 나와서는 안된다.
+
+					//Next Keyframe의 Next(2)가 있는지 확인한다.
+					apAnimKeyframe next2Keyframe = nextKeyframe._nextLinkedKeyframe;
+					if(next2Keyframe != null)
+					{
+						// [Next - Next2 ]에 들었다면
+
+						//Next2 PKV를 찾자
+						apCalculatedResultParam.ParamKeyValueSet next2PKVSet = null;
+						_animKeyframe2ParamKeyValue.TryGetValue(next2Keyframe, out next2PKVSet);
+
+						if (next2PKVSet != null)
+						{
+							//Next2 PKV도 유효하다.
+							tmpCurFrame = curFrame;
+							if (tmpCurFrame < nextKeyframe._frameIndex)
+							{
+								//루프된 상태라면 보간을 위해 프레임 변경
+								tmpCurFrame += lengthFrames;
+							}
+
+							//Lerp를 넣자
+							float nextLerp = nextKeyframe._curveKey.GetItp_Int(tmpCurFrame, false);//False : Next 키와 비교
+							float next2Lerp = 1.0f - nextLerp;
+
+							//[Next - B]
+							_animCache_KeyframePKV_B._dist = 0.0f;
+							_animCache_KeyframePKV_B._weight = nextLerp;
+
+							//[Next2]
+							next2PKVSet._dist = 0.0f;
+							next2PKVSet._weight = next2Lerp;
+
+							_totalWeight += 1.0f;//Next + Next2 = 1
+
+							//AnimKeyPos
+							_animCache_KeyframePKV_B._animKeyPos = apCalculatedResultParam.AnimKeyPos.PrevKey;
+							next2PKVSet._animKeyPos = apCalculatedResultParam.AnimKeyPos.NextKey;
+
+							//계산되었다.
+							OnParamKeyValueCalculated(_animCache_KeyframePKV_B, nextLerp);
+							OnParamKeyValueCalculated(next2PKVSet, next2Lerp);
+
+							//Debug.LogError("에러 : Next - Next2 보간이 되었지만, 캐시 검색에서는 이 경우는 나와선 안된다.");
+
+							isAnyCalculated = true;
+						}
+					}
+
+					if(!isAnyCalculated)
+					{
+						//Next2-Keyframe이 없거나 Next2-PKV가 없다.
+						//주로 Loop가 아닌 경우의 마지막 키프레임의 경우
+						
+						_animCache_KeyframePKV_B._dist = 0.0f;
+						_animCache_KeyframePKV_B._weight = 1.0f;
+
+						_totalWeight += 1.0f;
+
+						//AnimKeyPos - Next는 Prev 키가 된다.
+						_animCache_KeyframePKV_B._animKeyPos = apCalculatedResultParam.AnimKeyPos.PrevKey;
+
+						//계산되었다.
+						OnParamKeyValueCalculated(_animCache_KeyframePKV_B, 1.0f);
+						isAnyCalculated = true;
+					}
+				}
 			}
+			
+			//Total Weight는 나누지 않아도 된다.
+			//if (_totalWeight > 0.0f)
+			//{
+			//	//Debug.Log("Result --------------------------------");
+			//	//float prevWeight = 0.0f;
+			//	for (int i = 0; i < nSubParamKeyValues; i++)
+			//	{
+			//		curParamKeyValue = _subParamKeyValues[i];
+
+			//		if (curParamKeyValue._isCalculated)
+			//		{
+			//			curParamKeyValue._weight /= _totalWeight;
+			//		}
+			//		else
+			//		{
+			//			curParamKeyValue._weight = 0.0f;
+			//		}
+			//	}
+			//	//Debug.Log("-------------------------------------");
+			//}
+		}
+
+
+		/// <summary>
+		/// 현재 재생중인 프레임 인덱스에 해당 키프레임이 위치하는가.
+		/// </summary>
+		private bool IsExactKeyFrame(int curFrameIndex, apAnimKeyframe targetKeyframe)
+		{
+			return (curFrameIndex == targetKeyframe._frameIndex)
+				|| ((targetKeyframe._isLoopAsStart || targetKeyframe._isLoopAsEnd) && curFrameIndex == targetKeyframe._loopFrameIndex);
 		}
 
 		private void CalculateWeight_Static()
 		{
 			//계산할 필요가 없는데용...
-			if (_keyParamSetGroup == null)
-			{
-				Debug.LogError("Key ParamSet Group is Null / Key Control Param Is null");
-				return;
-			}
 
-			apCalculatedResultParam.ParamKeyValueSet curParamKeyValue = null;
-			int nSubParamKeyValues = _subParamKeyValues != null ? _subParamKeyValues.Count : 0;
-			for (int i = 0; i < nSubParamKeyValues; i++)
-			{
-				curParamKeyValue = _subParamKeyValues[i];
-				curParamKeyValue._weight = 1.0f;
-				curParamKeyValue._isCalculated = true;//<<나중에 이것도 true로 올리자
-			}
+			//[삭제 v1.4.7 : 필요없는 계산이다. ]
+			//if (_keyParamSetGroup == null)
+			//{
+			//	Debug.LogError("Key ParamSet Group is Null / Key Control Param Is null");
+			//	return;
+			//}
+
+			//apCalculatedResultParam.ParamKeyValueSet curParamKeyValue = null;
+			//int nSubParamKeyValues = _subParamKeyValues != null ? _subParamKeyValues.Count : 0;
+			//for (int i = 0; i < nSubParamKeyValues; i++)
+			//{
+			//	curParamKeyValue = _subParamKeyValues[i];
+			//	curParamKeyValue._weight = 1.0f;
+			//	curParamKeyValue._isCalculated = true;//<<나중에 이것도 true로 올리자
+			//}
 		}
 
+		
 
 
 
@@ -1162,21 +2083,21 @@ namespace AnyPortrait
 					case apControlParam.TYPE.Int:
 						{
 							int iPos = keyValueSet._paramSet._conSyncValue_Int;
-							newPoint = new apCalculatedLerpPoint(iPos, true);
+							newPoint = new apCalculatedLerpPoint(iPos, true, this);//v1.4.7 : 생성자 인자 변경
 						}
 						break;
 
 					case apControlParam.TYPE.Float:
 						{
 							float fPos = keyValueSet._paramSet._conSyncValue_Float;
-							newPoint = new apCalculatedLerpPoint(fPos, true);
+							newPoint = new apCalculatedLerpPoint(fPos, true, this);//v1.4.7 : 생성자 인자 변경
 						}
 						break;
 
 					case apControlParam.TYPE.Vector2:
 						{
 							Vector2 vPos = keyValueSet._paramSet._conSyncValue_Vector2;
-							newPoint = new apCalculatedLerpPoint(vPos, true);
+							newPoint = new apCalculatedLerpPoint(vPos, true, this);//v1.4.7 : 생성자 인자 변경
 
 							//위치를 저장해둔다.
 							AddLerpPos(vPos, fPosXList, fPosYList, bias);
@@ -1332,7 +2253,7 @@ namespace AnyPortrait
 			{
 				return existLerpPoint;
 			}
-			apCalculatedLerpPoint newPoint = new apCalculatedLerpPoint(pos, false);
+			apCalculatedLerpPoint newPoint = new apCalculatedLerpPoint(pos, false, this);//v1.4.7 : 생성자 인자 변경
 			_cpLerpPoints.Add(newPoint);
 
 			//실제 Control Param Key를 입력해야한다.

@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -1315,6 +1315,9 @@ namespace AnyPortrait
 							//썸네일 만들기 버튼
 							if (GUILayout.Button(_guiContent_Overall_MakeThumbnail.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))
 							{
+								//Editor._captureProcessor == apEditor.CAPTURE_PROCESSOR.Version2
+
+
 								if (string.IsNullOrEmpty(_editor._portrait._imageFilePath_Thumbnail))
 								{
 									//EditorUtility.DisplayDialog("Thumbnail Creating Failed", "File Name is Empty", "Close");
@@ -1326,6 +1329,12 @@ namespace AnyPortrait
 								else
 								{
 									//RequestExport(EXPORT_TYPE.Thumbnail);//<<이전 코드
+
+#if UNITY_2020
+									int a;
+#endif
+
+
 									StartMakeThumbnail();//<<새로운 코드
 
 								}
@@ -1449,7 +1458,7 @@ namespace AnyPortrait
 
 							if (GUILayout.Button(_guiContent_Overall_TakeAScreenshot.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))
 							{
-								if (CheckComputeShaderSupportedForScreenCapture())//추가 : 캡쳐 처리 가능한지 확인
+								if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
 								{
 									StartTakeScreenShot();
 								}
@@ -1691,7 +1700,7 @@ namespace AnyPortrait
 										//"Take a GIF Animation", "Take a GIF Animation"
 										if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportGIF), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (_captureSelectedAnimClip != null), width, 30))
 										{
-											if (CheckComputeShaderSupportedForScreenCapture())//추가 : 캡쳐 처리 가능한지 확인
+											if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
 											{
 												StartGIFAnimation();
 											}
@@ -1707,7 +1716,7 @@ namespace AnyPortrait
 
 										if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportMP4), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (_captureSelectedAnimClip != null), width, 30))
 										{
-											if (CheckComputeShaderSupportedForScreenCapture())//추가 : 캡쳐 처리 가능한지 확인
+											if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
 											{
 												StartMP4Animation();
 											}
@@ -2136,7 +2145,7 @@ namespace AnyPortrait
 
 										if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportSprite), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (numXOfSprite > 0 && numYOfSprite > 0 && nAnimClipToExport > 0), width, 30))
 										{
-											if (CheckComputeShaderSupportedForScreenCapture())//추가 : 캡쳐 처리 가능한지 확인
+											if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
 											{
 												StartSpriteSheet(false);
 											}
@@ -2148,7 +2157,7 @@ namespace AnyPortrait
 
 										if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportSequence), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (nAnimClipToExport > 0), width, 25))
 										{
-											if (CheckComputeShaderSupportedForScreenCapture())//추가 : 캡쳐 처리 가능한지 확인
+											if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
 											{
 												StartSpriteSheet(true);
 											}
@@ -3122,50 +3131,95 @@ namespace AnyPortrait
 		}
 
 
-		//추가 11.15 : 
+		
 		/// <summary>
+		/// 캡쳐 이슈를 체크하고 캡쳐를 계속할 지 물어보자
+		/// (1) 그래픽 가속 / (2) Unity 2020 + Version 2
 		/// 그래픽 가속을 지원하지 않는 경우, 안내 메시지를 보여주고 선택하게 해야한다.
 		/// 그래픽 가속을 지원하거나 계속 처리가 가능한 경우(무시 포함) true를 리턴한다.
 		/// </summary>
 		/// <returns></returns>
-		private bool CheckComputeShaderSupportedForScreenCapture()
+		private bool CheckCaptureIssues()
 		{
-			//1. Compute Shader를 지원한다.
-			if (SystemInfo.supportsComputeShaders)
-			{
-				return true;
-			}
-
+			//각각의 이슈를 검토하자
+			//1. 그래픽 가속 체크
+			bool isSupportComputeShader = true;
 #if UNITY_EDITOR_WIN
-			// 이 코드는 Window 에디터에서만 열린다.
-			int iBtn = EditorUtility.DisplayDialogComplex(Editor.GetText(TEXT.DLG_NoComputeShaderOnCapture_Title),
-															Editor.GetText(TEXT.DLG_NoComputeShaderOnCapture_Body),
-															Editor.GetText(TEXT.DLG_NoComputeShaderOnCapture_IgnoreAndCapture),
-															Editor.GetText(TEXT.DLG_NoComputeShaderOnCapture_OpenBuildSettings),
-															Editor.GetText(TEXT.Cancel)
-															);
-
-			if (iBtn == 0)
-			{
-				//무시하고 진행하기
-
-				return true;
-			}
-			else if (iBtn == 1)
-			{
-				//BuildSetting 창을 열자
-				EditorWindow.GetWindow(System.Type.GetType("UnityEditor.BuildPlayerWindow,UnityEditor"));
-			}
-
-			return false;
-
+			isSupportComputeShader = SystemInfo.supportsComputeShaders;//윈도우에서는 실제로 지원여부를 확인하고 물어본다.
+			
 #else
-			return true;
+			isSupportComputeShader = true;//그외의 환경에서는 그냥 에러를 검토 없이 무조건 통과한다.
 #endif
+
+			
+
+			//2. Unity 2020 + Version 2 체크
+			bool isUnity2020AndVersion2Issue = false;
+			bool isUnity2020 = false;			
+#if UNITY_2020
+            isUnity2020 = true;
+#endif
+
+			isUnity2020AndVersion2Issue = isUnity2020 && Editor._captureProcessor == apEditor.CAPTURE_PROCESSOR.Version2;
+
+			//앞에서부터 하나씩 처리하자
+			if(!isSupportComputeShader)
+			{
+				//Compute Shader를 지원하지 않는 경우
+				// 이 코드는 Window 에디터에서만 열린다.
+				int iBtn = EditorUtility.DisplayDialogComplex(Editor.GetText(TEXT.DLG_NoComputeShaderOnCapture_Title),
+																Editor.GetText(TEXT.DLG_NoComputeShaderOnCapture_Body),
+																Editor.GetText(TEXT.DLG_NoComputeShaderOnCapture_IgnoreAndCapture),
+																Editor.GetText(TEXT.DLG_NoComputeShaderOnCapture_OpenBuildSettings),
+																Editor.GetText(TEXT.Cancel)
+																);
+
+				if (iBtn == 0)
+				{
+					//무시하고 진행하기
+					// > true
+				}
+				else if (iBtn == 1)
+				{
+					//BuildSetting 창을 열자
+					EditorWindow.GetWindow(System.Type.GetType("UnityEditor.BuildPlayerWindow,UnityEditor"));
+					return false;
+				}
+				else
+				{
+					//취소키
+					return false;
+				}
+			}
+
+			if(isUnity2020AndVersion2Issue)
+			{
+				//Unity 2020 이슈가 발생할 사항이다.
+				int iBtn = EditorUtility.DisplayDialogComplex(	Editor.GetText(TEXT.DLG_CaptureCompatibilityIssue_Title),
+															Editor.GetText(TEXT.DLG_CaptureCompatibilityIssue_Body),
+															Editor.GetText(TEXT.ChangeNow),
+															Editor.GetText(TEXT.Ignore),
+															Editor.GetText(TEXT.Cancel));
+
+				if(iBtn == 2)
+				{
+					//취소하기
+					return false;
+				}
+
+				if(iBtn == 0)
+				{
+					//옵션을 변경하기
+					Editor._captureProcessor = apEditor.CAPTURE_PROCESSOR.Version1;
+					Editor.SaveEditorPref();
+				}
+			}
+
+			//캡쳐를 진행한다.
+			return true;
 
 
 		}
-
 
 
 		//-----------------------------------------------
@@ -3861,7 +3915,7 @@ namespace AnyPortrait
 			GUI.Box(new Rect(1, 0, width + 20, subTabHeight * 3 + 15), apStringFactory.I.None, apEditorUtil.WhiteGUIStyle);
 #else
 			GUI.Box(new Rect(1, 0, width + 20, subTabHeight * 3 + 18), apStringFactory.I.None, apEditorUtil.WhiteGUIStyle);
-#endif	
+#endif
 			GUI.backgroundColor = prevColor;
 
 
@@ -6760,7 +6814,7 @@ namespace AnyPortrait
 			GUI.Box(new Rect(1, 0, width + 20, subTabHeight * 2 + 10), apStringFactory.I.None, apEditorUtil.WhiteGUIStyle);
 #else
 			GUI.Box(new Rect(1, 0, width + 20, subTabHeight * 2 + 13), apStringFactory.I.None, apEditorUtil.WhiteGUIStyle);
-#endif	
+#endif
 			GUI.backgroundColor = prevColor;
 
 
@@ -6935,6 +6989,11 @@ namespace AnyPortrait
 			{
 				_isMeshGroupSetting_EditDefaultTransform = false;
 			}
+
+			Editor.AddHotKeyEvent(OnHotKeyEvent_MeshGroup_Tab1_Setting, apHotKeyMapping.KEY_TYPE.MeshGroup_Tab_1_Setting, null);
+			Editor.AddHotKeyEvent(OnHotKeyEvent_MeshGroup_Tab2_Bone, apHotKeyMapping.KEY_TYPE.MeshGroup_Tab_2_Bone, null);
+			Editor.AddHotKeyEvent(OnHotKeyEvent_MeshGroup_Tab3_Modifier, apHotKeyMapping.KEY_TYPE.MeshGroup_Tab_3_Modifier, null);
+			Editor.AddHotKeyEvent(OnHotKeyEvent_SearchObject_MeshGroup, apHotKeyMapping.KEY_TYPE.Search_SubObject, null);
 
 			switch (Editor._meshGroupEditMode)
 			{
@@ -7462,11 +7521,13 @@ namespace AnyPortrait
 				//변경 v1.4.2
 				apEditorUtil.DrawListUnitBG(lastRect.x + 1, lastRect.y + height, width + 15 - 2, height, apEditorUtil.UNIT_BG_STYLE.Main);
 
-				curGUIStyle = apGUIStyleWrapper.I.None_White2Cyan;
+				//curGUIStyle = apGUIStyleWrapper.I.None_White2Cyan;
+				curGUIStyle = apGUIStyleWrapper.I.None_MiddleLeft_White2Cyan;//v1.4.8 수정
 			}
 			else
 			{
-				curGUIStyle = apGUIStyleWrapper.I.None_LabelColor;
+				//curGUIStyle = apGUIStyleWrapper.I.None_LabelColor;
+				curGUIStyle = apGUIStyleWrapper.I.None_MiddleLeft_LabelColor;//v1.4.8 수정
 			}
 
 			//GUIStyle guiStyle_None = new GUIStyle(GUIStyle.none);
@@ -7598,6 +7659,7 @@ namespace AnyPortrait
 			//단축키 추가 (20.12.4)
 			Editor.AddHotKeyEvent(OnHotKey_RenameAnimClip, apHotKeyMapping.KEY_TYPE.RenameObject, AnimClip);//[v1.4.5] 이름 변경을 다이얼로그에서 하는 것으로 변경
 
+			Editor.AddHotKeyEvent(OnHotKeyEvent_SearchObject_Animation, apHotKeyMapping.KEY_TYPE.Search_SubObject, null);
 
 			GUILayout.Space(5);
 			//MeshGroup에 연동해야한다.
@@ -7880,11 +7942,13 @@ namespace AnyPortrait
 				//변경 v1.4.2
 				apEditorUtil.DrawListUnitBG(lastRect.x + 1, lastRect.y + height, width + 15 - 2, height, apEditorUtil.UNIT_BG_STYLE.Main);
 
-				curGUIStyle = apGUIStyleWrapper.I.None_White2Cyan;
+				//curGUIStyle = apGUIStyleWrapper.I.None_White2Cyan;
+				curGUIStyle = apGUIStyleWrapper.I.None_MiddleLeft_White2Cyan;//v1.4.8
 			}
 			else
 			{
-				curGUIStyle = apGUIStyleWrapper.I.None_LabelColor;
+				//curGUIStyle = apGUIStyleWrapper.I.None_LabelColor;
+				curGUIStyle = apGUIStyleWrapper.I.None_MiddleLeft_LabelColor;//v1.4.8
 			}
 
 			
@@ -10063,6 +10127,7 @@ namespace AnyPortrait
 		{
 			//int subWidth = 250;
 			apBone curBone = Bone;
+			apMeshGroup curMeshGroup = MeshGroup;
 
 			bool isRefresh = false;
 			bool isAnyGUIAction = false;
@@ -10403,10 +10468,56 @@ namespace AnyPortrait
 			}
 
 
+
+
+
+
+
 			//4. 복제 설정
 			//[단일만]
 			if (isRender_Single)
 			{	
+				//추가 v1.4.8 : 루트 모션용 본으로 설정
+				
+				//조건
+				//부모 본이 없는 루트 본이어야 한다.
+				//자식 메시 그룹의 본이 아니어야 한다.
+				bool isRootBone = false;
+				if(curBone._parentBone == null && curBone._meshGroup == MeshGroup)
+				{ 
+					isRootBone = true;
+				}
+
+				if (isRootBone)
+				{
+					EditorGUILayout.BeginVertical();
+					//"Root Motion Enabled/Disabled"
+					if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.RootMotionEnabled),
+															Editor.GetUIWord(UIWORD.RootMotionDisabled),
+															curMeshGroup._rootMotionBoneID == curBone._uniqueID,
+															true, width, 25))
+					{
+						apEditorUtil.SetRecord_MeshGroup(apUndoGroupData.ACTION.MeshGroup_BoneSettingChanged,
+															Editor,
+															curBone._meshGroup,
+															//curBone, 
+															false, false,
+															apEditorUtil.UNDO_STRUCT.ValueOnly);
+						if (curMeshGroup._rootMotionBoneID == curBone._uniqueID)
+						{
+							//ON > OFF
+							curMeshGroup._rootMotionBoneID = -1;
+						}
+						else
+						{
+							//OFF > ON
+							curMeshGroup._rootMotionBoneID = curBone._uniqueID;
+						}
+					}
+					EditorGUILayout.EndVertical();
+				}
+				
+
 				//추가 8.13 : 복제 기능 (오프셋을 입력해야한다.)
 				if (GUILayout.Button(Editor.GetUIWord(UIWORD.Duplicate), apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20)))
 				{
@@ -10428,8 +10539,10 @@ namespace AnyPortrait
 
 						#endregion
 					}
-					
 				}
+
+
+				
 			}
 
 
@@ -11920,7 +12033,10 @@ namespace AnyPortrait
 				if (detachedBone != null)
 				{
 					isAnyGUIAction = true;
-					Editor.Controller.DetachBoneFromChild(curBone, detachedBone);
+					//Editor.Controller.DetachBoneFromChild(curBone, detachedBone);
+
+					Editor.Controller.SetBoneAsParent(detachedBone, null);
+
 					Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.MeshGroup_Bone__Child_Bone_Drawable, false);//"MeshGroup Bone - Child Bone Drawable"
 					isRefresh = true;
 				}
@@ -12358,8 +12474,11 @@ namespace AnyPortrait
 			//3. 각 프로퍼티 렌더링
 			// 수정
 			//일괄적으로 호출하자
+			EditorGUILayout.BeginVertical(apGUILOFactory.I.Width(width));
+
 			DrawModifierPropertyGUI(width, height);
 			
+			EditorGUILayout.EndVertical();
 			GUILayout.Space(20);
 
 
@@ -12428,52 +12547,52 @@ namespace AnyPortrait
 		/// <param name="height"></param>
 		private void DrawModifierPropertyGUI(int width, int height)
 		{
-			if (Modifier != null)
+			if (Modifier == null)
 			{
-				string strRecordName = Modifier.DisplayName;
+				return;
+			}
+			string strRecordName = Modifier.DisplayName;
 
 
-				if (Modifier.ModifierType == apModifierBase.MODIFIER_TYPE.Rigging)
+			if (Modifier.ModifierType == apModifierBase.MODIFIER_TYPE.Rigging)
+			{
+				//Rigging UI를 작성
+				DrawModifierPropertyGUI_Rigging(width, height, strRecordName);
+			}
+			else if (Modifier.ModifierType == apModifierBase.MODIFIER_TYPE.Physic)
+			{
+				//Physic UI를 작성
+				DrawModifierPropertyGUI_Physics(width, height);
+			}
+			else
+			{
+				//그 외에는 ParamSetGroup에 따라서 UI를 구성하면 된다.
+				switch (Modifier.SyncTarget)
 				{
-					//Rigging UI를 작성
-					DrawModifierPropertyGUI_Rigging(width, height, strRecordName);
+					case apModifierParamSetGroup.SYNC_TARGET.Bones:
+						break;
+
+					case apModifierParamSetGroup.SYNC_TARGET.Controller:
+						{
+							//Control Param 리스트
+							apDialog_SelectControlParam.PARAM_TYPE paramFilter = apDialog_SelectControlParam.PARAM_TYPE.All;
+							DrawModifierPropertyGUI_ControllerParamSet(width, height, paramFilter, strRecordName);
+						}
+						break;
+
+					case apModifierParamSetGroup.SYNC_TARGET.ControllerWithoutKey:
+						break;
+
+					case apModifierParamSetGroup.SYNC_TARGET.KeyFrame:
+						{
+							//Keyframe 리스트
+							DrawModifierPropertyGUI_KeyframeParamSet(width, height, strRecordName);
+						}
+						break;
+
+					case apModifierParamSetGroup.SYNC_TARGET.Static:
+						break;
 				}
-				else if (Modifier.ModifierType == apModifierBase.MODIFIER_TYPE.Physic)
-				{
-					//Physic UI를 작성
-					DrawModifierPropertyGUI_Physics(width, height);
-				}
-				else
-				{
-					//그 외에는 ParamSetGroup에 따라서 UI를 구성하면 된다.
-					switch (Modifier.SyncTarget)
-					{
-						case apModifierParamSetGroup.SYNC_TARGET.Bones:
-							break;
-
-						case apModifierParamSetGroup.SYNC_TARGET.Controller:
-							{
-								//Control Param 리스트
-								apDialog_SelectControlParam.PARAM_TYPE paramFilter = apDialog_SelectControlParam.PARAM_TYPE.All;
-								DrawModifierPropertyGUI_ControllerParamSet(width, height, paramFilter, strRecordName);
-							}
-							break;
-
-						case apModifierParamSetGroup.SYNC_TARGET.ControllerWithoutKey:
-							break;
-
-						case apModifierParamSetGroup.SYNC_TARGET.KeyFrame:
-							{
-								//Keyframe 리스트
-								DrawModifierPropertyGUI_KeyframeParamSet(width, height, strRecordName);
-							}
-							break;
-
-						case apModifierParamSetGroup.SYNC_TARGET.Static:
-							break;
-					}
-				}
-
 			}
 		}
 
@@ -14833,6 +14952,8 @@ namespace AnyPortrait
 			
 		}
 
+
+		
 		
 
 		//Rigging Modifier UI를 출력한다.
@@ -14966,24 +15087,39 @@ namespace AnyPortrait
 			}
 
 
-			if (Event.current.type == EventType.Layout ||
-				Event.current.type == EventType.Repaint)
-			{
-				_riggingModifier_prevSelectedTransform = targetMeshTransform;
-				_riggingModifier_prevIsContained = isContainInParamSetGroup;
-			}
-			bool isSameSetting = (targetMeshTransform == _riggingModifier_prevSelectedTransform)
-								&& (isContainInParamSetGroup == _riggingModifier_prevIsContained);
+			//삭제
+			//if (Event.current.type == EventType.Layout
+			//	|| Event.current.type == EventType.Repaint
+			//	)
+			//{
+			//	_riggingModifier_prevSelectedTransform = targetMeshTransform;
+			//	_riggingModifier_prevIsContained = isContainInParamSetGroup;
+			//}
+			//bool isSameSetting = (targetMeshTransform == _riggingModifier_prevSelectedTransform)
+			//					&& (isContainInParamSetGroup == _riggingModifier_prevIsContained);
 
+			//Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging, isSameSetting);//"Modifier_Add Transform Check [Rigging]
+						
+			//if (!Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging))//"Modifier_Add Transform Check [Rigging]
+			//{
+			//	return;
+			//}
 
-			Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging, isSameSetting);//"Modifier_Add Transform Check [Rigging]
+			//v1.4.7
+			//현재 대상 상태
+			MOD_RIGGING_TARGET_CHECK_MODE riggingTargetMode = MOD_RIGGING_TARGET_CHECK_MODE.NoTarget;
+			if (targetMeshTransform == null)	{ riggingTargetMode = MOD_RIGGING_TARGET_CHECK_MODE.NoTarget; }
+			else if(isContainInParamSetGroup)	{ riggingTargetMode = MOD_RIGGING_TARGET_CHECK_MODE.Contained; }
+			else if(!isAddable)					{ riggingTargetMode = MOD_RIGGING_TARGET_CHECK_MODE.NotAddable; }
+			else								{ riggingTargetMode = MOD_RIGGING_TARGET_CHECK_MODE.Addable; }
 
-
-
-			if (!Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging))//"Modifier_Add Transform Check [Rigging]
-			{
-				return;
-			}
+			Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging_NoTarget, riggingTargetMode == MOD_RIGGING_TARGET_CHECK_MODE.NoTarget);
+			Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging_Contained, riggingTargetMode == MOD_RIGGING_TARGET_CHECK_MODE.Contained);
+			Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging_NotAddable, riggingTargetMode == MOD_RIGGING_TARGET_CHECK_MODE.NotAddable);
+			Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging_Addable, riggingTargetMode == MOD_RIGGING_TARGET_CHECK_MODE.Addable);
+			
+			
+			EditorGUILayout.BeginVertical(apGUILOFactory.I.Width(width));
 
 			Color prevColor = GUI.backgroundColor;
 
@@ -14991,120 +15127,133 @@ namespace AnyPortrait
 			//boxGUIStyle.alignment = TextAnchor.MiddleCenter;
 			//boxGUIStyle.normal.textColor = apEditorUtil.BoxTextColor;
 
-			if (targetMeshTransform == null)
+			//if (targetMeshTransform == null)
+			if(riggingTargetMode == MOD_RIGGING_TARGET_CHECK_MODE.NoTarget)
 			{
 				// [ 선택된 MeshTF가 없다 ] 메시지
 				//선택된 MeshTransform이 없다.
 
-				GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
-				//"No Mesh is Selected"
-				GUILayout.Box(Editor.GetUIWord(UIWORD.NoMeshIsSelected), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(35));
+				if (Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging_NoTarget))
+				{
+					GUI.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//"No Mesh is Selected"
+					GUILayout.Box(Editor.GetUIWord(UIWORD.NoMeshIsSelected), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(35));
 
-				GUI.backgroundColor = prevColor;
+					GUI.backgroundColor = prevColor;
+				}
 			}
-			else if (isContainInParamSetGroup)
+			//else if (isContainInParamSetGroup)
+			else if (riggingTargetMode == MOD_RIGGING_TARGET_CHECK_MODE.Contained)
 			{
 				// [ 리깅에서 제외하기 ] 버튼
 				// 이미 등록되어 있다.
-
-				GUI.backgroundColor = new Color(0.4f, 1.0f, 0.5f, 1.0f);
-				//"[" + strTargetName + "]\nSelected"
-
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_L, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(_guiContent_ModProp_ParamSetTarget_Name.Content.text, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_R, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Return, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(Editor.GetUIWord(UIWORD.Selected), true);
-
-				//GUILayout.Box("[" + strTargetName + "]\n" + Editor.GetUIWord(UIWORD.Selected), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, GUILayout.Width(width), GUILayout.Height(35));
-				GUILayout.Box(_guiContent_ModProp_ParamSetTarget_StatusText.Content, apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(35));
-
-				GUI.backgroundColor = prevColor;
-
-				//"  Remove From Rigging"
-
-				//이전
-				//if (GUILayout.Button(new GUIContent("  " + Editor.GetUIWord(UIWORD.RemoveFromRigging), Editor.ImageSet.Get(apImageSet.PRESET.Modifier_RemoveFromRigging)), GUILayout.Width(width), GUILayout.Height(30)))
-
-				//변경
-				if (_guiContent_Modifier_RemoveFromRigging == null)
+				if (Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging_Contained))
 				{
-					_guiContent_Modifier_RemoveFromRigging = apGUIContentWrapper.Make(2, Editor.GetUIWord(UIWORD.RemoveFromRigging), Editor.ImageSet.Get(apImageSet.PRESET.Modifier_RemoveFromRigging));
-				}
-				
-				if (GUILayout.Button(_guiContent_Modifier_RemoveFromRigging.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))
-				{
+					GUI.backgroundColor = new Color(0.4f, 1.0f, 0.5f, 1.0f);
+					//"[" + strTargetName + "]\nSelected"
 
-					//bool result = EditorUtility.DisplayDialog("Remove From Rigging", "Remove From Rigging [" + strTargetName + "]", "Remove", "Cancel");
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_L, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(_guiContent_ModProp_ParamSetTarget_Name.Content.text, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_R, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Return, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(Editor.GetUIWord(UIWORD.Selected), true);
 
-					bool result = EditorUtility.DisplayDialog(Editor.GetText(TEXT.RemoveFromRigging_Title),
-																Editor.GetTextFormat(TEXT.RemoveFromRigging_Body, _guiContent_ModProp_ParamSetTarget_Name.Content.text),
-																Editor.GetText(TEXT.Remove),
-																Editor.GetText(TEXT.Cancel)
-																);
+					//GUILayout.Box("[" + strTargetName + "]\n" + Editor.GetUIWord(UIWORD.Selected), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, GUILayout.Width(width), GUILayout.Height(35));
+					GUILayout.Box(_guiContent_ModProp_ParamSetTarget_StatusText.Content, apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(35));
 
-					if (result)
+					GUI.backgroundColor = prevColor;
+
+					//"  Remove From Rigging"
+
+					//이전
+					//if (GUILayout.Button(new GUIContent("  " + Editor.GetUIWord(UIWORD.RemoveFromRigging), Editor.ImageSet.Get(apImageSet.PRESET.Modifier_RemoveFromRigging)), GUILayout.Width(width), GUILayout.Height(30)))
+
+					//변경
+					if (_guiContent_Modifier_RemoveFromRigging == null)
 					{
-						object targetObj = MeshTF_Main;
-						if (MeshGroupTF_Main != null && selectedObj == MeshGroupTF_Main)
+						_guiContent_Modifier_RemoveFromRigging = apGUIContentWrapper.Make(2, Editor.GetUIWord(UIWORD.RemoveFromRigging), Editor.ImageSet.Get(apImageSet.PRESET.Modifier_RemoveFromRigging));
+					}
+
+					if (GUILayout.Button(_guiContent_Modifier_RemoveFromRigging.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))
+					{
+
+						//bool result = EditorUtility.DisplayDialog("Remove From Rigging", "Remove From Rigging [" + strTargetName + "]", "Remove", "Cancel");
+
+						bool result = EditorUtility.DisplayDialog(Editor.GetText(TEXT.RemoveFromRigging_Title),
+																	Editor.GetTextFormat(TEXT.RemoveFromRigging_Body, _guiContent_ModProp_ParamSetTarget_Name.Content.text),
+																	Editor.GetText(TEXT.Remove),
+																	Editor.GetText(TEXT.Cancel)
+																	);
+
+						if (result)
 						{
-							targetObj = MeshGroupTF_Main;
+							object targetObj = MeshTF_Main;
+							if (MeshGroupTF_Main != null && selectedObj == MeshGroupTF_Main)
+							{
+								targetObj = MeshGroupTF_Main;
+							}
+
+							apEditorUtil.SetRecord_Modifier(apUndoGroupData.ACTION.Modifier_RemoveBoneRigging,
+																Editor,
+																Modifier,
+																//targetObj, 
+																false,
+																apEditorUtil.UNDO_STRUCT.StructChanged);
+
+							if (MeshTF_Main != null && selectedObj == MeshTF_Main)
+							{
+								SubEditedParamSetGroup.RemoveModifierMeshes(MeshTF_Main);
+							}
+							else if (MeshGroupTF_Main != null && selectedObj == MeshGroupTF_Main)
+							{
+								SubEditedParamSetGroup.RemoveModifierMeshes(MeshGroupTF_Main);
+							}
+							else
+							{
+								//TODO : Bone 제거
+							}
+
+							Editor._portrait.LinkAndRefreshInEditor(false, apUtil.LinkRefresh.Set_MeshGroup_Modifier(MeshGroup, Modifier));
+							AutoSelectModMeshOrModBone();
+
+							Editor.Hierarchy_MeshGroup.RefreshUnits();
+							Editor.RefreshControllerAndHierarchy(false);
+
+							//추가 21.1.32 : Rule 가시성 동기화 초기화 / 추가 삭제 코드가 왜 없었지
+							Editor.Controller.ResetVisibilityPresetSync();
+							Editor.OnAnyObjectAddedOrRemoved();
+
+							//추가 21.2.17
+							RefreshMeshGroupExEditingFlags(true);
+
+							Editor.SetRepaint();
 						}
-
-						apEditorUtil.SetRecord_Modifier(	apUndoGroupData.ACTION.Modifier_RemoveBoneRigging, 
-															Editor, 
-															Modifier, 
-															//targetObj, 
-															false,
-															apEditorUtil.UNDO_STRUCT.StructChanged);
-
-						if (MeshTF_Main != null && selectedObj == MeshTF_Main)
-						{
-							SubEditedParamSetGroup.RemoveModifierMeshes(MeshTF_Main);
-						}
-						else if (MeshGroupTF_Main != null && selectedObj == MeshGroupTF_Main)
-						{
-							SubEditedParamSetGroup.RemoveModifierMeshes(MeshGroupTF_Main);
-						}
-						else
-						{
-							//TODO : Bone 제거
-						}
-
-						Editor._portrait.LinkAndRefreshInEditor(false, apUtil.LinkRefresh.Set_MeshGroup_Modifier(MeshGroup, Modifier));
-						AutoSelectModMeshOrModBone();
-
-						Editor.Hierarchy_MeshGroup.RefreshUnits();
-						Editor.RefreshControllerAndHierarchy(false);
-
-						//추가 21.1.32 : Rule 가시성 동기화 초기화 / 추가 삭제 코드가 왜 없었지
-						Editor.Controller.ResetVisibilityPresetSync();
-						Editor.OnAnyObjectAddedOrRemoved();
-
-						//추가 21.2.17
-						RefreshMeshGroupExEditingFlags(true);
-
-						Editor.SetRepaint();
 					}
 				}
 			}
-			else if (!isAddable)
+			//else if (!isAddable)
+			else if (riggingTargetMode == MOD_RIGGING_TARGET_CHECK_MODE.NotAddable)
 			{
 				// [ 추가 불가 ] 메시지
 				//추가 가능하지 않다.
 
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_L, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(_guiContent_ModProp_ParamSetTarget_Name.Content.text, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_R, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Return, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(Editor.GetUIWord(UIWORD.NotAbleToBeAdded), true);
+				if (Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging_NotAddable))
+				{
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_L, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(_guiContent_ModProp_ParamSetTarget_Name.Content.text, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_R, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Return, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(Editor.GetUIWord(UIWORD.NotAbleToBeAdded), true);
 
-				GUI.backgroundColor = new Color(1.0f, 0.5f, 0.5f, 1.0f);
-				//"[" + strTargetName + "]\nNot able to be Added"
-				//GUILayout.Box("[" + strTargetName + "]\n" + Editor.GetUIWord(UIWORD.NotAbleToBeAdded), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, GUILayout.Width(width), GUILayout.Height(35));
-				GUILayout.Box(_guiContent_ModProp_ParamSetTarget_StatusText.Content, apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(35));
+					GUI.backgroundColor = new Color(1.0f, 0.5f, 0.5f, 1.0f);
+					//"[" + strTargetName + "]\nNot able to be Added"
+					//GUILayout.Box("[" + strTargetName + "]\n" + Editor.GetUIWord(UIWORD.NotAbleToBeAdded), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, GUILayout.Width(width), GUILayout.Height(35));
+					GUILayout.Box(_guiContent_ModProp_ParamSetTarget_StatusText.Content, apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(35));
 
-				GUI.backgroundColor = prevColor;
+					GUI.backgroundColor = prevColor;
+				}
+
+				
 			}
 			else
 			{
@@ -15112,62 +15261,67 @@ namespace AnyPortrait
 
 				//아직 추가하지 않았다. 추가하자
 
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_L, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(_guiContent_ModProp_ParamSetTarget_Name.Content.text, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_R, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Return, false);
-				_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(Editor.GetUIWord(UIWORD.NotAddedtoEdit), true);
-
-				GUI.backgroundColor = new Color(1.0f, 0.5f, 0.5f, 1.0f);
-				//"[" + strTargetName + "]\nNot Added to Edit"
-				//GUILayout.Box("[" + strTargetName + "]\n" + Editor.GetUIWord(UIWORD.NotAddedtoEdit), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, GUILayout.Width(width), GUILayout.Height(35));
-				GUILayout.Box(_guiContent_ModProp_ParamSetTarget_StatusText.Content, apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(35));
-
-				GUI.backgroundColor = prevColor;
-
-				//"  Add Rigging" -> "  Add to Rigging"
-				//이전
-				//if (GUILayout.Button(new GUIContent("  " + Editor.GetUIWord(UIWORD.AddToRigging), Editor.ImageSet.Get(apImageSet.PRESET.Modifier_AddToRigging)), GUILayout.Width(width), GUILayout.Height(30)))
-
-				//변경
-				if(_guiContent_Modifier_AddToRigging == null)
+				if (Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Modifier_Add_Transform_Check__Rigging_Addable))
 				{
-					_guiContent_Modifier_AddToRigging = apGUIContentWrapper.Make(2, Editor.GetUIWord(UIWORD.AddToRigging), Editor.ImageSet.Get(apImageSet.PRESET.Modifier_AddToRigging));
-				}
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_L, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(_guiContent_ModProp_ParamSetTarget_Name.Content.text, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Bracket_2_R, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(apStringFactory.I.Return, false);
+					_guiContent_ModProp_ParamSetTarget_StatusText.AppendText(Editor.GetUIWord(UIWORD.NotAddedtoEdit), true);
 
-				
-				//Add To Rigging 버튼은 반짝거린다.
-				GUI.backgroundColor = apEditorUtil.GetAnimatedHighlightButtonColor();
+					GUI.backgroundColor = new Color(1.0f, 0.5f, 0.5f, 1.0f);
+					//"[" + strTargetName + "]\nNot Added to Edit"
+					//GUILayout.Box("[" + strTargetName + "]\n" + Editor.GetUIWord(UIWORD.NotAddedtoEdit), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, GUILayout.Width(width), GUILayout.Height(35));
+					GUILayout.Box(_guiContent_ModProp_ParamSetTarget_StatusText.Content, apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(35));
 
-				if (GUILayout.Button(_guiContent_Modifier_AddToRigging.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))
-				{
-					apModifiedMesh newModMesh = Editor.Controller.AddModMesh_WithSubMeshOrSubMeshGroup();
+					GUI.backgroundColor = prevColor;
 
-					Editor.Hierarchy_MeshGroup.RefreshUnits();
+					//"  Add Rigging" -> "  Add to Rigging"
+					//이전
+					//if (GUILayout.Button(new GUIContent("  " + Editor.GetUIWord(UIWORD.AddToRigging), Editor.ImageSet.Get(apImageSet.PRESET.Modifier_AddToRigging)), GUILayout.Width(width), GUILayout.Height(30)))
 
-					Editor.SetRepaint();
-
-					//추가 11.7 : 만약 Rig Edit 모드가 아니면, Rig Edit모드로 바로 활성화
-					if(!IsRigEditBinding)
+					//변경
+					if (_guiContent_Modifier_AddToRigging == null)
 					{
-						ToggleRigEditBinding();
+						_guiContent_Modifier_AddToRigging = apGUIContentWrapper.Make(2, Editor.GetUIWord(UIWORD.AddToRigging), Editor.ImageSet.Get(apImageSet.PRESET.Modifier_AddToRigging));
 					}
 
-					//추가 22.7.13 [v1.4.0]
-					//빠른 접근 위해 바로 모든 버텍스를 선택한다.
-					if(newModMesh != null && 
-						newModMesh == Editor.Select.ModMesh_Main)
-					{
-						//버텍스를 모두 선택한다. 해당 코드는 Rigging Gizmo Controller의 Ctrl+A의 코드 참조
-						Editor.Select.AddModRenderVertsOfModifier(Editor.Select.ModData.ModRenderVert_All);
-						Editor.Gizmos.SetSelectResultForce_Multiple<apSelection.ModRenderVert>(Editor.Select.ModRenderVerts_All);
-						Editor.Select.AutoSelectModMeshOrModBone();
-					}
 
+					//Add To Rigging 버튼은 반짝거린다.
+					GUI.backgroundColor = apEditorUtil.GetAnimatedHighlightButtonColor();
+
+					if (GUILayout.Button(_guiContent_Modifier_AddToRigging.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))
+					{
+						apModifiedMesh newModMesh = Editor.Controller.AddModMesh_WithSubMeshOrSubMeshGroup();
+
+						Editor.Hierarchy_MeshGroup.RefreshUnits();
+
+						Editor.SetRepaint();
+
+						//추가 11.7 : 만약 Rig Edit 모드가 아니면, Rig Edit모드로 바로 활성화
+						if (!IsRigEditBinding)
+						{
+							ToggleRigEditBinding();
+						}
+
+						//추가 22.7.13 [v1.4.0]
+						//빠른 접근 위해 바로 모든 버텍스를 선택한다.
+						if (newModMesh != null &&
+							newModMesh == Editor.Select.ModMesh_Main)
+						{
+							//버텍스를 모두 선택한다. 해당 코드는 Rigging Gizmo Controller의 Ctrl+A의 코드 참조
+							Editor.Select.AddModRenderVertsOfModifier(Editor.Select.ModData.ModRenderVert_All);
+							Editor.Gizmos.SetSelectResultForce_Multiple<apSelection.ModRenderVert>(Editor.Select.ModRenderVerts_All);
+							Editor.Select.AutoSelectModMeshOrModBone();
+						}
+
+					}
+					GUI.backgroundColor = prevColor;
 				}
-				GUI.backgroundColor = prevColor;
 			}
 			GUI.backgroundColor = prevColor;
+
+			EditorGUILayout.EndVertical();
 
 			GUILayout.Space(5);
 			apEditorUtil.GUI_DelimeterBoxH(width);
@@ -15364,7 +15518,7 @@ namespace AnyPortrait
 					else
 					{
 						GUI.backgroundColor = vertRigData._bone._color;
-						GUILayout.Box(apStringFactory.I.None, apEditorUtil.WhiteGUIStyle_Box, apGUILOFactory.I.Width(14), apGUILOFactory.I.Height(14));//일반 박스 이미지
+						GUILayout.Box(apStringFactory.I.None, apEditorUtil.WhiteGUIStyle_BoxIcon, apGUILOFactory.I.Width(14), apGUILOFactory.I.Height(14));//일반 박스 이미지
 						GUI.backgroundColor = prevColor;
 					}
 
@@ -19215,6 +19369,9 @@ namespace AnyPortrait
 			apEditorUtil.GUI_DelimeterBoxV(height - 6);
 			GUILayout.Space(10);
 
+			//TODO : 여기서부터
+
+
 #region [미사용 코드] 더이상 선택된 객체 정보를 출력하지 않는다. (다중 선택도 있고 불필요하다고 판단) 20.6.12
 			//apImageSet.PRESET modImagePreset = apEditorUtil.GetModifierIconType(Modifier.ModifierType);
 
@@ -19518,6 +19675,11 @@ namespace AnyPortrait
 				{
 					ResetRiggingTestPose();
 				}
+
+				//포즈 테스트 관련 단축키
+				
+				Editor.AddHotKeyEvent(OnHotKeyEvent_ToggleRiggingPoseTest, apHotKeyMapping.KEY_TYPE.Rig_PoseTest, null);
+				Editor.AddHotKeyEvent(OnHotKeyEvent_ResetPoseTest, apHotKeyMapping.KEY_TYPE.Rig_PoseReset, null);
 			}
 			else if (Modifier.ModifierType == apModifierBase.MODIFIER_TYPE.Physic)
 			{
@@ -19762,7 +19924,7 @@ namespace AnyPortrait
 			}
 
 			Rect timelineRect = new Rect(lastRect.x + leftTabWidth + 4, lastRect.y, timelineWidth, guiHeight + 15);
-			GUI.Box(timelineRect, apStringFactory.I.None, apEditorUtil.WhiteGUIStyle_Box);
+			GUI.Box(timelineRect, apStringFactory.I.None, apEditorUtil.WhiteGUIStyle);
 
 			if (EditorGUIUtility.isProSkin)
 			{
@@ -19777,7 +19939,7 @@ namespace AnyPortrait
 			}
 
 			Rect timelineBottomRect = new Rect(lastRect.x + leftTabWidth + 4, lastRect.y + guiHeight + 15, timelineWidth, height - (guiHeight));
-			GUI.Box(timelineBottomRect, apStringFactory.I.None, apEditorUtil.WhiteGUIStyle_Box);
+			GUI.Box(timelineBottomRect, apStringFactory.I.None, apEditorUtil.WhiteGUIStyle);
 
 			GUI.backgroundColor = prevColor;
 
@@ -20129,6 +20291,7 @@ namespace AnyPortrait
 			apTimelineLayerInfo info = null;
 			Color layerBGColor_Default = Color.white;
 			Color layerBGColor_UI = Color.white;
+			Color layerKeyframeColor = Color.white;
 
 			bool isSelectedFlashingColor = _editor._animUIOption_SelectedTimelineGUIType == apEditor.SELECTED_TIMELINE_GUI_TYPE.Flashing;
 
@@ -20156,7 +20319,7 @@ namespace AnyPortrait
 
 				//배경 / 텍스트 색상을 정하자
 				layerBGColor_Default = info.GUIColor_Default;
-				layerBGColor_UI = info.GetGUIColor_WithSelected(isSelectedFlashingColor);
+				info.GetGUIColor_WithSelected(isSelectedFlashingColor, out layerBGColor_UI, out layerKeyframeColor);
 				textColorType = 0;//<<0 : Black, 1 : White, 2 : Gray (기본 검은색)
 
 				info._guiLayerPosY = curLayerY;
@@ -20236,7 +20399,7 @@ namespace AnyPortrait
 					if (info._isTimeline)
 					{
 						GUI.backgroundColor = layerBGColor_UI;
-						GUI.Box(new Rect(0, curLayerY - _scroll_Timeline.y, btnWidth_Layer, layerHeight), apStringFactory.I.None, apEditorUtil.WhiteGUIStyle_Box);
+						GUI.Box(new Rect(0, curLayerY - _scroll_Timeline.y, btnWidth_Layer, layerHeight), apStringFactory.I.None, apEditorUtil.WhiteGUIStyle);
 
 						int yOffset = (layerHeight - 18) / 2;
 
@@ -20274,7 +20437,7 @@ namespace AnyPortrait
 						int yOffset = (layerHeight - 18) / 2;
 
 						GUI.backgroundColor = layerBGColor_UI;
-						GUI.Box(new Rect(0, curLayerY - _scroll_Timeline.y, btnWidth_Layer, layerHeight), apStringFactory.I.None, apEditorUtil.WhiteGUIStyle_Box);
+						GUI.Box(new Rect(0, curLayerY - _scroll_Timeline.y, btnWidth_Layer, layerHeight), apStringFactory.I.None, apEditorUtil.WhiteGUIStyle);
 
 						if (GUI.Button(new Rect(2, (curLayerY + yOffset) - _scroll_Timeline.y, 18, 18), apStringFactory.I.Minus, apGUIStyleWrapper.I.Button_Margin0))
 						{
@@ -20350,8 +20513,10 @@ namespace AnyPortrait
 			if (isRepaintEvent)
 			{
 				apTimelineGL.DrawTimelineAreaBG(ExAnimEditingMode != EX_EDIT.None);
-				apTimelineGL.DrawTimeGrid(new Color(0.4f, 0.4f, 0.4f, 1.0f), new Color(0.3f, 0.3f, 0.3f, 1.0f), new Color(0.7f, 0.7f, 0.7f, 1.0f));
-				apTimelineGL.DrawTimeBars_Header(new Color(0.4f, 0.4f, 0.4f, 1.0f));
+				//apTimelineGL.DrawTimeGrid(new Color(0.4f, 0.4f, 0.4f, 1.0f), new Color(0.3f, 0.3f, 0.3f, 1.0f), new Color(0.7f, 0.7f, 0.7f, 1.0f));
+				//apTimelineGL.DrawTimeBars_Header(new Color(0.4f, 0.4f, 0.4f, 1.0f));
+				apTimelineGL.DrawTimeGrid(new Color(0.35f, 0.35f, 0.35f, 1.0f), new Color(0.25f, 0.25f, 0.25f, 1.0f), new Color(0.7f, 0.7f, 0.7f, 1.0f));
+				apTimelineGL.DrawTimeBars_Header(new Color(0.35f, 0.35f, 0.35f, 1.0f));
 			}
 			
 
@@ -20420,7 +20585,7 @@ namespace AnyPortrait
 
 					if (!info._isTimeline)
 					{
-						Color curveEditColor = Color.black;
+						//Color curveEditColor = Color.black;
 
 						//커브를 여러개 편집 중인지 아닌지 확인
 						if (isSingleCurveEdit)
@@ -20452,9 +20617,14 @@ namespace AnyPortrait
 							isSelectedAnimTimeline = _animTimelineCommonCurve.IsSelectedTimelineLayer(info._layer);
 						}
 
+						info.GetGUIColor_WithSelected(isSelectedFlashingColor, out layerBGColor_UI, out layerKeyframeColor);
 						apTimelineGL.DrawKeyframes(	info._layer,
 													curLayerY + layerHeight / 2,
-													info.GetGUIColor_WithSelected(isSelectedFlashingColor),
+
+													
+													//info.GetGUIColor_WithSelected(isSelectedFlashingColor),//이전
+													layerKeyframeColor,//변경 v1.4.7
+
 													info._isAvailable,
 													layerHeight,
 													AnimClip.CurFrame,
@@ -21493,6 +21663,10 @@ namespace AnyPortrait
 			Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Animation_Bottom_Property__SL, propertyUIType == ANIM_BOTTOM_PROPERTY_UI.SingleTimelineLayer);//"Animation Bottom Property - L"
 			Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Animation_Bottom_Property__T, propertyUIType == ANIM_BOTTOM_PROPERTY_UI.Timeline);//"Animation Bottom Property - T"
 
+			//세부 
+
+
+
 			switch (propertyUIType)
 			{
 				case ANIM_BOTTOM_PROPERTY_UI.MultipleKeyframes:
@@ -21769,6 +21943,10 @@ namespace AnyPortrait
 
 			EditorGUILayout.EndHorizontal();
 
+			if (Event.current.type == EventType.Layout)
+			{
+				_tmpPrevSelectedAnimKeyframe = keyframe;
+			}
 			
 
 			Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Bottom_Right_Anim_Property__ControlParamUI, isControlParamUI);//"Bottom Right Anim Property - ControlParamUI"
@@ -21784,10 +21962,10 @@ namespace AnyPortrait
 			bool isSameKP = Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Anim_Property__SameKeyframe);//"Anim Property - SameKeyframe"
 
 			//if (Event.current.type != EventType.Layout && Event.current.type != EventType.Repaint)
-			if (Event.current.type != EventType.Layout)
-			{
-				_tmpPrevSelectedAnimKeyframe = keyframe;
-			}
+			//if (Event.current.type != EventType.Layout)
+			//{
+			//	_tmpPrevSelectedAnimKeyframe = keyframe;
+			//}
 
 			Color prevColor = GUI.backgroundColor;
 
@@ -22317,8 +22495,7 @@ namespace AnyPortrait
 				//2) 양쪽의 컨트롤 포인트의 설정을 결정한다. (Linear / Smooth / Constant(Stepped))
 				//3) 커브 GUI
 
-				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30));
-
+				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30));//---Horizontal
 				GUILayout.Space(5);
 
 				int curveTypeBtnSize = 30;
@@ -22419,50 +22596,53 @@ namespace AnyPortrait
 				{
 					_animPropertyCurveUI = ANIM_SINGLE_PROPERTY_CURVE_UI.Next;
 				}
-				GUILayout.Space(5);
-				if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Linear), curveResult.CurveTangentType == apAnimCurve.TANGENT_TYPE.Linear, true, curveTypeBtnSize, 30,
-												apStringFactory.I.AnimCurveTooltip_Linear))//"Linear Curve"
-				{
-					apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-														Editor, 
-														_portrait, 
-														//curveResult,
-														false,
-														apEditorUtil.UNDO_STRUCT.ValueOnly);
-
-					curveResult.SetTangent(apAnimCurve.TANGENT_TYPE.Linear);
-				}
-				if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Smooth), curveResult.CurveTangentType == apAnimCurve.TANGENT_TYPE.Smooth, true, curveTypeBtnSize, 30,
-												apStringFactory.I.AnimCurveTooltip_Smooth))//"Smooth Curve"
-				{
-					apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-														Editor, 
-														_portrait, 
-														//curveResult, 
-														false,
-														apEditorUtil.UNDO_STRUCT.ValueOnly);
-					curveResult.SetTangent(apAnimCurve.TANGENT_TYPE.Smooth);
-				}
-				if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Stepped), curveResult.CurveTangentType == apAnimCurve.TANGENT_TYPE.Constant, true, curveTypeBtnSize, 30,
-												apStringFactory.I.AnimCurveTooltip_Constant))//"Constant Curve"
-				{
-					apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-														Editor, 
-														_portrait, 
-														//curveResult, 
-														false,
-														apEditorUtil.UNDO_STRUCT.ValueOnly);
-
-					curveResult.SetTangent(apAnimCurve.TANGENT_TYPE.Constant);
-				}
-
-
-
-				EditorGUILayout.EndHorizontal();
-				GUILayout.Space(5);
 
 				if (isSameKP)
 				{
+					GUILayout.Space(5);
+
+					if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Linear), curveResult.CurveTangentType == apAnimCurve.TANGENT_TYPE.Linear, true, curveTypeBtnSize, 30,
+													apStringFactory.I.AnimCurveTooltip_Linear))//"Linear Curve"
+					{
+						apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
+															Editor, 
+															_portrait, 
+															//curveResult,
+															false,
+															apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+						curveResult.SetTangent(apAnimCurve.TANGENT_TYPE.Linear);
+					}
+					if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Smooth), curveResult.CurveTangentType == apAnimCurve.TANGENT_TYPE.Smooth, true, curveTypeBtnSize, 30,
+													apStringFactory.I.AnimCurveTooltip_Smooth))//"Smooth Curve"
+					{
+						apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
+															Editor, 
+															_portrait, 
+															//curveResult, 
+															false,
+															apEditorUtil.UNDO_STRUCT.ValueOnly);
+						curveResult.SetTangent(apAnimCurve.TANGENT_TYPE.Smooth);
+					}
+					if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Stepped), curveResult.CurveTangentType == apAnimCurve.TANGENT_TYPE.Constant, true, curveTypeBtnSize, 30,
+													apStringFactory.I.AnimCurveTooltip_Constant))//"Constant Curve"
+					{
+						apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
+															Editor, 
+															_portrait, 
+															//curveResult, 
+															false,
+															apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+						curveResult.SetTangent(apAnimCurve.TANGENT_TYPE.Constant);
+					}
+
+
+
+					EditorGUILayout.EndHorizontal();
+					GUILayout.Space(5);
+
+				
 
 					if (curveA == null || curveB == null)
 					{
@@ -22522,7 +22702,7 @@ namespace AnyPortrait
 						//apAnimCurveGL.SetMouseValue(isLeftBtnPressed, apMouse.PosNotBound, Event.current.rawType, this);//이전
 						apAnimCurveGL.SetMouseValue(isLeftBtnPressed, Editor.Mouse.PosNotBound, Event.current.rawType, this);
 
-						GUI.Box(curveRect, apStringFactory.I.None, apEditorUtil.WhiteGUIStyle_Box);
+						GUI.Box(curveRect, apStringFactory.I.None, apEditorUtil.WhiteGUIStyle);
 						//EditorGUILayout.BeginVertical(GUILayout.Width(width), GUILayout.Height(curveUI_Height));
 						GUILayout.BeginArea(new Rect(lastRect.x + 8, lastRect.y + 124, curveUI_Width - 2, curveUI_Height - 2));
 
@@ -22672,16 +22852,22 @@ namespace AnyPortrait
 
 					}
 				}
+				else
+				{
+					EditorGUILayout.EndHorizontal();//---Horizontal
+				}
 			}
 
 
 
-			GUILayout.Space(10);
-			apEditorUtil.GUI_DelimeterBoxH(width);
-			GUILayout.Space(10);
+			
 
 			if (isSameKP)
 			{
+				GUILayout.Space(10);
+				apEditorUtil.GUI_DelimeterBoxH(width);
+				GUILayout.Space(10);
+
 				//복사 / 붙여넣기 / 삭제 // (복붙은 모든 타입에서 등장한다)
 				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30));
 				GUILayout.Space(5);
@@ -23266,361 +23452,384 @@ namespace AnyPortrait
 			//1) 편집할 수 있는 커브가 없다.
 			//2) 동기화된 상태여서 편집이 가능하다.
 			//3) 동기화되지 않았다.
+			
+			//커브 관련 UI가 그려진 이후에야 다음 UI (키프레임 삭제 버튼 등)가 그려질 수 있다.
+			//UI 렌더 타이밍 문제
+			bool isRemainUIRenderable = false;
 
-			if (Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.AnimProperty_MultipleCurve__NoKey))
+			if (isCurves_NoKey)
 			{
 				//1) 편집할 수 있는 커브가 없다.
-				EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.NoSelectedCurveEdit));//"There is no selected curve to edit."
-				GUILayout.Space(5);
+				if (Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.AnimProperty_MultipleCurve__NoKey))
+				{
+					EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.NoSelectedCurveEdit));//"There is no selected curve to edit."
+					GUILayout.Space(5);
+
+					isRemainUIRenderable = true;
+				}
+				
 			}
-			else if (Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.AnimProperty_MultipleCurve__Sync))//"AnimProperty_MultipleCurve : Sync"
+			else if (isCurves_Sync)//"AnimProperty_MultipleCurve : Sync"
 			{
 				//2) 동기화된 상태여서 편집이 가능하다.
 				//동시에 여러개의 "동기화된" 커브를 조작할 수 있다.
-
-				apAnimCurve.TANGENT_TYPE curveTangentType = apAnimCurve.TANGENT_TYPE.Smooth;
-				if (isCurves_Sync)
+				if (Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.AnimProperty_MultipleCurve__Sync))
 				{
-					curveTangentType = _animTimelineCommonCurve.GetSyncCurveResult(iCurveType).CurveTangentType;
-				}
-
-				//추가 19.12.31 : 1. 커브 위치
-				int curveTypeBtnSize = ((width - 10) / 3);
-
-				//1. 커브 종류
-				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(25));
-				GUILayout.Space(5);
-				if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Linear), curveTangentType == apAnimCurve.TANGENT_TYPE.Linear, true, curveTypeBtnSize, 25,
-												apStringFactory.I.AnimCurveTooltip_Linear))//"Linear Curve"
-				{
-					if (isCurves_Sync)
+					apAnimCurve.TANGENT_TYPE curveTangentType = apAnimCurve.TANGENT_TYPE.Smooth;
+					//if (isCurves_Sync)
 					{
-						apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-															Editor, 
-															_portrait, 
-															//_animTimelineCommonCurve, 
-															false,
-															apEditorUtil.UNDO_STRUCT.ValueOnly);
-
-						_animTimelineCommonCurve.SetTangentType(apAnimCurve.TANGENT_TYPE.Linear, iCurveType);
-					}
-				}
-				if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Smooth), curveTangentType == apAnimCurve.TANGENT_TYPE.Smooth, true, curveTypeBtnSize, 25,
-												apStringFactory.I.AnimCurveTooltip_Smooth))//"Smooth Curve"
-				{
-					if (isCurves_Sync)
-					{
-						apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-															Editor, 
-															_portrait, 
-															//_animTimelineCommonCurve, 
-															false,
-															apEditorUtil.UNDO_STRUCT.ValueOnly);
-
-						_animTimelineCommonCurve.SetTangentType(apAnimCurve.TANGENT_TYPE.Smooth, iCurveType);
-					}
-				}
-				if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Stepped), curveTangentType == apAnimCurve.TANGENT_TYPE.Constant, true, curveTypeBtnSize, 26,
-												apStringFactory.I.AnimCurveTooltip_Constant))//"Constant Curve"
-				{
-					if (isCurves_Sync)
-					{
-						apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-															Editor, 
-															_portrait, 
-															//_animTimelineCommonCurve, 
-															false,
-															apEditorUtil.UNDO_STRUCT.ValueOnly);
-
-						_animTimelineCommonCurve.SetTangentType(apAnimCurve.TANGENT_TYPE.Constant, iCurveType);
-					}
-				}
-				EditorGUILayout.EndHorizontal();
-				GUILayout.Space(5);
-
-				//2. 커브를 그리자
-
-				int curveUI_Width = width - 1;
-				int curveUI_Height = 200;
-				prevColor = GUI.backgroundColor;
-
-				Rect lastRect = GUILayoutUtility.GetLastRect();
-
-				if (EditorGUIUtility.isProSkin)
-				{
-					GUI.backgroundColor = new Color(Editor._guiMainEditorColor.r * 0.8f,
-														Editor._guiMainEditorColor.g * 0.8f,
-														Editor._guiMainEditorColor.b * 0.8f,
-														1.0f);
-				}
-				else
-				{
-					GUI.backgroundColor = Editor._guiMainEditorColor;
-				}
-
-				Rect curveRect = new Rect(lastRect.x + 5, lastRect.y, curveUI_Width, curveUI_Height);
-
-				curveUI_Width -= 2;
-				curveUI_Height -= 4;
-
-
-				apAnimCurveGL.SetLayoutSize(curveUI_Width, curveUI_Height,
-												(int)(lastRect.x) + layoutX - (curveUI_Width + 10),
-												(int)(lastRect.y) + layoutY,
-												//(int)(lastRect.y) + layoutY - 25,
-												scrollValue,
-												//Mathf.Min(scrollValue, 115),
-												//Mathf.Min(scrollValue, 115 - 57),
-												//Mathf.Min(scrollValue, 115 - 80),
-												Mathf.Min(scrollValue, (115 - (57 - 27))),
-												windowWidth, windowHeight);
-
-				bool isLeftBtnPressed = false;
-				if (Event.current.rawType == EventType.MouseDown || Event.current.rawType == EventType.MouseDrag)
-				{
-					if (Event.current.button == 0)
-					{
-						isLeftBtnPressed = true;
-					}
-				}
-
-				apAnimCurveGL.SetMouseValue(isLeftBtnPressed, Editor.Mouse.PosNotBound, Event.current.rawType, this);
-				GUI.Box(curveRect, apStringFactory.I.None, apEditorUtil.WhiteGUIStyle_Box);
-
-				//GUILayout.BeginArea(new Rect(lastRect.x + 8, lastRect.y + 124, curveUI_Width - 2, curveUI_Height - 2));
-				//GUILayout.BeginArea(new Rect(lastRect.x + 8, lastRect.y + 68, curveUI_Width - 2, curveUI_Height - 2));
-				GUILayout.BeginArea(new Rect(lastRect.x + 8, lastRect.y + 68 + 26, curveUI_Width - 2, curveUI_Height - 2));
-
-				Color curveGraphColorA = Color.black;
-				Color curveGraphColorB = Color.black;
-
-				if (curveTangentType == apAnimCurve.TANGENT_TYPE.Linear)
-				{
-					curveGraphColorA = new Color(1.0f, 0.1f, 0.1f, 1.0f);
-					curveGraphColorB = new Color(1.0f, 1.0f, 0.1f, 1.0f);
-				}
-				else if (curveTangentType == apAnimCurve.TANGENT_TYPE.Smooth)
-				{
-					curveGraphColorA = new Color(0.2f, 0.2f, 1.0f, 1.0f);
-					curveGraphColorB = new Color(0.2f, 1.0f, 1.0f, 1.0f);
-				}
-				else
-				{
-					curveGraphColorA = new Color(0.2f, 1.0f, 0.1f, 1.0f);
-					curveGraphColorB = new Color(0.1f, 1.0f, 0.6f, 1.0f);
-				}
-
-				//Curve 값 변경시..
-				//이전
-				//bool isCurveChanged = apAnimCurveGL.DrawCurve(_animTimelineCommonCurve._syncCurve_Prev,
-				//						_animTimelineCommonCurve._syncCurve_Next,
-				//						_animTimelineCommonCurve.SyncCurveResult,
-				//						curveGraphColorA, curveGraphColorB);
-
-				//변경 19.12.31
-				bool isCurveChanged = apAnimCurveGL.DrawCurve(_animTimelineCommonCurve.GetSyncCurve_Prev(iCurveType),
-										_animTimelineCommonCurve.GetSyncCurve_Next(iCurveType),
-										_animTimelineCommonCurve.GetSyncCurveResult(iCurveType),
-										curveGraphColorA, curveGraphColorB);
-
-				if (isCurves_Sync)
-				{
-					if (isCurveChanged)
-					{
-						//커브가 바뀌었음을 알리자
-						_animTimelineCommonCurve.SetChanged();
+						curveTangentType = _animTimelineCommonCurve.GetSyncCurveResult(iCurveType).CurveTangentType;
 					}
 
-					//마우스 입력에 따른 Sync
-					//_animTimelineCommonCurve.ApplySync(false, isLeftBtnPressed);
-					_animTimelineCommonCurve.ApplySync(iCurveType, false, isLeftBtnPressed);
-				}
+					//추가 19.12.31 : 1. 커브 위치
+					int curveTypeBtnSize = ((width - 10) / 3);
 
-
-				//추가 21.5.19 : Curve 렌더링이 모두 끝났다.
-				apAnimCurveGL.EndPass();
-
-
-				GUILayout.EndArea();
-
-				GUI.backgroundColor = prevColor;
-
-				GUILayout.Space(curveUI_Height - 2);
-
-				if (curveTangentType == apAnimCurve.TANGENT_TYPE.Smooth)
-				{
+					//1. 커브 종류
+					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(25));
 					GUILayout.Space(5);
-
-					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30));
-					GUILayout.Space(5);
-
-					int smoothPresetBtnWidth = ((width - 10) / 4) - 1;
-					if (GUILayout.Button(Editor.ImageSet.Get(apImageSet.PRESET.Anim_CurvePreset_Default), apGUILOFactory.I.Width(smoothPresetBtnWidth), apGUILOFactory.I.Height(28)))
+					if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Linear), curveTangentType == apAnimCurve.TANGENT_TYPE.Linear, true, curveTypeBtnSize, 25,
+													apStringFactory.I.AnimCurveTooltip_Linear))//"Linear Curve"
 					{
-						//커브 프리셋 : 기본
-						if (isCurves_Sync)
+						//if (isCurves_Sync)
 						{
-							apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-																Editor, 
-																_portrait, 
-																//_animClip._targetMeshGroup, 
+							apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Anim_KeyframeValueChanged,
+																Editor,
+																_portrait,
+																//_animTimelineCommonCurve, 
 																false,
 																apEditorUtil.UNDO_STRUCT.ValueOnly);
 
-							_animTimelineCommonCurve.SetCurvePreset_Default(iCurveType);
+							_animTimelineCommonCurve.SetTangentType(apAnimCurve.TANGENT_TYPE.Linear, iCurveType);
 						}
 					}
-					if (GUILayout.Button(Editor.ImageSet.Get(apImageSet.PRESET.Anim_CurvePreset_Hard), apGUILOFactory.I.Width(smoothPresetBtnWidth), apGUILOFactory.I.Height(28)))
+					if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Smooth), curveTangentType == apAnimCurve.TANGENT_TYPE.Smooth, true, curveTypeBtnSize, 25,
+													apStringFactory.I.AnimCurveTooltip_Smooth))//"Smooth Curve"
 					{
-						//커브 프리셋 : 하드
-						if (isCurves_Sync)
+						//if (isCurves_Sync)
 						{
-							apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-																Editor, 
-																_portrait, 
-																//_animClip._targetMeshGroup, 
+							apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Anim_KeyframeValueChanged,
+																Editor,
+																_portrait,
+																//_animTimelineCommonCurve, 
 																false,
 																apEditorUtil.UNDO_STRUCT.ValueOnly);
 
-							_animTimelineCommonCurve.SetCurvePreset_Hard(iCurveType);
+							_animTimelineCommonCurve.SetTangentType(apAnimCurve.TANGENT_TYPE.Smooth, iCurveType);
 						}
 					}
-					if (GUILayout.Button(Editor.ImageSet.Get(apImageSet.PRESET.Anim_CurvePreset_Acc), apGUILOFactory.I.Width(smoothPresetBtnWidth), apGUILOFactory.I.Height(28)))
+					if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Curve_Stepped), curveTangentType == apAnimCurve.TANGENT_TYPE.Constant, true, curveTypeBtnSize, 26,
+													apStringFactory.I.AnimCurveTooltip_Constant))//"Constant Curve"
 					{
-						//커브 프리셋 : 가속 (느리다가 빠르게)
-						if (isCurves_Sync)
+						//if (isCurves_Sync)
 						{
-							apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-																Editor, 
-																_portrait, 
-																//_animClip._targetMeshGroup, 
+							apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Anim_KeyframeValueChanged,
+																Editor,
+																_portrait,
+																//_animTimelineCommonCurve, 
 																false,
 																apEditorUtil.UNDO_STRUCT.ValueOnly);
 
-							_animTimelineCommonCurve.SetCurvePreset_Acc(iCurveType);
+							_animTimelineCommonCurve.SetTangentType(apAnimCurve.TANGENT_TYPE.Constant, iCurveType);
 						}
 					}
-					if (GUILayout.Button(Editor.ImageSet.Get(apImageSet.PRESET.Anim_CurvePreset_Dec), apGUILOFactory.I.Width(smoothPresetBtnWidth), apGUILOFactory.I.Height(28)))
-					{
-						//커브 프리셋 : 감속 (빠르다가 느리게)
-						if (isCurves_Sync)
-						{
-							apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-																Editor, 
-																_portrait, 
-																//_animClip._targetMeshGroup, 
-																false,
-																apEditorUtil.UNDO_STRUCT.ValueOnly);
-
-							_animTimelineCommonCurve.SetCurvePreset_Dec(iCurveType);
-						}
-					}
-
 					EditorGUILayout.EndHorizontal();
+					GUILayout.Space(5);
 
-					if (GUILayout.Button(Editor.GetUIWord(UIWORD.ResetSmoothSetting), apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(25)))//"Reset Smooth Setting"
+					//2. 커브를 그리자
+
+					int curveUI_Width = width - 1;
+					int curveUI_Height = 200;
+					prevColor = GUI.backgroundColor;
+
+					Rect lastRect = GUILayoutUtility.GetLastRect();
+
+					if (EditorGUIUtility.isProSkin)
 					{
-						if (isCurves_Sync)
+						GUI.backgroundColor = new Color(Editor._guiMainEditorColor.r * 0.8f,
+															Editor._guiMainEditorColor.g * 0.8f,
+															Editor._guiMainEditorColor.b * 0.8f,
+															1.0f);
+					}
+					else
+					{
+						GUI.backgroundColor = Editor._guiMainEditorColor;
+					}
+
+					Rect curveRect = new Rect(lastRect.x + 5, lastRect.y, curveUI_Width, curveUI_Height);
+
+					curveUI_Width -= 2;
+					curveUI_Height -= 4;
+
+
+					apAnimCurveGL.SetLayoutSize(curveUI_Width, curveUI_Height,
+													(int)(lastRect.x) + layoutX - (curveUI_Width + 10),
+													(int)(lastRect.y) + layoutY,
+													//(int)(lastRect.y) + layoutY - 25,
+													scrollValue,
+													//Mathf.Min(scrollValue, 115),
+													//Mathf.Min(scrollValue, 115 - 57),
+													//Mathf.Min(scrollValue, 115 - 80),
+													Mathf.Min(scrollValue, (115 - (57 - 27))),
+													windowWidth, windowHeight);
+
+					bool isLeftBtnPressed = false;
+					if (Event.current.rawType == EventType.MouseDown || Event.current.rawType == EventType.MouseDrag)
+					{
+						if (Event.current.button == 0)
 						{
-							apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-																Editor, 
-																_portrait, 
-																//_animClip._targetMeshGroup, 
+							isLeftBtnPressed = true;
+						}
+					}
+
+					apAnimCurveGL.SetMouseValue(isLeftBtnPressed, Editor.Mouse.PosNotBound, Event.current.rawType, this);
+					GUI.Box(curveRect, apStringFactory.I.None, apEditorUtil.WhiteGUIStyle);
+
+					//GUILayout.BeginArea(new Rect(lastRect.x + 8, lastRect.y + 124, curveUI_Width - 2, curveUI_Height - 2));
+					//GUILayout.BeginArea(new Rect(lastRect.x + 8, lastRect.y + 68, curveUI_Width - 2, curveUI_Height - 2));
+					GUILayout.BeginArea(new Rect(lastRect.x + 8, lastRect.y + 68 + 26, curveUI_Width - 2, curveUI_Height - 2));
+
+					Color curveGraphColorA = Color.black;
+					Color curveGraphColorB = Color.black;
+
+					if (curveTangentType == apAnimCurve.TANGENT_TYPE.Linear)
+					{
+						curveGraphColorA = new Color(1.0f, 0.1f, 0.1f, 1.0f);
+						curveGraphColorB = new Color(1.0f, 1.0f, 0.1f, 1.0f);
+					}
+					else if (curveTangentType == apAnimCurve.TANGENT_TYPE.Smooth)
+					{
+						curveGraphColorA = new Color(0.2f, 0.2f, 1.0f, 1.0f);
+						curveGraphColorB = new Color(0.2f, 1.0f, 1.0f, 1.0f);
+					}
+					else
+					{
+						curveGraphColorA = new Color(0.2f, 1.0f, 0.1f, 1.0f);
+						curveGraphColorB = new Color(0.1f, 1.0f, 0.6f, 1.0f);
+					}
+
+					//Curve 값 변경시..
+					//이전
+					//bool isCurveChanged = apAnimCurveGL.DrawCurve(_animTimelineCommonCurve._syncCurve_Prev,
+					//						_animTimelineCommonCurve._syncCurve_Next,
+					//						_animTimelineCommonCurve.SyncCurveResult,
+					//						curveGraphColorA, curveGraphColorB);
+
+					//변경 19.12.31
+					bool isCurveChanged = apAnimCurveGL.DrawCurve(_animTimelineCommonCurve.GetSyncCurve_Prev(iCurveType),
+											_animTimelineCommonCurve.GetSyncCurve_Next(iCurveType),
+											_animTimelineCommonCurve.GetSyncCurveResult(iCurveType),
+											curveGraphColorA, curveGraphColorB);
+
+					//if (isCurves_Sync)
+					{
+						if (isCurveChanged)
+						{
+							//커브가 바뀌었음을 알리자
+							_animTimelineCommonCurve.SetChanged();
+						}
+
+						//마우스 입력에 따른 Sync
+						//_animTimelineCommonCurve.ApplySync(false, isLeftBtnPressed);
+						_animTimelineCommonCurve.ApplySync(iCurveType, false, isLeftBtnPressed);
+					}
+
+
+					//추가 21.5.19 : Curve 렌더링이 모두 끝났다.
+					apAnimCurveGL.EndPass();
+
+
+					GUILayout.EndArea();
+
+					GUI.backgroundColor = prevColor;
+
+					GUILayout.Space(curveUI_Height - 2);
+
+					if (curveTangentType == apAnimCurve.TANGENT_TYPE.Smooth)
+					{
+						GUILayout.Space(5);
+
+						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30));
+						GUILayout.Space(5);
+
+						int smoothPresetBtnWidth = ((width - 10) / 4) - 1;
+						if (GUILayout.Button(Editor.ImageSet.Get(apImageSet.PRESET.Anim_CurvePreset_Default), apGUILOFactory.I.Width(smoothPresetBtnWidth), apGUILOFactory.I.Height(28)))
+						{
+							//커브 프리셋 : 기본
+							//if (isCurves_Sync)
+							{
+								apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Anim_KeyframeValueChanged,
+																	Editor,
+																	_portrait,
+																	//_animClip._targetMeshGroup, 
+																	false,
+																	apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+								_animTimelineCommonCurve.SetCurvePreset_Default(iCurveType);
+							}
+						}
+						if (GUILayout.Button(Editor.ImageSet.Get(apImageSet.PRESET.Anim_CurvePreset_Hard), apGUILOFactory.I.Width(smoothPresetBtnWidth), apGUILOFactory.I.Height(28)))
+						{
+							//커브 프리셋 : 하드
+							//if (isCurves_Sync)
+							{
+								apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Anim_KeyframeValueChanged,
+																	Editor,
+																	_portrait,
+																	//_animClip._targetMeshGroup, 
+																	false,
+																	apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+								_animTimelineCommonCurve.SetCurvePreset_Hard(iCurveType);
+							}
+						}
+						if (GUILayout.Button(Editor.ImageSet.Get(apImageSet.PRESET.Anim_CurvePreset_Acc), apGUILOFactory.I.Width(smoothPresetBtnWidth), apGUILOFactory.I.Height(28)))
+						{
+							//커브 프리셋 : 가속 (느리다가 빠르게)
+							//if (isCurves_Sync)
+							{
+								apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Anim_KeyframeValueChanged,
+																	Editor,
+																	_portrait,
+																	//_animClip._targetMeshGroup, 
+																	false,
+																	apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+								_animTimelineCommonCurve.SetCurvePreset_Acc(iCurveType);
+							}
+						}
+						if (GUILayout.Button(Editor.ImageSet.Get(apImageSet.PRESET.Anim_CurvePreset_Dec), apGUILOFactory.I.Width(smoothPresetBtnWidth), apGUILOFactory.I.Height(28)))
+						{
+							//커브 프리셋 : 감속 (빠르다가 느리게)
+							//if (isCurves_Sync)
+							{
+								apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Anim_KeyframeValueChanged,
+																	Editor,
+																	_portrait,
+																	//_animClip._targetMeshGroup, 
+																	false,
+																	apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+								_animTimelineCommonCurve.SetCurvePreset_Dec(iCurveType);
+							}
+						}
+
+						EditorGUILayout.EndHorizontal();
+
+						if (GUILayout.Button(Editor.GetUIWord(UIWORD.ResetSmoothSetting), apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(25)))//"Reset Smooth Setting"
+						{
+							//if (isCurves_Sync)
+							{
+								apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Anim_KeyframeValueChanged,
+																	Editor,
+																	_portrait,
+																	//_animClip._targetMeshGroup, 
+																	false,
+																	apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+								_animTimelineCommonCurve.ResetSmoothSetting(iCurveType);
+							}
+							Editor.SetRepaint();
+						}
+					}
+
+					//아래 UI 그릴 수 있음
+					isRemainUIRenderable = true;
+				}
+			}
+			else if (isCurves_NotSync)//"AnimProperty_MultipleCurve : NotSync"
+			{
+				//아직 커브들이 "동기화"되지 않았다.
+				//"Curves of keyframes are different"
+				if (Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.AnimProperty_MultipleCurve__NotSync))
+				{
+					EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.CurvesAreDifferent));
+					GUILayout.Space(5);
+
+					//"Reset curves of all selected keyframes"
+					if (GUILayout.Button(Editor.GetUIWord(UIWORD.ResetMultipleCurves), apGUILOFactory.I.Height(25)))
+					{
+						if (isCurves_NotSync)
+						{
+							apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Anim_KeyframeValueChanged,
+																Editor,
+																_portrait,
+																//_animTimelineCommonCurve, 
 																false,
 																apEditorUtil.UNDO_STRUCT.ValueOnly);
 
-							_animTimelineCommonCurve.ResetSmoothSetting(iCurveType);
+							_animTimelineCommonCurve.NotSync2SyncStatus(iCurveType);
 						}
-						Editor.SetRepaint();
 					}
+
+					//아래 UI 그릴 수 있음
+					isRemainUIRenderable = true;
+				}
+				
+			}
+			//else
+			//{
+			//	//현재는 커브 조작을 할 수 없다.
+			//	//Debug.Log("잠시 그릴 수 없음");
+			//}
+
+
+			//조건문 추가 v1.4.7
+			//아래 UI를 그릴 수 있다.
+			if (isRemainUIRenderable)
+			{
+				// 키프레임들 삭제하기
+				GUILayout.Space(10);
+				apEditorUtil.GUI_DelimeterBoxH(width);
+				GUILayout.Space(10);
+
+				//삭제 단축키 이벤트를 넣자
+				//Editor.AddHotKeyEvent(OnHotKeyRemoveKeyframes, apHotKey.LabelText.RemoveKeyframes, KeyCode.Delete, false, false, false, keyframes);//"Remove Keyframes"
+
+				//변경 20.12.3
+				Editor.AddHotKeyEvent(OnHotKeyRemoveKeyframes, apHotKeyMapping.KEY_TYPE.Anim_RemoveKeyframes, keyframes);//"Remove Keyframes"
+
+
+				//키 삭제
+				//"  Remove " + keyframes.Count +" Keyframes"
+
+				//이전
+				//if (GUILayout.Button(new GUIContent("  " + Editor.GetUIWordFormat(UIWORD.RemoveNumKeyframes, keyframes.Count),
+				//										Editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_RemoveTransform)
+				//										),
+				//						GUILayout.Width(width), GUILayout.Height(24)))
+				if (_guiContent_Bottom_Animation_RemoveNumKeyframes == null)
+				{
+					_guiContent_Bottom_Animation_RemoveNumKeyframes = new apGUIContentWrapper();
+					_guiContent_Bottom_Animation_RemoveNumKeyframes.SetImage(Editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_RemoveTransform));
 				}
 
+				_guiContent_Bottom_Animation_RemoveNumKeyframes.SetText(2, Editor.GetUIWordFormat(UIWORD.RemoveNumKeyframes, keyframes.Count));
 
-
-			}
-			else if (Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.AnimProperty_MultipleCurve__NotSync))//"AnimProperty_MultipleCurve : NotSync"
-			{
-				//"Curves of keyframes are different"
-				EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.CurvesAreDifferent));
-				GUILayout.Space(5);
-				//아직 커브들이 "동기화"되지 않았다.
-				//"Reset curves of all selected keyframes"
-				if (GUILayout.Button(Editor.GetUIWord(UIWORD.ResetMultipleCurves), apGUILOFactory.I.Height(25)))
+				if (GUILayout.Button(_guiContent_Bottom_Animation_RemoveNumKeyframes.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(24)))
 				{
-					if (isCurves_NotSync)
+					//bool isResult = EditorUtility.DisplayDialog("Remove Keyframes", "Remove " + keyframes.Count + "s Keyframes?", "Remove", "Cancel");
+
+					bool isResult = EditorUtility.DisplayDialog(Editor.GetText(TEXT.RemoveKeyframes_Title),
+																	Editor.GetTextFormat(TEXT.RemoveKeyframes_Body, keyframes.Count),
+																	Editor.GetText(TEXT.Remove),
+																	Editor.GetText(TEXT.Cancel)
+																	);
+
+					if (isResult)
 					{
-						apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Anim_KeyframeValueChanged, 
-															Editor, 
-															_portrait, 
-															//_animTimelineCommonCurve, 
-															false,
-															apEditorUtil.UNDO_STRUCT.ValueOnly);
-
-						_animTimelineCommonCurve.NotSync2SyncStatus(iCurveType);
+						Editor.Controller.RemoveKeyframes(keyframes);
 					}
 				}
+
+
+				//단축키 추가 20.12.5 : 단축키를 눌러서 커브를 조작할 수 있다.
+				Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Linear, 0);
+				Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Constant, 1);
+				Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Smooth_Default, 2);
+				Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Smooth_AccAndDec, 3);
+				Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Smooth_Acc, 4);
+				Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Smooth_Dec, 5);
 			}
-			else
-			{
-				//현재는 커브 조작을 할 수 없다.
-			}
-
-
-
-
-
-			// 키프레임들 삭제하기
-			GUILayout.Space(10);
-			apEditorUtil.GUI_DelimeterBoxH(width);
-			GUILayout.Space(10);
-
-			//삭제 단축키 이벤트를 넣자
-			//Editor.AddHotKeyEvent(OnHotKeyRemoveKeyframes, apHotKey.LabelText.RemoveKeyframes, KeyCode.Delete, false, false, false, keyframes);//"Remove Keyframes"
-			
-			//변경 20.12.3
-			Editor.AddHotKeyEvent(OnHotKeyRemoveKeyframes, apHotKeyMapping.KEY_TYPE.Anim_RemoveKeyframes, keyframes);//"Remove Keyframes"
-
-
-			//키 삭제
-			//"  Remove " + keyframes.Count +" Keyframes"
-
-			//이전
-			//if (GUILayout.Button(new GUIContent("  " + Editor.GetUIWordFormat(UIWORD.RemoveNumKeyframes, keyframes.Count),
-			//										Editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_RemoveTransform)
-			//										),
-			//						GUILayout.Width(width), GUILayout.Height(24)))
-			if (_guiContent_Bottom_Animation_RemoveNumKeyframes == null)
-			{
-				_guiContent_Bottom_Animation_RemoveNumKeyframes = new apGUIContentWrapper();
-				_guiContent_Bottom_Animation_RemoveNumKeyframes.SetImage(Editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_RemoveTransform));
-			}
-
-			_guiContent_Bottom_Animation_RemoveNumKeyframes.SetText(2, Editor.GetUIWordFormat(UIWORD.RemoveNumKeyframes, keyframes.Count));
-
-			if (GUILayout.Button(_guiContent_Bottom_Animation_RemoveNumKeyframes.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(24)))
-			{
-				//bool isResult = EditorUtility.DisplayDialog("Remove Keyframes", "Remove " + keyframes.Count + "s Keyframes?", "Remove", "Cancel");
-
-				bool isResult = EditorUtility.DisplayDialog(Editor.GetText(TEXT.RemoveKeyframes_Title),
-																Editor.GetTextFormat(TEXT.RemoveKeyframes_Body, keyframes.Count),
-																Editor.GetText(TEXT.Remove),
-																Editor.GetText(TEXT.Cancel)
-																);
-
-				if (isResult)
-				{
-					Editor.Controller.RemoveKeyframes(keyframes);
-				}
-			}
-
-
-			//단축키 추가 20.12.5 : 단축키를 눌러서 커브를 조작할 수 있다.
-			Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Linear, 0);
-			Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Constant, 1);
-			Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Smooth_Default, 2);
-			Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Smooth_AccAndDec, 3);
-			Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Smooth_Acc, 4);
-			Editor.AddHotKeyEvent(OnHotKeyEvent_AnimCurve_MultipleKeyframes, apHotKeyMapping.KEY_TYPE.Anim_Curve_Smooth_Dec, 5);
 		}
 
 

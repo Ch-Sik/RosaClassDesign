@@ -1,5 +1,5 @@
 ﻿------------------------------------------------------------
-		AnyPortrait (Version 1.4.6)
+		AnyPortrait (Version 1.4.8)
 ------------------------------------------------------------
 
 
@@ -10,7 +10,37 @@ When you create a game, I hope that AnyPortrait will be a great help.
 Here are some things to know before using AnyPortrait:
 
 
-1. How to start
+1. Execution Environment
+
+- Execution environment
+: PC (Windows, Mac), Mobile (Android, iOS), WebGL
+: Console platform (practical test required)
+: VR build support
+
+- Mobile devices for testing performance
+: [ Android ] Nexus 5, Galaxy S8, Galaxy S23, Mi9
+: [ iOS ] iPhone 6
+
+AnyPortrait was developed to run on PC, mobile, web, and console.
+Optimized for use in games.
+We tried to ensure high compatibility with graphical issues.
+However, performance may vary depending on the user's work method.
+
+Since we aim to run on any device in any case, 
+please contact us for any issues that may be causing the problem.
+
+
+
+2. Editor Execution Environment and Supported Build Options
+
+- Supported OS: Windows, Mac (Intel/Apple Silicon)
+- Unity version: Unity 5.5 and later versions
+- Render Pipeline: Built-In, URP(3D, 2D), LWRP(3D, 2D)
+- Script backend: Mono, IL2CPP
+
+
+
+3. How to start
 
 To use AnyPortrait, go to "Window > AnyPortrait > 2D Editor".
 The work is done in the unit called Portrait.
@@ -19,29 +49,30 @@ For more information, please refer to the User Guide.
 
 
 
-2. User Guide
+4. User Guide
 
 The User's Guide is "AnyPortrait User Guide.pdf" in the Documentation folder.
 This file contains two basic tutorials.
 
 AnyPortrait has more features than that, so we recommend that you refer to the homepage.
+Well-organized documents and video tutorials are provided on the website.
 
 Homepage with guides : https://www.rainyrizzle.com/
 
 
 
-3. Languages
+5. Languages
 
-AnyPortrait supports 10 languages.
-(English, Korean, French, German, Spanish, Danish, Japanese, Chinese (Traditional / Simplified), Italian, Polish)
+- Supported languages of editor UI
+: English, Korean, French, German, Spanish, Danish, Japanese, Chinese (Traditional/Simplified), Italian, Polish
+(You can select the language in AnyPortrait's settings menu.)
 
-It is recommended to select the appropriate language from the Setting menu of AnyPortrait.
-
-The homepage supports English, Korean and Japanese.
-
+- Homepage language
+: English, Korean, Japanese
 
 
-4. Support
+
+6. Support
 
 If you have any problems or problems with using AnyPortrait, please contact us.
 You can also report the editor's typographical errors.
@@ -61,29 +92,14 @@ because there are not many developers on our team.
 
 
 
-5. License
+7. License
 
 The license is written in the file "license.txt".
 You can also check in "Setting > About" of AnyPortrait.
 
 
 
-6. Target device and platform
-
-AnyPortrait has been developed to support PC, mobile, web, and console.
-Much has been optimized to be able to run in real games.
-We have also made great efforts to ensure compatibility with graphical problems.
-
-
-However, for practical reasons we can not actually test in all environments, there may be potential problems.
-There may also be performance differences depending on your results.
-
-Since we aim to run on any device in any case, 
-please contact us for any issues that may be causing the problem.
-
-
-
-7. Update Notes
+8. Update Notes
 
 1.0.1 (March 18, 2018)
 - Added Italian and Polish.
@@ -826,13 +842,60 @@ please contact us for any issues that may be causing the problem.
 - An issue is fixed where the interpolation of the last keyframe is abnormally calculated when there are 3 or more keyframes in the control parameter timeline in a looped animation.
 - An issue is fixed where the color of the editor background, the separator bar, and the timeline layer's background were displayed abnormally due to an unknown cause.
 
+1.4.7 (November 4, 2023)
+- Added Mesh Update Frequency option
+- Added option to Bake dialog and Inspector to reduce mesh update frequency to play more like classic animations
+- Mesh Update Frequency option can be changed in real-time with a script, and unlike when disabling Important, physical functions can be used.
+- When adding files in Rotoscoping, if there are files with similar names in the folder, a function has been added to load them all at once (a message appears).
+- Buttons have been added to sort files by name.
+- An option has been added to flip the output rotoscoping images.
+- Added new "Unlit (v2)" material that completely ignores other lighting
+- Existing Unlit material was renamed to "Unlit (Legacy)"
+- Shortcut keys for “Pose Test” and “Reset Pose” have been added to the Rigging modifier (T and Y keys, respectively)
+- Added shortcut keys to switch tabs in Mesh Group screen (Shift+1, 2, 3)
+- A shortcut key has been added to open the object search dialog in the mesh group and animation editing screen (Ctrl+F)
+- In the script, the part where the amount of calculation increases depending on the number of animation keyframes and the number of control parameter keys has been optimized.
+- If the main function that controls apPortrait is called from an external script before initialization is complete, an error log and guidance text are displayed in the console tab on the editor.
+- An issue was discovered where "Screen Capture Processor v2" added in v1.4.6 does not work only in Unity 2020, so a warning message was changed to be displayed in that editor version.
+- When adding a keyframe on the animation editing screen, only the curve value is changed to have a default value regardless of the prev/next keyframes.
+- The timeline UI on the animation editing screen has been improved so that the brightness of keyframes is maintained appropriately even if the background color property of the timeline layer is set to be too dark.
+- Execution environment content added to Readme file
+- The random range of colors by the preset buttons that change the main color has been narrowed and has been changed to be set similarly to the color of the preset button.
+- In the "ReImport PSD" dialog, the incorrect path has been changed to be displayed on the UI for invalid paths.
+- Improvements have been made to make it easier to find a valid file by opening the directory when trying to reload a file for an invalid path in the "Reimport PSD" dialog.
+- An issue is fixed where Jiggle bones and Physics materials would bounce significantly as they were restored from their last playback state when root units are switched in-game.
+- An issue is fixed where the clipping mask behaved abnormally when rendering with a perspective camera in URP.
+- An issue is fixed where "Reimport PSD" failed to load the preview image depending on the image asset format.
+- An issue is fixed where, when trying to change the name of a bone using a shortcut key on the bone editing screen, the name would not be changed while the mesh is selected.
+- An issue is fixed where the child bone would move to a strange place when disconnecting from the child bone through the UI on the right side of the bone editing screen.
+- An issue is fixed where bones would be deselected when clicking on an empty space while holding down the Shift key on the bone editing screen.
+- An issue is fixed where a GUI error was displayed in the console tab when a different keyframe was selected while the curve editing UI was displayed on the animation editing screen.
+- An issue is fixed where the value set in the keyframe is not applied as a control parameter immediately after switching to the animation editing screen.
+- An issue is fixed where the square icons in the animation event UI and rigging UI were in strange positions.
+- An issue is fixed where the UI of the physics modifier’s physical material preset dialog was displayed strangely.
+- An issue is fixed where a GUI error was displayed in the console tab when a different object was selected on the modifier edit screen.
+- An issue is fixed where the animation list was not displayed intermittently in the right UI of the root unit screen immediately after opening the AnyPortrait editor from the Unity menu and opening a character.
+
+1.4.8 (December 8, 2023)
+- A feature has been added to resolve the issue of "excessively slow performance after the focus is moved to an external program while the AnyPortrait editor is turned on."
+- Some code has been fixed due to deprecated APIs in Unity 2023.
+- An issue where some UI, such as the modifier list, was displayed abnormally in Unity 2023 has been fixed.
+- An option to change when the main logic is executed has been added to the Bake dialog and Inspector.
+- A "Root Motion" option has been added to the Bake dialog and Inspector to anchor the root bone to the origin of the parent GameObject and move the parent GameObject instead.
+- When the "Animator" component is added according to the Mecanim option, the default properties have been changed so that the character's Local Position is not fixed to (0, 0, 0).
+- The Inspector UI has been improved to look a little better.
+- The color of the grid UI of the animation timeline has been modified so that it is not too bright.
+- An issue is fixed where meshes become invisible before the first keyframe of a non-Loop animation because the Transform value of the object becomes 0.
+- An issue is fixed where the editor update frequency remained reduced even when the mouse was dragged when the performance optimization function for laptops was turned on.
+- An issue is fixed where the UI of the dialog for selecting presets for control parameters was displayed abnormally.
+
 
 
 
 
 
 ------------------------------------------------------------
-			한국어 설명 (버전 1.4.6)
+			한국어 설명 (버전 1.4.8)
 ------------------------------------------------------------
 
 AnyPortrait를 사용해주셔서 감사를 드립니다.
@@ -842,7 +905,37 @@ AnyPortrait는 2D 캐릭터를 유니티에서 직접 만들 수 있도록 개�
 아래는 AnyPortrait를 사용하기에 앞서서 알아두시면 좋을 내용입니다.
 
 
-1. 시작하기
+1. 실행 환경
+
+- 실행 환경
+: PC (Windows, Mac), 모바일 (Android, iOS), WebGL
+: 콘솔 플랫폼 (실기 테스트 필요)
+: VR 빌드 지원
+
+- 성능 테스트용 모바일 기기
+: [ Android ] Nexus 5, Galaxy S8, Galaxy S23, Mi9
+: [ iOS ] iPhone 6
+
+AnyPortrait는 PC, 모바일, 웹, 콘솔에서 구동되도록 개발되었습니다.
+실제 게임에서 사용되도록 최적화 하였습니다.
+그래픽적인 문제에 대한 높은 호환성을 가지도록 노력하였습니다.
+다만, 사용자의 작업 방식에 따라서 성능에 차이가 있을 수 있습니다.
+
+저희는 모든 기기에서 어떠한 경우라도 정상적으로 동작하는 것을 목표로 삼고 있기 때문에,
+실행 과정에서 겪는 모든 이슈에 대해 연락을 주신다면 매우 감사하겠습니다.
+
+
+
+2. 에디터 실행 환경과 지원되는 빌드 옵션
+
+- 지원 OS : Windows, Mac (Intel/Apple Silicon)
+- Unity 버전 : Unity 5.5 및 이후의 버전
+- 렌더 파이프라인 : Built-In, URP(3D, 2D), LWRP(3D, 2D)
+- 스크립트 백엔드 : Mono, IL2CPP
+
+
+
+3. 시작하기
 
 AnyPortrait를 실행하려면 "Window > AnyPortrait > 2D Editor"메뉴를 실행하시면 됩니다.
 AnyPortrait는 Portrait라는 단위로 작업을 합니다.
@@ -851,29 +944,30 @@ AnyPortrait는 Portrait라는 단위로 작업을 합니다.
 
 
 
-2. 사용 설명서
+4. 사용 설명서
 
 사용 설명서는 Documentation 폴더의 "AnyPortrait User Guide.pdf" 파일입니다.
 이 문서에는 2개의 튜토리얼이 작성되어 있습니다.
 
 AnyPortrait의 많은 기능을 사용하시려면 홈페이지를 참고하시길 권장합니다.
+잘 정리된 문서와 동영상 튜토리얼들이 홈페이지에서 제공됩니다.
 
 홈페이지 : https://www.rainyrizzle.com/
 
 
 
-3. 언어
+5. 지원되는 언어
 
-AnyPortrait는 10개의 언어를 지원합니다.
-(영어, 한국어, 프랑스어, 독일어, 스페인어, 덴마크어, 일본어, 중국어(번체/간체), 이탈리아어, 폴란드어)
+- 에디터 UI의 지원 언어
+: 영어, 한국어, 프랑스어, 독일어, 스페인어, 덴마크어, 일본어, 중국어(번체/간체), 이탈리아어, 폴란드어
+(AnyPortrait의 설정 메뉴에서 언어를 선택할 수 있습니다.)
 
-AnyPortrait의 설정 메뉴에서 언어를 선택할 수 있습니다.
-
-홈페이지는 한국어와 영어, 일본어를 지원합니다.
-
+- 홈페이지 언어
+: 한국어, 영어, 일본어
 
 
-4. 고객 지원
+
+6. 고객 지원
 
 AnyPortrait를 사용하시면서 겪은 문제점이나 개선할 점이 있다면, 저희에게 문의를 주시길 바랍니다.
 에디터의 오탈자를 문의 주셔도 좋습니다.
@@ -893,28 +987,14 @@ https://www.rainyrizzle.com/anyportrait-report-kor (한국어)
 
 
 
-5. 저작권
+7. 저작권
 
 AnyPortrait에 관련된 저작권은 "license.txt" 파일에 작성이 되어있습니다.
 AnyPortrait의 "설정 > About"에서도 확인할 수 있습니다.
 
 
 
-6. 대상 기기와 플랫폼
-
-AnyPortrait는 PC, 모바일, 웹, 콘솔에서 구동되도록 개발되었습니다.
-실제 게임에서 사용되도록 최적화 하였습니다.
-그래픽적인 문제에 대한 높은 호환성을 가지도록 노력하였습니다.
-
-그렇지만, 현실적인 이유로 모든 환경에서 테스트를 할 수 없었기에, 잠재적인 문제점이 있을 수 있습니다.
-경우에 따라 사용자의 작업 결과물에 따라서 성능에 차이가 있을 수도 있습니다.
-
-저희는 모든 기기에서 어떠한 경우라도 정상적으로 동작하는 것을 목표로 삼고 있기 때문에,
-실행 과정에서 겪는 모든 이슈에 대해 연락을 주신다면 매우 감사하겠습니다.
-
-
-
-7. 업데이트 노트
+8. 업데이트 노트
 
 1.0.1 (2018년 3월 18일)
 - 이탈리아어, 폴란드어를 추가하였습니다.
@@ -1656,3 +1736,50 @@ AnyPortrait는 PC, 모바일, 웹, 콘솔에서 구동되도록 개발되었습�
 - 애니메이션 편집 화면에서 모디파이어와 연결되는 2개 이상의 타임라인이 있을 때, Extra Option 다이얼로그을 열고 닫으면 해당 타임라인을 더이상 제어할 수 없게되는 문제가 수정됨
 - 루프가 설정된 애니메이션에서 컨트롤 파라미터 타임라인에 3개 이상의 키프레임이 존재하는 경우, 마지막 키프레임의 보간이 비정상적으로 연산되는 문제가 수정됨
 - 알 수 없는 원인에 의해서 에디터 UI의 배경 색상이나 구분 막대 색상, 타임라인 레이어의 배경 색상 등이 비정상적으로 보여지는 문제가 수정됨
+
+1.4.7 (2023년 11월 4일)
+- 메시 갱신 빈도 설정 추가
+- 고전 애니메이션같이 재생되도록 메시 갱신 빈도를 낮추는 옵션이 Bake 다이얼로그와 Inspector에 추가됨
+- 메시 갱신 빈도 옵션을 스크립트로 실시간으로 변경할 수 있으며, Important를 해제하는 경우와 달리 물리 기능를 이용할 수 있음
+- 로토스코핑에서 파일을 추가할 때, 해당 폴더에 유사한 이름의 파일들이 있다면 한꺼번에 로드할 수 있는 기능이 추가됨 (메시지로 등장)
+- 파일들의 순서를 이름순으로 정렬하는 버튼이 추가됨
+- 출력되는 로토스코핑 이미지를 좌우/상하 반전할 수 있는 옵션이 추가됨
+- 완벽하게 다른 라이팅을 무시하는 "Unlit (v2)" 재질이 새롭게 추가됨
+- 기존의 Unlit 재질의 이름은 "Unlit (Legacy)"로 변경됨
+- Rigging 모디파이어에서 "포즈 테스트(Pose Test)", "포즈 초기화(Reset Pose)"하는 단축키가 추가됨 (각각 T, Y 키)
+- 메시 그룹 화면에서 탭을 전환하는 단축키가 추가됨 (각각 Shift+1, Shift+2, Shift+3)
+- 메시 그룹과 애니메이션 편집 화면에서 오브젝트 검색하는 다이얼로그를 여는 단축키가 추가됨 (Ctrl+F)
+- 애니메이션의 키프레임의 개수, 컨트롤 파라미터의 키의 개수에 따라 연산량이 증가되는 코드가 최적화됨
+- 외부 스크립트에서 apPortrait를 제어하는 주요 함수를 초기화 완료 전에 호출했을 경우, 에디터 상에서 에러 로그 및 안내 문구가 콘솔탭에 출력됨
+- v1.4.6에서 추가된 "화면 캡쳐 프로세서 v2"가 Unity 2020에서만 동작하지 않는 문제가 발견되어, 해당 에디터 버전에서는 경고 메시지가 출력되도록 변경
+- 애니메이션 편집 화면에서 키프레임을 추가할 경우, 커브의 값에 한하여 앞뒤 키프레임과 무관하게 기본값을 가지도록 변경됨
+- 애니메이션 편집 화면의 타임라인 UI에서 타임라인 레이어의 배경 색상 속성이 너무 어둡게 지정되더라도 키프레임의 밝기는 적절히 유지되도록 개선됨
+- Readme 파일에 실행 환경 항목이 추가됨
+- 본 색상을 변경하는 프리셋 버튼들에 의한 색상의 랜덤 범위가 좁혀져서, 프리셋 버튼의 색상과 비슷하게 설정되도록 변경됨
+- "PSD 다시 가져오기" 다이얼로그에서 유효하지 않은 경로에 대해서 UI에 잘못된 경로가 그대로 노출되도록 변경됨
+- "PSD 다시 가져오기" 다이얼로그에서 유효하지 않은 경로에 대해서 파일을 다시 로드하려고 할 때 디렉토리를 열어서 유효한 파일을 찾기 쉽도록 개선됨
+- 인게임에서 루트 유닛이 전환될 때, 지글 본과 물리 재질이 마지막 재생 상태로부터 복구되면서 움직임이 크게 튀는 문제가 수정됨
+- URP에서 Perspective 카메라로 렌더링을 할 때, 클리핑 마스크가 비정상적으로 동작하는 문제가 수정됨
+- "PSD 다시 가져오기"에서 이미지 에셋 포맷에 따라 미리보기 이미지 생성에 실패하여 로드가 되지 않는 문제가 수정됨
+- 본 편집 화면에서 단축키를 이용하여 본의 이름을 변경하려고 할 때, 메시가 선택된 상태에서는 이름이 변경되지 않는 문제가 수정됨
+- 본 편집 화면에서 오른쪽의 UI를 통해 자식 본과 연결을 해제하면 자식 본이 이상한 곳으로 이동해버리는 문제가 수정됨
+- 본 편집 화면에서 Shift 키를 누른 상태로 빈 공간을 클릭했을 때 본 선택이 해제되는 문제가 수정됨
+- 애니메이션 편집 화면에서 커브 편집 UI가 보여진 상태에서 다른 키프레임을 선택하면 콘솔탭에 GUI 에러가 출력되는 문제가 수정됨
+- 애니메이션 편집 화면으로 전환한 직후엔 키프레임에서 설정된 값이 컨트롤 파라미터로 적용되지 않는 문제가 수정됨
+- 애니메이션 이벤트 UI와 리깅 UI의 사각형 아이콘의 위치가 이상했던 문제가 수정됨
+- Physics 모디파이어의 물리 재질 프리셋 다이얼로그의 UI가 이상하게 보여지는 문제가 수정됨
+- 모디파이어 편집 화면에서 다른 오브젝트를 선택했을 때 콘솔탭에 GUI 에러가 출력되는 문제가 수정됨
+- 유니티 메뉴로부터 AnyPortrait 에디터를 열고 캐릭터를 연 직후, 루트 유닛 화면의 오른쪽 UI에서 간헐적으로 애니메이션 리스트가 출력되지 않는 문제가 수정됨
+
+1.4.8 (2023년 12월 8일)
+- AnyPortrait 에디터가 켜진 상태에서 외부 프로그램으로 포커스가 이동한 이후에 성능이 지나치게 느려지는 문제를 해결하는 기능이 추가됨
+- Unity 2023에서 사용되지 않는 API에 맞추어 일부 코드가 수정됨
+- Unity 2023에서 모디파이어 리스트 등의 일부 UI가 비정상적으로 출력되는 문제가 수정됨
+- 메인 로직이 실행되는 시점을 변경할 수 있는 옵션이 Bake 다이얼로그와 Inspector에 추가됨
+- 루트 본이 부모 GameObject의 원점에 위치하도록 고정하고, 부모 GameObject를 대신 움직이는 "루트 모션 (Root Motion)" 옵션이 Bake 다이얼로그와 Inspector에 추가됨
+- 메카님을 사용하도록 설정하여 Animator 컴포넌트가 새로 추가되었을 때의 기본 속성이 캐릭터의 Local Position을 (0, 0, 0)으로 고정하지 않도록 변경됨
+- Inspector UI가 조금 더 보기 좋도록 개선됨
+- 애니메이션 타임라인의 그리드 UI의 색상이 너무 밝지 않도록 수정됨
+- Loop가 아닌 애니메이션의 첫 키프레임보다 앞에서는 해당 객체의 Transform 값이 0이 되어버려서 메시들이 보이지 않게 되는 문제가 수정됨
+- 노트북을 위한 성능 최적화 기능을 켰을 때 마우스 드래그시에도 에디터 갱신 빈도가 줄어든 상태가 유지되는 문제가 수정됨
+- 컨트롤 파라미터의 프리셋을 선택하는 다이얼로그의 UI가 비정상적으로 출력되는 문제가 수정됨

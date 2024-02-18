@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -87,6 +87,7 @@ namespace AnyPortrait
 		private GUIStyle _guiStyle_CenterLabel = null;
 		private GUIStyle _guiStyle_Button_NoPadding = null;
 
+		private GUIStyle _guiStyle_WhiteBox = null;
 
 		private apAnimEventPresetUnit _selectedPreset = null;
 
@@ -107,6 +108,8 @@ namespace AnyPortrait
 		private const string ADD_CATEGORY = "+ New Category..";
 		private List<string> _propNameList_PresetCategoryInSettings = null;
 		private string[] _propNames_PresetCategoryInSettings = null;
+
+
 
 
 		// Show Window
@@ -531,6 +534,12 @@ namespace AnyPortrait
 				_guiStyle_Box.normal.textColor = apEditorUtil.BoxTextColor;
 			}
 
+			if(_guiStyle_WhiteBox == null)
+			{
+				_guiStyle_WhiteBox = new GUIStyle(GUI.skin.box);
+				_guiStyle_WhiteBox.normal.background = apEditorUtil.WhiteTexture;
+			}
+
 			//변경
 			if(_guiContent_AnimClipName == null)
 			{
@@ -648,8 +657,8 @@ namespace AnyPortrait
 
 			//오른쪽 GUI : 애니메이션 이벤트 프리셋들을 보여준다.
 			EditorGUILayout.BeginVertical(GUILayout.Width(width_Right), GUILayout.Height(height_Main));
-
-			GUI_Right(width_Right, height_Main, width_Left + 35, mainPosY, isGUIEvent);
+						
+			GUI_Right(width_Right, height_Main, width_Left + 25, mainPosY, isGUIEvent);
 
 			EditorGUILayout.EndVertical();
 
@@ -782,7 +791,7 @@ namespace AnyPortrait
 
 				//1. 아이콘
 				GUI.backgroundColor = animEvent.GetIconColor();
-				GUILayout.Box(apStringFactory.I.None, apEditorUtil.WhiteGUIStyle_Box, apGUILOFactory.I.Width(14), apGUILOFactory.I.Height(14));//일반 박스 이미지
+				GUILayout.Box(apStringFactory.I.None, _guiStyle_WhiteBox, apGUILOFactory.I.Width(14), apGUILOFactory.I.Height(14));//일반 박스 이미지
 				GUI.backgroundColor = prevColor;
 
 				GUILayout.Space(10);
@@ -2013,7 +2022,7 @@ namespace AnyPortrait
 
 					//1. 아이콘
 					GUI.backgroundColor = curPreset.GetIconColor();
-					GUILayout.Box(apStringFactory.I.None, apEditorUtil.WhiteGUIStyle_Box, apGUILOFactory.I.Width(14), apGUILOFactory.I.Height(14));//일반 박스 이미지
+					GUILayout.Box(apStringFactory.I.None, _guiStyle_WhiteBox, apGUILOFactory.I.Width(14), apGUILOFactory.I.Height(14));//일반 박스 이미지
 					GUI.backgroundColor = prevColor;
 
 					GUILayout.Space(10);

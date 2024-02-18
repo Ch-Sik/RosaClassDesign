@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -129,6 +129,9 @@ namespace AnyPortrait
 		/// <summary>Currently selected and running Root Unit</summary>
 		[NonSerialized]
 		public apOptRootUnit _curPlayingOptRootUnit = null;//<<현재 재생중인 OptRootUnit
+
+		[NonSerialized]
+		private apOptRootUnit _prevOptRootUnit = null;//v1.4.7 추가 : 이전 프레임에서 선택되었던 Opt 루트 유닛
 
 		/// <summary>A List of Optimized Transforms executed at runtime</summary>
 		[SerializeField, NonBackupField]
@@ -670,7 +673,112 @@ namespace AnyPortrait
 		[NonSerialized] public bool _isCurrentTeleporting = false;//현재 프레임에서 텔레포트가 발생했는가
 
 		[NonSerialized] public bool _isPhysicsEnabledInPrevFrame = false;//이전 프레임에서 물리가 유효하게 동작했는가
+
+
+		//추가 [v1.4.7]
+		//루트 유닛이 전환되는 경우 물리 효과가 튀면 안된다.
+		[NonSerialized] public bool _isCurrentRootUnitChanged = false;
+
+
+		// 추가 v1.4.7
+		// 메시 갱신 빈도를 제어해서 낮은 프레임에서 동작하는 것처럼 보일 수 있다.
+		public enum MESH_UPDATE_FREQUENCY : int
+		{
+			EveryFrames = 0,//기본값
+			FixedFrames_NotSync = 1,//동기화 되지 않은 고정 프레임
+			FixedFrames_Sync = 2,//동기화된 고정 프레임
+		}
+		[SerializeField] public MESH_UPDATE_FREQUENCY _meshRefreshRateOption = MESH_UPDATE_FREQUENCY.EveryFrames;
+		/// <summary>
+		/// 메시 갱신 방식이 고정 프레임인 경우의 FPS (최소 1, 최대 60)
+		/// </summary>
+		[SerializeField] public int _meshRefreshRateFPS = 24;
+		[NonSerialized] private bool _isMeshRefreshFrame = false;//현재 프레임이 메시를 갱신하는 프레임인가?
+		[NonSerialized] private float _tMeshRefreshTimer = 0.0f;
+		private const int MESH_REFRESH_FPS_MIN = 1;
+		private const int MESH_REFRESH_FPS_MAX = 30;//최대 30FPS (그 이상은 60 FPS 기준으로 "연속 재생 <-> 끊김"의 반복이다)
+
+		//Important가 꺼진 경우의 업데이트 정보
+		[NonSerialized] private bool _isNotImportant_UpdateFrame = false;//이게 True면 No-Important의 경우에 갱신되는 프레임이다.
+		[NonSerialized] private float _tNotImportant_Elapsed = 0.0f;
+
+
+
+		// 추가 v1.4.8 : 업데이트 시점
+		public enum PROCESS_EVENT_ON : int
+		{
+			LateUpdate = 0,//이게 기본값
+			Update = 1,//이건 Execution Order를 수정해야한다.
+		}
+		[SerializeField] public PROCESS_EVENT_ON _mainProcessEvent = PROCESS_EVENT_ON.LateUpdate;
+
+		// 추가 v1.4.8 : 루트 모션
+		public enum ROOT_MOTION_MODE : int
+		{
+			None = 0,
+			/// <summary>루트본이 부모 객체의 중심에 위치하도록 설정한다.</summary>
+			LockToCenter = 1,
+			/// <summary>루트본의 움직임을 대상 Transform에 적용한다.</summary>
+			MoveParentTransform = 2
+		}
+		//루트모션 옵션. 이 값이 실제로 반영될지는 다른 조건을 확인해야 하며, 업데이트시엔 _rootMotionValidatedMode를 이용하자
+		[SerializeField] public ROOT_MOTION_MODE _rootMotionModeOption = ROOT_MOTION_MODE.None;
+
+
+		//이동/고정 옵션 (축별로)
+		//이동이 아니더라도 LockToCenter에서도 적용된다.
+		public enum ROOT_MOTION_MOVE_TYPE_PER_AXIS : int
+		{
+			/// <summary>이 축에 대해서는 루트 모션을 사용하지 않음</summary>
+			Disabled = 0,
+			/// <summary>해당 축에 대해서 위치 고정 및 이동이 된다.</summary>
+			PositionOnly = 1,
+			/// <summary>해당 축에 대해서 위치 보정 및 속도 보정이 이루어진다. (기본 옵션)</summary>
+			PositionAndVelocity = 2,
+		}
+		[SerializeField] public ROOT_MOTION_MOVE_TYPE_PER_AXIS _rootMotionAxisOption_X = ROOT_MOTION_MOVE_TYPE_PER_AXIS.PositionAndVelocity;
+		[SerializeField] public ROOT_MOTION_MOVE_TYPE_PER_AXIS _rootMotionAxisOption_Y = ROOT_MOTION_MOVE_TYPE_PER_AXIS.PositionAndVelocity;
+
+		//루트 모션이 활성화되려면
+		//- 루트 유닛마다 루트 본이 지정되어 있어야 한다.
+		//- 움직임이 적용되거나 Local Pos > Zero의 기준이 되는 Parent가 있어야 한다.
+
+		//적용되는 Parent Transform에 대한 옵션
+		public enum ROOT_MOTION_TARGET_TRANSFORM : int
+		{
+			/// <summary>바로 위의 Parent. 별도로 지정하지 않아도 된다.</summary>
+			Parent = 0,
+			/// <summary>직접 지정하는 Transform. 이것도 부모 조건은 충족해야한다.</summary>
+			SpecifiedTransform = 1,
+		}
+		[SerializeField] public ROOT_MOTION_TARGET_TRANSFORM _rootMotionTargetTransformType = ROOT_MOTION_TARGET_TRANSFORM.Parent;
+		[SerializeField, NonBackupField] public Transform _rootMotionSpecifiedParentTransform = null;
+
 		
+		
+		
+
+		//조건을 체크하여 실제로 RootMotion이 어떻게 동작하는지의 모드 (유효성 검사 결과)
+		[NonSerialized] public ROOT_MOTION_MODE _rootMotionValidatedMode = ROOT_MOTION_MODE.None;
+		[NonSerialized] public Transform _rootMotionValidated_ParentTransform = null;//바로 위 부모 Transform
+		[NonSerialized] public Transform _rootMotionValidated_BaseTransform = null;//부모 또는 더 위 부모 Transform. 위치 이동이 적용된다.
+		[NonSerialized] private apOptRootUnit.FUNC_ROOTMOTION_UPDATE _funcRootMotionEvent = null;
+
+		//Base Transform이 가진 컴포넌트에 따라서 위치가 적용되는 방식이 다르다.
+		public enum ROOT_MOTION_BASE_COMPONENT
+		{
+			Transform, Rigidbody2D, Rigidbody3D
+		}
+		[NonSerialized] private ROOT_MOTION_BASE_COMPONENT _rootMotionValidated_BaseComponentType = ROOT_MOTION_BASE_COMPONENT.Transform;
+		[NonSerialized] private Rigidbody2D _rootMotionValidated_BaseCom_Rigidbody2D = null;
+		[NonSerialized] private Rigidbody _rootMotionValidated_BaseCom_Rigidbody3D = null;
+
+		//업데이트에서 발생한 루트 모션 이동 변위 요청
+		[NonSerialized] private bool _rootMotion_IsRequestedMove = false;
+		[NonSerialized] private Vector3 _rootMotion_RequestedPos = Vector3.zero;
+
+
+
 
 
 
@@ -765,99 +873,64 @@ namespace AnyPortrait
 		//-----------------------------------------------------
 		void Update()
 		{
+
+#if UNITY_EDITOR
+			if (!Application.isPlaying)
+			{
+				return;
+			}
+#endif	
+
 #if UNITY_EDITOR
 			try
-			{
-				if (Application.isPlaying)
-				{
+			{	
 #endif
+				if (_initStatus != INIT_STATUS.Completed)
+				{
+					//로딩이 다 되지 않았다면 처리를 하지 않는다.
+					return;
+				}
 
-
-					if (_curPlayingOptRootUnit == null)
+				// < Update 코드 >
+				//- Main Process 전에 호출되어야 하는 코드들 실행한다.
+				//- Sync Child에서는 호출되지 않는다.
+				//- 업데이트 타이밍 계산을 위해 "Update" 단계에서 꼭 실행되어야 하는 함수들이 실행된다.
+				if (!_isSyncChild)
+				{
+					if (_isImportant)
 					{
-						return;
+						//[ Important가 활성화된 경우 ]
+						if (_meshRefreshRateOption == MESH_UPDATE_FREQUENCY.FixedFrames_Sync)
+						{
+							//매시 갱신 빈도가 동기화된 낮은 프레임이라면
+							apOptFixedFrameChecker.I.OnUpdate(_meshRefreshRateFPS);
+						}
 					}
-
-					//추가 2.28 : 
-					if (!_isImportant)
+					else
 					{
+						//[ Important가 비활성화된 경우 ]
 						//이전
-						//_updateToken = apOptUpdateChecker.I.AddRequest(_updateToken, _FPS, Time.deltaTime);
+						//_updateToken = apOptUpdateChecker.I.AddRequest(_updateToken, _FPS, Time.unscaledDeltaTime);
 
-						//변경 : TimeScale을 변경하였을 때도 UpdateToken은 정상적으로 동작해야한다.
-						_updateToken = apOptUpdateChecker.I.AddRequest(_updateToken, _FPS, Time.unscaledDeltaTime);
+						//v1.4.8 변경 : 이제 OnUpdate에서 바로 IsUpdate/ElapsedTime이 계산이 된다.
+						_updateToken = apOptUpdateChecker.I.OnUpdate(_updateToken, _FPS, Time.unscaledDeltaTime);
 					}
-
-
-					#region [미사용 코드 : LateUpdate로 넘어감]
-					//					_tDelta += Time.deltaTime;
-					//					//if (_tDelta > _timePerFrame)
-					//					//if(true)
-					//					{
-					//						//_tDelta -= _timePerFrame;//아래에 갱신한 부분이 있다.
-
-					//						//전체 업데이트하는 코드
-
-					//						//일정 프레임마다 업데이트를 한다.
-					//#if UNITY_EDITOR
-					//						Profiler.BeginSample("Portrait - Update Transform");
-					//#endif
-
-
-
-
-					//						//_optRootUnit.UpdateTransforms(_tDelta);
-					//						//_curPlayingOptRootUnit.UpdateTransforms(_tDelta);
-					//						//_curPlayingOptRootUnit.UpdateTransforms(_timePerFrame);
-
-
-					//						//원래는 이 코드
-					//						_curPlayingOptRootUnit.UpdateTransforms(Time.deltaTime);//<
-
-					//#if UNITY_EDITOR
-					//						Profiler.EndSample();
-					//#endif
-
-
-					//						//mask Mesh의 업데이트는 모든 Mesh 처리가 끝나고 한다.
-					//						if (_isAnyMaskedMeshes)
-					//						{
-
-					//#if UNITY_EDITOR
-					//							Profiler.BeginSample("Portrait - Post Update <Mask>");
-					//#endif
-
-					//							//Mask Parent 중심의 업데이트 삭제 -> Child 중심의 업데이트로 변경
-					//							//for (int i = 0; i < _optMaskedMeshes.Count; i++)
-					//							//{
-					//							//	_optMaskedMeshes[i].RefreshMaskedMesh();
-					//							//}
-
-					//							for (int i = 0; i < _optClippedMeshes.Count; i++)
-					//							{
-					//								_optClippedMeshes[i].RefreshClippedMesh();
-					//							}
-
-					//#if UNITY_EDITOR
-					//							Profiler.EndSample();
-					//#endif
-
-					//						}
-
-					//						_tDelta -= _timePerFrame;
-					//						//_tDelta = 0.0f;//Delatyed tDelta라면 0으로 바꾸자 
-
-
-					//					}
-					#endregion
+				}
+					
+				// < Main Process - (Update 옵션) >
+				//- Main Process를 "Update" 함수에서 실행하도록 옵션이 설정된 경우
+				if(_mainProcessEvent == PROCESS_EVENT_ON.Update)
+				{
+					MainProcess();
+				}	
 
 
 #if UNITY_EDITOR
-				}
 			}
 			catch (Exception ex)
 			{
-				Debug.LogError("Portrait Exception : " + ex.ToString());
+				Debug.LogError("AnyPortrait Update Error", this.gameObject);
+				Debug.LogException(ex, this.gameObject);
 			}
 #endif
 		}
@@ -871,54 +944,433 @@ namespace AnyPortrait
 			{
 				return;
 			}
+
+			try
+			{
+#endif
+				if (_initStatus != INIT_STATUS.Completed)
+				{
+					//로딩이 다 되지 않았다면 처리를 하지 않는다.
+					return;
+				}
+
+				// < Main Process - (LateUpdate 옵션) >
+				// Main Process를 "LateUpdate" 함수에서 실행하도록 옵션이 설정된 경우
+				if (_mainProcessEvent == PROCESS_EVENT_ON.LateUpdate)
+				{
+					MainProcess();
+				}
+
+
+
+				// < LateUpdate 코드 >
+				//- 메인 프로세스와 별개인 후처리를 진행한다.
+				//- 타이머 객체의 LateUpdate 함수를 호출한다.
+				//- Post Update (위치 갱신 등)을 호출한다.
+				if(_isImportant)
+				{
+					//Important + FixedFrames_Sync일때의 타이머 이벤트
+					if(_meshRefreshRateOption == MESH_UPDATE_FREQUENCY.FixedFrames_Sync)
+					{
+						//Late Update에서 호출을 하자
+						apOptFixedFrameChecker.I.OnLateUpdate(_meshRefreshRateFPS);
+					}
+				}
+				else
+				{
+					//Late Update에서 토큰 갱신
+					apOptUpdateChecker.I.OnLateUpdate();
+				}
+
+				//업데이트가 끝나고 위치 정보 등을 저장한다.
+				PostUpdate();
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				Debug.LogError("AnyPortrait LateUpdate Error", this.gameObject);
+				Debug.LogException(ex, this.gameObject);
+			}
 #endif
 
-			if (_initStatus != INIT_STATUS.Completed)
-			{
-				//로딩이 다 되지 않았다면 처리를 하지 않는다.
-				return;
-			}
+			#region [미사용 코드]
+			////추가 21.4.3 : 출력할게 없다면 스크립트를 중단한다.
+			//if (_curPlayingOptRootUnit == null)
+			//{
+			//	_prevOptRootUnit = null;
+			//	return;
+			//}
 
+			////추가 21.6.8 : 동기화되어서 수동적으로 동작해야한다면 여기서 업데이트를 하지 않는다. (부모가 업데이트 함수를 호출해줘야 한다.)
+			//if (_isSyncChild)
+			//{
+			//	return;
+			//}
+
+
+			////추가 20.7.9 : 물리에서 공통적으로 사용할 DeltaTime을 계산한다.
+			//CalculatePhysicsTimer();
+
+
+			////추가 22.7.7 : 물리 텔레포트를 보정하기 위한 감지 함수를 호출한다.
+			//CheckTeleport();
+
+
+			//#region [핵심 코드 >>> Update에서 넘어온 코드]
+			////_tDelta += Time.deltaTime;//<<이전 방식 (Important가 아닌 경우)
+
+			//#region [사용 : 1프레임 지연 없이 사용하는 경우. 단, 외부 처리에 대해서는 Request 방식으로 처리해야한다.]
+
+			////추가 21.10.7 : 업데이트 시간 계산 옵션이 적용된다. 기존의 Time.deltaTime만 사용하지는 않는다.
+			//switch (_deltaTimeOption)
+			//{
+			//	case DELTA_TIME_OPTION.DeltaTime: _tCurUpdate = Time.deltaTime; break;
+			//	case DELTA_TIME_OPTION.UnscaledDeltaTime: _tCurUpdate = Time.unscaledDeltaTime; break;
+			//	case DELTA_TIME_OPTION.MultipliedDeltaTime: _tCurUpdate = Time.deltaTime * _deltaTimeMultiplier; break;
+			//	case DELTA_TIME_OPTION.MultipliedUnscaledDeltaTime: _tCurUpdate = Time.unscaledDeltaTime * _deltaTimeMultiplier; break;
+			//	case DELTA_TIME_OPTION.CustomFunction:
+			//		{
+			//			//추가 22.1.8: 콜백 함수 이용
+			//			if (_funcDeltaTimeRequested != null)
+			//			{
+			//				_tCurUpdate = _funcDeltaTimeRequested(_deltaTimeRequestSavedObject);
+			//			}
+			//			else
+			//			{
+			//				//함수가 없다면 옵션 변경
+			//				Debug.Log("AnyPortrait : The callback function to get the update time was null, so it's back to the default option.");
+			//				_deltaTimeOption = DELTA_TIME_OPTION.DeltaTime;
+			//				_tCurUpdate = Time.deltaTime;
+			//			}
+			//		}
+			//		break;
+			//}
+
+
+			////힘 관련 업데이트
+			//ForceManager.Update(_tCurUpdate);
+
+			////애니메이션 업데이트
+			//_animPlayManager.Update(_tCurUpdate);
+
+			////추가 20.11.23 : 애니메이션 정보가 모디파이어 처리에 반영되도록 매핑 클래스를 동작시킨다.
+			//_animPlayMapping.Update();
+
+
+			////추가 : 애니메이션 업데이트가 끝났다면 ->
+			////다른 스크립트에서 요청한 ControlParam 수정 정보를 반영한다.
+			//_controller.CompleteRequests();
+			//#endregion
+
+
+			////if (_tDelta > _timePerFrame)
+			////if(true)
+			//if (_curPlayingOptRootUnit != null)
+			//{
+			//	//추가 9.19 : Camera 체크
+			//	//if(_billboardType != BILLBOARD_TYPE.None)
+			//	//{
+			//	//	CheckAndRefreshCameras();
+			//	//} >> 이전 : 빌보드가 아닌 경우 생략
+
+			//	//변경 : 언제나
+			//	CheckAndRefreshCameras();
+
+
+			//	//전체 업데이트하는 코드
+			//	//일정 프레임마다 업데이트를 한다.
+			//	//#if UNITY_EDITOR
+			//	//					Profiler.BeginSample("Portrait - Update Transform");
+			//	//#endif
+			//	if (_isImportant)
+			//	{
+			//		//v1.4.7 : 매시 갱신 빈도 옵션을 적용한다.
+			//		_isMeshRefreshFrame = false;
+			//		switch (_meshRefreshRateOption)
+			//		{
+			//			case MESH_UPDATE_FREQUENCY.EveryFrames:
+			//				// [ 메시 갱신 빈도가 "매프레임 (기본값)"인 경우
+			//				_isMeshRefreshFrame = true;//항상 갱신
+			//				break;
+
+			//			case MESH_UPDATE_FREQUENCY.FixedFrames_NotSync:
+			//				{
+			//					// [ 메시 갱신 빈도가 "고정 프레임 + 동기화 안됨"인 경우
+			//					_tMeshRefreshTimer += Time.unscaledDeltaTime;
+			//					int refreshFPS = Mathf.Clamp(_meshRefreshRateFPS, MESH_REFRESH_FPS_MIN, MESH_REFRESH_FPS_MAX);
+			//					float secPerFrame = 1.0f / (float)refreshFPS;
+			//					if(_tMeshRefreshTimer > secPerFrame)
+			//					{
+			//						_tMeshRefreshTimer -= secPerFrame;
+			//						_isMeshRefreshFrame = true;
+			//					}
+			//				}
+			//				break;
+
+			//			case MESH_UPDATE_FREQUENCY.FixedFrames_Sync:
+			//				// [ 메시 갱신 빈도가 "고정 프레임 + 동기화됨"인 경우
+			//				//동기화된 타이머로부터 업데이트 여부를 받자
+			//				_isMeshRefreshFrame = apOptFixedFrameChecker.I.IsUpdatable(_meshRefreshRateFPS);
+
+			//				//Late Update에서 호출을 하자
+			//				apOptFixedFrameChecker.I.OnLateUpdate(_meshRefreshRateFPS);
+			//				break;
+			//		}
+
+			//		//v1.4.7
+			//		if(!_isMeshRefreshFrame)
+			//		{
+			//			//현재 프레임이 메시가 갱신되지 않는 (=건너뛰는) 프레임인데,
+			//			//다음의 경우엔 프레임 계산에 상관없이 무조건 메시를 갱신해야한다.
+			//			//- Root Unit이 변경된 경우 > 여기서 체크한다.
+			//			//- 상하좌우 플립이 된 경우 > UpdateTransforms의 내부의 CheckFlippedTransform() 구문에서 체크한다.
+
+			//			//Root Unit이 변경된 경우
+			//			if(_prevOptRootUnit != _curPlayingOptRootUnit)
+			//			{
+			//				_isMeshRefreshFrame = true;
+			//			}
+			//		}
+
+			//		//v1.4.7 변경 : UpdateTransform에 _isMeshRefreshFrame를 입력해서 메시 갱신 여부를 전달하자.
+			//		_curPlayingOptRootUnit.UpdateTransforms(_tCurUpdate, _isMeshRefreshFrame);
+
+			//	}
+			//	else
+			//	{	
+			//		//중앙에서 관리하는 토큰 업데이트
+
+			//		//이전
+			//		//if (apOptUpdateChecker.I.GetUpdatable(_updateToken))
+			//		//변경 v1.4.8 : Update에서 생성/갱신된 토큰의 값을 바로 사용한다.
+			//		bool isUpdatedFrame = _updateToken != null && _updateToken.IsUpdatable;
+
+			//		if (isUpdatedFrame)
+			//		{
+			//			_curPlayingOptRootUnit.UpdateTransforms(_updateToken.ResultElapsedTime, true);
+			//		}
+			//		else
+			//		{
+			//			_curPlayingOptRootUnit.UpdateTransformsOnlyMaskMesh();
+			//		}
+
+			//		//메시 갱신 변수 자체는 매프레임 동작하게 만든다. (마스크등의 이슈로)
+			//		_isMeshRefreshFrame = true;
+
+
+			//		//추가 v1.4.8 : 업데이트 여부에 상관없이 토큰 후처리를 위해 호출한다.
+			//		apOptUpdateChecker.I.OnLateUpdate();
+			//	}
+
+			//}
+
+			//PostUpdate();//추가 20.9.15 : 현재 프레임의 위치등을 저장하자.
+
+			////추가 21.6.8 : 동기화된 객체라면, 자식 객체들의 업데이트를 대신 해주자
+			//if (_isSyncParent)
+			//{
+			//	int nChildPortrait = _syncChildPortraits.Count;
+			//	apPortrait childPortrait = null;
+			//	bool isAnyRemovedPortrait = false;
+			//	for (int i = 0; i < nChildPortrait; i++)
+			//	{
+			//		childPortrait = _syncChildPortraits[i];
+			//		if (childPortrait == null)
+			//		{
+			//			isAnyRemovedPortrait = true;
+			//			continue;
+			//		}
+
+			//		//업데이트를 대신 호출해준다.
+			//		childPortrait.UpdateAsSyncChild(_tCurUpdate, _isMeshRefreshFrame);
+			//	}
+			//	if (isAnyRemovedPortrait)
+			//	{
+			//		//알게모르게 삭제된게 있었다;
+			//		//리스트에서 제거해주자
+			//		_syncChildPortraits.RemoveAll(delegate (apPortrait a)
+			//		{
+			//			return a == null;
+			//		});
+
+			//		//만약 모두 삭제되었다.
+			//		if (_syncChildPortraits.Count == 0)
+			//		{
+			//			//동기화 해제
+			//			_isSyncParent = false;
+			//			_syncChildPortraits = null;
+			//		}
+			//	}
+			//}
+			//#endregion
+
+
+			////v1.4.7 : Cur > Prev로 OptRootUnit 저장
+			//_prevOptRootUnit = _curPlayingOptRootUnit; 
+			#endregion
+		}
+
+
+
+
+		private void FixedUpdate()
+		{
+			//v1.4.8 : 루트모션으로 RigidBody를 움직이는 경우는 FixedUpdate에서 처리해야한다.
+			if(_rootMotionValidatedMode == ROOT_MOTION_MODE.MoveParentTransform
+				&& _rootMotion_IsRequestedMove)
+			{
+				ProcessRootMotion_FixedUpdate();
+			}
+		}
+
+
+
+
+
+
+
+
+
+		// 추가 v1.4.8 : 옵션에 따라서 메인 업데이트 함수의 위치를 정할 수 있다.
+		//- Update / Main Process / Late Update 코드가 분리된다.
+		//- Update도 시간 관련 코드를 호출한다.
+		//- LateUpdate의 코드는 Main Process과 무관한 업데이트 시간 관련 코드만 포함된다. (PostUpdate 포함)
+		//- Sync Child는 Update/LateUpdate에서 Post Update 외에는 호출하지 않는다. (업데이트 시간 코드도)
+		//- Update + Main Process에 타이밍 로직이 있으므로, Sync Child는 부모의 업데이트 타이밍을 그대로 받아야 한다.
+		private void MainProcess()
+		{
 			//추가 22.5.18 : 스크립트에 의한 애니메이션 요청을 처리한다.
 			if (_animPlayDeferredRequest.IsAnyRequests())
 			{
 				_animPlayDeferredRequest.ProcessRequests();
 			}
 
+			// 업데이트 Delta Time 계산
+			CalculateDeltaTime();
 
-			//추가 21.4.3 : 출력할게 없다면 스크립트를 중단한다.
-			if (_curPlayingOptRootUnit == null)
-			{
-				return;
-			}
+			//추가 20.7.9 : 물리에서 공통적으로 사용할 DeltaTime을 계산한다.
+			CalculatePhysicsTimer();
 
-			//추가 21.6.8 : 동기화되어서 수동적으로 동작해야한다면 여기서 업데이트를 하지 않는다. (부모가 업데이트 함수를 호출해줘야 한다.)
+			//추가 22.7.7 : 물리 텔레포트를 보정하기 위한 감지 함수를 호출한다.
+			CheckTeleport();
+
+			//메시 갱신 프레임 / 간헐적 업데이트 여부를 계산한다.
+			CalculateRefreshFrame();
+
+			//추가 21.6.8
+			//동기화되어서 수동적으로 동작해야한다면 여기서 업데이트를 하지 않는다.
+			//(부모가 업데이트 함수를 호출해줘야 한다.)
 			if (_isSyncChild)
 			{
 				return;
 			}
 
-
-			//추가 20.7.9 : 물리에서 공통적으로 사용할 DeltaTime을 계산한다.
-			CalculatePhysicsTimer();
-
-
-			//추가 22.7.7 : 물리 텔레포트를 보정하기 위한 감지 함수를 호출한다.
-			CheckTeleport();
-
-
-			#region [핵심 코드 >>> Update에서 넘어온 코드]
-			//_tDelta += Time.deltaTime;//<<이전 방식 (Important가 아닌 경우)
-
-			#region [사용 : 1프레임 지연 없이 사용하는 경우. 단, 외부 처리에 대해서는 Request 방식으로 처리해야한다.]
-
-			//추가 21.10.7 : 업데이트 시간 계산 옵션이 적용된다. 기존의 Time.deltaTime만 사용하지는 않는다.
-			switch (_deltaTimeOption)
+			//추가 21.4.3 : 출력할게 없다면 스크립트를 중단한다.
+			if (_curPlayingOptRootUnit == null)
 			{
-				case DELTA_TIME_OPTION.DeltaTime: _tCurUpdate = Time.deltaTime; break;
-				case DELTA_TIME_OPTION.UnscaledDeltaTime: _tCurUpdate = Time.unscaledDeltaTime; break;
-				case DELTA_TIME_OPTION.MultipliedDeltaTime: _tCurUpdate = Time.deltaTime * _deltaTimeMultiplier; break;
-				case DELTA_TIME_OPTION.MultipliedUnscaledDeltaTime: _tCurUpdate = Time.unscaledDeltaTime * _deltaTimeMultiplier; break;
+				//만약 동기화 업데이트라면, 중단하기 전에 동기화된 자식 객체를 업데이트를 해야한다.
+				if(_isSyncParent)
+				{
+					UpdateSyncedChildren();
+				}
+
+				_prevOptRootUnit = null;
+				return;
+			}
+
+			//힘 관련 업데이트
+			ForceManager.Update(_tCurUpdate);
+
+			//애니메이션 업데이트
+			_animPlayManager.Update(_tCurUpdate);
+
+			//추가 20.11.23 : 애니메이션 정보가 모디파이어 처리에 반영되도록 매핑 클래스를 동작시킨다.
+			_animPlayMapping.Update();
+
+			//추가 : 애니메이션 업데이트가 끝났다면 ->
+			//다른 스크립트에서 요청한 ControlParam 수정 정보를 반영한다.
+			_controller.CompleteRequests();
+
+			if (_curPlayingOptRootUnit != null)
+			{
+				//Camera 체크
+				CheckAndRefreshCameras();
+
+				//전체 업데이트하는 코드
+				//일정 프레임마다 업데이트를 한다.
+				if (_isImportant)
+				{
+					// [ Important : 매프레임 업데이트 ]
+					//애니메이션 업데이트로 인해서 Root Unit이 바뀌었다면 메시를 갱신해야한다.
+					//v1.4.7
+					if(!_isMeshRefreshFrame)
+					{
+						//현재 프레임이 메시가 갱신되지 않는 (=건너뛰는) 프레임인데,
+						//다음의 경우엔 프레임 계산에 상관없이 무조건 메시를 갱신해야한다.
+						//- Root Unit이 변경된 경우 > 여기서 체크한다.
+						//- 상하좌우 플립이 된 경우 > UpdateTransforms의 내부의 CheckFlippedTransform() 구문에서 체크한다.
+						
+						//Root Unit이 변경된 경우
+						if(_prevOptRootUnit != _curPlayingOptRootUnit)
+						{
+							_isMeshRefreshFrame = true;
+						}
+					}
+
+					//v1.4.7 변경 : UpdateTransform에 _isMeshRefreshFrame를 입력해서 메시 갱신 여부를 전달하자.
+					_curPlayingOptRootUnit.UpdateTransforms(	_tCurUpdate,
+																_isMeshRefreshFrame,
+																_funcRootMotionEvent);
+					
+				}
+				else
+				{	
+					// [ Not Important : 간헐적 업데이트 ]
+					//중앙에서 관리하는 토큰 업데이트
+					if (_isNotImportant_UpdateFrame)
+					{
+						//현재 업데이트되는 프레임이다.
+						_curPlayingOptRootUnit.UpdateTransforms(_tNotImportant_Elapsed, true, _funcRootMotionEvent);
+					}
+					else
+					{
+						//업데이트되지 않는 프레임이다.
+						_curPlayingOptRootUnit.UpdateTransformsOnlyMaskMesh();
+					}
+				}
+			}
+
+
+			//동기화된 부모라면 자식 객체를 업데이트하자
+			if(_isSyncParent)
+			{
+				UpdateSyncedChildren();
+			}
+
+
+			//v1.4.7 : Cur > Prev로 OptRootUnit 저장
+			_prevOptRootUnit = _curPlayingOptRootUnit;
+		}
+
+
+		// 업데이트시의 Delta Time을 계산한다.
+		private void CalculateDeltaTime()
+		{
+			switch (_deltaTimeOption)
+			{	
+				case DELTA_TIME_OPTION.UnscaledDeltaTime:
+					_tCurUpdate = Time.unscaledDeltaTime;
+					break;
+
+				case DELTA_TIME_OPTION.MultipliedDeltaTime:
+					_tCurUpdate = Time.deltaTime * _deltaTimeMultiplier;
+					break;
+					
+				case DELTA_TIME_OPTION.MultipliedUnscaledDeltaTime:
+					_tCurUpdate = Time.unscaledDeltaTime * _deltaTimeMultiplier;
+					break;
+
 				case DELTA_TIME_OPTION.CustomFunction:
 					{
 						//추가 22.1.8: 콜백 함수 이용
@@ -935,121 +1387,424 @@ namespace AnyPortrait
 						}
 					}
 					break;
+
+				case DELTA_TIME_OPTION.DeltaTime:
+				default:
+					_tCurUpdate = Time.deltaTime;
+					break;
 			}
-
-
-			//힘 관련 업데이트
-			ForceManager.Update(_tCurUpdate);
-
-			//애니메이션 업데이트
-			_animPlayManager.Update(_tCurUpdate);
-
-			//추가 20.11.23 : 애니메이션 정보가 모디파이어 처리에 반영되도록 매핑 클래스를 동작시킨다.
-			_animPlayMapping.Update();
-
-
-			//추가 : 애니메이션 업데이트가 끝났다면 ->
-			//다른 스크립트에서 요청한 ControlParam 수정 정보를 반영한다.
-			_controller.CompleteRequests();
-			#endregion
-
-
-			//if (_tDelta > _timePerFrame)
-			//if(true)
-			if (_curPlayingOptRootUnit != null)
-			{
-				//추가 9.19 : Camera 체크
-				//if(_billboardType != BILLBOARD_TYPE.None)
-				//{
-				//	CheckAndRefreshCameras();
-				//} >> 이전 : 빌보드가 아닌 경우 생략
-
-				//변경 : 언제나
-				CheckAndRefreshCameras();
-
-
-				//전체 업데이트하는 코드
-				//일정 프레임마다 업데이트를 한다.
-				//#if UNITY_EDITOR
-				//					Profiler.BeginSample("Portrait - Update Transform");
-				//#endif
-				if (_isImportant)
-				{
-					_curPlayingOptRootUnit.UpdateTransforms(_tCurUpdate);
-				}
-				else
-				{
-					//이전 방식 : 랜덤값이 포함된 간헐적 업데이트
-					//if (_tDelta > _timePerFrame)
-					//{
-					//	//Important가 꺼진다면 프레임 FPS를 나누어서 처리한다.
-					//	_curPlayingOptRootUnit.UpdateTransforms(_timePerFrame);
-
-					//	_tDelta -= _timePerFrame;
-					//}
-					//else
-					//{
-					//	//추가 4.8
-					//	//만약 Important가 꺼진 상태에서 MaskMesh가 있다면
-					//	//Mask Mesh의 RenderTexture가 매 프레임 갱신 안될 수 있다.
-					//	//따라서 RenderTexture 만큼은 매 프레임 갱신해야한다.
-					//	_curPlayingOptRootUnit.UpdateTransformsOnlyMaskMesh();
-					//}
-
-					//새로운 방식 : 중앙에서 관리하는 토큰 업데이트
-					if (apOptUpdateChecker.I.GetUpdatable(_updateToken))
-					{
-						_curPlayingOptRootUnit.UpdateTransforms(_updateToken.ResultElapsedTime);
-						//_tDelta -= _timePerFrame;
-					}
-					else
-					{
-						_curPlayingOptRootUnit.UpdateTransformsOnlyMaskMesh();
-					}
-				}
-
-			}
-
-			PostUpdate();//추가 20.9.15 : 현재 프레임의 위치등을 저장하자.
-
-			//추가 21.6.8 : 동기화된 객체라면, 자식 객체들의 업데이트를 대신 해주자
-			if (_isSyncParent)
-			{
-				int nChildPortrait = _syncChildPortraits.Count;
-				apPortrait childPortrait = null;
-				bool isAnyRemovedPortrait = false;
-				for (int i = 0; i < nChildPortrait; i++)
-				{
-					childPortrait = _syncChildPortraits[i];
-					if (childPortrait == null)
-					{
-						isAnyRemovedPortrait = true;
-						continue;
-					}
-
-					//업데이트를 대신 호출해준다.
-					childPortrait.UpdateAsSyncChild(_tCurUpdate);
-				}
-				if (isAnyRemovedPortrait)
-				{
-					//알게모르게 삭제된게 있었다;
-					//리스트에서 제거해주자
-					_syncChildPortraits.RemoveAll(delegate (apPortrait a)
-					{
-						return a == null;
-					});
-
-					//만약 모두 삭제되었다.
-					if (_syncChildPortraits.Count == 0)
-					{
-						//동기화 해제
-						_isSyncParent = false;
-						_syncChildPortraits = null;
-					}
-				}
-			}
-			#endregion
 		}
+
+		/// <summary>
+		/// Important 옵션을 고려하여 메시가 갱신되는 프레임 또는 No-Important의 업데이트 프레임을 구하자
+		/// </summary>
+		private void CalculateRefreshFrame()
+		{
+			//메시 갱신과 관련된 값들
+			_isMeshRefreshFrame = false;
+
+			//Important가 아닌 경우
+			_isNotImportant_UpdateFrame = false;
+			_tNotImportant_Elapsed = 0.0f;
+
+			if (_isImportant)
+			{
+				// [ Important : 매 프레임 업데이트를 한다. ]
+				// 모디파이어는 항상 업데이트 되지만, 메시에는 옵션에 따라 반영이 안될 수도 있다.
+
+				//v1.4.7 : 매시 갱신 빈도 옵션을 적용한다.
+				
+				switch (_meshRefreshRateOption)
+				{
+					case MESH_UPDATE_FREQUENCY.EveryFrames:
+						// [ 메시 갱신 빈도가 "매프레임 (기본값)"인 경우
+						_isMeshRefreshFrame = true;//항상 갱신
+						break;
+
+					case MESH_UPDATE_FREQUENCY.FixedFrames_NotSync:
+						{
+							// [ 메시 갱신 빈도가 "고정 프레임 + 동기화 안됨"인 경우
+							_tMeshRefreshTimer += Time.unscaledDeltaTime;
+							int refreshFPS = Mathf.Clamp(_meshRefreshRateFPS, MESH_REFRESH_FPS_MIN, MESH_REFRESH_FPS_MAX);
+							float secPerFrame = 1.0f / (float)refreshFPS;
+							if(_tMeshRefreshTimer > secPerFrame)
+							{
+								_tMeshRefreshTimer -= secPerFrame;
+								_isMeshRefreshFrame = true;
+							}
+						}
+						break;
+
+					case MESH_UPDATE_FREQUENCY.FixedFrames_Sync:
+						// [ 메시 갱신 빈도가 "고정 프레임 + 동기화됨"인 경우
+						//동기화된 타이머로부터 업데이트 여부를 받자
+						_isMeshRefreshFrame = apOptFixedFrameChecker.I.IsUpdatable(_meshRefreshRateFPS);
+						break;
+				}
+
+				//v1.4.7
+				if(!_isMeshRefreshFrame)
+				{
+					//현재 프레임이 메시가 갱신되지 않는 (=건너뛰는) 프레임인데,
+					//다음의 경우엔 프레임 계산에 상관없이 무조건 메시를 갱신해야한다.
+					//- Root Unit이 변경된 경우 > 여기서 체크한다.
+					//- 상하좌우 플립이 된 경우 > UpdateTransforms의 내부의 CheckFlippedTransform() 구문에서 체크한다.
+						
+					//Root Unit이 변경된 경우
+					if(_prevOptRootUnit != _curPlayingOptRootUnit)
+					{
+						_isMeshRefreshFrame = true;
+					}
+				}	
+			}
+			else
+			{	
+				// [ Important OFF : 간헐적으로 업데이트를 한다.  ]
+				//모디파이어와 달리 메시는 매번 갱신한다. (마스크 이슈 때문에)
+				//중앙에서 관리하는 토큰 업데이트
+
+				//이전
+				//if (apOptUpdateChecker.I.GetUpdatable(_updateToken))
+				//변경 v1.4.8 : Update에서 생성/갱신된 토큰의 값을 바로 사용한다.
+				_isNotImportant_UpdateFrame = _updateToken != null ? _updateToken.IsUpdatable : false;
+				_tNotImportant_Elapsed = _isNotImportant_UpdateFrame ? _updateToken.ResultElapsedTime : 0.0f;
+
+				//메시 갱신 변수 자체는 매프레임 동작하게 만든다. (마스크등의 이슈로)
+				_isMeshRefreshFrame = true;
+			}
+		}
+
+
+
+		//v1.4.8 추가 : 루트 모션 처리
+		private void ProcessRootMotion(apOptRootUnit curRootUnit)
+		{
+			//1. 루트 모션 옵션을 확인한다.
+			if(_rootMotionValidatedMode == ROOT_MOTION_MODE.None)
+			{
+				return;
+			}
+
+			Transform curParent = _transform.parent;
+			if(curParent == null
+				|| _rootMotionValidated_ParentTransform == null
+				|| _rootMotionValidated_ParentTransform != curParent)
+			{
+				//Parent가 없다면 실패
+				return;
+			}
+
+			
+
+			if(_curPlayingOptRootUnit == null || _curPlayingOptRootUnit != curRootUnit)
+			{
+				//현재 루트 유닛이 없다면 실패
+				return;
+			}
+
+			//1. Root Bone을 찾자
+			apOptBone curRootBone = _curPlayingOptRootUnit.RootMotionBone;
+
+			if(curRootBone == null)
+			{
+				//루트 본이 없다.
+				return;
+			}
+
+			Vector2 rootBonePosL = curRootBone._worldMatrix.Pos;//본의 좌표 (Local이다)
+			Vector2 rootBonePosL_NoMod = curRootBone._worldMatrix_NonModified.Pos;//만약 Modifier가 없었다면
+
+			//Self(apPortrait)와 Root Bone의 위치 차이 만큼 apPortrait를 역방향으로 움직인다.
+			//위치를 같은 좌표계로 비교해야한다.
+
+			//Root Unit은 Scale이 들어갔고 나머지 위치는 항상 원점이다.
+			//하위 오브젝트들 ( Bone 포함)도 Identity이므로, RootUnit의 Transform에서 World 좌표를 구하자
+			
+			Vector3 rootBonePosW = _curPlayingOptRootUnit._transform.TransformPoint(new Vector3(rootBonePosL.x, rootBonePosL.y, 0.0f));
+			
+			
+			//World 상에서 이동을 한다.
+			//Parent 기준으로 Root Bone이 중심에 달라붙도록 apPortrait를 움직인다.
+			//위치 변위량만큼 역이동하는게 아니라 현재 위치 차이를 적용하는 것
+			Vector3 portraitPosW_Prev = _transform.position;
+			
+			Vector3 rootBonePosL_OfParent = curParent.InverseTransformPoint(rootBonePosW);
+
+			//Parent 기준으로 Root Bone이 원점으로 가도록 apPortrait를 이동시킨다.
+			//[축별로 적용]
+			Vector3 curLocalPosition = _transform.localPosition;
+
+			if(_rootMotionAxisOption_X != ROOT_MOTION_MOVE_TYPE_PER_AXIS.Disabled)
+			{
+				//X축 옵션이 활성화되어 있다면
+				curLocalPosition.x += -1.0f * rootBonePosL_OfParent.x;
+			}
+			if(_rootMotionAxisOption_Y != ROOT_MOTION_MOVE_TYPE_PER_AXIS.Disabled)
+			{
+				//Y축 옵션이 활성화되어 있다면
+				curLocalPosition.y += -1.0f * rootBonePosL_OfParent.y;
+			}
+
+			//< Lock To Center 처리 결과 적용 >
+			_transform.localPosition = curLocalPosition;
+
+
+			//여기까지 하면 "Lock to Center" 옵션은 종료
+			if (_rootMotionValidatedMode != ROOT_MOTION_MODE.MoveParentTransform
+				|| _rootMotionValidated_BaseTransform == null)
+			{
+				return;
+			}
+
+			//옵션이 Parent Transform이라면
+			//Portrait의 이동 변위의 역 만큼 Base Transform을 이동시켜야 한다.
+			//(Lock된 변위만큼 이동해야 겉보기에 똑같아진다)
+			Vector3 portraitPosW_Next = _transform.position;
+			
+			//루트 모션에서 프레임 진행에 따른 Mod-Pos의 변위의 합을 정리했다. 이 값을 이용하자
+			Vector2 rootMotionDeltaPos = _curPlayingOptRootUnit.GetRootMotionDeltaPos();//루트 모션에 적용하기 위한 루트 본의 이번 프레임 변위.역으로 계산해서 이동 변위를 구하자
+
+			//축에 따라서 이동값 제한
+			if(_rootMotionAxisOption_X == ROOT_MOTION_MOVE_TYPE_PER_AXIS.Disabled)
+			{
+				//X축으로는 Delta Pos 적용 안하는 경우
+				rootMotionDeltaPos.x = 0.0f;
+			}
+
+			if(_rootMotionAxisOption_Y == ROOT_MOTION_MOVE_TYPE_PER_AXIS.Disabled)
+			{
+				//Y축으로는 Delta Pos 적용 안하는 경우
+				rootMotionDeltaPos.y = 0.0f;
+			}
+
+			Vector3 rootBoneDeltaPos = _curPlayingOptRootUnit._transform.TransformVector(new Vector3(rootMotionDeltaPos.x, rootMotionDeltaPos.y, 0.0f));
+
+			
+
+			
+
+			//<옵션>
+			//1. Physics (2D/3D)라면 > RigidBody에 넣어야 한다.
+
+			switch (_rootMotionValidated_BaseComponentType)
+			{
+				case ROOT_MOTION_BASE_COMPONENT.Rigidbody2D:
+					{
+						if(_rootMotionValidated_BaseCom_Rigidbody2D != null)
+						{
+							//RigidBody 2D에 위치 적용 > Fixed Update로 예약
+							_rootMotion_IsRequestedMove = true;
+							_rootMotion_RequestedPos += rootBoneDeltaPos;
+						}
+						else
+						{
+							//(Fallback) Transform에 적용
+							_rootMotionValidated_BaseTransform.position = _rootMotionValidated_BaseTransform.position + rootBoneDeltaPos;
+						}
+					}
+					break;
+
+				case ROOT_MOTION_BASE_COMPONENT.Rigidbody3D:
+					{
+						if(_rootMotionValidated_BaseCom_Rigidbody3D != null)
+						{
+							//RigidBody 3D에 위치 적용 > Fixed Update로 예약
+							_rootMotion_IsRequestedMove = true;
+							_rootMotion_RequestedPos += rootBoneDeltaPos;
+						}
+						else
+						{
+							//(Fallback) Transform에 적용
+							_rootMotionValidated_BaseTransform.position = _rootMotionValidated_BaseTransform.position + rootBoneDeltaPos;
+						}
+					}
+					break;
+
+				case ROOT_MOTION_BASE_COMPONENT.Transform:
+					{
+						//Transform에 적용
+						_rootMotionValidated_BaseTransform.position = _rootMotionValidated_BaseTransform.position + rootBoneDeltaPos;
+					}
+					break;
+			}
+
+		}
+
+		/// <summary>
+		/// Fixed Update에서 실행되는 루트 모션의 처리.
+		/// 로트 모션의 대상이 "RigidBody (2D/3D)"인 경우엔 Fixed Update에서 수행되어야 한다.
+		/// </summary>
+		private void ProcessRootMotion_FixedUpdate()
+		{
+			if(_rootMotionValidatedMode != ROOT_MOTION_MODE.MoveParentTransform
+				|| !_rootMotion_IsRequestedMove)
+			{
+				return;
+			}
+
+			//다만, Position은 순간이동 등에 사용되는 것이므로, DeltaPos가 너무 커서는 안된다.
+			//기준은 1
+			if(Mathf.Abs(_rootMotion_RequestedPos.x) > 1.0f
+				|| Mathf.Abs(_rootMotion_RequestedPos.y) > 1.0f
+				|| Mathf.Abs(_rootMotion_RequestedPos.z) > 1.0f)
+			{
+				//Delta값이 너무 크다면 순간이동 효과가 발생한다.
+				//1 미만으로 만들어야 한다.
+				//Debug.Log("너무 큰 이동 : " + _rootMotion_RequestedPos + " > " + _rootMotion_RequestedPos.normalized);
+				_rootMotion_RequestedPos.Normalize();
+				
+			}
+
+			//Delta Pos의 값의 축별 할당은 ProcessRootMotion에서 수행했다.
+			//여기서는 속도 보정 옵션을 축별로 어떻게 할 것인지만 체크한다.
+			bool isVelocityCorrection_X = (_rootMotionAxisOption_X == ROOT_MOTION_MOVE_TYPE_PER_AXIS.PositionAndVelocity);
+			bool isVelocityCorrection_Y = (_rootMotionAxisOption_Y == ROOT_MOTION_MOVE_TYPE_PER_AXIS.PositionAndVelocity);
+
+			//속도 보정 옵션
+			//- 현재 속도와 Delta에 따른 예상 속도의 차이가 너무 크다면 보정하는 기능
+			//- 원래 현재 속도는 "메인의 오브젝트 속도" + "루트 본의 움직임에 따른 순간 속도"의 합이어야 한다.
+			//- 메인의 오브젝트 속도가 중요하므로, 사실 루트 본의 움직임의 속도가 메인이 되어서는 안된다.
+			
+			//- 문제가 되는 경우는 다음과 같다.
+			//  > 중력이 적용하여 아래로 속력이 높은 상태에서 위로 점프하는 모션이 있어도 충분히 반영되지 않는다. (루트본 방향과 속력의 차이가 크고 방향이 반대)
+			//  > 앞으로 이동하는데 속도가 앞으로 크게 향하지 않아서 이동이 버벅거린다.
+			//  > (부작용-1) 앞으로의 이동에 속도를 보정하니 이동이 멈춰도 슬라이딩이 발생한다.
+			//  > (부작용-2) 감속 보정을 하니 서있는 상태에서는 속도가 0으로 보정되어버려서 움직이질 못한다.
+			
+			//- 즉, 루트 본의 이동 속력을 강하게 보정하면 "슬라이딩(가속)/이동 못함(감속)" 문제가 발생해버린다.
+			//- "속도의 방향이 반대"이며, "속도 차이가 너무 커서 이동을 제대로 표현 못할 정도"인 경우에 보간(30%)을 수행한다.
+			//- 속도 차이는 경험값에 의해서 결정된다.
+
+			//노트 : MovePosition는 사용하지 않는다. 중력이 무시되기 때문
+
+			float tDelta = Time.fixedDeltaTime;			
+
+			switch (_rootMotionValidated_BaseComponentType)
+			{
+				case ROOT_MOTION_BASE_COMPONENT.Rigidbody2D:
+					{
+						if(_rootMotionValidated_BaseCom_Rigidbody2D != null)
+						{	
+							Vector2 nextPos = _rootMotionValidated_BaseCom_Rigidbody2D.position;
+							nextPos += new Vector2(_rootMotion_RequestedPos.x, _rootMotion_RequestedPos.y);
+
+							if((isVelocityCorrection_X || isVelocityCorrection_Y) && tDelta > 0.0f)
+							{
+								Vector3 expectedVel = _rootMotion_RequestedPos / tDelta;
+								expectedVel.x = Mathf.Clamp(expectedVel.x, -100.0f, 100.0f);
+								expectedVel.y = Mathf.Clamp(expectedVel.y, -100.0f, 100.0f);
+
+								Vector2 curVelocity = _rootMotionValidated_BaseCom_Rigidbody2D.velocity;//현재 속도
+
+								//[X 축 - 옵션에 따라 조정]
+								if(isVelocityCorrection_X)
+								{
+									//- 루트본의 기대 속도와 현재 속도의 방향이 반대다.
+									//- 절대값으로 현재 속도가 기대 속도보다 더 크다
+									//- 속도의 차이는 경험값으로 2 차이 이상 차이가 난다. (너무 작은 값 사이에서 반대 부호간 보간을 하면 0이 되버리므로)
+									if(expectedVel.x * curVelocity.x < 0.0f
+										&& Mathf.Abs(curVelocity.x) > Mathf.Abs(expectedVel.x)
+										&& Mathf.Abs(curVelocity.x - expectedVel.x) > 2.0f)
+									{
+										//루트본의 기대 속도보다 현재 속도의 크기가 더 커서 루트본의 움직임을 제대로 표현할 수 없다.
+										//보간을 수행한다. (30%)
+										curVelocity.x = (expectedVel.x * 0.3f) + (curVelocity.x * 0.7f);
+									}
+								}
+
+								//[Y 축 - 옵션에 따라 조정]
+								if(isVelocityCorrection_Y)
+								{
+									//- 루트본의 기대 속도와 현재 속도의 방향이 반대다.
+									//- 절대값으로 현재 속도가 기대 속도보다 더 크다
+									//- 속도의 차이는 경험값으로 2 차이 이상 차이가 난다. (너무 작은 값 사이에서 반대 부호간 보간을 하면 0이 되버리므로)
+									if(expectedVel.y * curVelocity.y < 0.0f
+										&& Mathf.Abs(curVelocity.y) > Mathf.Abs(expectedVel.y)
+										&& Mathf.Abs(curVelocity.y - expectedVel.y) > 2.0f)
+									{
+										//루트본의 기대 속도보다 현재 속도의 크기가 더 커서 루트본의 움직임을 제대로 표현할 수 없다.
+										//보간을 수행한다. (30%)
+										curVelocity.y = (expectedVel.y * 0.3f) + (curVelocity.y * 0.7f);
+									}
+								}
+
+								//속도 보정
+								_rootMotionValidated_BaseCom_Rigidbody2D.velocity = curVelocity;
+							}
+
+							//위치 이동
+							_rootMotionValidated_BaseCom_Rigidbody2D.position = nextPos;
+						}
+					}
+					break;
+
+				case ROOT_MOTION_BASE_COMPONENT.Rigidbody3D:
+					{
+						if(_rootMotionValidated_BaseCom_Rigidbody3D != null)
+						{
+							Vector3 nextPos = _rootMotionValidated_BaseCom_Rigidbody3D.position;
+							nextPos += _rootMotion_RequestedPos;
+
+							if((isVelocityCorrection_X || isVelocityCorrection_Y) && tDelta > 0.0f)
+							{
+								Vector3 expectedVel = _rootMotion_RequestedPos / tDelta;
+								expectedVel.x = Mathf.Clamp(expectedVel.x, -100.0f, 100.0f);
+								expectedVel.y = Mathf.Clamp(expectedVel.y, -100.0f, 100.0f);
+								expectedVel.z = Mathf.Clamp(expectedVel.z, -100.0f, 100.0f);
+
+								Vector3 curVelocity = _rootMotionValidated_BaseCom_Rigidbody3D.velocity;//현재 속도
+
+								//[X/Z 축 - 옵션에 따라 조정] > 3D에서는 Z 축도 X옵션에 포함시킨다.
+								if(isVelocityCorrection_X)
+								{
+									//X축 보간
+									if(expectedVel.x * curVelocity.x < 0.0f
+										&& Mathf.Abs(curVelocity.x) > Mathf.Abs(expectedVel.x)
+										&& Mathf.Abs(curVelocity.x - expectedVel.x) > 2.0f)
+									{
+										//보간을 수행한다. (30%)
+										curVelocity.x = (expectedVel.x * 0.3f) + (curVelocity.x * 0.7f);
+									}
+
+									//Z축 보간
+									if(expectedVel.z * curVelocity.z < 0.0f
+										&& Mathf.Abs(curVelocity.z) > Mathf.Abs(expectedVel.z)
+										&& Mathf.Abs(curVelocity.z - expectedVel.z) > 2.0f)
+									{
+										//보간을 수행한다. (30%)
+										curVelocity.z = (expectedVel.z * 0.3f) + (curVelocity.z * 0.7f);
+									}
+								}
+
+								//[Y 축 - 옵션에 따라 조정]
+								if(isVelocityCorrection_Y)
+								{
+									if (expectedVel.y * curVelocity.y < 0.0f
+										&& Mathf.Abs(curVelocity.y) > Mathf.Abs(expectedVel.y)
+										&& Mathf.Abs(curVelocity.y - expectedVel.y) > 2.0f)
+									{
+										//루트본의 기대 속도와 현재 속도의 방향이 반대다.
+										curVelocity.y = (expectedVel.y * 0.3f) + (curVelocity.y * 0.7f);
+									}
+								}
+
+								//속도 보정
+								_rootMotionValidated_BaseCom_Rigidbody3D.velocity = curVelocity;
+							}
+
+							//위치 이동
+							_rootMotionValidated_BaseCom_Rigidbody3D.position = nextPos;
+						}
+					}
+					break;
+			}
+
+			_rootMotion_IsRequestedMove = false;
+			_rootMotion_RequestedPos = Vector3.zero;
+		}
+
+
+
 
 
 		public void UpdateForce()
@@ -1109,7 +1864,7 @@ namespace AnyPortrait
 						//추가 20.11.23 : 애니메이션 정보가 모디파이어 처리에 반영되도록 매핑 클래스를 동작시킨다.
 						_animPlayMapping.Update();
 
-						_curPlayingOptRootUnit.UpdateTransforms(0.0f);
+						_curPlayingOptRootUnit.UpdateTransforms(0.0f, true, null);
 					}
 				}
 
@@ -1118,7 +1873,8 @@ namespace AnyPortrait
 
 				PostUpdate();//추가 20.9.15 : 현재 프레임의 위치등을 저장하자.
 
-
+				//v1.4.7 : Prev에 현재 OptRootUnit 저장
+				_prevOptRootUnit = _curPlayingOptRootUnit;
 #if UNITY_EDITOR
 			}
 			catch (Exception ex)
@@ -1129,9 +1885,69 @@ namespace AnyPortrait
 		}
 
 
+
+		//동기화된 다른 객체들을 업데이트한다.
+		private void UpdateSyncedChildren()
+		{
+			if(!_isSyncParent)
+			{
+				return;
+			}
+			int nChildPortrait = _syncChildPortraits.Count;
+			apPortrait childPortrait = null;
+			bool isAnyRemovedPortrait = false;
+			
+			for (int i = 0; i < nChildPortrait; i++)
+			{
+				childPortrait = _syncChildPortraits[i];
+				if (childPortrait == null)
+				{
+					isAnyRemovedPortrait = true;
+					continue;
+				}
+
+				//업데이트를 대신 호출해준다.
+				childPortrait.UpdateAsSyncChild(	_tCurUpdate,
+													_isMeshRefreshFrame,
+													_isImportant,
+													_isNotImportant_UpdateFrame,
+													_tNotImportant_Elapsed);
+			}
+
+			if (isAnyRemovedPortrait)
+			{
+				//알게모르게 삭제된게 있었다;
+				//리스트에서 제거해주자
+				_syncChildPortraits.RemoveAll(delegate (apPortrait a)
+				{
+					return a == null;
+				});
+
+				//만약 모두 삭제되었다.
+				if (_syncChildPortraits.Count == 0)
+				{
+					//동기화 해제
+					_isSyncParent = false;
+					_syncChildPortraits = null;
+				}
+			}
+		}
+
+
+
 		//추가 21.6.8
 		//애니메이션이나 컨트롤 파라미터가 다른 Portrait에 동기화된 경우, 부모 apPortrait로부터 업데이트를 대신 호출받는다.
-		public void UpdateAsSyncChild(float updateTime)
+
+		//변경 v1.4.8 : 부모의 Important여부 및 Important가 아닌 경우의 업데이트 여부/경과 시간이 추가되었다.
+		public void UpdateAsSyncChild(	float updateTime,
+										bool isMeshRefreshFrame,
+										//Parent의 Important 속성을 따른다.
+										bool isParentImportant,
+
+										//Parent가 Not-Important인 경우
+										bool isNotImportantUpdateFrame,//이 프레임이 업데이트 되는 프레임인가
+										float notImportantElapsedTime
+										) 
 		{
 			if (!_isSyncChild || _syncPlay == null)
 			{
@@ -1148,6 +1964,7 @@ namespace AnyPortrait
 			//추가 21.4.3 : 출력할게 없다면 스크립트를 중단한다.
 			if (_curPlayingOptRootUnit == null)
 			{
+				_prevOptRootUnit = null;
 				return;
 			}
 
@@ -1207,24 +2024,44 @@ namespace AnyPortrait
 
 			if (_curPlayingOptRootUnit != null)
 			{
+				//TODO : 이전과 RootUnit이 다르다면 물리 식이 변경되어야 한다.
+
+
 				//추가 9.19 : 빌보드, Camera 체크
 				CheckAndRefreshCameras();
 
 
 				//전체 업데이트하는 코드
 				//일정 프레임마다 업데이트를 한다.
-				if (_isImportant)
+				//if (_isImportant)//이전
+				if(isParentImportant)//변경 v1.4.8 : 부모의 Important 설정을 따라간다.
 				{
+					if(!isMeshRefreshFrame)
+					{
+						//만약 Root Unit이 변경될 때는 무조건 한번 갱신을 해야한다. [v1.4.7]
+						if(_curPlayingOptRootUnit != _prevOptRootUnit)
+						{
+							isMeshRefreshFrame = true;
+						}
+					}
+
 					//_curPlayingOptRootUnit.UpdateTransforms(Time.deltaTime);//일반
-					_curPlayingOptRootUnit.UpdateTransformsAsSyncChild(_tCurUpdate, _isSync_Bone);//동기화용
+					_curPlayingOptRootUnit.UpdateTransformsAsSyncChild(_tCurUpdate, _isSync_Bone, isMeshRefreshFrame, _funcRootMotionEvent);//동기화용
 				}
 				else
 				{
 					//새로운 방식 : 중앙에서 관리하는 토큰 업데이트
-					if (apOptUpdateChecker.I.GetUpdatable(_updateToken))
-					{
-						//_curPlayingOptRootUnit.UpdateTransforms(_updateToken.ResultElapsedTime);
-						_curPlayingOptRootUnit.UpdateTransformsAsSyncChild(_updateToken.ResultElapsedTime, _isSync_Bone);//동기화용
+
+					//이전
+					//if (apOptUpdateChecker.I.GetUpdatable(_updateToken))
+					//변경 v1.4.8 : Update에서 생성/갱신된 토큰의 값을 바로 사용한다.
+					//bool isUpdatedFrame = _updateToken != null && _updateToken.IsUpdatable;
+
+					//부모의 Not-Important 설정을 이용한다.
+
+					if (isNotImportantUpdateFrame)
+					{	
+						_curPlayingOptRootUnit.UpdateTransformsAsSyncChild(notImportantElapsedTime, _isSync_Bone, true, _funcRootMotionEvent);//동기화용
 					}
 					else
 					{
@@ -1235,6 +2072,9 @@ namespace AnyPortrait
 			}
 
 			PostUpdate();//추가 20.9.15 : 현재 프레임의 위치등을 저장하자.
+
+			//v1.4.7
+			_prevOptRootUnit = _curPlayingOptRootUnit;
 		}
 
 
@@ -1335,7 +2175,8 @@ namespace AnyPortrait
 					//	CheckCameraAndBillboard();
 					//}
 
-					_curPlayingOptRootUnit.UpdateTransforms(0.0f);
+					_curPlayingOptRootUnit.UpdateTransforms(0.0f, true, null
+					);
 				}
 
 				//일정 프레임마다 업데이트를 한다.
@@ -1363,7 +2204,14 @@ namespace AnyPortrait
 		{
 			//Debug.LogWarning("InitForceWhenSkipDomainReload");
 			//존재하는 모든 apPortrait를 찾는다.
+			
+			//v1.4.8 : Unity 2023용 코드 분기
+#if UNITY_2023_1_OR_NEWER
+			apPortrait[] portraitsInScene = GameObject.FindObjectsByType<apPortrait>(FindObjectsSortMode.None);
+#else
 			apPortrait[] portraitsInScene = GameObject.FindObjectsOfType<apPortrait>();
+#endif
+
 			if(portraitsInScene != null && portraitsInScene.Length > 0)
 			{
 				for (int i = 0; i < portraitsInScene.Length; i++)
@@ -1482,6 +2330,8 @@ namespace AnyPortrait
 				}
 			}
 
+			
+			apOptRootUnit prevRootUnit = _curPlayingOptRootUnit;//v1.4.7 추가
 
 			_curPlayingOptRootUnit = null;
 			apOptRootUnit optRootUnit = null;
@@ -1500,6 +2350,9 @@ namespace AnyPortrait
 					optRootUnit.Hide();
 				}
 			}
+
+			//v1.4.7 : 루트 유닛이 변경되는 것을 체크한다.
+			_isCurrentRootUnitChanged = prevRootUnit != _curPlayingOptRootUnit;
 
 			//자동 재생을 한다.
 			if (firstPlayAnimClip != null)
@@ -1556,6 +2409,9 @@ namespace AnyPortrait
 
 			_isAutoPlayCheckable = false;
 
+
+			apOptRootUnit prevRootUnit = _curPlayingOptRootUnit;//v1.4.7 추가
+
 			_curPlayingOptRootUnit = null;
 			apOptRootUnit optRootUnit = null;
 			for (int i = 0; i < _optRootUnitList.Count; i++)
@@ -1573,6 +2429,10 @@ namespace AnyPortrait
 					optRootUnit.Hide();
 				}
 			}
+
+
+			//v1.4.7 : 루트 유닛이 변경되는 것을 체크한다.
+			_isCurrentRootUnitChanged = prevRootUnit != _curPlayingOptRootUnit;
 
 
 			//자동 재생을 한다.
@@ -1596,6 +2456,8 @@ namespace AnyPortrait
 		{
 			_isAutoPlayCheckable = false;
 
+			apOptRootUnit prevRootUnit = _curPlayingOptRootUnit;//v1.4.7 추가
+
 			_curPlayingOptRootUnit = null;
 			apOptRootUnit optRootUnit = null;
 			for (int i = 0; i < _optRootUnitList.Count; i++)
@@ -1613,6 +2475,9 @@ namespace AnyPortrait
 					optRootUnit.Hide();
 				}
 			}
+
+			//v1.4.7 : 루트 유닛이 변경되는 것을 체크한다.
+			_isCurrentRootUnitChanged = prevRootUnit != _curPlayingOptRootUnit;
 
 			//애니메이션은 모두 중지한다.
 			StopAll();
@@ -1644,6 +2509,8 @@ namespace AnyPortrait
 			{
 				_optRootUnitList[i].Hide();
 			}
+
+			_isCurrentRootUnitChanged = false;
 		}
 
 
@@ -1711,6 +2578,8 @@ namespace AnyPortrait
 					optRootUnit.Hide();
 				}
 			}
+
+			_isCurrentRootUnitChanged = false;
 		}
 
 
@@ -1768,6 +2637,8 @@ namespace AnyPortrait
 
 			_funcAyncLinkCompleted = null;
 			_isAutoPlayCheckable = true;
+
+			_prevOptRootUnit = null;//추가 v1.4.7
 
 
 			// < 단계 2 > : Hide Root Unit 전의 초기화 | 비동기에서는 첫 Yield 이전의 실행될 코드
@@ -1945,6 +2816,12 @@ namespace AnyPortrait
 			_isCurrentTeleporting = false;//현재 프레임에서 텔레포트가 발생했는가
 			_isPhysicsEnabledInPrevFrame = false;//이전에 물리 연산이 있었는가
 
+			//추가 v1.4.7 : 루트유닛 변경에 따른 물리 튀는 문제 변수 초기화
+			_isCurrentRootUnitChanged = false;
+
+			//추가 v1.4.8 : 루트 모션 유효성 체크
+			ValidateRootMotion();
+
 
 
 			//로딩 끝
@@ -1990,6 +2867,7 @@ namespace AnyPortrait
 			_rotationOnlyMatrixIfBillboard = Matrix4x4.identity;
 			_invRotationOnlyMatrixIfBillboard = Matrix4x4.identity;
 
+			_prevOptRootUnit = null;//추가 v1.4.7
 
 			//지연된 플레이 요청 초기화 (여기선 HideRootUnits보단 미리 호출되어야 한다.)
 			if (_animPlayDeferredRequest == null)
@@ -2044,6 +2922,7 @@ namespace AnyPortrait
 			_rotationOnlyMatrixIfBillboard = Matrix4x4.identity;
 			_invRotationOnlyMatrixIfBillboard = Matrix4x4.identity;
 
+			_prevOptRootUnit = null;//추가 v1.4.7
 
 
 			//지연된 플레이 요청 초기화 (여기선 HideRootUnits보단 미리 호출되어야 한다.)
@@ -2096,6 +2975,7 @@ namespace AnyPortrait
 			_rotationOnlyMatrixIfBillboard = Matrix4x4.identity;
 			_invRotationOnlyMatrixIfBillboard = Matrix4x4.identity;
 
+			_prevOptRootUnit = null;//추가 v1.4.7
 
 			//지연된 플레이 요청 초기화 (여기선 HideRootUnits보단 미리 호출되어야 한다.)
 			if (_animPlayDeferredRequest == null)
@@ -2322,6 +3202,13 @@ namespace AnyPortrait
 			_teleportCheck_PosPrev = Vector3.zero;//이전 프레임에서의 텔레포트
 			_isCurrentTeleporting = false;//현재 프레임에서 텔레포트가 발생했는가
 			_isPhysicsEnabledInPrevFrame = false;//이전에 물리 연산이 있었는가
+
+			//추가 v1.4.7 : 루트유닛 변경에 따른 물리 튀는 문제 변수 초기화
+			_isCurrentRootUnitChanged = false;
+
+
+			//추가 v1.4.8 : 루트 모션 유효성 체크
+			ValidateRootMotion();
 
 			//Wait
 			yield return new WaitForEndOfFrame();
@@ -2591,6 +3478,12 @@ namespace AnyPortrait
 			_isCurrentTeleporting = false;//현재 프레임에서 텔레포트가 발생했는가
 			_isPhysicsEnabledInPrevFrame = false;//이전에 물리 연산이 있었는가.
 
+			//추가 v1.4.7 : 루트유닛 변경에 따른 물리 튀는 문제 변수 초기화
+			_isCurrentRootUnitChanged = false;
+
+			//추가 v1.4.8 : 루트 모션 유효성 체크
+			ValidateRootMotion();
+
 			//Wait
 			yield return new WaitForEndOfFrame();
 
@@ -2643,6 +3536,8 @@ namespace AnyPortrait
 			_posW_Prev1F = _transform.position;
 			_rotationOnlyMatrixIfBillboard = Matrix4x4.identity;
 			_invRotationOnlyMatrixIfBillboard = Matrix4x4.identity;
+
+			_prevOptRootUnit = null;//추가 v1.4.7
 		}
 
 
@@ -2675,6 +3570,163 @@ namespace AnyPortrait
 			}
 		}
 
+
+		/// <summary>
+		/// Link시에 "루트 모션(Root Motion)"옵션을 그대로 적용할 수 있는지 유효성을 체크한다.
+		/// </summary>
+		private void ValidateRootMotion()
+		{
+			//바로 위 부모 Transform
+			_rootMotionValidated_ParentTransform = null;
+
+			//부모 또는 더 위 부모 Transform. 위치 이동이 적용된다.
+			_rootMotionValidated_BaseTransform = null;
+
+			_rootMotionValidatedMode = ROOT_MOTION_MODE.None;
+			_funcRootMotionEvent = null;
+
+			_rootMotionValidated_BaseComponentType = ROOT_MOTION_BASE_COMPONENT.Transform;
+			_rootMotionValidated_BaseCom_Rigidbody2D = null;
+			_rootMotionValidated_BaseCom_Rigidbody3D = null;
+
+			_rootMotion_IsRequestedMove = false;
+			_rootMotion_RequestedPos = Vector3.zero;
+
+
+
+			if(!Application.isPlaying)
+			{
+				//플레이 중이 아니라면 루트 모션 옵션은 비활성화된 상태로 종료
+				return;
+			}
+
+			if(_rootMotionModeOption == ROOT_MOTION_MODE.None)
+			{
+				//해당 옵션이 사용되지 않는다면 더 검토하진 않는다.
+				return;
+			}
+
+			//모든 축의 옵션이 Disabled라면 비활성화된다.
+			if(_rootMotionAxisOption_X == ROOT_MOTION_MOVE_TYPE_PER_AXIS.Disabled
+				&& _rootMotionAxisOption_Y == ROOT_MOTION_MOVE_TYPE_PER_AXIS.Disabled)
+			{
+				return;
+			}
+
+			//옵션에 관계없이, Parent는 무조건 있어야 한다.
+			if(transform.parent == null)
+			{
+				Debug.LogError("AnyPortrait : [Root Motion Failed] The Parent Transform required to operate as Root Motion does not exist.", this.gameObject);
+				return;
+			}
+
+			//부모 Transform 할당
+			_rootMotionValidated_ParentTransform = transform.parent;//Lock to Center까지는 현재의 Parent를 이용한다.
+
+			//루트 모션의 "중앙 고정" 또는 "이동값 반영"의 경우는
+			//> "모든 루트 유닛들이 유효한 루트 모션 본을 가져야 한다.
+			//> "Parent Transform"을 가져야 한다. (그리고 유효해야함)
+
+			//두 조건을 충족하지 않는다면 None 타입으로 강제된다.
+
+			if (_rootMotionModeOption == ROOT_MOTION_MODE.MoveParentTransform)
+			{
+				//Move Parent Transform의 경우에는 이동시킬 대상이 지정되어야 한다.
+				if (_rootMotionTargetTransformType == ROOT_MOTION_TARGET_TRANSFORM.Parent)
+				{
+					//그냥 바로 위 Parent를 이용한다면
+					_rootMotionValidated_BaseTransform = _rootMotionValidated_ParentTransform;
+				}
+				else
+				{
+					//별도로 설정된 Transform을 이용한다면
+					_rootMotionValidated_BaseTransform = _rootMotionSpecifiedParentTransform;
+				}
+
+				//적용된 Transform의 유효성을 검사한다.
+				if (_rootMotionValidated_BaseTransform == null)
+				{
+					//Parent Transform이 없다 > 취소
+					Debug.LogError("AnyPortrait : [Root Motion Failed] The Parent Transform required to operate as Root Motion does not exist.", this.gameObject);
+					_rootMotionValidatedMode = ROOT_MOTION_MODE.None;//None으로 변경됨
+					return;
+				}
+
+				//Parent Transform이 부모여야 한다.
+				if (!transform.IsChildOf(_rootMotionValidated_BaseTransform) || transform == _rootMotionValidated_BaseTransform)
+				{
+					//같거나 유효한 부모-자식 관계가 아니라면 > 취소
+					Debug.LogError("AnyPortrait : [Root Motion Failed] The Parent Transform is not the parent object of this Portrait.", this.gameObject);
+					_rootMotionValidatedMode = ROOT_MOTION_MODE.None;//None으로 변경됨
+					return;
+				}
+
+				//Base Transform이 가진 컴포넌트를 확인하자
+				Rigidbody2D comp_Rigidbody2D = _rootMotionValidated_BaseTransform.GetComponent<Rigidbody2D>();
+				if(comp_Rigidbody2D != null)
+				{
+					//Rigid Body 2D를 움직이자
+					_rootMotionValidated_BaseComponentType = ROOT_MOTION_BASE_COMPONENT.Rigidbody2D;
+					_rootMotionValidated_BaseCom_Rigidbody2D = comp_Rigidbody2D;
+				}
+				else
+				{
+					Rigidbody comp_Rigidbody3D = _rootMotionValidated_BaseTransform.GetComponent<Rigidbody>();
+					if(comp_Rigidbody3D != null)
+					{
+						//Rigid Body 3D를 움직이자
+						_rootMotionValidated_BaseComponentType = ROOT_MOTION_BASE_COMPONENT.Rigidbody3D;
+						_rootMotionValidated_BaseCom_Rigidbody3D = comp_Rigidbody3D;
+					}
+					else
+					{
+						//그냥 Transform을 움직이자
+						_rootMotionValidated_BaseComponentType = ROOT_MOTION_BASE_COMPONENT.Transform;
+					}
+				}
+				
+				
+				
+			}
+			
+
+
+			bool isAllHasRootMotionBone = true;
+			int nRootUnits = _optRootUnitList != null ? _optRootUnitList.Count : 0;
+			if(nRootUnits > 0)
+			{
+				apOptRootUnit curRootUnit = null;
+				for (int i = 0; i < nRootUnits; i++)
+				{
+					curRootUnit = _optRootUnitList[i];
+					if(curRootUnit.RootMotionBone == null)
+					{
+						//하나라도 루트 모션용 본이 없다면
+						isAllHasRootMotionBone = false;
+						break;
+					}
+				}
+			}
+
+			if(!isAllHasRootMotionBone)
+			{
+				//루트 모션용 본이 하나라도 없다면
+				//루트 모션은 비활성화된다.
+				Debug.LogError("AnyPortrait : [Root Motion Failed] There is a Root Unit that does not have a Bone for Root Motion.\nPlease specify the Bone for Root Motion in all Mesh Groups set as Root Units.", this.gameObject);
+				_rootMotionValidatedMode = ROOT_MOTION_MODE.None;
+				return;
+			}
+
+			//완료
+			_rootMotionValidatedMode = _rootMotionModeOption;
+
+			if(_rootMotionValidatedMode != ROOT_MOTION_MODE.None)
+			{
+				_funcRootMotionEvent = ProcessRootMotion;//업데이트 이벤트 할당
+			}
+		}
+
+
 		//--------------------------------------------------------------------------------------
 		// Editor
 		//--------------------------------------------------------------------------------------
@@ -2706,26 +3758,41 @@ namespace AnyPortrait
 									apAnimPlayManager.PLAY_OPTION playOption = apAnimPlayManager.PLAY_OPTION.StopSameLayer,
 									bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null) { return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null)
+				{ return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.Play(animClipName, layer, blendMethod, playOption, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
+				if (animPlayData == null)
+				{
+					return null;
+				}
+				_animPlayDeferredRequest.Play(animPlayData, layer, blendMethod, playOption, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.Play(animClipName, layer, blendMethod, playOption, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
-			if (animPlayData == null)
+			catch(Exception ex)
 			{
-				return null;
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
-			_animPlayDeferredRequest.Play(animPlayData, layer, blendMethod, playOption, isAutoEndIfNotloop);
-			return animPlayData;
+#endif
 		}
 
 
@@ -2744,22 +3811,36 @@ namespace AnyPortrait
 									apAnimPlayManager.PLAY_OPTION playOption = apAnimPlayManager.PLAY_OPTION.StopSameLayer,
 									bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
 
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null)
+				{ return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.Play(animPlayData, layer, blendMethod, playOption, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.Play(animPlayData, layer, blendMethod, playOption, isAutoEndIfNotloop);
+				return animPlayData;
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.Play(animPlayData, layer, blendMethod, playOption, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.Play(animPlayData, layer, blendMethod, playOption, isAutoEndIfNotloop);
-			return animPlayData;
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -2800,27 +3881,42 @@ namespace AnyPortrait
 											apAnimPlayUnit.BLEND_METHOD blendMethod = apAnimPlayUnit.BLEND_METHOD.Interpolation,
 											bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
 
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.PlayQueued(animClipName, layer, blendMethod, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
+				if (animPlayData == null)
+				{
+					return null;
+				}
+				_animPlayDeferredRequest.PlayQueued(animPlayData, layer, blendMethod, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.PlayQueued(animClipName, layer, blendMethod, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
-			if (animPlayData == null)
+			catch(Exception ex)
 			{
-				return null;
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
-			_animPlayDeferredRequest.PlayQueued(animPlayData, layer, blendMethod, isAutoEndIfNotloop);
-			return animPlayData;
+#endif
+
 		}
 
 
@@ -2839,22 +3935,39 @@ namespace AnyPortrait
 											apAnimPlayUnit.BLEND_METHOD blendMethod = apAnimPlayUnit.BLEND_METHOD.Interpolation,
 											bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
 
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+
+				if (_animPlayManager == null)
+				{ return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.PlayQueued(animPlayData, layer, blendMethod, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.PlayQueued(animPlayData, layer, blendMethod, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 
-			//이전
-			//return _animPlayManager.PlayQueued(animPlayData, layer, blendMethod, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.PlayQueued(animPlayData, layer, blendMethod, isAutoEndIfNotloop);
-			return animPlayData;
 		}
 
 		/// <summary>
@@ -2874,27 +3987,40 @@ namespace AnyPortrait
 											apAnimPlayManager.PLAY_OPTION playOption = apAnimPlayManager.PLAY_OPTION.StopSameLayer,
 											bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.CrossFade(animClipName, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
+				if (animPlayData == null)
+				{
+					return null;
+				}
+				_animPlayDeferredRequest.CrossFade(animPlayData, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.CrossFade(animClipName, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
-			if (animPlayData == null)
+			catch(Exception ex)
 			{
-				return null;
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
-			_animPlayDeferredRequest.CrossFade(animPlayData, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
-			return animPlayData;
+#endif
 		}
 
 
@@ -2916,22 +4042,35 @@ namespace AnyPortrait
 											apAnimPlayManager.PLAY_OPTION playOption = apAnimPlayManager.PLAY_OPTION.StopSameLayer,
 											bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.CrossFade(animPlayData, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.CrossFade(animPlayData, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.CrossFade(animPlayData, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.CrossFade(animPlayData, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
-			return animPlayData;
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -2951,27 +4090,40 @@ namespace AnyPortrait
 												apAnimPlayUnit.BLEND_METHOD blendMethod = apAnimPlayUnit.BLEND_METHOD.Interpolation,
 												bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.CrossFadeQueued(animClipName, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
+				if (animPlayData == null)
+				{
+					return null;
+				}
+				_animPlayDeferredRequest.CrossFadeQueued(animPlayData, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.CrossFadeQueued(animClipName, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
-			if (animPlayData == null)
+			catch(Exception ex)
 			{
-				return null;
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
-			_animPlayDeferredRequest.CrossFadeQueued(animPlayData, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
-			return animPlayData;
+#endif
 		}
 
 
@@ -2991,22 +4143,36 @@ namespace AnyPortrait
 												apAnimPlayUnit.BLEND_METHOD blendMethod = apAnimPlayUnit.BLEND_METHOD.Interpolation,
 												bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.CrossFadeQueued(animPlayData, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.CrossFadeQueued(animPlayData, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
+				return animPlayData;
+				
+#if UNITY_EDITOR
 			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 
-			//이전
-			//return _animPlayManager.CrossFadeQueued(animPlayData, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.CrossFadeQueued(animPlayData, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
-			return animPlayData;
 		}
 		//----------------------------------------------------------------------------
 
@@ -3029,27 +4195,42 @@ namespace AnyPortrait
 									apAnimPlayManager.PLAY_OPTION playOption = apAnimPlayManager.PLAY_OPTION.StopSameLayer,
 									bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
 
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.PlayAt(animClipName, frame, layer, blendMethod, playOption, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
+				if (animPlayData == null)
+				{
+					return null;
+				}
+				_animPlayDeferredRequest.PlayAt(animPlayData, frame, layer, blendMethod, playOption, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.PlayAt(animClipName, frame, layer, blendMethod, playOption, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
-			if (animPlayData == null)
+			catch(Exception ex)
 			{
-				return null;
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
-			_animPlayDeferredRequest.PlayAt(animPlayData, frame, layer, blendMethod, playOption, isAutoEndIfNotloop);
-			return animPlayData;
+#endif
 		}
 
 
@@ -3070,22 +4251,35 @@ namespace AnyPortrait
 									apAnimPlayManager.PLAY_OPTION playOption = apAnimPlayManager.PLAY_OPTION.StopSameLayer,
 									bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.PlayAt(animPlayData, frame, layer, blendMethod, playOption, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.PlayAt(animPlayData, frame, layer, blendMethod, playOption, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.PlayAt(animPlayData, frame, layer, blendMethod, playOption, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.PlayAt(animPlayData, frame, layer, blendMethod, playOption, isAutoEndIfNotloop);
-			return animPlayData;
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -3104,27 +4298,40 @@ namespace AnyPortrait
 											apAnimPlayUnit.BLEND_METHOD blendMethod = apAnimPlayUnit.BLEND_METHOD.Interpolation,
 											bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.PlayQueuedAt(animClipName, frame, layer, blendMethod, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
+				if (animPlayData == null)
+				{
+					return null;
+				}
+				_animPlayDeferredRequest.PlayQueuedAt(animPlayData, frame, layer, blendMethod, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.PlayQueuedAt(animClipName, frame, layer, blendMethod, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
-			if (animPlayData == null)
+			catch(Exception ex)
 			{
-				return null;
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
-			_animPlayDeferredRequest.PlayQueuedAt(animPlayData, frame, layer, blendMethod, isAutoEndIfNotloop);
-			return animPlayData;
+#endif
 		}
 
 
@@ -3144,22 +4351,35 @@ namespace AnyPortrait
 											apAnimPlayUnit.BLEND_METHOD blendMethod = apAnimPlayUnit.BLEND_METHOD.Interpolation,
 											bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.PlayQueuedAt(animPlayData, frame, layer, blendMethod, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.PlayQueuedAt(animPlayData, frame, layer, blendMethod, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.PlayQueuedAt(animPlayData, frame, layer, blendMethod, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.PlayQueuedAt(animPlayData, frame, layer, blendMethod, isAutoEndIfNotloop);
-			return animPlayData;
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -3181,27 +4401,40 @@ namespace AnyPortrait
 											apAnimPlayManager.PLAY_OPTION playOption = apAnimPlayManager.PLAY_OPTION.StopSameLayer,
 											bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.CrossFadeAt(animClipName, frame, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
+				if (animPlayData == null)
+				{
+					return null;
+				}
+				_animPlayDeferredRequest.CrossFadeAt(animPlayData, frame, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.CrossFadeAt(animClipName, frame, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
-			if (animPlayData == null)
+			catch(Exception ex)
 			{
-				return null;
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
-			_animPlayDeferredRequest.CrossFadeAt(animPlayData, frame, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
-			return animPlayData;
+#endif
 		}
 
 
@@ -3224,22 +4457,35 @@ namespace AnyPortrait
 											apAnimPlayManager.PLAY_OPTION playOption = apAnimPlayManager.PLAY_OPTION.StopSameLayer,
 											bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.CrossFadeAt(animPlayData, frame, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.CrossFadeAt(animPlayData, frame, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.CrossFadeAt(animPlayData, frame, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.CrossFadeAt(animPlayData, frame, layer, blendMethod, fadeTime, playOption, isAutoEndIfNotloop);
-			return animPlayData;
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -3260,27 +4506,40 @@ namespace AnyPortrait
 												apAnimPlayUnit.BLEND_METHOD blendMethod = apAnimPlayUnit.BLEND_METHOD.Interpolation,
 												bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.CrossFadeQueuedAt(animClipName, frame, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
+				if (animPlayData == null)
+				{
+					return null;
+				}
+				_animPlayDeferredRequest.CrossFadeQueuedAt(animPlayData, frame, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//return _animPlayManager.CrossFadeQueuedAt(animClipName, frame, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			apAnimPlayData animPlayData = _animPlayManager.GetAnimPlayData_Opt(animClipName);
-			if (animPlayData == null)
+			catch(Exception ex)
 			{
-				return null;
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
-			_animPlayDeferredRequest.CrossFadeQueuedAt(animPlayData, frame, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
-			return animPlayData;
+#endif
 		}
 
 
@@ -3303,22 +4562,36 @@ namespace AnyPortrait
 												apAnimPlayUnit.BLEND_METHOD blendMethod = apAnimPlayUnit.BLEND_METHOD.Interpolation,
 												bool isAutoEndIfNotloop = false)
 		{
-			if (_animPlayManager == null)
-			{ return null; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다.
-				Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return null;
+#endif
+				if (_animPlayManager == null) { return null; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다.
+					Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return null;
+				}
+
+				//이전
+				//return _animPlayManager.CrossFadeQueuedAt(animPlayData, frame, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.CrossFadeQueuedAt(animPlayData, frame, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
+				return animPlayData;
+
+#if UNITY_EDITOR
 			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 
-			//이전
-			//return _animPlayManager.CrossFadeQueuedAt(animPlayData, frame, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.CrossFadeQueuedAt(animPlayData, frame, layer, blendMethod, fadeTime, isAutoEndIfNotloop);
-			return animPlayData;
 		}
 		//-------------------------------------------------------------
 
@@ -3329,20 +4602,33 @@ namespace AnyPortrait
 		/// <param name="fadeTime">Fade Time</param>
 		public void StopLayer(int layer, float fadeTime = 0.0f)
 		{
-			if (_animPlayManager == null)
-			{ return; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
-				return;
+#endif
+				if (_animPlayManager == null) { return; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
+					return;
+				}
+
+				//이전
+				//_animPlayManager.StopLayer(layer, fadeTime);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.StopLayer(layer, fadeTime);
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//_animPlayManager.StopLayer(layer, fadeTime);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.StopLayer(layer, fadeTime);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -3351,20 +4637,33 @@ namespace AnyPortrait
 		/// <param name="fadeTime">Fade Time</param>
 		public void StopAll(float fadeTime = 0.0f)
 		{
-			if (_animPlayManager == null)
-			{ return; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
-				return;
+#endif
+				if (_animPlayManager == null) { return; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
+					return;
+				}
+
+				//이전
+				//_animPlayManager.StopAll(fadeTime);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.StopAll(fadeTime);
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//_animPlayManager.StopAll(fadeTime);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.StopAll(fadeTime);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -3374,21 +4673,34 @@ namespace AnyPortrait
 		/// <param name="layer">Target Layer (From 0 to 20)</param>
 		public void PauseLayer(int layer)
 		{
-			if (_animPlayManager == null)
-			{ return; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
-				//Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return;
+#endif
+				if (_animPlayManager == null) { return; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
+					//Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return;
+				}
+
+				//이전
+				//_animPlayManager.PauseLayer(layer);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.PauseLayer(layer);
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//_animPlayManager.PauseLayer(layer);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.PauseLayer(layer);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -3398,21 +4710,34 @@ namespace AnyPortrait
 		/// </summary>
 		public void PauseAll()
 		{
-			if (_animPlayManager == null)
-			{ return; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
-				//Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return;
+#endif
+				if (_animPlayManager == null) { return; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
+					//Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return;
+				}
+
+				//이전
+				//_animPlayManager.PauseAll();
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.PauseAll();
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//_animPlayManager.PauseAll();
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.PauseAll();
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -3421,21 +4746,34 @@ namespace AnyPortrait
 		/// <param name="layer">Target Layer (From 0 to 20)</param>
 		public void ResumeLayer(int layer)
 		{
-			if (_animPlayManager == null)
-			{ return; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
-				//Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return;
+#endif
+				if (_animPlayManager == null) { return; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
+					//Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return;
+				}
+
+				//이전
+				//_animPlayManager.ResumeLayer(layer);
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.ResumeLayer(layer);
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//_animPlayManager.ResumeLayer(layer);
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.ResumeLayer(layer);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -3443,22 +4781,37 @@ namespace AnyPortrait
 		/// </summary>
 		public void ResumeAll()
 		{
-			if (_animPlayManager == null)
-			{ return; }
-
-			if (_isUsingMecanim)
+#if UNITY_EDITOR
+			try
 			{
-				//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
-				//Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
-				return;
+#endif
+				if (_animPlayManager == null) { return; }
+
+				if (_isUsingMecanim)
+				{
+					//메카님이 켜진 경우 함수를 제어할 수 없다. > Stop 계열에서는 경고문을 사용하지 말자
+					//Debug.LogError("AnyPortrait : This function does not work because Mecanim Animator is active. Please use _animator.");
+					return;
+				}
+
+				//이전
+				//_animPlayManager.ResumeAll();
+
+				//변경 22.5.18 : 지연된 플레이 요청
+				_animPlayDeferredRequest.ResumeAll();
+
+#if UNITY_EDITOR
 			}
-
-			//이전
-			//_animPlayManager.ResumeAll();
-
-			//변경 22.5.18 : 지연된 플레이 요청
-			_animPlayDeferredRequest.ResumeAll();
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
+
+
 
 		/// <summary>
 		/// Register the listener object to receive animation events. It must be a class inherited from MonoBehaviour.
@@ -3653,6 +5006,26 @@ namespace AnyPortrait
 			_animPlayManager.SetTimelineEnable(isEnabled);
 		}
 
+#endif
+
+
+		//---------------------------------------------------------------------------------------
+		// apPortrait의 외부 노출 함수에서 초기화 안된 경우 안내문 보여주기 (에디터만)
+		//---------------------------------------------------------------------------------------
+
+#if UNITY_EDITOR
+		//v1.4.7 : 초기화 전에 실행했다면 에러 원인에 대한 로그를 보여주자
+		private void ShowErrorMsgIfNotInitialized_Editor(Exception ex)
+		{	
+			if(InitializationStatus != INIT_STATUS.Completed)
+			{
+				Debug.LogWarning("AnyPortrait : An error occurred because the function was called before [Initialization].\n"
+								+ "Please call the Initialize() function directly or try again after initialization (approx. 1 frame).\n"
+								+ "Please check the manual for more details.\n"
+								+ "( https://rainyrizzle.github.io/en/AdvancedManual/AD_InitializeScript.html )", this.gameObject);
+			}
+			Debug.LogException(ex, this.gameObject);
+		}
 #endif
 		//---------------------------------------------------------------------------------------
 		// 물리 제어
@@ -4889,16 +6262,30 @@ namespace AnyPortrait
 		/// </summary>
 		public void ResetMeshMaterialToBatchAll()
 		{
-			//추가 21.12.27 : 병합된 경우를 우선시 한다.
-			if (_isUseMergedMat && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				_optMergedMaterial.ResetAllProperties();
+#endif
+				//추가 21.12.27 : 병합된 경우를 우선시 한다.
+				if (_isUseMergedMat && _optMergedMaterial != null)
+				{
+					_optMergedMaterial.ResetAllProperties();
+				}
+				else
+				{
+					//그렇지 않은 경우 (대다수)
+					_optBatchedMaterial.ResetAllProperties();
+				}
+
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//그렇지 않은 경우 (대다수)
-				_optBatchedMaterial.ResetAllProperties();
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 		//추가 : Batched Material 속성 초기화 (다시 Shared로 유도하기 위해)
@@ -4908,19 +6295,33 @@ namespace AnyPortrait
 		/// <param name="optTextureName">Target Texture Name (same as "Image" Name of AnyPortrait Editor)</param>
 		public void ResetMeshMaterialToBatchByTextureName(string optTextureName)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [ResetMeshMaterialToBatchByTextureName(string)] does not work when using the Merged Material.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [ResetMeshMaterialToBatchByTextureName(string)] does not work when using the Merged Material.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+				if (targetTextureData == null) { return; }
+
+				_optBatchedMaterial.ResetProperties(targetTextureData._textureID);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-			if (targetTextureData == null) { return; }
-
-			_optBatchedMaterial.ResetProperties(targetTextureData._textureID);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -4931,22 +6332,36 @@ namespace AnyPortrait
 		/// <param name="texture">Texture2D to replace</param>
 		public void SetMeshImageAll(string optTextureName, Texture2D texture)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshImageAll(string, Texture2D)] does not work when using the Merged Material.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshImageAll(string, Texture2D)] does not work when using the Merged Material.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+				if (targetTextureData == null) { return; }
+
+				//targetTextureData.SetMeshTextureAll(texture);//<<이전 : 이 함수를 이용하면 모두 Instanced Material이 된다.
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshImageAll(targetTextureData._textureID, texture);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-			if (targetTextureData == null) { return; }
-
-			//targetTextureData.SetMeshTextureAll(texture);//<<이전 : 이 함수를 이용하면 모두 Instanced Material이 된다.
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshImageAll(targetTextureData._textureID, texture);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -4957,22 +6372,37 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomImageAll(string optTextureName, Texture2D texture, string propertyName)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomImageAll(string, Texture2D, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomImageAll(Texture2D, string)] function instead.");
-				return;
+#endif
+
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomImageAll(string, Texture2D, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomImageAll(Texture2D, string)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomImageAll(targetTextureData._textureID, texture, propertyName);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomImageAll(targetTextureData._textureID, texture, propertyName);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -4984,22 +6414,37 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomImageAll(string optTextureName, Texture2D texture, int propertyNameID)//ID를 사용한 버전 [v1.4.3]
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomImageAll(string, Texture2D, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomImageAll(Texture2D, string)] function instead.");
-				return;
+#endif
+
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomImageAll(string, Texture2D, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomImageAll(Texture2D, string)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomImageAll(targetTextureData._textureID, texture, propertyNameID);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomImageAll(targetTextureData._textureID, texture, propertyNameID);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5011,23 +6456,37 @@ namespace AnyPortrait
 		/// <param name="color2X">Color (2X) to replace</param>
 		public void SetMeshColorAll(string optTextureName, Color color2X)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshColorAll(string, Color)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshColorAll(Color)] function instead.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshColorAll(string, Color)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshColorAll(Color)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+				//targetTextureData.SetMeshColorAll(color2X);//<<이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshColorAll(targetTextureData._textureID, color2X);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-			//targetTextureData.SetMeshColorAll(color2X);//<<이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshColorAll(targetTextureData._textureID, color2X);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5036,24 +6495,38 @@ namespace AnyPortrait
 		/// <param name="optTextureName">Opt-Texture Name</param>
 		public void SetMeshAlphaAll(string optTextureName, float alpha)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshAlphaAll(string, float)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshAlphaAll(float)] function instead.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshAlphaAll(string, float)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshAlphaAll(float)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+
+				//targetTextureData.SetMeshAlphaAll(alpha);//<<이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshAlphaAll(targetTextureData._textureID, alpha);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-
-			//targetTextureData.SetMeshAlphaAll(alpha);//<<이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshAlphaAll(targetTextureData._textureID, alpha);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 
 		}
 
@@ -5066,23 +6539,37 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomColorAll(string optTextureName, Color color, string propertyName)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomColorAll(string, Color, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomColorAll(Color, string)] function instead.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomColorAll(string, Color, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomColorAll(Color, string)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+				//targetTextureData.SetCustomColorAll(color, propertyName);//<<이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomColorAll(targetTextureData._textureID, color, propertyName);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-			//targetTextureData.SetCustomColorAll(color, propertyName);//<<이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomColorAll(targetTextureData._textureID, color, propertyName);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5095,23 +6582,37 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomColorAll(string optTextureName, Color color, int propertyNameID)//ID를 사용한 버전 [v1.4.3]
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomColorAll(string, Color, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomColorAll(Color, string)] function instead.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomColorAll(string, Color, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomColorAll(Color, string)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+				//targetTextureData.SetCustomColorAll(color, propertyName);//<<이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomColorAll(targetTextureData._textureID, color, propertyNameID);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-			//targetTextureData.SetCustomColorAll(color, propertyName);//<<이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomColorAll(targetTextureData._textureID, color, propertyNameID);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5126,24 +6627,38 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomAlphaAll(string optTextureName, float alpha, string propertyName)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomAlphaAll(string, float, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomAlphaAll(float, string)] function instead.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomAlphaAll(string, float, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomAlphaAll(float, string)] function instead.");
+					return;
+				}
+
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+				//targetTextureData.SetCustomAlphaAll(alpha, propertyName);//이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomAlphaAll(targetTextureData._textureID, alpha, propertyName);
+
+#if UNITY_EDITOR
 			}
-
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-			//targetTextureData.SetCustomAlphaAll(alpha, propertyName);//이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomAlphaAll(targetTextureData._textureID, alpha, propertyName);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5155,24 +6670,38 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomAlphaAll(string optTextureName, float alpha, int propertyNameID)//ID를 사용한 버전 [v1.4.3]
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomAlphaAll(string, float, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomAlphaAll(float, string)] function instead.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomAlphaAll(string, float, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomAlphaAll(float, string)] function instead.");
+					return;
+				}
+
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+				//targetTextureData.SetCustomAlphaAll(alpha, propertyName);//이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomAlphaAll(targetTextureData._textureID, alpha, propertyNameID);
+
+#if UNITY_EDITOR
 			}
-
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-			//targetTextureData.SetCustomAlphaAll(alpha, propertyName);//이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomAlphaAll(targetTextureData._textureID, alpha, propertyNameID);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5184,25 +6713,40 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomFloatAll(string optTextureName, float floatValue, string propertyName)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomFloatAll(string, float, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomFloatAll(float, string)] function instead.");
-				return;
+#endif
+
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomFloatAll(string, float, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomFloatAll(float, string)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+
+
+				//targetTextureData.SetCustomFloatAll(floatValue, propertyName);//<<이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomFloatAll(targetTextureData._textureID, floatValue, propertyName);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-
-
-			//targetTextureData.SetCustomFloatAll(floatValue, propertyName);//<<이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomFloatAll(targetTextureData._textureID, floatValue, propertyName);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5214,25 +6758,39 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomFloatAll(string optTextureName, float floatValue, int propertyNameID)//ID를 사용한 버전
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomFloatAll(string, float, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomFloatAll(float, string)] function instead.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomFloatAll(string, float, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomFloatAll(float, string)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+
+
+				//targetTextureData.SetCustomFloatAll(floatValue, propertyName);//<<이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomFloatAll(targetTextureData._textureID, floatValue, propertyNameID);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-
-
-			//targetTextureData.SetCustomFloatAll(floatValue, propertyName);//<<이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomFloatAll(targetTextureData._textureID, floatValue, propertyNameID);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5244,24 +6802,38 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomIntAll(string optTextureName, int intValue, string propertyName)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomIntAll(string, int, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomIntAll(int, string)] function instead.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomIntAll(string, int, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomIntAll(int, string)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+
+				//targetTextureData.SetCustomIntAll(intValue, propertyName);//이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomIntAll(targetTextureData._textureID, intValue, propertyName);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-
-			//targetTextureData.SetCustomIntAll(intValue, propertyName);//이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomIntAll(targetTextureData._textureID, intValue, propertyName);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5273,24 +6845,38 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomIntAll(string optTextureName, int intValue, int propertyNameID)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomIntAll(string, int, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomIntAll(int, string)] function instead.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomIntAll(string, int, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomIntAll(int, string)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+
+				//targetTextureData.SetCustomIntAll(intValue, propertyName);//이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomIntAll(targetTextureData._textureID, intValue, propertyNameID);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-
-			//targetTextureData.SetCustomIntAll(intValue, propertyName);//이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomIntAll(targetTextureData._textureID, intValue, propertyNameID);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5302,24 +6888,38 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomVector4All(string optTextureName, Vector4 vector4Value, string propertyName)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomVector4All(string, Vector4, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomVector4All(Vector4, string)] function instead.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomVector4All(string, Vector4, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomVector4All(Vector4, string)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+
+				//targetTextureData.SetCustomVector4All(vector4Value, propertyName);//<이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomVector4All(targetTextureData._textureID, vector4Value, propertyName);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-
-			//targetTextureData.SetCustomVector4All(vector4Value, propertyName);//<이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomVector4All(targetTextureData._textureID, vector4Value, propertyName);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5332,24 +6932,38 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomVector4All(string optTextureName, Vector4 vector4Value, int propertyNameID)
 		{
-			if (_optTextureData == null || _optTextureData.Count == 0) { return; }
-
-			//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
-			if (_isUseMergedMat)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.Log("AnyPortrait : [SetMeshCustomVector4All(string, Vector4, string)] does not work when using the Merged Material." +
-					"\nPlease use the [SetMeshCustomVector4All(Vector4, string)] function instead.");
-				return;
+#endif
+				if (_optTextureData == null || _optTextureData.Count == 0) { return; }
+
+				//추가 21.12.31 : Merged Mat을 사용한다면 이 함수는 동작하지 않는다.
+				if (_isUseMergedMat)
+				{
+					Debug.Log("AnyPortrait : [SetMeshCustomVector4All(string, Vector4, string)] does not work when using the Merged Material." +
+						"\nPlease use the [SetMeshCustomVector4All(Vector4, string)] function instead.");
+					return;
+				}
+
+				apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+
+				if (targetTextureData == null) { return; }
+
+				//targetTextureData.SetCustomVector4All(vector4Value, propertyName);//<이전
+
+				//변경 12.13 : Batch Material쪽으로 변경
+				_optBatchedMaterial.SetMeshCustomVector4All(targetTextureData._textureID, vector4Value, propertyNameID);
+
+#if UNITY_EDITOR
 			}
-
-			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
-
-			if (targetTextureData == null) { return; }
-
-			//targetTextureData.SetCustomVector4All(vector4Value, propertyName);//<이전
-
-			//변경 12.13 : Batch Material쪽으로 변경
-			_optBatchedMaterial.SetMeshCustomVector4All(targetTextureData._textureID, vector4Value, propertyNameID);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5358,17 +6972,45 @@ namespace AnyPortrait
 		/// <param name="optTransform">Target Opt-Transform</param>
 		public void ResetMeshMaterialToBatch(apOptTransform optTransform)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.ResetMaterialToBatch();
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.ResetMaterialToBatch();
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>Initialize the material of the target Opt-Transform so that it can be batch processed.</summary>
 		/// <param name="transformName">Opt-Transform Name</param>
 		public void ResetMeshMaterialToBatch(string transformName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.ResetMaterialToBatch();
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.ResetMaterialToBatch();
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>Initialize the material of the target Opt-Transform so that it can be batch processed.</summary>
@@ -5376,9 +7018,24 @@ namespace AnyPortrait
 		/// <param name="transformName">Opt-Transform Name</param>
 		public void ResetMeshMaterialToBatch(int rootUnitIndex, string transformName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.ResetMaterialToBatch();
+#if UNITY_EDITOR
+			try
+			{
+#endif
+
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.ResetMaterialToBatch();
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5426,8 +7083,22 @@ namespace AnyPortrait
 		/// <param name="texture">Texture2D to replace</param>
 		public void SetMeshImage(apOptTransform optTransform, Texture2D texture)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetMeshTexture(texture);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetMeshTexture(texture);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5438,9 +7109,23 @@ namespace AnyPortrait
 		/// <param name="texture">Texture2D to replace</param>
 		public void SetMeshImage(string transformName, Texture2D texture)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetMeshTexture(texture);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetMeshTexture(texture);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5452,9 +7137,22 @@ namespace AnyPortrait
 		/// <param name="texture">Texture2D to replace</param>
 		public void SetMeshImage(int rootUnitIndex, string transformName, Texture2D texture)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetMeshTexture(texture);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetMeshTexture(texture);
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5465,8 +7163,21 @@ namespace AnyPortrait
 		/// <param name="color2X">Color (2X) to replace</param>
 		public void SetMeshColor(apOptTransform optTransform, Color color2X)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetMeshColor(color2X);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetMeshColor(color2X);
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5477,9 +7188,23 @@ namespace AnyPortrait
 		/// <param name="color2X">Color (2X) to replace</param>
 		public void SetMeshColor(string transformName, Color color2X)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetMeshColor(color2X);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetMeshColor(color2X);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5491,12 +7216,26 @@ namespace AnyPortrait
 		/// <param name="color2X">Color (2X) to replace</param>
 		public void SetMeshColor(int rootUnitIndex, string transformName, Color color2X)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null)
+#if UNITY_EDITOR
+			try
 			{
-				return;
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null)
+				{
+					return;
+				}
+				optTransform._childMesh.SetMeshColor(color2X);
+
+#if UNITY_EDITOR
 			}
-			optTransform._childMesh.SetMeshColor(color2X);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5509,8 +7248,21 @@ namespace AnyPortrait
 		/// <param name="optTransform">Opt-Transform with the target Opt-Mesh</param>
 		public void SetMeshAlpha(apOptTransform optTransform, float alpha)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetMeshAlpha(alpha);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetMeshAlpha(alpha);
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5520,9 +7272,22 @@ namespace AnyPortrait
 		/// <param name="transformName">Name of Opt-Transform with the target Opt-Mesh</param>
 		public void SetMeshAlpha(string transformName, float alpha)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetMeshAlpha(alpha);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetMeshAlpha(alpha);
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5533,12 +7298,26 @@ namespace AnyPortrait
 		/// <param name="transformName">Name of Opt-Transform with the target Opt-Mesh</param>
 		public void SetMeshAlpha(int rootUnitIndex, string transformName, float alpha)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null)
+#if UNITY_EDITOR
+			try
 			{
-				return;
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null)
+				{
+					return;
+				}
+				optTransform._childMesh.SetMeshAlpha(alpha);
+
+#if UNITY_EDITOR
 			}
-			optTransform._childMesh.SetMeshAlpha(alpha);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5552,14 +7331,28 @@ namespace AnyPortrait
 		/// <param name="imageName">Name of the image registered</param>
 		public void SetMeshImage(apOptTransform optTransform, string imageName)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			apOptTextureData optTextureData = GetOptTextureData(imageName);
-			if (optTextureData == null)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.LogError("AnyPortrait : There are no registered textures. [" + imageName + "]");
-				return;
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				apOptTextureData optTextureData = GetOptTextureData(imageName);
+				if (optTextureData == null)
+				{
+					Debug.LogError("AnyPortrait : There are no registered textures. [" + imageName + "]");
+					return;
+				}
+				optTransform._childMesh.SetMeshTexture(optTextureData._texture);
+
+#if UNITY_EDITOR
 			}
-			optTransform._childMesh.SetMeshTexture(optTextureData._texture);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5570,15 +7363,29 @@ namespace AnyPortrait
 		/// <param name="imageName">Name of the image registered</param>
 		public void SetMeshImage(string transformName, string imageName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			apOptTextureData optTextureData = GetOptTextureData(imageName);
-			if (optTextureData == null)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.LogError("AnyPortrait : There are no registered textures. [" + imageName + "]");
-				return;
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				apOptTextureData optTextureData = GetOptTextureData(imageName);
+				if (optTextureData == null)
+				{
+					Debug.LogError("AnyPortrait : There are no registered textures. [" + imageName + "]");
+					return;
+				}
+				optTransform._childMesh.SetMeshTexture(optTextureData._texture);
+
+#if UNITY_EDITOR
 			}
-			optTransform._childMesh.SetMeshTexture(optTextureData._texture);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5590,15 +7397,29 @@ namespace AnyPortrait
 		/// <param name="imageName">Name of the image registered</param>
 		public void SetMeshImage(int rootUnitIndex, string transformName, string imageName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			apOptTextureData optTextureData = GetOptTextureData(imageName);
-			if (optTextureData == null)
+#if UNITY_EDITOR
+			try
 			{
-				Debug.LogError("AnyPortrait : There are no registered textures. [" + imageName + "]");
-				return;
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				apOptTextureData optTextureData = GetOptTextureData(imageName);
+				if (optTextureData == null)
+				{
+					Debug.LogError("AnyPortrait : There are no registered textures. [" + imageName + "]");
+					return;
+				}
+				optTransform._childMesh.SetMeshTexture(optTextureData._texture);
+
+#if UNITY_EDITOR
 			}
-			optTransform._childMesh.SetMeshTexture(optTextureData._texture);
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5615,8 +7436,22 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomImage(apOptTransform optTransform, Texture2D texture, string propertyName)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTexture(texture, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTexture(texture, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		//[v1.4.5] SetMeshCustomImage (string propName) 오버로드 추가
@@ -5629,9 +7464,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomImage(string transformName, Texture2D texture, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTexture(texture, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTexture(texture, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5644,9 +7493,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomImage(int rootUnitIndex, string transformName, Texture2D texture, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTexture(texture, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTexture(texture, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5660,8 +7523,22 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomImage(apOptTransform optTransform, Texture2D texture, int propertyNameID)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTexture(texture, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTexture(texture, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		//[v1.4.5] SetMeshCustomImage (int ID) 오버로드 추가
@@ -5674,9 +7551,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomImage(string transformName, Texture2D texture, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTexture(texture, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTexture(texture, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5689,9 +7580,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomImage(int rootUnitIndex, string transformName, Texture2D texture, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTexture(texture, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTexture(texture, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5704,8 +7609,22 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomColor(apOptTransform optTransform, Color color, string propertyName)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomColor(color, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomColor(color, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		//[v1.4.5] SetMeshCustomColor (str propName) 오버로드 추가
@@ -5718,9 +7637,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomColor(string transformName, Color color, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomColor(color, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomColor(color, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5734,9 +7667,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomColor(int rootUnitIndex, string transformName, Color color, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomColor(color, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomColor(color, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5753,8 +7700,22 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomColor(apOptTransform optTransform, Color color, int propertyNameID)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomColor(color, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomColor(color, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		//[v1.4.5] SetMeshCustomColor (int ID)의 오버로드 추가
@@ -5767,9 +7728,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomColor(string transformName, Color color, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomColor(color, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomColor(color, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5783,9 +7758,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomColor(int rootUnitIndex, string transformName, Color color, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomColor(color, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomColor(color, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5799,9 +7788,24 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomAlpha(apOptTransform optTransform, float alpha, string propertyName)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomAlpha(alpha, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomAlpha(alpha, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
+
 
 		//[v1.4.5] SetMeshCustomAlpha(str propName)의 오버로드 추가
 		/// <summary>
@@ -5812,9 +7816,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomAlpha(string transformName, float alpha, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomAlpha(alpha, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomAlpha(alpha, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5826,9 +7844,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomAlpha(int rootUnitIndex, string transformName, float alpha, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomAlpha(alpha, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomAlpha(alpha, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5844,8 +7876,22 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomAlpha(apOptTransform optTransform, float alpha, int propertyNameID)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomAlpha(alpha, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomAlpha(alpha, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		//[v1.4.5] SetMeshCustomAlpha(int ID)의 오버로드 추가
@@ -5857,9 +7903,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomAlpha(string transformName, float alpha, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomAlpha(alpha, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomAlpha(alpha, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5871,9 +7931,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomAlpha(int rootUnitIndex, string transformName, float alpha, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomAlpha(alpha, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomAlpha(alpha, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5888,8 +7962,22 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomFloat(apOptTransform optTransform, float floatValue, string propertyName)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomFloat(floatValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomFloat(floatValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		//[v1.4.5] SetMeshCustomFloat(str propName)의 오버로드 추가
@@ -5902,9 +7990,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomFloat(string transformName, float floatValue, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomFloat(floatValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomFloat(floatValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5918,9 +8020,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomFloat(int rootUnitIndex, string transformName, float floatValue, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomFloat(floatValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomFloat(floatValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5936,8 +8052,22 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomFloat(apOptTransform optTransform, float floatValue, int propertyNameID)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomFloat(floatValue, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomFloat(floatValue, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		//[v1.4.5] SetMeshCustomFloat(int ID)의 오버로드 추가
@@ -5950,9 +8080,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomFloat(string transformName, float floatValue, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomFloat(floatValue, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomFloat(floatValue, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -5965,9 +8109,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomFloat(int rootUnitIndex, string transformName, float floatValue, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomFloat(floatValue, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomFloat(floatValue, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -5984,8 +8142,22 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomInt(apOptTransform optTransform, int intValue, string propertyName)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomInt(intValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomInt(intValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		//[v1.4.5] SetMeshCustomInt(str propName)의 오버로드 추가
@@ -5998,9 +8170,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomInt(string transformName, int intValue, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomInt(intValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomInt(intValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6014,9 +8200,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomInt(int rootUnitIndex, string transformName, int intValue, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomInt(intValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomInt(intValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6033,8 +8233,22 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomInt(apOptTransform optTransform, int intValue, int propertyNameID)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomInt(intValue, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomInt(intValue, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		//[v1.4.5] SetMeshCustomInt (int ID)의 오버로드 추가
@@ -6047,9 +8261,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomInt(string transformName, int intValue, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomInt(intValue, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomInt(intValue, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -6062,9 +8290,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomInt(int rootUnitIndex, string transformName, int intValue, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomInt(intValue, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomInt(intValue, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6081,8 +8323,22 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomVector4(apOptTransform optTransform, Vector4 vector4Value, string propertyName)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomVector4(vector4Value, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomVector4(vector4Value, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6096,9 +8352,22 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomVector4(string transformName, Vector4 vector4Value, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomVector4(vector4Value, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomVector4(vector4Value, propertyName);
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6112,9 +8381,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomVector4(int rootUnitIndex, string transformName, Vector4 vector4Value, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomVector4(vector4Value, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomVector4(vector4Value, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6129,8 +8412,22 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomVector4(apOptTransform optTransform, Vector4 vector4Value, int propertyNameID)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomVector4(vector4Value, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomVector4(vector4Value, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6144,9 +8441,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomVector4(string transformName, Vector4 vector4Value, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomVector4(vector4Value, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomVector4(vector4Value, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6160,9 +8471,23 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomVector4(int rootUnitIndex, string transformName, Vector4 vector4Value, int propertyNameID)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomVector4(vector4Value, propertyNameID);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomVector4(vector4Value, propertyNameID);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6178,8 +8503,22 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomTextureOffset(apOptTransform optTransform, Vector2 textureOffsetValue, string propertyName)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTextureOffset(textureOffsetValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTextureOffset(textureOffsetValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		//[v1.4.5] SetMeshCustomTextureOffset(str propName)의 오버로드 추가
@@ -6192,9 +8531,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomTextureOffset(string transformName, Vector2 textureOffsetValue, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTextureOffset(textureOffsetValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTextureOffset(textureOffsetValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6208,9 +8561,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomTextureOffset(int rootUnitIndex, string transformName, Vector2 textureOffsetValue, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTextureOffset(textureOffsetValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTextureOffset(textureOffsetValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6225,8 +8592,22 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomTextureScale(apOptTransform optTransform, Vector2 textureScaleValue, string propertyName)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTextureScale(textureScaleValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTextureScale(textureScaleValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		//[v1.4.5] SetMeshCustomTextureScale(str propName)의 오버로드 추가
@@ -6239,9 +8620,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomTextureScale(string transformName, Vector2 textureScaleValue, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTextureScale(textureScaleValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTextureScale(textureScaleValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6255,9 +8650,23 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomTextureScale(int rootUnitIndex, string transformName, Vector2 textureScaleValue, string propertyName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetCustomTextureScale(textureScaleValue, propertyName);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetCustomTextureScale(textureScaleValue, propertyName);
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6271,8 +8680,21 @@ namespace AnyPortrait
 		/// <param name="optTransform">Opt-Transform with the target Opt-Mesh</param>
 		public void ShowMesh(apOptTransform optTransform)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetHideForce(false);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetHideForce(false);
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -6281,9 +8703,22 @@ namespace AnyPortrait
 		/// <param name="transformName">Name of Opt-Transform with the target Opt-Mesh</param>
 		public void ShowMesh(string transformName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetHideForce(false);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetHideForce(false);
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6294,9 +8729,22 @@ namespace AnyPortrait
 		/// <param name="transformName">Name of Opt-Transform with the target Opt-Mesh</param>
 		public void ShowMesh(int rootUnitIndex, string transformName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetHideForce(false);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetHideForce(false);
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -6305,8 +8753,21 @@ namespace AnyPortrait
 		/// <param name="optTransform">Opt-Transform with the target Opt-Mesh</param>
 		public void HideMesh(apOptTransform optTransform)
 		{
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetHideForce(true);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetHideForce(true);
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -6315,9 +8776,22 @@ namespace AnyPortrait
 		/// <param name="transformName">Name of Opt-Transform with the target Opt-Mesh</param>
 		public void HideMesh(string transformName)
 		{
-			apOptTransform optTransform = GetOptTransform(transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetHideForce(true);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetHideForce(true);
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6328,9 +8802,22 @@ namespace AnyPortrait
 		/// <param name="transformName">Name of Opt-Transform with the target Opt-Mesh</param>
 		public void HideMesh(int rootUnitIndex, string transformName)
 		{
-			apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
-			if (optTransform == null || optTransform._childMesh == null) { return; }
-			optTransform._childMesh.SetHideForce(true);
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				apOptTransform optTransform = GetOptTransform(rootUnitIndex, transformName);
+				if (optTransform == null || optTransform._childMesh == null) { return; }
+				optTransform._childMesh.SetHideForce(true);
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -6338,7 +8825,21 @@ namespace AnyPortrait
 		/// </summary>
 		public void Hide()
 		{
-			HideRootUnits();
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				HideRootUnits();
+
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 		/// <summary>
@@ -6346,7 +8847,20 @@ namespace AnyPortrait
 		/// </summary>
 		public void Show()
 		{
-			ShowRootUnit();
+#if UNITY_EDITOR
+			try
+			{
+#endif
+				ShowRootUnit();
+#if UNITY_EDITOR
+			}
+			catch(Exception ex)
+			{
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
+			}
+#endif
 		}
 
 
@@ -6357,16 +8871,29 @@ namespace AnyPortrait
 		/// <param name="alpha">Alpha value (0~1)</param>
 		public void SetMeshAlphaAll(float alpha)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetAlpha(alpha);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetAlpha(alpha);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshAlphaAll_WithoutTextureID(alpha);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshAlphaAll_WithoutTextureID(alpha);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 		/// <summary>
@@ -6376,16 +8903,29 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomAlphaAll(float alpha, string propertyName)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomAlpha(alpha, ref propertyName);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomAlpha(alpha, ref propertyName);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomAlphaAll_WithoutTextureID(alpha, propertyName);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomAlphaAll_WithoutTextureID(alpha, propertyName);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 		/// <summary>
@@ -6395,16 +8935,30 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomAlphaAll(float alpha, int propertyNameID)//ID를 사용한 버전 [v1.4.3]
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomAlpha(alpha, propertyNameID);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomAlpha(alpha, propertyNameID);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomAlphaAll_WithoutTextureID(alpha, propertyNameID);
+				}
+
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomAlphaAll_WithoutTextureID(alpha, propertyNameID);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 
@@ -6416,17 +8970,29 @@ namespace AnyPortrait
 		/// <param name="color2X">Color (2X Multiply)</param>
 		public void SetMeshColorAll(Color color2X)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetColor(color2X);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetColor(color2X);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshColorAll_WithoutTextureID(color2X);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshColorAll_WithoutTextureID(color2X);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
-
+#endif
 		}
 
 		/// <summary>
@@ -6436,16 +9002,29 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomColorAll(Color color, string propertyName)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomColor(color, ref propertyName);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomColor(color, ref propertyName);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomColorAll_WithoutTextureID(color, propertyName);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomColorAll_WithoutTextureID(color, propertyName);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 
@@ -6456,16 +9035,29 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomColorAll(Color color, int propertyNameID)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomColor(color, propertyNameID);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomColor(color, propertyNameID);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomColorAll_WithoutTextureID(color, propertyNameID);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomColorAll_WithoutTextureID(color, propertyNameID);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 
@@ -6477,16 +9069,29 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomImageAll(Texture2D texture, string propertyName)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomImage(texture, ref propertyName);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomImage(texture, ref propertyName);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomImageAll_WithoutTextureID(texture, propertyName);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomImageAll_WithoutTextureID(texture, propertyName);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 
@@ -6497,16 +9102,29 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomImageAll(Texture2D texture, int propertyNameID)//ID를 사용한 버전 [v1.4.3]
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomImage(texture, propertyNameID);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomImage(texture, propertyNameID);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomImageAll_WithoutTextureID(texture, propertyNameID);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomImageAll_WithoutTextureID(texture, propertyNameID);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 
@@ -6516,16 +9134,29 @@ namespace AnyPortrait
 		/// </summary>		
 		public void SetMeshCustomTextureOffsetAll(Vector2 textureOffsetValue, string propertyName)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomImageOffset(textureOffsetValue, ref propertyName);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomImageOffset(textureOffsetValue, ref propertyName);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록
+					_optBatchedMaterial.SetMeshCustomImageOffsetAll_WithoutTextureID(textureOffsetValue, propertyName);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록
-				_optBatchedMaterial.SetMeshCustomImageOffsetAll_WithoutTextureID(textureOffsetValue, propertyName);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 
@@ -6534,16 +9165,29 @@ namespace AnyPortrait
 		/// </summary>		
 		public void SetMeshCustomTextureScaleAll(Vector2 textureScaleValue, string propertyName)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomImageScale(textureScaleValue, ref propertyName);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomImageScale(textureScaleValue, ref propertyName);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록
+					_optBatchedMaterial.SetMeshCustomImageScaleAll_WithoutTextureID(textureScaleValue, propertyName);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록
-				_optBatchedMaterial.SetMeshCustomImageScaleAll_WithoutTextureID(textureScaleValue, propertyName);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 
@@ -6555,16 +9199,29 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomFloatAll(float floatValue, string propertyName)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomFloat(floatValue, ref propertyName);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomFloat(floatValue, ref propertyName);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomFloatAll_WithoutTextureID(floatValue, propertyName);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomFloatAll_WithoutTextureID(floatValue, propertyName);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 		/// <summary>
@@ -6574,16 +9231,29 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomFloatAll(float floatValue, int propertyNameID)//ID를 사용한 버전 [v1.4.3]
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomFloat(floatValue, propertyNameID);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomFloat(floatValue, propertyNameID);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomFloatAll_WithoutTextureID(floatValue, propertyNameID);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomFloatAll_WithoutTextureID(floatValue, propertyNameID);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 		/// <summary>
@@ -6593,16 +9263,29 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shader Property Name</param>
 		public void SetMeshCustomIntAll(int intValue, string propertyName)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomInt(intValue, ref propertyName);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomInt(intValue, ref propertyName);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomIntAll_WithoutTextureID(intValue, propertyName);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomIntAll_WithoutTextureID(intValue, propertyName);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 		/// <summary>
@@ -6612,16 +9295,29 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomIntAll(int intValue, int propertyNameID)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomInt(intValue, propertyNameID);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomInt(intValue, propertyNameID);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomIntAll_WithoutTextureID(intValue, propertyNameID);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomIntAll_WithoutTextureID(intValue, propertyNameID);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 
@@ -6632,16 +9328,29 @@ namespace AnyPortrait
 		/// <param name="propertyName">Shder Property Name</param>
 		public void SetMeshCustomVector4All(Vector4 vector4Value, string propertyName)
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomVector4(vector4Value, ref propertyName);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomVector4(vector4Value, ref propertyName);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomVector4All_WithoutTextureID(vector4Value, propertyName);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomVector4All_WithoutTextureID(vector4Value, propertyName);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 
@@ -6652,16 +9361,29 @@ namespace AnyPortrait
 		/// <param name="propertyNameID">Shader Property Name ID. Use Shader.PropertyToID to get it.</param>
 		public void SetMeshCustomVector4All(Vector4 vector4Value, int propertyNameID)//ID를 사용한 버전 [v1.4.3]
 		{
-			if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+#if UNITY_EDITOR
+			try
 			{
-				//추가 21.12.29 : 병합된 경우
-				_optMergedMaterial.SetCustomVector4(vector4Value, propertyNameID);
+#endif
+				if (_isUseMergedMat && _mergeMatMainPortrait != null && _optMergedMaterial != null)
+				{
+					//추가 21.12.29 : 병합된 경우
+					_optMergedMaterial.SetCustomVector4(vector4Value, propertyNameID);
+				}
+				else
+				{
+					//변경 22.1.9 : Batched 되도록 변경
+					_optBatchedMaterial.SetMeshCustomVector4All_WithoutTextureID(vector4Value, propertyNameID);
+				}
+#if UNITY_EDITOR
 			}
-			else
+			catch(Exception ex)
 			{
-				//변경 22.1.9 : Batched 되도록 변경
-				_optBatchedMaterial.SetMeshCustomVector4All_WithoutTextureID(vector4Value, propertyNameID);
+				//v1.4.7 : 초기화 전에 함수 호출시 에러 로그가 찍히도록
+				ShowErrorMsgIfNotInitialized_Editor(ex);
+				throw;
 			}
+#endif
 		}
 
 
@@ -6983,6 +9705,43 @@ namespace AnyPortrait
 		public void SetFPSForNotImportant(int fps)
 		{
 			_FPS = fps;
+		}
+
+
+		//v1.4.5 추가 : 메시 갱신 빈도
+		/// <summary>
+		/// Set the meshes to be updated Every Frame. The animation plays smoothly. (default)
+		/// </summary>
+		public void SetUpdateMeshesEveryFrame()
+		{
+			_meshRefreshRateOption = MESH_UPDATE_FREQUENCY.EveryFrames;			
+		}
+
+		/// <summary>
+		/// Set the meshes to be updated at regular intervals. Enter the update frequency as FPS.
+		/// </summary>
+		/// <param name="fps">Frames per second, which refers to the update frequency. Please enter a value between 1 and 30.</param>
+		/// <param name="isSyncUpdate">If True, it updates at the same frame as other characters with the same FPS settings.</param>
+		public void SetUpdateMeshesPerTime(int fps, bool isSyncUpdate)
+		{
+			if(isSyncUpdate)
+			{
+				_meshRefreshRateOption = MESH_UPDATE_FREQUENCY.FixedFrames_Sync;
+			}
+			else
+			{
+				_meshRefreshRateOption = MESH_UPDATE_FREQUENCY.FixedFrames_NotSync;
+			}
+			_meshRefreshRateFPS = fps;
+			//Min ~ Max 사이 값으로 설정하자
+			if(_meshRefreshRateFPS < MESH_REFRESH_FPS_MIN)
+			{
+				_meshRefreshRateFPS = MESH_REFRESH_FPS_MIN;
+			}
+			else if(_meshRefreshRateFPS > MESH_REFRESH_FPS_MAX)
+			{
+				_meshRefreshRateFPS = MESH_REFRESH_FPS_MAX;
+			}
 		}
 
 
@@ -9838,6 +12597,10 @@ namespace AnyPortrait
 		{
 			//빌보드인 경우, 현재 프레임에서의 위치를 저장한다. (나중에 "이전 프레임의 위치"로서 가져올 수 있게)
 			_posW_Prev1F = _transform.position;
+
+
+			//추가 v1.4.7 : 루트 유닛 변경에 따른 물리 튐 현상 버그 변수 초기화
+			_isCurrentRootUnitChanged = false;
 		}
 
 		

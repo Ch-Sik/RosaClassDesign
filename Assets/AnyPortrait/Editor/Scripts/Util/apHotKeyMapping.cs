@@ -1,6 +1,6 @@
 ﻿/*
-*	Copyright (c) 2017-2023. RainyRizzle Inc. All rights reserved
-*	Contact to : https://www.rainyrizzle.com/ , contactrainyrizzle@gmail.com
+*	Copyright (c) RainyRizzle Inc. All rights reserved
+*	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
 *	This file is part of [AnyPortrait].
 *
@@ -163,7 +163,16 @@ namespace AnyPortrait
 			Rig_DecreaseBrushSize,
 			Rig_IncreaseBrushIntensity,
 			Rig_DecreaseBrushIntensity,
+			Rig_PoseTest,
+			Rig_PoseReset,
 
+			//메시 그룹 화면
+			MeshGroup_Tab_1_Setting,//(v1.4.7)
+			MeshGroup_Tab_2_Bone,
+			MeshGroup_Tab_3_Modifier,
+
+			//오브젝트 검색 (메시그룹/애니메이션)
+			Search_SubObject,
 		}
 
 
@@ -177,6 +186,7 @@ namespace AnyPortrait
 			Modifier_Anim_Editing = 2,//편집모드
 			AnimPlayBack = 3,//애니메이션 재생
 			Rigging = 4,//리깅 편집
+			MeshGroup = 5,//추가 1.4.7 : 메시그룹용
 		}
 
 
@@ -747,6 +757,17 @@ namespace AnyPortrait
 
 			AddHotKey("RIG_INC_BRUSH_INTENSITY",	KEY_TYPE.Rig_IncreaseBrushIntensity,	SPACE.Rigging,	EST_KEYCODE.Period_Greater,	SPECIAL_KEY.None,	true, "Increase Rig-Brush Intensity",	"Increase the intensity of the Rigging Brush.", "Increase Brush Intensity");
 			AddHotKey("RIG_DEC_BRUSH_INTENSITY",	KEY_TYPE.Rig_DecreaseBrushIntensity,	SPACE.Rigging,	EST_KEYCODE.Comma_Less,		SPECIAL_KEY.None,	true, "Decrease Rig-Brush Intensity",	"Decrease the intensity of the Rigging Brush.", "Decrease Brush Intensity");
+
+			//v1.4.7 추가
+			AddHotKey("RIG_POSE_TEST",	KEY_TYPE.Rig_PoseTest,	SPACE.Rigging,	EST_KEYCODE.T,	SPECIAL_KEY.None,	true, "Toggle Pose Test",	"Turns the Pose Test on or off.", "Toggle Pose Test");
+			AddHotKey("RIG_RESET_POSE",	KEY_TYPE.Rig_PoseReset,	SPACE.Rigging,	EST_KEYCODE.Y,	SPECIAL_KEY.None,	true, "Reset Pose Test",	"Reset the pose being tested.", "Reset Pose Test");
+
+			AddHotKey("MESHGROUP_TAB_1",	KEY_TYPE.MeshGroup_Tab_1_Setting,	SPACE.MeshGroup,	EST_KEYCODE.Alpha1,	SPECIAL_KEY.Shift,	true, "MeshGroup : Setting", "Switch to the [Setting] tab.", "Setting");
+			AddHotKey("MESHGROUP_TAB_2",	KEY_TYPE.MeshGroup_Tab_2_Bone,		SPACE.MeshGroup,	EST_KEYCODE.Alpha2,	SPECIAL_KEY.Shift,	true, "MeshGroup : Bone", "Switch to the [Bone] tab.", "Bone");
+			AddHotKey("MESHGROUP_TAB_3",	KEY_TYPE.MeshGroup_Tab_3_Modifier,	SPACE.MeshGroup,	EST_KEYCODE.Alpha3,	SPECIAL_KEY.Shift,	true, "MeshGroup : Modifier", "Switch to the [Modifier] tab.", "Modifier");
+
+			//내부 오브젝트 검색
+			AddHotKey("SEARCH_SUB_OBJ", KEY_TYPE.Search_SubObject, SPACE.Modifier_Anim_Editing, EST_KEYCODE.F, SPECIAL_KEY.Ctrl, true, "Search Sub Object", "Open a dialog to search for objects.", "Search");
 
 
 			//TODO : 여기에 추가하자 (ID 고유하게 작성할 것)

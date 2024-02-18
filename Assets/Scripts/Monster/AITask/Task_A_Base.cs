@@ -53,14 +53,18 @@ public class Task_A_Base : Task_Base
     /// </summary>
     protected void ExecuteAttack()
     {
-        // 공격 active 중에 슈퍼아머 옵션이 꺼져있거나 애초에 공격 active가 아니라면 피격 여부 검사
-        if(attackState != MonsterAtttackState.Active || !superArmourOnActiveTime)
+        // 사망 시 패턴 종료
+        bool isDead;
+        blackboard.TryGet(BBK.isDead, out isDead);
+        if (isDead)
         {
-            if(blackboard == null)
-            {
-                blackboard = GetComponent<Blackboard>();
-            }
+            Fail();
+            return;
+        }
 
+        // 공격 active 중에 슈퍼아머 옵션이 꺼져있거나 애초에 공격 active가 아니라면 피격 여부 검사
+        if (attackState != MonsterAtttackState.Active || !superArmourOnActiveTime)
+        {
             bool isHitt;
             blackboard.TryGet(BBK.isHitt, out isHitt);
             if(isHitt)

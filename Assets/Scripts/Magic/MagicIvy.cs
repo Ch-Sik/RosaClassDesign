@@ -18,6 +18,14 @@ public class MagicIvy : MonoBehaviour
     private SpriteRenderer spriteUp;
     [SerializeField]
     private SpriteRenderer spriteDown;
+    [SerializeField]
+    private ParticleSystem particle1Up;
+    [SerializeField]
+    private ParticleSystem particle2Up;
+    [SerializeField]
+    private ParticleSystem particle1Down;
+    [SerializeField]
+    private ParticleSystem particle2Down;
 
     [SerializeField, Tooltip("덩굴이 성장할 때의 틱 속도")]
     private float tickTime = 0.1f;
@@ -25,7 +33,8 @@ public class MagicIvy : MonoBehaviour
     private float offset;
 
     private LR wallDirection;   // 현재 담쟁이가 자라는 벽이 바라보는 방향
-
+    private int upLength = 0;
+    private int downLength = 0;
     private WaitForSeconds tick;
 
     public void Init(Vector2 magicPos)
@@ -63,19 +72,18 @@ public class MagicIvy : MonoBehaviour
 
     IEnumerator GrowVineUpway()
     {
-        int cursor = 0;
         Vector2[] points;
 
         while(true)
         {
             // 한칸씩 위쪽으로 가면서 타일 검사
-            cursor++;
+            upLength++;
 
             TileData innerTile = tilemapManager.GetTileDataByCellPosition(originCellPos
-                    + new Vector3Int(wallDirection.isRIGHT() ? -1 : 0, cursor, 0)
+                    + new Vector3Int(wallDirection.isRIGHT() ? -1 : 0, upLength, 0)
                     );
             TileData outerTile = tilemapManager.GetTileDataByCellPosition(originCellPos
-                    + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, cursor, 0)
+                    + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, upLength, 0)
                     );
 
             bool isInnerTileMagicAllowed = innerTile != null && innerTile.magicAllowed;
@@ -83,14 +91,23 @@ public class MagicIvy : MonoBehaviour
             if (isInnerTileMagicAllowed && isOuterTileNonSubstance)
             {
                 points = edgeCol.points;
-                points[0] = new Vector2(-offset, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
+                points[0] = new Vector2(-offset, upLength);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
                 edgeCol.points = points;
                 // 스프라이트 업데이트 (콜라이더와 동기화)
-                spriteUp.size = new Vector2(spriteUp.size.x, cursor);
+                spriteUp.size = new Vector2(spriteUp.size.x, upLength);
+
+                // 파티클 효과
+                if (particle1Up != null)
+                {
+                    particle1Up.gameObject.transform.position = transform.position + Vector3.up * upLength;
+                    particle1Up.Emit(1);
+                    if(particle2Up != null)
+                        particle2Up.Emit(5);
+                }
             }
             else
             {
-                cursor--;
+                upLength--;
                 break;
             }
             yield return tick;
@@ -98,28 +115,27 @@ public class MagicIvy : MonoBehaviour
 
         // 마지막으로 끝까지 성장
         points = edgeCol.points;
-        points[0] = new Vector2(-offset, cursor + 0.5f);
+        points[0] = new Vector2(-offset, upLength + 0.5f);
         edgeCol.points = points;
         // 스프라이트 업데이트 (콜라이더와 동기화)
-        spriteUp.size = new Vector2(spriteUp.size.x, cursor + 0.5f);
+        spriteUp.size = new Vector2(spriteUp.size.x, upLength + 0.5f);
     }
 
     IEnumerator GrowVineDownway()
     {
-        int cursor = 0;
         Vector2[] points;
 
         // 한칸씩 위쪽으로 가면서 프로브
         while (true)
         {
             // 한칸씩 아래쪽으로 가면서 타일 검사
-            cursor--;
+            downLength--;
 
             TileData innerTile = tilemapManager.GetTileDataByCellPosition(originCellPos
-                    + new Vector3Int(wallDirection.isRIGHT() ? -1 : 0, cursor, 0)
+                    + new Vector3Int(wallDirection.isRIGHT() ? -1 : 0, downLength, 0)
                     );
             TileData outerTile = tilemapManager.GetTileDataByCellPosition(originCellPos
-                    + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, cursor, 0)
+                    + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, downLength, 0)
                     );
 
             bool isInnerTileMagicAllowed = innerTile != null && innerTile.magicAllowed;
@@ -127,14 +143,23 @@ public class MagicIvy : MonoBehaviour
             if (isInnerTileMagicAllowed && isOuterTileNonSubstance)
             {
                 points = edgeCol.points;
-                points[1] = new Vector2(-offset, cursor);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
+                points[1] = new Vector2(-offset, downLength);     // 0번 포인트가 위쪽, 1번 포인트가 아래쪽
                 edgeCol.points = points;
                 // 스프라이트 업데이트 (콜라이더와 동기화)
-                spriteDown.size = new Vector2(spriteDown.size.x, -cursor);
+                spriteDown.size = new Vector2(spriteDown.size.x, -downLength);
+
+                // 파티클 효과
+                if(particle1Down != null)
+                {
+                    particle1Down.gameObject.transform.position = transform.position + Vector3.up * downLength;
+                    particle1Down.Emit(1);
+                    if(particle2Down != null)
+                        particle2Down.Emit(5);
+                }
             }
             else
             {
-                cursor++;
+                downLength++;
                 break;
             }
             yield return tick;
@@ -142,10 +167,10 @@ public class MagicIvy : MonoBehaviour
 
         // 마지막으로 끝까지 성장
         points = edgeCol.points;
-        points[1] = new Vector2(-offset, cursor - 0.5f);
+        points[1] = new Vector2(-offset, downLength - 0.5f);
         edgeCol.points = points;
         // 스프라이트 업데이트 (콜라이더와 동기화)
-        spriteDown.size = new Vector2(spriteDown.size.x, -(cursor - 0.5f));
+        spriteDown.size = new Vector2(spriteDown.size.x, -(downLength - 0.5f));
     }
     
     // TODO: Destroy/OnDestroy 대신 별도의 함수를 사용하여 '사라지는 연출' 구현
