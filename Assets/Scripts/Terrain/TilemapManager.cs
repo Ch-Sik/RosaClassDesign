@@ -47,13 +47,7 @@ public class TilemapManager : SerializedMonoBehaviour
         List<Tilemap> tilemaps = FindObjectsOfType<Tilemap>().ToList();
         // "Ground","HiddenRoom","TmpTerrain" 레이어를 가진 것들만 필터링
         int layerMask = LayerMask.GetMask("Ground", "HiddenRoom", "TmpTerrain");
-        foreach (var tilemap in tilemaps)
-        {
-            if ((1 << tilemap.gameObject.layer & layerMask) == 0)
-            {
-                tilemaps.Remove(tilemap);
-            }
-        }
+        tilemaps.RemoveAll((tilemap) => { return (1 << tilemap.gameObject.layer & layerMask) == 0; });
         // 기본 타일맵 설정
         tilemapList = tilemaps;
     }
