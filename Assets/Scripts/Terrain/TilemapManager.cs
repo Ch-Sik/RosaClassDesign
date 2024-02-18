@@ -57,15 +57,42 @@ public class TilemapManager : SerializedMonoBehaviour
         Vector3 cellOffset = new Vector3(0.5f, 0.5f);
 
         // 가지고 있는 타일맵 리스트에서 가져오기 (최적화)
-        TileBase selectedTile = null;
-        selectedTile = SearchTileInTilemaps(cellPosition);
+        List<TileBase> selectedTile = SearchTileInTilemaps(cellPosition);
+
+        if(selectedTile.Count == 0)
+        {
+            return null;
+        }
 
         if (selectedTile == null) return null;
 
         // 타일을 찾았다면 해당 타일의 데이터 가져오기
         try
         {
-            return dataFromTiles[selectedTile];
+            if(selectedTile.Count == 1)
+                return dataFromTiles[selectedTile[0]];
+            else
+            {
+                // 여러 타일들이 중첩되어 있는 경우, 우선순위가 높은 TileData를 사용함.
+                // 우선순위
+                // 1. 식물 설치 불가능한 타일
+                // 2. 식물 설치 가능한 타일
+                // 3. 실체가 없는 타일
+                TileData mergedData = null;
+                foreach(var tile in selectedTile)
+                {
+                    TileData tileData = dataFromTiles[tile];
+                    if((mergedData==null || !mergedData.isSubstance) && tileData.isSubstance)
+                    {
+                        mergedData = tileData;
+                    }
+                    if((mergedData == null || mergedData.magicAllowed) && tileData.isSubstance && !tileData.magicAllowed)
+                    {
+                        mergedData = tileData;
+                    }
+                }
+                return mergedData;
+            }
         }
         catch (KeyNotFoundException)     // 혹시라도 타일데이터 설정을 빼먹은 경우
         {
@@ -74,9 +101,9 @@ public class TilemapManager : SerializedMonoBehaviour
         }
     }
 
-    private TileBase SearchTileInTilemaps(Vector3Int cellPosition)
+    private List<TileBase> SearchTileInTilemaps(Vector3Int cellPosition)
     {
-        TileBase selectedTile = null;
+        List<TileBase> selectedTiles = new List<TileBase>();
         if (tilemapList != null)
         {
             for (int i = 0; i < tilemapList.Count; i++)
@@ -89,13 +116,13 @@ public class TilemapManager : SerializedMonoBehaviour
                     continue;
                 }
                 // 타일맵이 유효하다면 그 타일맵에서 타일 가져오기 시도
-                selectedTile = tilemapList[i].GetTile(cellPosition);
-                if (selectedTile != null)
-                    break;
+                var tile = tilemapList[i].GetTile(cellPosition);
+                if (tile != null)
+                    selectedTiles.Add(tile);
             }
         }
 
-        return selectedTile;
+        return selectedTiles;
     }
 
     public TileData GetTileDataByWorldPosition(Vector3 worldPosition)
