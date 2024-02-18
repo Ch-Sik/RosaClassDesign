@@ -60,6 +60,8 @@ public class TilemapManager : SerializedMonoBehaviour
         TileBase selectedTile = null;
         selectedTile = SearchTileInTilemaps(cellPosition);
 
+        if (selectedTile == null) return null;
+
         // 타일을 찾았다면 해당 타일의 데이터 가져오기
         try
         {
