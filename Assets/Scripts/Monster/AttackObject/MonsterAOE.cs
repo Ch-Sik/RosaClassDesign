@@ -19,9 +19,9 @@ public class MonsterAOE : MonoBehaviour
     // 현재 디버깅용으로 공격활성화 시각화를 단순히 스프라이트 컬러 바꾸는 걸로 처리하는데 그거 처리용.
     // 공격 이펙트 제대로 적용되면 이건 삭제할 것.
     [SerializeField]
-    private Color startupColor;
+    private Color startupColor = Color.black;
     [SerializeField]
-    private Color activatedColor;
+    private Color activatedColor = Color.white;
 
     public void Init()
     {

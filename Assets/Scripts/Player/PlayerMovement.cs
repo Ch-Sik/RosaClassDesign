@@ -50,6 +50,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("넉백 관련 매개변수")]
     [Tooltip("넉백 힘")]
     [SerializeField] float knockbackStrength = 1f;
+    [SerializeField] float ignoreDuration = 2f;
     // 컴포넌트 레퍼런스
     [ReadOnly, SerializeField] Rigidbody2D rb;
     [ReadOnly, SerializeField] BoxCollider2D col;
@@ -563,8 +564,10 @@ public class PlayerMovement : MonoBehaviour
 
     void Flip()
     {
+        /* 공격 시스템이 설치형으로 변경되며 수정됨.
         if (PlayerRef.Instance.combat.isAttack)
             return;
+        */
 
         // 플레이어가 바라보는 방향을 전환
         if (facingDirection.isLEFT()) facingDirection = LR.RIGHT;
@@ -575,6 +578,49 @@ public class PlayerMovement : MonoBehaviour
         transform.localScale = theScale;
         //aimLine.transform.localScale = theScale;
     }
+
+    public void PlayerDamageReceiver(GameObject target, int damage)
+    {
+        OnKnockback(new Vector3(target.transform.position.x,
+                    target.transform.position.y - (target.transform.localScale.y / 2),
+                    target.transform.position.z));
+        playerRef.State.TakeDamage(damage);
+
+        int originalLayer = target.layer;
+        int collisionLayer = gameObject.layer;
+
+        // 현재 게임 오브젝트와 충돌한 오브젝트의 충돌을 무시
+        Physics2D.IgnoreLayerCollision(originalLayer, collisionLayer, true);
+
+        // 일정 시간 후 충돌 무시 해제
+        StartCoroutine(RestoreCollision(originalLayer, collisionLayer, ignoreDuration));
+    }
+
+    public void PlayerDamageReceiver(GameObject target, int damage, float ignoreDur)
+    {
+        OnKnockback(new Vector3(target.transform.position.x,
+                    target.transform.position.y - (target.transform.localScale.y / 2),
+                    target.transform.position.z));
+        playerRef.State.TakeDamage(damage);
+
+        int originalLayer = target.layer;
+        int collisionLayer = gameObject.layer;
+
+        // 현재 게임 오브젝트와 충돌한 오브젝트의 충돌을 무시
+        Physics2D.IgnoreLayerCollision(originalLayer, collisionLayer, true);
+
+        // 일정 시간 후 충돌 무시 해제
+        StartCoroutine(RestoreCollision(originalLayer, collisionLayer, ignoreDur));
+    }
+
+    IEnumerator RestoreCollision(int originalLayer, int collisionLayer, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // 충돌 무시 해제
+        Physics2D.IgnoreLayerCollision(originalLayer, collisionLayer, false);
+    }
+    
 
     public void OnKnockback(Vector3 knockbackPos)
     {
@@ -588,7 +634,7 @@ public class PlayerMovement : MonoBehaviour
         {
             UnstickFromWall();
         }
-
+        rb.velocity = Vector2.zero;
         GetComponent<Rigidbody2D>().AddForce(knockbackDirection * knockbackStrength, ForceMode2D.Impulse);
 
         StartCoroutine(Knockback());

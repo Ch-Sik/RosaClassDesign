@@ -74,7 +74,7 @@ GameObject:
   - component: {fileID: 6078996130654148263}
   - component: {fileID: 2759123153564153660}
   - component: {fileID: 7794644902728034105}
-  m_Layer: 9
+  m_Layer: 26
   m_Name: WallCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 6541328140981933512}
+  m_Father: {fileID: 9088257768058518222}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1773428102 &6078996130654148263
 ParentConstraint:
@@ -183,6 +183,68 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.49676657, y: 0.7064469}
   m_EdgeRadius: 0
+--- !u!1 &4822660683734236541
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9088257768058518222}
+  - component: {fileID: 7682837028691421983}
+  m_Layer: 23
+  m_Name: AI Sensors
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9088257768058518222
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4822660683734236541}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children:
+  - {fileID: 8873475767415496978}
+  - {fileID: 2398257685945364017}
+  - {fileID: 4198128642155941431}
+  m_Father: {fileID: 6541328140981933512}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!50 &7682837028691421983
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4822660683734236541}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &5512745031629860998
 GameObject:
   m_ObjectHideFlags: 0
@@ -244,9 +306,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5510838292235860302}
-  - {fileID: 8873475767415496978}
-  - {fileID: 2398257685945364017}
-  - {fileID: 4198128642155941431}
+  - {fileID: 9088257768058518222}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5914794011670964341
@@ -281,7 +341,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 6541328140981933512}
+  m_Father: {fileID: 9088257768058518222}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1773428102 &774673575508283438
 ParentConstraint:
@@ -429,6 +489,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHP: 5
   currentHP: 0
+  blackboard: {fileID: 0}
 --- !u!114 &4035162457150428568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -477,6 +538,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 0
+  ignoreDuration: 2
 --- !u!114 &37233659971042000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -492,6 +554,7 @@ MonoBehaviour:
   blackboard: {fileID: 0}
   monsterState: {fileID: 0}
   rigidbody: {fileID: 0}
+  portrait: {fileID: 0}
   isSuperArmour: 0
   isInvincible: 0
   knockbackCoeff: 0
@@ -707,7 +770,7 @@ GameObject:
   - component: {fileID: 3301199392073680606}
   - component: {fileID: 8863422509712099654}
   - component: {fileID: 768316522070299276}
-  m_Layer: 9
+  m_Layer: 26
   m_Name: CliffCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -723,11 +786,11 @@ Transform:
   m_GameObject: {fileID: 8499584881893355928}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.44, y: -0.71, z: 0}
+  m_LocalPosition: {x: 1.44, y: -0.7099999, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 6541328140981933512}
+  m_Father: {fileID: 9088257768058518222}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1773428102 &3301199392073680606
 ParentConstraint:
@@ -739,7 +802,7 @@ ParentConstraint:
   m_Enabled: 1
   serializedVersion: 2
   m_Weight: 1
-  m_TranslationAtRest: {x: 1.44, y: -0.71, z: 0}
+  m_TranslationAtRest: {x: 1.44, y: -0.7099999, z: 0}
   m_RotationAtRest: {x: 0, y: 0, z: 0}
   m_TranslationOffsets:
   - {x: 0, y: 0, z: 0}

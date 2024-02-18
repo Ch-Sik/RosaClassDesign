@@ -187,7 +187,7 @@ public class Task_F_Patrol : Task_Base
             {
                 RaycastHit2D rayhit = Physics2D.Raycast(
                             transform.position, dirVector[i], 5f,       // 벽과의 거리 최대 5까지 탐지
-                            LayerMask.GetMask("Ground"));
+                            LayerMask.GetMask("Ground", "Platform"));
                 if (rayhit.collider != null)
                 {
                     dirPreference[i] -= 1 / rayhit.distance * aiCoef_awayFromWall;

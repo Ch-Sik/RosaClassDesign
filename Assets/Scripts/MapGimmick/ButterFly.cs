@@ -20,10 +20,16 @@ public class Butterfly : MonoBehaviour
     [ShowInInspector] private Vector3[] waypoints;      //연결된 웨이포인트 점의 집합
     [ShowInInspector] private float distance;           //웨이포인트 점을 따라 갈 때의 거리
 
+    [ShowInInspector] private GameObject direction;     //디렉션 표시
+
     private Sequence tracking;                          //트래킹 시퀀스
     public Transform waypointsTransform;                //웨이포인트점들의 부모 오브젝트
 
     Transform riderTF;                                  //현재 나비를 탄 대상의 트랜스폼
+
+    public Vector2 startPoint;
+    public Vector2 endPoint;
+    public float angle;
 
     float savedGravity = 0f;
 
@@ -32,7 +38,31 @@ public class Butterfly : MonoBehaviour
     {
         SetData();
         InitPosition();
+        InitDirection();
     }
+
+    public void InitDirection()
+    {
+        //이상한 버그가 있어서 direction을 인스펙터 드랍으로 못 얻음.. 아마도 내 생각엔, 프리팹이 2곳에 엮여서 그런듯.
+        direction = transform.parent.transform.GetChild(1).gameObject;
+
+        startPoint = waypoints[0];
+        endPoint = waypoints[waypoints.Length - 1];
+
+        Vector3 dir = new Vector2(endPoint.x - startPoint.x, endPoint.y - startPoint.y).normalized;
+        // 직사각형의 회전 각도 계산
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+        //현재 Transform에 적용
+        direction.transform.position = startPoint;
+        direction.transform.rotation = Quaternion.Euler(0, 0, angle);
+
+        //숨기기
+        if(isCaged)
+            HideDirection();
+    }
+    public void ShowDirection() { direction.SetActive(true); }
+    public void HideDirection() { direction.SetActive(false); }
 
     //나비가 날기위한 waypoint와 거리 데이터를 산출한다.
     public void SetData()
@@ -61,6 +91,7 @@ public class Butterfly : MonoBehaviour
             PlayerRef.Instance.combat.isFly = true;
             onWayTracking = true;
             Ride(player);
+            HideDirection();
         })
         //플레이어의 위치를 나비의 위치로 0.3초 동안 이동시킨다.
         .Append(player.DOMove(transform.position, 0.3f))
@@ -70,6 +101,7 @@ public class Butterfly : MonoBehaviour
         .AppendCallback(() =>
         {
             ResetTracking();
+            ShowDirection();
         });
     }
 

@@ -47,6 +47,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   collider: {fileID: 6318427354827282082}
   renderer: {fileID: 9067792185207961791}
+  destroyOnAttackEnd: 1
+  startupColor: {r: 1, g: 0, b: 0, a: 0.5529412}
+  activatedColor: {r: 0, g: 0.5754717, b: 0.04078144, a: 1}
 --- !u!1 &2512982478324683597
 GameObject:
   m_ObjectHideFlags: 0
@@ -191,3 +194,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  ignoreDuration: 2
