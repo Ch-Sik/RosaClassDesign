@@ -1,8 +1,16 @@
 tree("Root")
     Sequence
+        tree("Idle")
         tree("Phase0")
         tree("PhaseChange")
         tree("Phase1")
+
+// 플레이어가 보스방에 들어가기 전 보스 대기 상태
+tree("Idle")
+  not
+    repeat
+      not
+        isEnemyCloserThan(999.9)  // 플레이어가 인식 범위에 들어오면 Idle 종료
 
 // 1페이즈
 tree("Phase0") 
