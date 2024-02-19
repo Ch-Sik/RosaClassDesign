@@ -48,9 +48,9 @@ public class MonsterDamageReceiver : DamageReceiver
         if (!isInvincible && portrait == null)
         {
             portrait = GetComponentInChildren<apPortrait>();
-            if(portrait != null)
+            if(portrait == null)
             {
-                Debug.LogWarning($"{gameObject.name}: apPortrait를 찾을 수 없음!");
+                Debug.LogWarning("apPortrait를 찾을 수 없음!", gameObject);
             }
         }
     }

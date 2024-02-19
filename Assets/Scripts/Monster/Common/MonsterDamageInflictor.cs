@@ -6,17 +6,20 @@ using UnityEngine;
 public class MonsterDamageInflictor : MonoBehaviour
 {
     public int damage;
+    public bool attackEnabled = true;
 
     public bool isUseIgnoreDuration = false;
     public float ignoreDuration = 2f; 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        DoDamageIfItsPlayer(collision.gameObject);
+        if(attackEnabled)
+            DoDamageIfItsPlayer(collision.gameObject);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        DoDamageIfItsPlayer(collision.gameObject);
+        if (attackEnabled)
+            DoDamageIfItsPlayer(collision.gameObject);
     }
 
     private void DoDamageIfItsPlayer(GameObject go)
@@ -34,5 +37,11 @@ public class MonsterDamageInflictor : MonoBehaviour
             }
            
         }
+    }
+
+    private void OnDie()
+    {
+        // 사망했을 때 공격 기능 상실
+        attackEnabled = false;
     }
 }

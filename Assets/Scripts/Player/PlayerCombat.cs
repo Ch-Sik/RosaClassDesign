@@ -5,7 +5,6 @@ using DG.Tweening;
 using Sirenix.OdinInspector;
 using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
-using Utilities;
 
 /// <summary>
 /// ButterFlyAction을 위해서라도, 얘는 최종부모에 넣어두자.
@@ -17,7 +16,7 @@ public class PlayerCombat : MonoBehaviour
 
     Sequence attack;                                //공격 시퀀스
     public GameObject attackEntity;                 //공격을 위한 AttackObject의 게임오브젝트
-    public PlayerDamageInflictor attackObject;      //공격 이벤트를 위한 PlayerDamageInflictor
+    public PlayerDamageInflictor attackHandler;      //공격 이벤트를 위한 PlayerDamageInflictor
     public bool isAttack = false;                   //공격중이라면 true, 아니라면 false;
     public bool isFly = false;                      //나비를 타고 있다면 true, 아니라면 false;
     public bool canInteraction = true;              //좌클릭으로 인터렉션 가능하면 true, 아니라면 false //공격시 범위 내에 적이 있다면 false
@@ -42,9 +41,12 @@ public class PlayerCombat : MonoBehaviour
     //시작하면서 AttackEntity에 존재하는 attackObject를 얻어오며, attackObject를 Init해준다.
     private void Start()
     {
-        attackObject = attackEntity.GetComponent<PlayerDamageInflictor>();
-        attackObject.Init(this, wall, attackableObjects, butterfly);
-        attackObject.gameObject.SetActive(false);
+        // 플레이어 공격이 flip에 영향받지 않도록 하기 위해 게임이 시작되면 공격을 자식에서 꺼냄
+        attackEntity.transform.SetParent(null);
+        attackEntity.gameObject.SetActive(false);
+        // attackObject와 attackEntity.gameObject는 서로 다를 수 있다.
+        attackHandler = attackEntity.GetComponentInChildren<PlayerDamageInflictor>();
+        attackHandler.Init(this, wall, attackableObjects, butterfly);
         aimInput = InputManager.Instance._inputAsset.FindActionMap("ActionDefault").FindAction("Aim");
     }
 
@@ -101,21 +103,31 @@ public class PlayerCombat : MonoBehaviour
         */
         //시퀀스를 할당한다.
         attack = DOTween.Sequence()
-        //공격 준비시간을 적용
-        .AppendInterval(attackReadyTime)
-        //공격전 이벤트와 함께, 공격판정체의 방향을 변경해주고(사실 의미 없으나 일단 넣은 것입니다.), 충돌체를 켜준다.
+        //공격판정체의 방향을 변경해주고(사실 의미 없으나 일단 넣은 것입니다.), 충돌체를 켜준다.
         .AppendCallback(() =>
         {
             attackEntity.SetActive(true);
-            OnStartAttack();
             attackEntity.transform.position = this.transform.position;
             attackEntity.transform.rotation = Quaternion.Euler(0f, 0f, angle);
-            attackObject.StartAttack();
+            attackHandler.transform.localPosition = Vector3.zero;
+        })
+        //공격 준비시간을 적용
+        .AppendInterval(attackReadyTime)
+        //공격전 이벤트와 함께, 공격 판정 ON
+        .AppendCallback(()=>
+        {
+            OnStartAttack();
+            attackHandler.StartAttack();
         })
         //얻은 방향벡터로 공격한다.
-        .Append(attackEntity.transform.DOLocalMove(attackDistance * direction, attackTime).SetRelative(true))
+        .Append(attackHandler.transform.DOMove(attackDistance * direction, attackTime).SetRelative(true))
         //공격이 끝난다면, 공격판정체의 위치를 초기화시켜 회수한다.
-        .AppendCallback(() => attackEntity.transform.localPosition = Vector2.zero)
+        .AppendCallback(() => {
+            attackHandler.transform.position = transform.position;
+            attackHandler.EndAttack();
+        })
+        // 공격 이펙트 끝나기까지 기다리기
+        .AppendInterval(0.2f)
         //시퀀스가 끝나며, 공격끝 이벤트와 함께 공격판정체의 충돌체를 끈다.
         .OnComplete(() =>
         {
@@ -128,7 +140,6 @@ public class PlayerCombat : MonoBehaviour
                 transform.localScale = theScale;
             }
             */
-            attackObject.EndAttack();
             attackEntity.SetActive(false);
             OnEndAttack();
         });
@@ -154,7 +165,7 @@ public class PlayerCombat : MonoBehaviour
     {
         attack.Pause();
         attackEntity.transform.localPosition = Vector2.zero;
-        attackObject.EndAttack();
+        attackHandler.EndAttack();
         OnEndAttack();
         attackEntity.SetActive(false);
     }
