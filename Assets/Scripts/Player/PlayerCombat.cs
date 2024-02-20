@@ -163,11 +163,15 @@ public class PlayerCombat : MonoBehaviour
     //공격을 취소하기 위해 만듦. 공격판정체가 나비에 닿거나 임의로 공격을 중단시킬 경우 사용한다.
     public void StopAttack()
     {
-        attack.Pause();
-        attackEntity.transform.localPosition = Vector2.zero;
+        // 공격 판정이 어차피 비활성화된 상태면 계속 움직여도 딱히 상관 없음.
+        // attack.Pause();
+        // attackEntity.transform.localPosition = Vector2.zero;
+
+        // 공격 판정 off
         attackHandler.EndAttack();
-        OnEndAttack();
-        attackEntity.SetActive(false);
+
+        // 적에게 공격이 닿았다고 공격 이펙트/후딜레이가 없어지면 안됨.
+        // OnEndAttack();
     }
 
     //공격 시작 이벤트
@@ -178,6 +182,8 @@ public class PlayerCombat : MonoBehaviour
     //공격 종료 이벤트
     private void OnEndAttack()
     {
+        // 이펙트 & 공격 판정 오브젝트 비활성화
+        attackEntity.SetActive(false);
         isAttack = false;
         canInteraction = true;
         //쿨타임은 여기 넣자.
