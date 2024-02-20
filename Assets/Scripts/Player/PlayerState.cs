@@ -18,6 +18,11 @@ public class PlayerState : MonoBehaviour
     [SerializeField] private int attackDmg;
     [SerializeField] private int[] magicLevel;    // 0이면 안배움, 1이면 기본, 2이면 업그레이드 상태
 
+    private void Start()
+    {
+        Init();
+    }
+
     // states getter
     public int AttackDmg { get { return attackDmg; } }
 
@@ -25,9 +30,32 @@ public class PlayerState : MonoBehaviour
     {
         // HP, 공격력 등의 값 초기화하기
         stateUI = PlayerStateUI.Instance;
+        currentHP = maxHP;
+        for(int i = 0; i < maxHP; i++)
+        {
+            stateUI.AddHPUI();
+        }
     }
 
-    public void Heal(int amount) { }
-    public void TakeDamage(int amount) { currentHP -= amount; }
+    public void Heal(int amount) 
+    {
+        stateUI.Heal(amount);
+        while(amount > 0)
+        {
+            if (currentHP >= maxHP) return;
+            currentHP++;
+            amount--;
+        }
+    }
+    public void TakeDamage(int amount) 
+    {
+        stateUI.TakeDamage(amount);
+        while (amount > 0)
+        {
+            if (currentHP <= 0) return;
+            currentHP--;
+            amount--;
+        }
+    }
     public void UpgradePlantMagic(SkillCode magicCode) { } // 획득 및 업그레이드
 }
