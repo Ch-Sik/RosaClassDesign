@@ -1,17 +1,33 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class LeverDoor : LeverGear
 {
-    // TODO: 스프라이트 컬러로 때워놓은 연출 애니메이션 적용하고 개선.
-    [SerializeField] private SpriteRenderer sprite;
     [SerializeField] private new BoxCollider2D collider;
+    [SerializeField] private Transform doorSprite;
+    [SerializeField] private float openTime;
+
+    // 세이브/로드 될 때 초기화용
+    public void Init(bool activated)
+    {
+        if(activated)
+        {
+            collider.enabled = false;
+            doorSprite.localPosition = new Vector3(0, 2.5f, 0);
+        }
+    }
 
     public override void Activate()
     {
         Debug.Log("레버 작동됨");
-        sprite.color = Color.gray;
-        collider.enabled = false;
+        Sequence sq = DOTween.Sequence()
+            .Append(doorSprite.DOMoveY(1.5f, openTime * 0.6f).SetRelative(true))
+            .AppendCallback(() =>
+            {
+                collider.enabled = false;
+            })
+            .Append(doorSprite.DOMoveY(1f, openTime * 0.4f).SetRelative(true));
     }
 }
