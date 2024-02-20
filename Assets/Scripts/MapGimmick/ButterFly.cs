@@ -1,3 +1,4 @@
+using Com.LuisPedroFonseca.ProCamera2D;
 using DG.Tweening;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities;
@@ -124,6 +125,9 @@ public class Butterfly : MonoBehaviour
     //나비에 탈 때, 
     public void Ride(Transform playerTF)
     {
+        // 나비 탑승 중 떨림을 막기 위해 나비 탑승중에는 카메라 업데이트 모드를 LateUpdate로 바꿈 
+        Camera.main.GetComponent<ProCamera2D>().UpdateType = Com.LuisPedroFonseca.ProCamera2D.UpdateType.LateUpdate;
+
         riderTF = playerTF;                                         //탑승자 데이터를 저장한다.
         playerTF.SetParent(transform);                            //플레이어를 자식으로 설정해준다.
         transform.GetComponent<Collider2D>().enabled = false;   //나비와의 재충돌을 대비해 콜라이더를 끈다.
@@ -136,6 +140,9 @@ public class Butterfly : MonoBehaviour
     //나비에 내릴 때, (이름은 추후 생각해보기)
     public void UnRide()
     {
+        // 나비에서 내린 후 카메라 업데이트 모드를 원상복구
+        Camera.main.GetComponent<ProCamera2D>().UpdateType = Com.LuisPedroFonseca.ProCamera2D.UpdateType.FixedUpdate;
+
         riderTF.SetParent(null);                                  //탑승자를 내린다.
         transform.GetComponent<Collider2D>().enabled = true;    //나비의 재활성화
         PlayerRef.Instance.rb.gravityScale = savedGravity;
