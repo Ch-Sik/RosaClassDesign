@@ -14,6 +14,7 @@ public struct TerrainCastHit
 
 /// <summary>
 /// 식물 마법 시전을 담당하는 컴포넌트
+/// 시전 미리보기는 CursorFairy.cs에서 담당하며 여기에서는 상관하지 않음.
 /// </summary>
 public class PlayerMagic : MonoBehaviour
 {
@@ -22,8 +23,6 @@ public class PlayerMagic : MonoBehaviour
     private SO_Magic[] magicList;
 
     [Space(10), Header("시전 관련")]
-    [SerializeField, Tooltip("시전 위치 미리보기 오브젝트")]
-    private GameObject previewObject;
     [SerializeField, Tooltip("지형 경계면과 마우스가 얼마나 떨어져있어도 시전 가능한 것으로 판단할지?")]
     private float castDist = 1.5f;
 
@@ -202,6 +201,7 @@ public class PlayerMagic : MonoBehaviour
     private void ShowPreview()
     {
         isPreviewOn = true;
+        CursorFairy.Instance.SetMagicMode(true);
     }
 
     /// <summary> 미리보기 OFF </summary>
@@ -209,7 +209,8 @@ public class PlayerMagic : MonoBehaviour
     private void HidePreview()
     {
         isPreviewOn = false;
-        previewObject.SetActive(false);
+        //previewObject.SetActive(false);
+        CursorFairy.Instance.SetMagicMode(false);
     }
 
     /// <summary> 미리보기 Update </summary>
@@ -251,14 +252,16 @@ public class PlayerMagic : MonoBehaviour
         if(terrainHit != null)
         {
             magicPos = ((TerrainCastHit)terrainHit).worldPos;
-            previewObject.SetActive(true);
-            previewObject.transform.position = (Vector3)magicPos;
+            //previewObject.SetActive(true);
+            //previewObject.transform.position = (Vector3)magicPos;
+            CursorFairy.Instance.SetMagicPreview(true, (Vector3)magicPos);
         }
-        // 아니면 프리뷰 숨기기
+        // 아니면 시전 불가능하다고 표시하기
         else
         {
             magicPos = null;
-            previewObject.SetActive(false);
+            // previewObject.SetActive(false);
+            CursorFairy.Instance.SetMagicPreview(false, Vector3.zero);
         }
     }
 
