@@ -52,7 +52,11 @@ public class PlayerState : MonoBehaviour
         stateUI.TakeDamage(amount);
         while (amount > 0)
         {
-            if (currentHP <= 0) return;
+            if (currentHP <= 1)
+            {
+                RespawnManager.Instance.Respawn();
+                return;
+            }
             currentHP--;
             amount--;
         }
