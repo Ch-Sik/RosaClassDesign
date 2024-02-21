@@ -54,6 +54,7 @@ public class PlayerState : MonoBehaviour
         {
             if (currentHP <= 1)
             {
+                currentHP--;
                 RespawnManager.Instance.Respawn();
                 return;
             }
