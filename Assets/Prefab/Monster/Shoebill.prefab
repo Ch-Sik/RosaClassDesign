@@ -339,7 +339,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7e361b8e5ec339439677f0f6e371dba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 0
+  damage: 1
   attackEnabled: 1
   isUseIgnoreDuration: 0
   ignoreDuration: 2
@@ -405,7 +405,7 @@ MonoBehaviour:
   blackboard: {fileID: 3549201638025795251}
   rigidbody: {fileID: 1870944607072788904}
   acceptableRadius: 5
-  chaseSpeed: {x: 1, y: 1}
+  chaseSpeed: {x: 1.5, y: 1.5}
   terrainSensor: {fileID: 3158601471185591566}
   terrainSensorOffset: 0.5
 --- !u!114 &1666916584344856952
@@ -421,15 +421,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 3549201638025795251}
-  superArmourOnActiveTime: 0
-  startupDuration: 1
+  superArmourOnActiveTime: 1
+  startupDuration: 0.8
   activeDuration: 0.8
-  recoveryDuration: 1
+  recoveryDuration: 0.5
   currentState: 0
   rigidbody: {fileID: 1870944607072788904}
   damageComponent: {fileID: 3316949629464590149}
   tackleAttackPower: 2
-  tackleSpeed: 5
+  tackleSpeed: 8
   wallStunEnabled: 1
   wallStunDuration: 0
   terrainSensor: {fileID: 3158601471185591566}

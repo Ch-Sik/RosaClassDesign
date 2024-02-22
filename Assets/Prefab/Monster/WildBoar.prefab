@@ -523,7 +523,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
-  superArmourOnActiveTime: 0
+  superArmourOnActiveTime: 1
   startupDuration: 0.5
   activeDuration: 3
   recoveryDuration: 1
@@ -531,9 +531,9 @@ MonoBehaviour:
   rigidbody: {fileID: 0}
   damageComponent: {fileID: 0}
   tackleAttackPower: 2
-  tackleSpeed: 3
+  tackleSpeed: 5
   wallStunEnabled: 1
-  wallStunDuration: 2
+  wallStunDuration: 1.2
 --- !u!50 &8167530097518868674
 Rigidbody2D:
   serializedVersion: 4

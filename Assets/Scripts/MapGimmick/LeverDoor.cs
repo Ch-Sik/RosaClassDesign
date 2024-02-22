@@ -8,6 +8,7 @@ public class LeverDoor : LeverGear
     [SerializeField] private new BoxCollider2D collider;
     [SerializeField] private Transform doorSprite;
     [SerializeField] private float openTime;
+    [SerializeField] private float openDelay = 2f;
 
     // 세이브/로드 될 때 초기화용
     public void Init(bool activated)
@@ -23,6 +24,7 @@ public class LeverDoor : LeverGear
     {
         Debug.Log("레버 작동됨");
         Sequence sq = DOTween.Sequence()
+            .AppendInterval(openDelay)
             .Append(doorSprite.DOMoveY(1.5f, openTime * 0.6f).SetRelative(true))
             .AppendCallback(() =>
             {
