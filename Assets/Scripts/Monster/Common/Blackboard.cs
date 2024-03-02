@@ -10,26 +10,62 @@ using UnityEngine;
 /// </summary>
 public class Blackboard : MonoBehaviour
 {
-    public List<string> dictPreview;
+    [System.Serializable]
+    public class BlackboardPreviewElement
+    {
+        public string key;
+        public string value;
+        public BlackboardPreviewElement(string key, string value)
+        {
+            this.key = key;
+            this.value = value;
+        }
+    }
 
-    // item type이 object라서 Inspector에서 볼 수 없음 ㅜㅜ
+    public List<BlackboardPreviewElement> dictPreview;
+
     private Dictionary<string, object> dict;
+
+    public delegate void BlackboardUpdateEvent(string key, object value);
+    // 이벤트 핸들러들이 모두 같은 오브젝트 내에 있기 때문에 같이 소멸됨 = 사라진 리스너 문제 걱정할 필요 없음.
+    public BlackboardUpdateEvent OnBlackboardUpdated;       
 
     private void Start()
     {
         dict = new Dictionary<string, object>();
     }
 
-    public void Set(string key, object value)
+    public void Set<T>(string key, T value)
     {
-        if(dict.ContainsKey(key))
+        // 값 설정
+        if (dict.ContainsKey(key))
         {
             dict[key] = value;
         }
         else
             dict.Add(key, value);
 
-        dictPreview = dict.Keys.ToList();
+        // 미리보기 업데이트
+        bool alreadyInList = false;
+        for(int i = 0; i< dictPreview.Count; i++)
+        {
+            if (dictPreview[i].key == key)
+            {
+                if (value == null)
+                    dictPreview[i].value = "null";
+                else
+                    dictPreview[i].value = ((T)value).ToString();
+
+                alreadyInList = true;
+                break;
+            }
+        }
+        if(!alreadyInList)
+            dictPreview.Add(new BlackboardPreviewElement(key, ((T)value).ToString()));
+
+        // 옵저버 패턴
+        if (OnBlackboardUpdated != null)
+            OnBlackboardUpdated.Invoke(key, value);
     }
 
     /// <summary>

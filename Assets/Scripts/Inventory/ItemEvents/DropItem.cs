@@ -7,6 +7,8 @@ using UnityEngine;
 /// </summary>
 public class DropItem : MonoBehaviour
 {
+    public bool isTrue = false;
+
     public ItemCode code;
     [Min(1)] public int quantity = 1;
 }
