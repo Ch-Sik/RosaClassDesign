@@ -127,7 +127,7 @@ public class PlayerCombat : MonoBehaviour
             attackHandler.EndAttack();
         })
         // 공격 이펙트 끝나기까지 기다리기
-        .AppendInterval(0.2f)
+        .AppendInterval(0.6f)
         //시퀀스가 끝나며, 공격끝 이벤트와 함께 공격판정체의 충돌체를 끈다.
         .OnComplete(() =>
         {
