@@ -20,6 +20,8 @@ public class TilemapManager : SerializedMonoBehaviour
     [SerializeField]
     private TileData defaultTileData;
 
+    public string debugInfo;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -70,7 +72,7 @@ public class TilemapManager : SerializedMonoBehaviour
         try
         {
             if(selectedTile.Count == 1)
-                return dataFromTiles[selectedTile[0]];
+                return GetTileDataByTileBase(selectedTile[0]);
             else
             {
                 // 여러 타일들이 중첩되어 있는 경우, 우선순위가 높은 TileData를 사용함.
@@ -86,7 +88,7 @@ public class TilemapManager : SerializedMonoBehaviour
                     {
                         mergedData = tileData;
                     }
-                    if((mergedData == null || mergedData.magicAllowed) && tileData.isSubstance && !tileData.magicAllowed)
+                    if((mergedData == null || mergedData.isPlantable) && tileData.isSubstance && !tileData.isPlantable)
                     {
                         mergedData = tileData;
                     }
@@ -180,7 +182,7 @@ public class TilemapManager : SerializedMonoBehaviour
         {
             Debug.LogError("해당 위치에 타일이 존재하지 않음");
         }
-        return td.magicAllowed;
+        return td.isPlantable;
     }
 
     public Vector3Int WorldToCell(Vector2 worldPosition)

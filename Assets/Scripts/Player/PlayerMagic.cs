@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
 
 public struct TerrainCastHit
 {
@@ -293,9 +294,13 @@ public class PlayerMagic : MonoBehaviour
                     tmpDistanceSqr = (raycastResult.point - mousePosition).SqrMagnitude();
                     if (raycastResult.collider != null && tmpDistanceSqr < minDistanceSqr)
                     {
-                        tmpCellPos = Vector3Int.FloorToInt(raycastResult.point - 0.1f * cDirections[i]);
+                        Tilemap tilemap = raycastResult.collider.GetComponentInChildren<Tilemap>();
+                        tmpCellPos = tilemap.WorldToCell(raycastResult.point - 0.1f * cDirections[i]);  // 움직이는 플랫폼을 고려하여 FloorToInt 대신 WorldToCell 사용
+                        TileBase tile = tilemap.GetTile(tmpCellPos);
+                        // tmpCellPos = Vector3Int.FloorToInt(raycastResult.point - 0.1f * cDirections[i]);
                         // 마지막으로 식물 설치가능한 지형인지 파악
-                        bool plantable = TilemapManager.Instance.GetTilePlantable(tmpCellPos);
+                        bool plantable = TilemapManager.Instance.GetTileDataByTileBase(tile).isPlantable;
+                        //bool plantable = TilemapManager.Instance.GetTilePlantable(tmpCellPos);
                         if (plantable)
                         {
                             minDistanceSqr = tmpDistanceSqr;
@@ -336,9 +341,13 @@ public class PlayerMagic : MonoBehaviour
                 raycastResult = Physics2D.Raycast(mousePosition, -cDirections[i], castDist, layerMagicAble);
                 if (raycastResult.collider != null && raycastResult.distance < minDistance)
                 {
-                    tmpCellPos = Vector3Int.FloorToInt(raycastResult.point - 0.1f * cDirections[i]);
+                    Tilemap tilemap = raycastResult.collider.GetComponentInChildren<Tilemap>();
+                    tmpCellPos = tilemap.WorldToCell(raycastResult.point - 0.1f * cDirections[i]);
+                    TileBase tile = tilemap.GetTile(tmpCellPos);
+                    // tmpCellPos = Vector3Int.FloorToInt(raycastResult.point - 0.1f * cDirections[i]);
                     // 마지막으로 식물 설치가능한 지형인지 파악
-                    bool plantable = TilemapManager.Instance.GetTilePlantable(tmpCellPos);
+                    bool plantable = TilemapManager.Instance.GetTileDataByTileBase(tile).isPlantable;
+                    //bool plantable = TilemapManager.Instance.GetTilePlantable(tmpCellPos);
                     if (plantable)
                     {
                         minDistance = raycastResult.distance;

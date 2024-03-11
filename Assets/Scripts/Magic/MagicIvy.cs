@@ -90,7 +90,7 @@ public class MagicIvy : MonoBehaviour
                     + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, upLength, 0)
                     );
 
-            bool isInnerTileMagicAllowed = innerTile != null && innerTile.magicAllowed;
+            bool isInnerTileMagicAllowed = innerTile != null && innerTile.isPlantable;
             bool isOuterTileNonSubstance = !outerTile || !outerTile.isSubstance;
             if (isInnerTileMagicAllowed && isOuterTileNonSubstance)
             {
@@ -145,7 +145,7 @@ public class MagicIvy : MonoBehaviour
                     + new Vector3Int(wallDirection.isRIGHT() ? 0 : -1, downLength, 0)
                     );
 
-            bool isInnerTileMagicAllowed = innerTile != null && innerTile.magicAllowed;
+            bool isInnerTileMagicAllowed = innerTile != null && innerTile.isPlantable;
             bool isOuterTileNonSubstance = !outerTile || !outerTile.isSubstance;
             if (isInnerTileMagicAllowed && isOuterTileNonSubstance)
             {
