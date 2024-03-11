@@ -64,6 +64,9 @@ public class PlayerMagic : MonoBehaviour
     private const int RWALL = 2;
     private const int CEIL = 3;
 
+    [SerializeField, ReadOnly]
+    private Tilemap targetTilemap;
+
 
     private void Start()
     {
@@ -171,6 +174,10 @@ public class PlayerMagic : MonoBehaviour
                 magicInstance.transform.localScale = Vector3.Scale(magicInstance.transform.localScale, new Vector3(-1, 1, 1));
             }
         }
+
+        // 움직이는 플랫폼 대비, 식물마법을 대상 타일맵의 조부모의 자식오브젝트로 설정
+        // 굳이 조부모인 건, 대상 타일맵이나 그 바로 윗 부모의 자식오브젝트로 넣으면 composite collider에 Edge collider가 먹혀버림
+        magicInstance.transform.SetParent(targetTilemap.transform.parent.parent);
 
         // 식물 마법의 Init까지 수행
         if (selectedMagic.skillCode == SkillCode.MAGIC_IVY)
@@ -294,9 +301,9 @@ public class PlayerMagic : MonoBehaviour
                     tmpDistanceSqr = (raycastResult.point - mousePosition).SqrMagnitude();
                     if (raycastResult.collider != null && tmpDistanceSqr < minDistanceSqr)
                     {
-                        Tilemap tilemap = raycastResult.collider.GetComponentInChildren<Tilemap>();
-                        tmpCellPos = tilemap.WorldToCell(raycastResult.point - 0.1f * cDirections[i]);  // 움직이는 플랫폼을 고려하여 FloorToInt 대신 WorldToCell 사용
-                        TileBase tile = tilemap.GetTile(tmpCellPos);
+                        Tilemap selectedTilemap = raycastResult.collider.GetComponentInChildren<Tilemap>();
+                        tmpCellPos = selectedTilemap.WorldToCell(raycastResult.point - 0.1f * cDirections[i]);  // 움직이는 플랫폼을 고려하여 FloorToInt 대신 WorldToCell 사용
+                        TileBase tile = selectedTilemap.GetTile(tmpCellPos);
                         // tmpCellPos = Vector3Int.FloorToInt(raycastResult.point - 0.1f * cDirections[i]);
                         // 마지막으로 식물 설치가능한 지형인지 파악
                         bool plantable = TilemapManager.Instance.GetTileDataByTileBase(tile).isPlantable;
@@ -307,6 +314,7 @@ public class PlayerMagic : MonoBehaviour
                             targetTerrainType = i;
                             result.worldPos = raycastResult.point;
                             result.cellPos = tmpCellPos;
+                            targetTilemap = selectedTilemap;
                         }
                     }
                 }
@@ -341,9 +349,9 @@ public class PlayerMagic : MonoBehaviour
                 raycastResult = Physics2D.Raycast(mousePosition, -cDirections[i], castDist, layerMagicAble);
                 if (raycastResult.collider != null && raycastResult.distance < minDistance)
                 {
-                    Tilemap tilemap = raycastResult.collider.GetComponentInChildren<Tilemap>();
-                    tmpCellPos = tilemap.WorldToCell(raycastResult.point - 0.1f * cDirections[i]);
-                    TileBase tile = tilemap.GetTile(tmpCellPos);
+                    Tilemap selectedTilemap = raycastResult.collider.GetComponentInChildren<Tilemap>();
+                    tmpCellPos = selectedTilemap.WorldToCell(raycastResult.point - 0.1f * cDirections[i]);
+                    TileBase tile = selectedTilemap.GetTile(tmpCellPos);
                     // tmpCellPos = Vector3Int.FloorToInt(raycastResult.point - 0.1f * cDirections[i]);
                     // 마지막으로 식물 설치가능한 지형인지 파악
                     bool plantable = TilemapManager.Instance.GetTileDataByTileBase(tile).isPlantable;
@@ -354,6 +362,7 @@ public class PlayerMagic : MonoBehaviour
                         targetTerrainType = i;
                         result.worldPos = raycastResult.point;
                         result.cellPos = tmpCellPos;
+                        targetTilemap = selectedTilemap;
                     }
                 }
             }
