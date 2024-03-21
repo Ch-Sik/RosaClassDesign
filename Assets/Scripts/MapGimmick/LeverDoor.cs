@@ -32,4 +32,9 @@ public class LeverDoor : LeverGear
             })
             .Append(doorSprite.DOMoveY(1f, openTime * 0.4f).SetRelative(true));
     }
+
+    public override void Activate(int value)
+    {
+        throw new System.NotImplementedException();
+    }
 }

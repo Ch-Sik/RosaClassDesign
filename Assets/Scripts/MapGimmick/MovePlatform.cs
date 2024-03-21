@@ -1,23 +1,64 @@
 using UnityEngine;
 using System.Collections.Generic;
+using DG.Tweening;
 
-public class MovePlatform : MonoBehaviour
+public class MovePlatform : LeverGear
 {
+    [Header("플랫폼 설정")]
     public List<Transform> points;
     public float speed = 2f;
-    private int currentIndex = 0; 
+    public int currentIndex = 0;
 
-    void Update()
+    public bool isRepeat = true;
+    public bool isActivateWhenStart = true;
+    public int moveAmount = 1;
+
+    private bool isMoving = false;
+    private Tween moveTween;
+
+    void Start()
+    {
+        if (isActivateWhenStart)
+        {
+            MoveToNextPoint();
+        }
+    }
+
+    void MoveToNextPoint()
     {
         if (points.Count == 0) return;
-
+        if (isMoving) return;
+        isMoving = true;
+        currentIndex = (currentIndex + moveAmount) % points.Count;
+        if (currentIndex < 0) currentIndex = points.Count + currentIndex;
         Transform targetPoint = points[currentIndex];
-        transform.position = Vector3.MoveTowards(transform.position, targetPoint.position, speed * Time.deltaTime);
 
-        if (Vector3.Distance(transform.position, targetPoint.position) < 0.1f)
+        float duration = Vector3.Distance(transform.position, targetPoint.position) / speed;
+        moveTween = transform.DOMove(targetPoint.position, duration).SetEase(Ease.Linear).OnComplete(OnMoveComplete);
+    }
+
+    void OnMoveComplete()
+    {
+        
+        moveAmount = 1;
+        isMoving = false;
+        if (isRepeat)
         {
-            currentIndex = (currentIndex + 1) % points.Count;
+            MoveToNextPoint();
         }
+    }
+
+    public override void Activate()
+    {
+        Debug.Log("레버 작동됨");
+        MoveToNextPoint();
+    }
+
+    public override void Activate(int value)
+    {
+        Debug.Log("레버 작동됨");
+        moveAmount = value;
+        MoveToNextPoint();
     }
 
     public void HandleChildTriggerEnter(Collision2D other)
@@ -34,6 +75,5 @@ public class MovePlatform : MonoBehaviour
                 other.transform.SetParent(null);
             }
         }
-        
     }
 }
