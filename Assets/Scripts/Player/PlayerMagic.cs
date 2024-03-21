@@ -1,3 +1,5 @@
+using DG.Tweening;
+using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -27,9 +29,24 @@ public class PlayerMagic : MonoBehaviour
     [SerializeField, Tooltip("지형 경계면과 마우스가 얼마나 떨어져있어도 시전 가능한 것으로 판단할지?")]
     private float castDist = 1.5f;
 
+    [Space(10), Header("최대 씨앗 개수")]
+    [SerializeField]
+    private int maxAbilNum = 3;
+
     [Space(10), Header("UI")]
     [SerializeField]
     private PlayerStateUI playerStateUI;
+
+    [Space(10), Header("Tweening")]
+    [SerializeField]
+    private Color tweeningColor = Color.black;
+    [SerializeField]
+    private float blinkingTime = 0.1f;
+    [SerializeField]
+    private List<SpriteRenderer> objectSprites = new List<SpriteRenderer>();
+    [SerializeField]
+    private Dictionary<SpriteRenderer, Color> originalColors = new Dictionary<SpriteRenderer, Color>(); 
+    
 
     [Header("정보")]
     [SerializeField, ReadOnly]
@@ -44,8 +61,12 @@ public class PlayerMagic : MonoBehaviour
     private LR wallLR;                  // 벽일 경우, 왼쪽을 보는 벽인지, 오른쪽을 보는 벽인지
 
     [Space(10), Header("스폰된 오브젝트")]
-    [SerializeField, ReadOnly]
-    private GameObject[] spawnedObject = new GameObject[8];
+    [ShowInInspector, ReadOnly]
+    private Queue<GameObject> spawnedObject = new Queue<GameObject>();
+
+    //private GameObject[] spawnedObject = new GameObject[8];
+
+
 
     private InputManager inputInstance;
     private InputAction aimInput;
@@ -118,6 +139,11 @@ public class PlayerMagic : MonoBehaviour
         Debug.Log("식물 마법 시전 준비");
 
         ShowPreview();
+
+        if(spawnedObject.Count >= maxAbilNum)
+        {
+            StartBlinking();
+        }
     }
 
     /// <summary>
@@ -132,9 +158,15 @@ public class PlayerMagic : MonoBehaviour
             return;
         }
 
+        if (objectSprites != null)
+        {
+            StopBlinking();
+        }
         DoMagic();
         Debug.Log($"식물마법 시전\n 종류: {selectedMagic.name}\n 지형타입: {targetTerrainType}");
         HidePreview();
+
+        
 
         inputInstance.SetActionInputState(PlayerActionState.DEFAULT);
     }
@@ -184,6 +216,13 @@ public class PlayerMagic : MonoBehaviour
             magicInstance.GetComponent<MagicIvy>().Init((Vector2)magicPos, targetTileGroup);
         }
 
+        if(spawnedObject.Count >= maxAbilNum)
+        {
+            Destroy(spawnedObject.Dequeue());            
+        }
+        spawnedObject.Enqueue(magicInstance);
+
+        /*
         // 오브젝트 풀 관리: 동시에 유지 가능한 오브젝트는 최대 1개
         if (spawnedObject[(int)selectedMagic.skillCode] != null)
         {
@@ -191,6 +230,7 @@ public class PlayerMagic : MonoBehaviour
             Destroy(spawnedObject[(int)selectedMagic.skillCode], 1f);
         }
         spawnedObject[(int)selectedMagic.skillCode] = magicInstance;
+        */
     }
 
     /// <summary>
@@ -218,6 +258,35 @@ public class PlayerMagic : MonoBehaviour
         isPreviewOn = false;
         //previewObject.SetActive(false);
         CursorFairy.Instance.SetMagicMode(false);
+    }
+
+    /// <summary> 오브젝트 점멸 시작 </summary>
+    void StartBlinking()
+    {
+        objectSprites.AddRange(spawnedObject.Peek().GetComponentsInChildren<SpriteRenderer>());
+
+        foreach (var renderer in objectSprites)
+        {
+            originalColors[renderer] = renderer.color;
+        }
+
+        foreach (var renderer in objectSprites)
+        {
+            renderer.DOColor(tweeningColor, blinkingTime).SetLoops(-1, LoopType.Yoyo);
+        }
+        
+    }
+
+    /// <summary> 오브젝트 점멸 취소 </summary>
+    void StopBlinking()
+    {
+        foreach (var renderer in objectSprites)
+        {
+            renderer.DOKill(true); 
+            renderer.color = originalColors[renderer];
+        }
+        objectSprites.Clear();
+        originalColors.Clear();
     }
 
     /// <summary> 미리보기 Update </summary>
