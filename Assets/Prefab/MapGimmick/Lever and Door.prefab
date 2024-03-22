@@ -219,6 +219,7 @@ MonoBehaviour:
   collider: {fileID: 4856654346658701626}
   doorSprite: {fileID: 2709059430270194798}
   openTime: 0.8
+  openDelay: 2
 --- !u!61 &4856654346658701626
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -531,11 +532,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c433037f62cc4e147a6f9e918250351f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isUseMulti: 0
   leverActivated: 0
-  leverGear: {fileID: 7522399094622398035}
+  isUseValue: 0
+  leverGears:
+  - {fileID: 7522399094622398035}
+  gearsValue: 
   leverHandle: {fileID: 1349749870521942713}
-  cam: {fileID: 0}
+  cam: {fileID: 4125097822022044844}
   cinematics: {fileID: 0}
+  isCinematics: 1
   cinematicsSettings:
   - easeInDur: 1
     holdDur: 0.5
