@@ -1,5 +1,3 @@
-using DG.Tweening;
-using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -29,24 +27,9 @@ public class PlayerMagic : MonoBehaviour
     [SerializeField, Tooltip("지형 경계면과 마우스가 얼마나 떨어져있어도 시전 가능한 것으로 판단할지?")]
     private float castDist = 1.5f;
 
-    [Space(10), Header("최대 씨앗 개수")]
-    [SerializeField]
-    private int maxAbilNum = 3;
-
     [Space(10), Header("UI")]
     [SerializeField]
     private PlayerStateUI playerStateUI;
-
-    [Space(10), Header("Tweening")]
-    [SerializeField]
-    private Color tweeningColor = Color.black;
-    [SerializeField]
-    private float blinkingTime = 0.1f;
-    [SerializeField]
-    private List<SpriteRenderer> objectSprites = new List<SpriteRenderer>();
-    [SerializeField]
-    private Dictionary<SpriteRenderer, Color> originalColors = new Dictionary<SpriteRenderer, Color>(); 
-    
 
     [Header("정보")]
     [SerializeField, ReadOnly]
@@ -60,13 +43,11 @@ public class PlayerMagic : MonoBehaviour
     [SerializeField, ReadOnly]
     private LR wallLR;                  // 벽일 경우, 왼쪽을 보는 벽인지, 오른쪽을 보는 벽인지
 
+    /*
     [Space(10), Header("스폰된 오브젝트")]
-    [ShowInInspector, ReadOnly]
-    private Queue<GameObject> spawnedObject = new Queue<GameObject>();
-
-    //private GameObject[] spawnedObject = new GameObject[8];
-
-
+    [SerializeField, ReadOnly]
+    private GameObject[] spawnedObject = new GameObject[8];
+    */
 
     private InputManager inputInstance;
     private InputAction aimInput;
@@ -109,6 +90,7 @@ public class PlayerMagic : MonoBehaviour
         if (inputInstance == null)
             inputInstance = InputManager.Instance;
         aimInput = inputInstance._inputAsset.FindActionMap("MagicReady").FindAction("Aim");
+        playerStateUI = PlayerStateUI.Instance;
     }
 
     private void Update()
@@ -139,11 +121,6 @@ public class PlayerMagic : MonoBehaviour
         Debug.Log("식물 마법 시전 준비");
 
         ShowPreview();
-
-        if(spawnedObject.Count >= maxAbilNum)
-        {
-            StartBlinking();
-        }
     }
 
     /// <summary>
@@ -158,21 +135,17 @@ public class PlayerMagic : MonoBehaviour
             return;
         }
 
-        if (objectSprites != null)
-        {
-            StopBlinking();
-        }
         DoMagic();
         Debug.Log($"식물마법 시전\n 종류: {selectedMagic.name}\n 지형타입: {targetTerrainType}");
         HidePreview();
-
-        
 
         inputInstance.SetActionInputState(PlayerActionState.DEFAULT);
     }
 
     private void DoMagic()
     {
+        PlayerRef.Instance.State.ConsumeSeed(1, selectedMagic.seedRechargeTime);
+
         GameObject magicInstance;
         if (selectedMagic.prefab == null)
         {
@@ -211,16 +184,7 @@ public class PlayerMagic : MonoBehaviour
         magicInstance.transform.SetParent(targetTileGroup.transform);
 
         // 식물 마법의 Init까지 수행
-        if (selectedMagic.skillCode == SkillCode.MAGIC_IVY)
-        {
-            magicInstance.GetComponent<MagicIvy>().Init((Vector2)magicPos, targetTileGroup);
-        }
-
-        if(spawnedObject.Count >= maxAbilNum)
-        {
-            Destroy(spawnedObject.Dequeue());            
-        }
-        spawnedObject.Enqueue(magicInstance);
+        magicInstance.GetComponentInChildren<MagicObject>().Init((Vector2)magicPos, selectedMagic.lifeTime, targetTileGroup);
 
         /*
         // 오브젝트 풀 관리: 동시에 유지 가능한 오브젝트는 최대 1개
@@ -260,37 +224,20 @@ public class PlayerMagic : MonoBehaviour
         CursorFairy.Instance.SetMagicMode(false);
     }
 
-    /// <summary> 오브젝트 점멸 시작 </summary>
-    void StartBlinking()
-    {
-        objectSprites.AddRange(spawnedObject.Peek().GetComponentsInChildren<SpriteRenderer>());
-
-        foreach (var renderer in objectSprites)
-        {
-            originalColors[renderer] = renderer.color;
-        }
-
-        foreach (var renderer in objectSprites)
-        {
-            renderer.DOColor(tweeningColor, blinkingTime).SetLoops(-1, LoopType.Yoyo);
-        }
-        
-    }
-
-    /// <summary> 오브젝트 점멸 취소 </summary>
-    void StopBlinking()
-    {
-        foreach (var renderer in objectSprites)
-        {
-            renderer.DOKill(true); 
-            renderer.color = originalColors[renderer];
-        }
-        objectSprites.Clear();
-        originalColors.Clear();
-    }
-
     /// <summary> 미리보기 Update </summary>
     private void UpdatePreview()
+    {
+        if(PlayerRef.Instance.State.currentSeed < 1)
+        {
+            magicPos = null;
+            CursorFairy.Instance.SetMagicPreview(false, Vector3.zero);
+
+            return;
+        }
+        CheckIfValidPosition();
+    }
+
+    private void CheckIfValidPosition()
     {
         // 마우스 위치 가져오기
         Vector2 mouseScreenPos2 = aimInput.ReadValue<Vector2>();
@@ -300,22 +247,22 @@ public class PlayerMagic : MonoBehaviour
         // 식물 마법 종류에 따라 캐스팅 방향 판단하기
         int castFlag = 0;
         MagicCastType castType = selectedMagic.castType;
-        switch(castType)
+        switch (castType)
         {
             case MagicCastType.GROUND_ONLY:
-                castFlag = cTerrainFlag[0];     break;
+                castFlag = cTerrainFlag[0]; break;
             case MagicCastType.WALL_ONLY:
-                castFlag = cTerrainFlag[1];     break;
-            case MagicCastType.CEIL_ONLY: 
-                castFlag = cTerrainFlag[3];     break;
+                castFlag = cTerrainFlag[1]; break;
+            case MagicCastType.CEIL_ONLY:
+                castFlag = cTerrainFlag[3]; break;
             default:        // case MagicCastType.EVERYWHERE:
-                castFlag = cTerrainFlag[0] | cTerrainFlag[1] | cTerrainFlag[3]; break; 
+                castFlag = cTerrainFlag[0] | cTerrainFlag[1] | cTerrainFlag[3]; break;
         }
 
         // 마우스가 지형 안쪽인지 바깥쪽인지 파악하고 마우스 위치로부터 가장 가까운 캐스팅 위치 가져오기
         Collider2D col = Physics2D.OverlapPoint(mouseWorldPosition, layerMagicAble);
         TerrainCastHit? terrainHit = null;
-        if(col != null)
+        if (col != null)
         {
             terrainHit = FindTerrainPointFromInside(mouseWorldPosition, castFlag);
         }
@@ -325,7 +272,7 @@ public class PlayerMagic : MonoBehaviour
         }
 
         // 성공적으로 지형 위치를 가져왔다면 해당 위치에 프리뷰 표시하기
-        if(terrainHit != null)
+        if (terrainHit != null)
         {
             magicPos = ((TerrainCastHit)terrainHit).worldPos;
             //previewObject.SetActive(true);

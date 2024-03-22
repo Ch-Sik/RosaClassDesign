@@ -14,12 +14,17 @@ public class PlayerStateUI : MonoBehaviour
     public static PlayerStateUI Instance { get { return _instance; } }
 
     [SerializeField] TMP_Text text_selectedMagic;
-    [SerializeField] GameObject heart;
+    [SerializeField] GameObject heartPrefab;
     [SerializeField] GameObject heartContainer;
+    [SerializeField] GameObject seedPrefab;
+    [SerializeField] GameObject seedContainer;
     [SerializeField] Sprite filled;
     [SerializeField] Sprite empty;
+
     [SerializeField] List<Image> hearts = new List<Image>();
+    [SerializeField] List<Image> seeds = new List<Image>();
     int curHp = 0;
+    int curSeed = 0;
 
     private void Awake()
     {
@@ -28,9 +33,16 @@ public class PlayerStateUI : MonoBehaviour
 
     public void AddHPUI()
     {
-        GameObject h = Instantiate(heart, heartContainer.transform);
+        GameObject h = Instantiate(heartPrefab, heartContainer.transform);
         hearts.Add(h.GetComponent<Image>());
         curHp++;
+    }
+
+    public void AddSeedUI()
+    {
+        GameObject s = Instantiate(seedPrefab, seedContainer.transform);
+        seeds.Add(s.GetComponent<Image>());
+        curSeed++;
     }
 
     public void Heal(int amount) 
@@ -42,9 +54,8 @@ public class PlayerStateUI : MonoBehaviour
             curHp++;
             amount--;
         }
-        
-        
     }
+
     public void TakeDamage(int amount)
     {
         while (amount > 0)
@@ -54,6 +65,32 @@ public class PlayerStateUI : MonoBehaviour
             hearts[curHp].sprite = empty;
             amount--;
         }
+    }
+
+    public void ConsumeSeed(int index, float rechargeTime)
+    {
+        seeds[index].fillAmount = 0f;
+        StartCoroutine(UpdateSeedUI());
+
+        IEnumerator UpdateSeedUI()
+        {
+            Debug.Log($"{index}번 식물마법 재충전 시작");
+            int step = 5;
+            float timePerStep = rechargeTime / step;
+            var wait = new WaitForSeconds(timePerStep);
+
+            for(int i=0; i<step; i++)
+            {
+                seeds[index].fillAmount = (float)1 / step * i;
+                yield return wait;
+            }
+        }
+    }
+
+    public void RechargeSeed(int index)
+    {
+        Debug.Log($"{index}번 씨앗 준비됨");
+        seeds[index].fillAmount = 1f;
     }
 
     // TODO: 아이콘과 스프라이트 기반으로 기능 재구현
