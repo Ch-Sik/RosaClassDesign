@@ -15,8 +15,12 @@ public class PlayerState : MonoBehaviour
     // states
     [SerializeField] private int maxHP;
     [SerializeField] private int currentHP;
+    [SerializeField] private int maxSeed;
+    public int currentSeed;
     [SerializeField] private int attackDmg;
+    [SerializeField] private int seedRechargeTime;
     [SerializeField] private int[] magicLevel;    // 0이면 안배움, 1이면 기본, 2이면 업그레이드 상태
+    private Coroutine[] seedRecharge = null;
 
     private void Start()
     {
@@ -30,10 +34,18 @@ public class PlayerState : MonoBehaviour
     {
         // HP, 공격력 등의 값 초기화하기
         stateUI = PlayerStateUI.Instance;
+
         currentHP = maxHP;
         for(int i = 0; i < maxHP; i++)
         {
             stateUI.AddHPUI();
+        }
+
+        currentSeed = maxSeed;
+        seedRecharge = new Coroutine[maxSeed];
+        for(int i=0; i<maxSeed; i++)
+        {
+            stateUI.AddSeedUI();
         }
     }
 
@@ -62,5 +74,30 @@ public class PlayerState : MonoBehaviour
             amount--;
         }
     }
+
+    public void ConsumeSeed(int amount, float rechargeTime)
+    {
+        Debug.Assert(currentSeed >= amount);
+        currentSeed -= amount;
+        for (int i = maxSeed - 1; i >= 0; i--)
+        {
+            if (amount <= 0) break;
+            if (seedRecharge[i] == null)
+            {
+                seedRecharge[i] = StartCoroutine(RechargeSeed(i, rechargeTime));
+                stateUI.ConsumeSeed(i, rechargeTime);
+                amount--;
+            }
+        }
+    }
+
+    private IEnumerator RechargeSeed(int index, float t)
+    {
+        yield return new WaitForSeconds(t);
+        currentSeed += 1;
+        stateUI.RechargeSeed(index);
+        seedRecharge[index] = null;
+    }
+
     public void UpgradePlantMagic(SkillCode magicCode) { } // 획득 및 업그레이드
 }
