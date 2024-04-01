@@ -16,7 +16,7 @@ public class MovePlatformCollider : MonoBehaviour
         {
             if (platform != null)
             {
-                platform.HandleChildTriggerEnter(collision);
+                platform.HandleChildTriggerEnter(collision.transform);
             }
         }
     }
@@ -24,7 +24,7 @@ public class MovePlatformCollider : MonoBehaviour
     {
         if (platform != null)
         {
-            platform.HandleChildTriggerExit(collision);
+            platform.HandleChildTriggerExit(collision.transform);
         }
     }
 

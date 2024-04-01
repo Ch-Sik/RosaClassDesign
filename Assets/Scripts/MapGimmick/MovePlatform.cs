@@ -20,18 +20,18 @@ public class MovePlatform : MonoBehaviour
         }
     }
 
-    public void HandleChildTriggerEnter(Collision2D other)
+    public void HandleChildTriggerEnter(Transform other)
     {
-        other.transform.SetParent(transform);
+        other.SetParent(transform);
     }
 
-    public void HandleChildTriggerExit(Collision2D other)
+    public void HandleChildTriggerExit(Transform other)
     {
         if(Application.isPlaying)
         {
-            if (other.transform.parent == transform)
+            if (other.parent == transform)
             {
-                other.transform.SetParent(null);
+                other.SetParent(null);
             }
         }
         
