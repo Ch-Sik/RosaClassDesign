@@ -3,6 +3,8 @@ using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
@@ -28,25 +30,19 @@ public class PlayerMagic : MonoBehaviour
     [Space(10), Header("시전 관련")]
     [SerializeField, Tooltip("지형 경계면과 마우스가 얼마나 떨어져있어도 시전 가능한 것으로 판단할지?")]
     private float castDist = 1.5f;
+    [SerializeField]
+    private float castDelay = 0.3f; // 시전 딜레이를 만들었으나 일단 적용하지 않음
+    private bool nowDelayed = false;
 
     [Space(10), Header("최대 씨앗 개수")]
     [SerializeField]
     private int maxAbilNum = 3;
+    [SerializeField]
+    private float magicDestoryTime = 60f;
 
     [Space(10), Header("UI")]
     [SerializeField]
-    private PlayerStateUI playerStateUI;
-
-    [Space(10), Header("Tweening")]
-    [SerializeField]
-    private Color tweeningColor = Color.black;
-    [SerializeField]
-    private float blinkingTime = 0.1f;
-    [SerializeField]
-    private List<SpriteRenderer> objectSprites = new List<SpriteRenderer>();
-    [SerializeField]
-    private Dictionary<SpriteRenderer, Color> originalColors = new Dictionary<SpriteRenderer, Color>(); 
-    
+    private PlayerStateUI playerStateUI;    
 
     [Header("정보")]
     [SerializeField, ReadOnly]
@@ -62,11 +58,11 @@ public class PlayerMagic : MonoBehaviour
 
     [Space(10), Header("스폰된 오브젝트")]
     [ShowInInspector, ReadOnly]
-    private Queue<GameObject> spawnedObject = new Queue<GameObject>();
+    private List<GameObject> spawnedObject = new List<GameObject>();
+
+
 
     //private GameObject[] spawnedObject = new GameObject[8];
-
-
 
     private InputManager inputInstance;
     private InputAction aimInput;
@@ -109,6 +105,11 @@ public class PlayerMagic : MonoBehaviour
         if (inputInstance == null)
             inputInstance = InputManager.Instance;
         aimInput = inputInstance._inputAsset.FindActionMap("MagicReady").FindAction("Aim");
+
+        for (int i = 0; i < maxAbilNum; i++)
+        {
+            playerStateUI.AddMagicUI();
+        }
     }
 
     private void Update()
@@ -134,6 +135,11 @@ public class PlayerMagic : MonoBehaviour
     /// </summary>
     public void ReadyMagic()
     {
+        if (nowDelayed)
+        {
+            Debug.Log("마법 쿨타임");
+            return;
+        }
         // TODO: PlayerState와 연동하여 현재 선택된 마법이 유효한지 확인하기
         inputInstance.SetActionInputState(PlayerActionState.MAGIC_READY);
         Debug.Log("식물 마법 시전 준비");
@@ -142,7 +148,7 @@ public class PlayerMagic : MonoBehaviour
 
         if(spawnedObject.Count >= maxAbilNum)
         {
-            StartBlinking();
+            spawnedObject[0].GetComponent<MagicObject>().StartBlinking();
         }
     }
 
@@ -158,15 +164,9 @@ public class PlayerMagic : MonoBehaviour
             return;
         }
 
-        if (objectSprites != null)
-        {
-            StopBlinking();
-        }
         DoMagic();
         Debug.Log($"식물마법 시전\n 종류: {selectedMagic.name}\n 지형타입: {targetTerrainType}");
         HidePreview();
-
-        
 
         inputInstance.SetActionInputState(PlayerActionState.DEFAULT);
     }
@@ -211,26 +211,15 @@ public class PlayerMagic : MonoBehaviour
         magicInstance.transform.SetParent(targetTileGroup.transform);
 
         // 식물 마법의 Init까지 수행
-        if (selectedMagic.skillCode == SkillCode.MAGIC_IVY)
-        {
-            magicInstance.GetComponent<MagicIvy>().Init((Vector2)magicPos, targetTileGroup);
-        }
+        magicInstance.GetComponent<MagicObject>().Init((Vector2)magicPos, magicDestoryTime, targetTileGroup, this);
 
         if(spawnedObject.Count >= maxAbilNum)
         {
-            Destroy(spawnedObject.Dequeue());            
+            Dequeue();
         }
-        spawnedObject.Enqueue(magicInstance);
-
-        /*
-        // 오브젝트 풀 관리: 동시에 유지 가능한 오브젝트는 최대 1개
-        if (spawnedObject[(int)selectedMagic.skillCode] != null)
-        {
-            // TODO: 기존에 설치된 식물이 자연스럽게 사라지는 것 연출
-            Destroy(spawnedObject[(int)selectedMagic.skillCode], 1f);
-        }
-        spawnedObject[(int)selectedMagic.skillCode] = magicInstance;
-        */
+        spawnedObject.Add(magicInstance);
+        playerStateUI.ChangeMagicIcon(spawnedObject.Count - 1, selectedMagicIndex);
+        //StartCoroutine(MagicDelay());
     }
 
     /// <summary>
@@ -239,6 +228,7 @@ public class PlayerMagic : MonoBehaviour
     public void CancelMagic()
     {
         inputInstance.SetActionInputState(PlayerActionState.DEFAULT);
+        spawnedObject[0].GetComponent<MagicObject>().StopBlinking();
         Debug.LogWarning("식물마법 취소");
         HidePreview();
     }
@@ -258,35 +248,6 @@ public class PlayerMagic : MonoBehaviour
         isPreviewOn = false;
         //previewObject.SetActive(false);
         CursorFairy.Instance.SetMagicMode(false);
-    }
-
-    /// <summary> 오브젝트 점멸 시작 </summary>
-    void StartBlinking()
-    {
-        objectSprites.AddRange(spawnedObject.Peek().GetComponentsInChildren<SpriteRenderer>());
-
-        foreach (var renderer in objectSprites)
-        {
-            originalColors[renderer] = renderer.color;
-        }
-
-        foreach (var renderer in objectSprites)
-        {
-            renderer.DOColor(tweeningColor, blinkingTime).SetLoops(-1, LoopType.Yoyo);
-        }
-        
-    }
-
-    /// <summary> 오브젝트 점멸 취소 </summary>
-    void StopBlinking()
-    {
-        foreach (var renderer in objectSprites)
-        {
-            renderer.DOKill(true); 
-            renderer.color = originalColors[renderer];
-        }
-        objectSprites.Clear();
-        originalColors.Clear();
     }
 
     /// <summary> 미리보기 Update </summary>
@@ -434,4 +395,30 @@ public class PlayerMagic : MonoBehaviour
         else
             return null;
     }
+
+    public void Dequeue()
+    {
+        spawnedObject[0].GetComponent<MagicObject>().StopBlinking();
+        GameObject DestroyObj = spawnedObject[0];
+        spawnedObject.RemoveAt(0);
+        playerStateUI.MagicIconToDefault(0);
+        Destroy(DestroyObj);
+    }
+
+    public void DestroyByObject(GameObject sender)
+    {
+        int index = spawnedObject.IndexOf(sender);
+        GameObject DestroyObj = spawnedObject[index];
+        spawnedObject.RemoveAt(index);
+        playerStateUI.MagicIconToDefault(index);
+        Destroy(DestroyObj);
+    }
+
+    private IEnumerator MagicDelay()
+    {
+        nowDelayed = true;
+        yield return new WaitForSeconds(castDelay);
+        nowDelayed = false;
+    }
+
 }
