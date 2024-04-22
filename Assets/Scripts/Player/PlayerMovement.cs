@@ -1,3 +1,4 @@
+using AnyPortrait;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -50,6 +51,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("넉백 관련 매개변수")]
     [Tooltip("넉백 힘")]
     [SerializeField] float knockbackStrength = 1f;
+    [SerializeField] float ignoreDuration = 2f;
     // 컴포넌트 레퍼런스
     [ReadOnly, SerializeField] Rigidbody2D rb;
     [ReadOnly, SerializeField] BoxCollider2D col;
@@ -73,6 +75,7 @@ public class PlayerMovement : MonoBehaviour
     // 플래그
     [ReadOnly, SerializeField] public bool isFacingWall = false;
     [ReadOnly, SerializeField] public bool isWallClimbing = false;      // 벽에 붙어서 이동중
+    [ReadOnly, SerializeField] public bool isWallJumpReady = false;      // 벽에 붙어서 이동중
     [ReadOnly, SerializeField] public bool isWallClimbingTop = false;      // 벽에 붙어서 이동중 정상도달
     [ReadOnly, SerializeField] public bool isWallJumping = false;       // 벽 점프 중인지
     [ReadOnly, SerializeField] public bool isDoingMagic = false;
@@ -157,8 +160,11 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
+            if (playerControl.currentMoveState == PlayerMoveState.CLIMBING && !isWallJumpReady)
+            {
+                UnstickFromWall();
+            }
             isWallClimbingTop = false;
-            
         }
         
     }
@@ -232,6 +238,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 Debug.Log("start Timer");
                 climbTimer = Timer.StartTimer();
+                isWallJumpReady = true;
             }
         }
         else
@@ -259,18 +266,24 @@ public class PlayerMovement : MonoBehaviour
                     UnstickFromWall();
                     Flip();
                     isFalling = true;
+                    isWallJumpReady = false;
                 }
             }
         }
         moveVector = inputVector;
+        isWallJumpReady = false;
     }
 
 
     internal void JumpUp()
     {
-        //playerAnim.SetTrigger("JumpTrigger");
-        rb.velocity = new Vector2(rb.velocity.x, jumpPower);
-        jumpTimer = Timer.StartTimer();
+        if(!isStopControl)
+        {
+            //playerAnim.SetTrigger("JumpTrigger");
+            rb.velocity = new Vector2(rb.velocity.x, jumpPower);
+            jumpTimer = Timer.StartTimer();
+        }
+        
     }
 
     /// <summary>
@@ -278,12 +291,16 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void FinishJumpUp()
     {
-        if (jumpTimer.duration > minJumpUpDuration) // 최소 점프 시간에 도달
+        if (!isStopControl)
         {
-            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y < 0 ? rb.velocity.y : 0);
+            if (jumpTimer.duration > minJumpUpDuration) // 최소 점프 시간에 도달
+            {
+                rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y < 0 ? rb.velocity.y : 0);
+            }
+            else
+                StartCoroutine(ReserveFinishJumpUp());
         }
-        else
-            StartCoroutine(ReserveFinishJumpUp());
+        
 
         IEnumerator ReserveFinishJumpUp()
         {
@@ -331,22 +348,27 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void WallJump()
     {
-        isWallJumping = true;
-        UnstickFromWall();
-        //playerAnim.SetTrigger("JumpTrigger");
-        playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
+        if(!isStopControl)
+        {
+            isWallJumping = true;
+            UnstickFromWall();
+            isWallJumpReady = false;
+            //playerAnim.SetTrigger("JumpTrigger");
+            playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
 
-        if(!isFalling)
-        {
-            float xDirection = facingDirection.isRIGHT() ? -1 : 1;  // 보고 있는 방향의 반대방향으로 점프
-            rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
-            Flip();
+            if (!isFalling)
+            {
+                float xDirection = facingDirection.isRIGHT() ? -1 : 1;  // 보고 있는 방향의 반대방향으로 점프
+                rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
+                Flip();
+            }
+            else
+            {
+                float xDirection = facingDirection.isRIGHT() ? 1 : -1;  // 보고 있는 방향으로 점프
+                rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
+            }
         }
-        else
-        {
-            float xDirection = facingDirection.isRIGHT() ? 1 : -1;  // 보고 있는 방향으로 점프
-            rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
-        }
+        
 
         
 
@@ -543,8 +565,10 @@ public class PlayerMovement : MonoBehaviour
 
     void Flip()
     {
+        /* 공격 시스템이 설치형으로 변경되며 수정됨.
         if (PlayerRef.Instance.combat.isAttack)
             return;
+        */
 
         // 플레이어가 바라보는 방향을 전환
         if (facingDirection.isLEFT()) facingDirection = LR.RIGHT;
@@ -556,6 +580,53 @@ public class PlayerMovement : MonoBehaviour
         //aimLine.transform.localScale = theScale;
     }
 
+    public void PlayerDamageReceiver(GameObject target, int damage)
+    {
+        playerRef.Animation.BlinkEffect();
+
+        OnKnockback(new Vector3(target.transform.position.x,
+                    target.transform.position.y - (target.transform.localScale.y / 2),
+                    target.transform.position.z));
+        playerRef.State.TakeDamage(damage);
+
+        int originalLayer = target.layer;
+        int collisionLayer = gameObject.layer;
+
+        // 현재 게임 오브젝트와 충돌한 오브젝트의 충돌을 무시
+        Physics2D.IgnoreLayerCollision(originalLayer, collisionLayer, true);
+
+        // 일정 시간 후 충돌 무시 해제
+        StartCoroutine(RestoreCollision(originalLayer, collisionLayer, ignoreDuration));
+    }
+
+    public void PlayerDamageReceiver(GameObject target, int damage, float ignoreDur)
+    {
+        playerRef.Animation.BlinkEffect();
+
+        OnKnockback(new Vector3(target.transform.position.x,
+                    target.transform.position.y - (target.transform.localScale.y / 2),
+                    target.transform.position.z));
+        playerRef.State.TakeDamage(damage);
+
+        int originalLayer = target.layer;
+        int collisionLayer = gameObject.layer;
+
+        // 현재 게임 오브젝트와 충돌한 오브젝트의 충돌을 무시
+        Physics2D.IgnoreLayerCollision(originalLayer, collisionLayer, true);
+
+        // 일정 시간 후 충돌 무시 해제
+        StartCoroutine(RestoreCollision(originalLayer, collisionLayer, ignoreDur));
+    }
+
+    IEnumerator RestoreCollision(int originalLayer, int collisionLayer, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // 충돌 무시 해제
+        Physics2D.IgnoreLayerCollision(originalLayer, collisionLayer, false);
+    }
+    
+
     public void OnKnockback(Vector3 knockbackPos)
     {
 
@@ -564,6 +635,11 @@ public class PlayerMovement : MonoBehaviour
 
         Debug.Log(knockbackDirection);
         
+        if(playerControl.currentMoveState == PlayerMoveState.CLIMBING)
+        {
+            UnstickFromWall();
+        }
+        rb.velocity = Vector2.zero;
         GetComponent<Rigidbody2D>().AddForce(knockbackDirection * knockbackStrength, ForceMode2D.Impulse);
 
         StartCoroutine(Knockback());
@@ -595,6 +671,8 @@ public class PlayerMovement : MonoBehaviour
             isStopControl = false;
         }
     }
+
+    
 
     public void Falling()
     {

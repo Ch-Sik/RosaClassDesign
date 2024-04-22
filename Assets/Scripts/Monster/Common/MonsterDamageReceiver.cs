@@ -1,10 +1,7 @@
 using AnyPortrait;
-using Sirenix.OdinInspector;
-using Sirenix.OdinInspector.Editor;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [DisallowMultipleComponent]
 public class MonsterDamageReceiver : DamageReceiver
@@ -48,9 +45,9 @@ public class MonsterDamageReceiver : DamageReceiver
         if (!isInvincible && portrait == null)
         {
             portrait = GetComponentInChildren<apPortrait>();
-            if(portrait != null)
+            if(portrait == null)
             {
-                Debug.LogWarning($"{gameObject.name}: apPortrait를 찾을 수 없음!");
+                Debug.LogWarning("apPortrait를 찾을 수 없음!", gameObject);
             }
         }
     }

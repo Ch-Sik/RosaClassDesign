@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Panda;
 using Sirenix.OdinInspector;
-using UnityEditor.Tilemaps;
-using UnityEngine.UIElements;
 using DG.Tweening;
 
 // Task_GA_Tackle(지상 몬스터 태클 공격 스크립트)에서 공격 방향 계산하는 거랑 공격 시의 velocity 설정하는 거만 override함.

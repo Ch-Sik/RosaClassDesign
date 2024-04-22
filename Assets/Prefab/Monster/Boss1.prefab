@@ -128,7 +128,7 @@ Transform:
   m_GameObject: {fileID: 264187737863876010}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.61, y: 0.91, z: 0}
+  m_LocalPosition: {x: -6.27, y: 5.03, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -194,7 +194,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -1.9482069, y: -0.29817533}
+  m_Offset: {x: -2.1247864, y: 0.78646946}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -205,7 +205,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 22.249708, y: 13.799945}
+  m_Size: {x: 28.757568, y: 17.381796}
   m_EdgeRadius: 0
 --- !u!1 &716405382874488431
 GameObject:
@@ -340,7 +340,7 @@ MonoBehaviour:
   autoReset: 1
   tickOn: 0
   sourceInfos:
-  - isFoldout: 1
+  - isFoldout: 0
     breakPoints: 
     breakPointStatuses: 
     collapsedLines: 
@@ -386,6 +386,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 0
+  attackEnabled: 1
+  isUseIgnoreDuration: 0
   ignoreDuration: 2
 --- !u!114 &5219790609965822853
 MonoBehaviour:
@@ -565,7 +567,7 @@ MonoBehaviour:
   currentState: 0
   attackPrefab: {fileID: 586251084327265594, guid: 38008e5be9f00fa4dad48f414dd06f79, type: 3}
   numOfInstance: 5
-  spawnHeight: 5
+  spawnHeight: 10
   spawnMode: 1
   launchMode: 3
   minSpawnInterval: 0.5
@@ -799,6 +801,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 0
+  attackEnabled: 1
+  isUseIgnoreDuration: 0
   ignoreDuration: 2
 --- !u!114 &8813828089931754115
 MonoBehaviour:
@@ -1059,6 +1063,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 0
+  attackEnabled: 1
+  isUseIgnoreDuration: 0
   ignoreDuration: 2
 --- !u!114 &8544246837178488126
 MonoBehaviour:

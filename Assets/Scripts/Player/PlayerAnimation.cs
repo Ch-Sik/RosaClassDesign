@@ -24,6 +24,8 @@ public class PlayerAnimation : MonoBehaviour
     bool isFirstFrame = true;
     bool isAttack = false;
 
+    Coroutine blinkCoroutine;
+    float reactionBrightness = 0.75f;
     private void Start()
     {
         GetComponents();
@@ -42,7 +44,7 @@ public class PlayerAnimation : MonoBehaviour
     private void FixedUpdate()
     {
         UpdateAnim();
-        UpdateHeadDir();
+        UpdateHeadDir2();
     }
 
     void UpdateAnim()
@@ -304,6 +306,68 @@ public class PlayerAnimation : MonoBehaviour
         else
         {
             Debug.LogError("Camera.main is null!");
+        }
+    }
+
+    Rect leftHalfScreen = new Rect(0, 0, 0.5f, 1f);
+    Rect rightHalfScreen = new Rect(0.5f, 0, 0.5f, 1f);
+    Rect wholeScreen = new Rect(0, 0, 1f, 1f);
+
+    private Vector2 headDirection = new Vector2(0, 0);
+    private Vector2 eyeDirection = new Vector2(0, 0);
+    void UpdateHeadDir2()
+    {
+        Vector3 mousePosition = Input.mousePosition;
+        Vector3 viewportPosition = Camera.main.ScreenToViewportPoint(mousePosition);
+
+        if(gameObject.transform.localScale.x == -1)
+        {
+            // Viewport 좌표를 (-1, -1)에서 (1, 1) 범위로 매핑
+            headDirection = MapToRange(viewportPosition, rightHalfScreen.min, rightHalfScreen.max, new Vector2(-1, -1), new Vector2(1, 1));
+            eyeDirection = MapToRange(viewportPosition, wholeScreen.min, wholeScreen.max, new Vector2(-1, -1), new Vector2(1, 1));
+        }
+        else
+        {
+            // Viewport 좌표를 (-1, -1)에서 (1, 1) 범위로 매핑
+            headDirection = MapToRange(viewportPosition, leftHalfScreen.min, leftHalfScreen.max, new Vector2(1, -1), new Vector2(-1, 1));
+            eyeDirection = MapToRange(viewportPosition, wholeScreen.min, wholeScreen.max, new Vector2(1, -1), new Vector2(-1, 1));
+        }
+
+        portrait.SetControlParamVector2("Head Direction", headDirection);
+        portrait.SetControlParamVector2("Eye Direction", eyeDirection);
+    }
+
+    Vector2 MapToRange(Vector3 value, Vector3 fromMin, Vector3 fromMax, Vector2 toMin, Vector2 toMax)
+    {
+        Vector2 result;
+        result.x = Mathf.Lerp(toMin.x, toMax.x, Mathf.InverseLerp(fromMin.x, fromMax.x, value.x));
+        result.y = Mathf.Lerp(toMin.y, toMax.y, Mathf.InverseLerp(fromMin.y, fromMax.y, value.y));
+        return result;
+    }
+
+    public void BlinkEffect()
+    {
+        if (portrait == null)
+            return;         // 아직 애니메이션이 적용되지 않은 녀석들 예외 처리
+
+        // 딱히 추가로 수정할 필요 없어보여서 수치들을 하드코딩했는데 필요하다면 필드값으로 빼낼 것
+        const float timePerBlink = 0.2f;
+        const int blinkCount = 8;
+        Color blinkColor = Color.gray * reactionBrightness;
+        blinkColor.a = 1;
+
+        blinkCoroutine = StartCoroutine(DoBlink());
+
+        IEnumerator DoBlink()
+        {
+            for (int i = 0; i < blinkCount; i++)
+            {
+                portrait.SetMeshColorAll(blinkColor);
+                yield return new WaitForSeconds(timePerBlink / 2);
+                portrait.ResetMeshMaterialToBatchAll();
+                yield return new WaitForSeconds(timePerBlink / 2);
+            }
+            blinkCoroutine = null;
         }
     }
 

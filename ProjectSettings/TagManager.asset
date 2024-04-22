@@ -11,7 +11,7 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Boundary
   - Water
   - UI
   - PostProcess
@@ -21,7 +21,7 @@ TagManager:
   - Ground
   - HiddenRoom
   - Platform
-  - 
+  - Door
   - Climbable
   - Damageable
   - 
@@ -41,6 +41,15 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Far
+    uniqueID: 1916086731
+    locked: 0
+  - name: Back
+    uniqueID: 265357539
+    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Middle
+    uniqueID: 1405156249
     locked: 0

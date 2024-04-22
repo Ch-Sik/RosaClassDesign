@@ -7,7 +7,7 @@ public class PlayerGroundCheck : MonoBehaviour
     
     [ReadOnly, SerializeField] PlayerRef playerRef;
     PlayerMovement playerMove;
-    
+    PlayerController playerControl;
     // Start is called before the first frame update
     void Start()
     {
@@ -18,6 +18,7 @@ public class PlayerGroundCheck : MonoBehaviour
     {
         playerRef = PlayerRef.Instance;
         playerMove = playerRef.Move;
+        playerControl = playerRef.Controller;
     }
 
     // Update is called once per frame
@@ -30,6 +31,14 @@ public class PlayerGroundCheck : MonoBehaviour
     {
         playerMove?.SetIsGrounded(collision.gameObject);
         
+    }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if(playerControl.isMIDAIR)
+        {
+            playerMove?.SetIsGrounded(collision.gameObject);
+        }
     }
 
     //private void OnTriggerStay2D(Collider2D collision)
