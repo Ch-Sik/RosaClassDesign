@@ -111,15 +111,15 @@ public class Task_F_Patrol : Task_Base
         if (isStuckAtWall)
         {
             ThisTask.Succeed();
+            return;
         }
         else if (Vector2.Distance((Vector2)transform.position, nextDest) < 0.1f)
         {
             ThisTask.Succeed();
+            return;
         }
-        else
-        {
-            MoveTo(nextDest);
-        }
+
+        MoveTo(nextDest);
     }
 
     private void MoveTo(Vector2 dest)
@@ -140,6 +140,24 @@ public class Task_F_Patrol : Task_Base
     [Task]
     private void PatrolWait()
     {
+        // 피격당했을 때 행동 중지
+        bool isHitt;
+        if (blackboard.TryGet(BBK.isHitt, out isHitt) && isHitt)
+        {
+            ThisTask.Fail();
+            StopMoving();
+            return;
+        }
+
+        // 적이 탐지되었을 경우 순찰 종료
+        GameObject enemy;
+        if (blackboard.TryGet(BBK.Enemy, out enemy) && enemy != null)
+        {
+            ThisTask.Fail();
+            StopMoving();
+            return;
+        }
+
         if (waitTimer == null)
         {
             // 타이머 시작
