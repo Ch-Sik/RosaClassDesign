@@ -16,6 +16,18 @@ public class Task_Base : MonoBehaviour
         }
     }
 
+    protected LR GetCurrentDir()
+    {
+        if (transform.localScale.x < 0)
+        {
+            return LR.LEFT;
+        }
+        else
+        {
+            return LR.RIGHT;
+        }
+    }
+
     protected void Flip()
     {
         transform.localScale = Vector3.Scale(transform.localScale, new Vector3(-1, 1, 1));

@@ -10,7 +10,4 @@ tree("Hitt")
         HittReaction()                  // 피격 리액션 수행
 
 tree("Patrol")
-    sequence
-        PatrolWait()
-        SetNextDest()                   // repeat root에 의해 Hitted나 Chase로 이행되지 않는다면 Patrol 반복
-        Patrol()
+    Patrol()
