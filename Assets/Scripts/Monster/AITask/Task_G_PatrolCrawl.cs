@@ -6,12 +6,17 @@ using Panda;
 /// <summary>
 /// 지면/벽/천장 등 지형의 경계선을 따라 움직이는 Patrol을 수행하는 스크립트
 /// </summary>
-public class Task_G_PatrolClimb : Task_Base
+public class Task_G_PatrolCrawl : Task_Base
 {
     [SerializeField]
     private Blackboard blackboard;
     [SerializeField]
     private new Rigidbody2D rigidbody;
+
+    [SerializeField]
+    private Transform bottomCenter;
+    [SerializeField]
+    private Transform topCenter;
 
     [SerializeField]
     private float patrolSpeed = 1.0f;
@@ -65,7 +70,9 @@ public class Task_G_PatrolClimb : Task_Base
         blackboard.TryGet(BBK.StuckAtWall, out isStuckAtWall);
         if(isStuckAtWall)
         {
-            Rotate(moveDir.isRIGHT() ? 90 : -90);
+            StopMove();
+            Rotate(topCenter.position, moveDir.isRIGHT() ? 90 : -90);
+            return;
         }
 
         // 낭떠러지에 닿았을 경우 회전
@@ -73,42 +80,67 @@ public class Task_G_PatrolClimb : Task_Base
         blackboard.TryGet(BBK.StuckAtCliff, out isStuckAtCliff);
         if (isStuckAtCliff)
         {
-            Rotate(moveDir.isRIGHT() ? -90 : 90);
+            StopMove();
+            Rotate(bottomCenter.position, moveDir.isRIGHT() ? -90 : 90);
+            return;
         }
-
+        
+        // 앞에 걸리는 거 없다면 전진
         Move();
     }
 
-    private void Rotate(float angle)
+    public float currentAngle;
+    public float targetAngle;
+
+    private void Rotate(Vector3 pivot, float angle)
     {
         isDoingRotate = true;
-        float currentAngle = transform.rotation.z;
-        float targetAngle = currentAngle + angle;
+        currentAngle = transform.localRotation.eulerAngles.z;
+        targetAngle = currentAngle + angle;
 
         float rotatePerSecond = angle / rotateTime;
         
 
-        StartCoroutine(DoRotate());
+        StartCoroutine(DoRotate90());
 
-        IEnumerator DoRotate()
+        IEnumerator DoRotate90()
         {
-            while(currentAngle < targetAngle)
+            Debug.LogWarning("회전 시작");
+            float sumAngle = 0;
+            //while((angle < 0 && CompareAngle(currentAngle, targetAngle) > 0)     // 시계방향 회전
+            //    || (angle > 0 && CompareAngle(currentAngle, targetAngle) < 0))                   // 반시계방향 회전
+            while(true)
             {
                 float rotatePerDeltaTime = rotatePerSecond * Time.deltaTime;
-                transform.Rotate(0, 0, rotatePerDeltaTime);
-                currentAngle = transform.rotation.z;
-                yield return 0;
+                transform.RotateAround(pivot, Vector3.forward, rotatePerDeltaTime);
+                sumAngle += rotatePerDeltaTime;
+                if (Mathf.Abs(sumAngle) > 90)
+                    break;
+                else
+                    yield return 0;
             }
+            Debug.LogWarning("while loop end, set angle to targetAngle");
             transform.rotation = Quaternion.Euler(0, 0, targetAngle);
+            forwardVector = moveDir.isRIGHT()? transform.right : -transform.right;
             isDoingRotate = false;
             yield return 0;
         }
     }
 
-
+    private float CompareAngle(float a, float b)
+    {
+        if (a < 0) a += 360;
+        if (b < 0) b += 360;
+        return a - b;
+    }
 
     private void Move()
     {
         rigidbody.velocity = forwardVector * patrolSpeed;
+    }
+
+    private void StopMove()
+    {
+        rigidbody.velocity = Vector2.zero;
     }
 }
