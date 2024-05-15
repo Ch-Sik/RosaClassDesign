@@ -64,6 +64,15 @@ public class Task_G_PatrolCrawl : Task_Base
     private void Patrol()
     {
         if (isDoingRotate) return;
+        // 피격시 행동 중단
+        bool isHitt;
+        blackboard.TryGet(BBK.isHitt, out isHitt);
+        if (isHitt) {
+            rigidbody.velocity = Vector2.zero;  // 제자리에 잠깐 멈춤
+            ThisTask.Fail();
+            return;
+        }
+
 
         // 벽에 닿았을 경우 회전
         bool isStuckAtWall;
@@ -89,14 +98,13 @@ public class Task_G_PatrolCrawl : Task_Base
         Move();
     }
 
-    public float currentAngle;
-    public float targetAngle;
-
+    // 회전은 코루틴으로 작동하기 때문에 '피격시 행동 정지'가 작동하지 않음.
+    // 근데 구현 난이도에 비해서 중요하지 않은 것 같아서 넘어감.
     private void Rotate(Vector3 pivot, float angle)
     {
         isDoingRotate = true;
-        currentAngle = transform.localRotation.eulerAngles.z;
-        targetAngle = currentAngle + angle;
+        float currentAngle = transform.localRotation.eulerAngles.z;
+        float targetAngle = currentAngle + angle;
 
         float rotatePerSecond = angle / rotateTime;
         
@@ -105,21 +113,16 @@ public class Task_G_PatrolCrawl : Task_Base
 
         IEnumerator DoRotate90()
         {
-            Debug.LogWarning("회전 시작");
+            //Debug.LogWarning("회전 시작");
             float sumAngle = 0;
-            //while((angle < 0 && CompareAngle(currentAngle, targetAngle) > 0)     // 시계방향 회전
-            //    || (angle > 0 && CompareAngle(currentAngle, targetAngle) < 0))                   // 반시계방향 회전
-            while(true)
+            while(Mathf.Abs(sumAngle) < 90)
             {
                 float rotatePerDeltaTime = rotatePerSecond * Time.deltaTime;
                 transform.RotateAround(pivot, Vector3.forward, rotatePerDeltaTime);
                 sumAngle += rotatePerDeltaTime;
-                if (Mathf.Abs(sumAngle) > 90)
-                    break;
-                else
-                    yield return 0;
+                yield return 0;
             }
-            Debug.LogWarning("while loop end, set angle to targetAngle");
+            //Debug.LogWarning("while loop end, set angle to targetAngle");
             transform.rotation = Quaternion.Euler(0, 0, targetAngle);
             forwardVector = moveDir.isRIGHT()? transform.right : -transform.right;
             isDoingRotate = false;
