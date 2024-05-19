@@ -6,6 +6,8 @@ using Panda;
 public class Task_G_HoldPosition : Task_Base
 {
     [SerializeField] Blackboard blackboard;
+    [SerializeField, Tooltip("탐지 범위 안에 플레이어가 들어왔을 때 바라볼건지")] 
+    private bool lookPlayerInSight;
 
     // Start is called before the first frame update
     void Start()
@@ -36,6 +38,10 @@ public class Task_G_HoldPosition : Task_Base
         GameObject enemy;
         if (blackboard.TryGet(BBK.Enemy, out enemy) && enemy != null)
         {
+            if(lookPlayerInSight)
+            {
+                LookAt2D(PlayerRef.Instance.transform.position);
+            }
             ThisTask.Fail();
             return;
         }

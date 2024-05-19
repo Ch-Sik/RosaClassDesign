@@ -51,7 +51,7 @@ GameObject:
   - component: {fileID: 5363826686536181631}
   - component: {fileID: 833476563639194760}
   m_Layer: 23
-  m_Name: RangeEnemy_GroundAOE
+  m_Name: Main Body
   m_TagString: Monster
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -175,7 +175,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
-  hittReactionTime: 0
+  hittReactionTime: 1
+  lookPlayerIfHitt: 1
 --- !u!114 &6457693626513243989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,6 +190,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
+  lookPlayerInSight: 1
 --- !u!114 &7489943562899120
 MonoBehaviour:
   m_ObjectHideFlags: 0
