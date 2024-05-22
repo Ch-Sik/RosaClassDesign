@@ -24663,6 +24663,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 7489943562899120, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
+      propertyPath: superArmourOnActiveTime
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 278459718066224621, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -24719,10 +24723,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1298649842612640371, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
-      propertyPath: m_Name
-      value: Main Body
-      objectReference: {fileID: 0}
     - target: {fileID: 1463345277440852155, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -24767,14 +24767,6 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 161077848}
-    - target: {fileID: 3698844313344814462, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
-      propertyPath: hittReactionTime
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3698844313344814462, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
-      propertyPath: lookPlayerIfHitt
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 3705114979781985033, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -24815,10 +24807,6 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 501235976}
-    - target: {fileID: 6457693626513243989, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
-      propertyPath: lookPlayerInSight
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6738980529685214177, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
