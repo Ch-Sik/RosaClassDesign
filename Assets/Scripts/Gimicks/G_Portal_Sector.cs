@@ -23,5 +23,6 @@ public class G_Portal_Sector : MonoBehaviour
             return;
 
         canUse = false;
+        portal.RemoveAllInteraction();
     }
 }

@@ -16,9 +16,9 @@ public class G_Portal : MonoBehaviour
         RemoveAllInteraction();
 
         if (id == 0)
-            Imp_Interaction.Instance.onInteraction.AddListener(() => MoveToPos1());
+            Imp_Interaction.Instance.onInteraction.AddListener(MoveToPos1);
         else
-            Imp_Interaction.Instance.onInteraction.AddListener(() => MoveToPos2());
+            Imp_Interaction.Instance.onInteraction.AddListener(MoveToPos2);
     }
 
     public void MoveToPos1()
