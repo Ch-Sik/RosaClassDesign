@@ -11,6 +11,7 @@ public class G_FallingObject : MonoBehaviour
     public float beforeFallingDelay = 1.0f;
     public float afterFallingDelay = 1.0f;
     public Vector2 sizeOfFallingObject = Vector2.one;
+    public GameObject platform;
 
     private float fixedFallingLength;
 
@@ -24,9 +25,9 @@ public class G_FallingObject : MonoBehaviour
     {
         Sequence falling = DOTween.Sequence()
         .AppendInterval(beforeFallingDelay)
-        .Append(transform.DOLocalMoveY(-1 * fixedFallingLength, fallingTime).SetRelative(true))
+        .Append(platform.transform.DOLocalMoveY(-1 * fixedFallingLength, fallingTime).SetRelative(true))
         .AppendInterval(afterFallingDelay)
-        .Append(transform.DOLocalMoveY(fixedFallingLength, fallingTime).SetRelative(true))
+        .Append(platform.transform.DOLocalMoveY(fixedFallingLength, fallingTime).SetRelative(true))
         .SetLoops(-1);
     }
 
