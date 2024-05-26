@@ -4,8 +4,13 @@ using UnityEngine;
 
 public class G_FallingObjectDamage : MonoBehaviour
 {
+    public Vector2 respawnPoint;
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        Debug.Log("Damage");
+        if (collision.gameObject.tag == "Player")
+        {
+            collision.transform.position = respawnPoint;
+        }
     }
 }

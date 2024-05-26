@@ -1,4 +1,5 @@
 using DG.Tweening;
+using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -10,14 +11,37 @@ public class G_FallingObject : MonoBehaviour
     public float fallingTime = 3.0f;
     public float beforeFallingDelay = 1.0f;
     public float afterFallingDelay = 1.0f;
-    public Vector2 sizeOfFallingObject = Vector2.one;
+    [OnValueChanged("ChangeObjectSize")] public Vector2 sizeOfFallingObject = Vector2.one;
+
+    [Space]
     public GameObject platform;
+    public Transform respawnPoint;
+    public EdgeCollider2D top1;
+    public EdgeCollider2D top2;
+    public Transform damageObject;
+    public Transform body;
 
     private float fixedFallingLength;
 
+    public void ChangeObjectSize()
+    {
+        Vector2[] newPointsTop1 = new Vector2[2];
+        newPointsTop1[0] = new Vector2(-1 * sizeOfFallingObject.x / 2, sizeOfFallingObject.y / 2);
+        newPointsTop1[1] = new Vector2(1 * sizeOfFallingObject.x / 2, sizeOfFallingObject.y / 2);
+        top1.points = newPointsTop1;
+        Vector2[] newPointsTop2 = new Vector2[2];
+        newPointsTop2[0] = new Vector2(-1 * sizeOfFallingObject.x / 2, sizeOfFallingObject.y / 2);
+        newPointsTop2[1] = new Vector2(1 * sizeOfFallingObject.x / 2, sizeOfFallingObject.y / 2);
+        top2.points = newPointsTop2;
+        body.localScale = sizeOfFallingObject;
+        damageObject.localScale = new Vector3(sizeOfFallingObject.x - sizeOfFallingObject.x / 10, sizeOfFallingObject.y / 2);
+        damageObject.localPosition = new Vector3(0, -1 * sizeOfFallingObject.y / 4);
+    }
+
     private void Start()
     {
-        fixedFallingLength = fallingLength - sizeOfFallingObject.y / 2;
+        fixedFallingLength = fallingLength;
+        damageObject.GetComponent<G_FallingObjectDamage>().respawnPoint = respawnPoint.position;
         Fall();
     }
 
@@ -29,42 +53,6 @@ public class G_FallingObject : MonoBehaviour
         .AppendInterval(afterFallingDelay)
         .Append(platform.transform.DOLocalMoveY(fixedFallingLength, fallingTime).SetRelative(true))
         .SetLoops(-1);
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (IsOnTopOfPlatform(collision))
-        {
-            HandleChildTriggerEnter(collision);
-        }
-    }
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        HandleChildTriggerExit(collision);
-    }
-
-    bool IsOnTopOfPlatform(Collision2D collision)
-    {
-        float platformTopY = transform.position.y + GetComponent<Collider2D>().bounds.size.y / 2;
-
-        float objectBottomY = collision.collider.bounds.min.y;
-
-        return objectBottomY > platformTopY;
-    }
-    public void HandleChildTriggerEnter(Collision2D other)
-    {
-        other.transform.SetParent(transform);
-    }
-
-    public void HandleChildTriggerExit(Collision2D other)
-    {
-        if (Application.isPlaying)
-        {
-            if (other.transform.parent == transform)
-            {
-                other.transform.SetParent(null);
-            }
-        }
     }
 
     private void OnDrawGizmos()

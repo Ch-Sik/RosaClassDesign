@@ -12,7 +12,6 @@ public class G_Lazer : MonoBehaviour
     public bool isActivate = true;      //작동 여부 Activate일 때만 사이클이 작동
     public float onTime = 1.0f;
     public float offTime = 1.0f;        //OFF Time이 0일 시 무한
-    private float delayForDetect = 0.01f;
 
     public bool lazing = false;
 
@@ -46,7 +45,7 @@ public class G_Lazer : MonoBehaviour
 
     [Button]
     public void InactivateLazer()
-    { 
+    {
         isActivate = false;
         lazing = false;
         StopCoroutine(cor);
