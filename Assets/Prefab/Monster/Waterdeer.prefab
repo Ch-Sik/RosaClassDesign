@@ -798,8 +798,8 @@ MonoBehaviour:
   blackboard: {fileID: 0}
   superArmourOnActiveTime: 0
   startupDuration: 1
-  activeDuration: 2
-  recoveryDuration: 2
+  activeDuration: 3
+  recoveryDuration: 1
   currentState: 0
   rigidbody: {fileID: 725397827760566173}
   damageComponent: {fileID: 5029347292236209596}
@@ -1126,11 +1126,27 @@ PrefabInstance:
     - target: {fileID: 7738744495399643628, guid: ea19837820a38e545b7c63ed68c6fe9c, type: 3}
       propertyPath: _animClips.Array.data[3]._animationClipForMecanim
       value: 
-      objectReference: {fileID: 7400000, guid: 7bdc6f84a99d3eb45b06c7c24e9acfef, type: 2}
+      objectReference: {fileID: 7400000, guid: 979a91922e9b9be42875cb58c59c8dc0, type: 2}
     - target: {fileID: 7738744495399643628, guid: ea19837820a38e545b7c63ed68c6fe9c, type: 3}
       propertyPath: _animClips.Array.data[4]._animationClipForMecanim
       value: 
+      objectReference: {fileID: 7400000, guid: 7bdc6f84a99d3eb45b06c7c24e9acfef, type: 2}
+    - target: {fileID: 7738744495399643628, guid: ea19837820a38e545b7c63ed68c6fe9c, type: 3}
+      propertyPath: _animClips.Array.data[5]._animationClipForMecanim
+      value: 
       objectReference: {fileID: 7400000, guid: fd48b158b3fb9614eaae68209cc47295, type: 2}
+    - target: {fileID: 7738744495399643628, guid: ea19837820a38e545b7c63ed68c6fe9c, type: 3}
+      propertyPath: _animClips.Array.data[6]._animationClipForMecanim
+      value: 
+      objectReference: {fileID: 7400000, guid: cab63ba180a10b745baeca1d2a8d07d8, type: 2}
+    - target: {fileID: 7738744495399643628, guid: ea19837820a38e545b7c63ed68c6fe9c, type: 3}
+      propertyPath: _animClips.Array.data[7]._animationClipForMecanim
+      value: 
+      objectReference: {fileID: 7400000, guid: 729bd8b455174ff4db8f4a72f7ef4b6f, type: 2}
+    - target: {fileID: 7738744495399643628, guid: ea19837820a38e545b7c63ed68c6fe9c, type: 3}
+      propertyPath: _animClips.Array.data[8]._animationClipForMecanim
+      value: 
+      objectReference: {fileID: 7400000, guid: e1ded5a8906a8154e865b0e582ebed2a, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
