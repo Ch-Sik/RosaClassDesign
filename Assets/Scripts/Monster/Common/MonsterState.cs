@@ -45,6 +45,9 @@ public class MonsterState : MonoBehaviour
             return;
         }
 
+        // 레이어 바꿔서 플레이어나 다른 몬스터와 충돌 방지
+        gameObject.layer = LayerMask.NameToLayer("DeadObjects");
+
         StartCoroutine(DieRoutine());
         IEnumerator DieRoutine()        // 사망 연출
         {
@@ -58,7 +61,9 @@ public class MonsterState : MonoBehaviour
             yield return new WaitForSeconds(3.0f - frameTime);
 
             // TODO: 여기에 사망 연출 추가하기
-            Destroy(gameObject);
+
+            // AI Sensor들과 Empty Parent로 묶여있는 것 고려, 부모 삭제
+            Destroy(gameObject.transform.parent.gameObject);
         }
     }
 }
