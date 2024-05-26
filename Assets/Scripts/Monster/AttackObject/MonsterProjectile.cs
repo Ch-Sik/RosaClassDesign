@@ -16,7 +16,7 @@ public class MonsterProjectile : MonoBehaviour
     [SerializeField]
     private new Collider2D collider;
 
-    public void InitProjectile(Vector2 velocity)
+    public void InitProjectile(Vector2 direction)
     {
         // 필요 컴포넌트 설정
         if(rigidbody == null)
@@ -30,7 +30,8 @@ public class MonsterProjectile : MonoBehaviour
             rigidbody.isKinematic = true;
 
         // 기본 속도 설정
-        rigidbody.velocity = velocity * speedScale;
+        rigidbody.velocity = direction * speedScale;
+        Debug.Log($"투사체 속도:{direction * speedScale}");
     }
 
     private void OnTriggerEnter2D(Collider2D collider)
