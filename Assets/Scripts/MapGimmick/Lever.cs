@@ -14,7 +14,7 @@ public struct cinematicsSetting
 }
 public class Lever : MonoBehaviour
 {
-    [SerializeField] bool leverActivated = false;
+    [SerializeField] public bool leverActivated = false;
     [SerializeField] LeverGear leverGear;
     [SerializeField] Transform leverHandle;
     [SerializeField] GameObject cam;
