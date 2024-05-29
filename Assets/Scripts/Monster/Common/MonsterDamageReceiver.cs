@@ -13,6 +13,7 @@ public class MonsterDamageReceiver : DamageReceiver
 
     [SerializeField] private bool isSuperArmour;    // 피격 리액션을 하지 않으며 밀려나지 않음
     [SerializeField] private bool isInvincible;     // 피격 리액션은 수행하지만 데미지를 입지 않음
+    [SerializeField] private bool useRagdoll;       // 사망 시에 이리저리 굴러다니게 하는 효과 사용할 것인지?
     [SerializeField] private float knockbackCoeff;  // 넉백 계수
 
     bool isAlive = true;
@@ -142,6 +143,11 @@ public class MonsterDamageReceiver : DamageReceiver
     private void OnDie()
     {
         isAlive = false;
+        if (useRagdoll)
+        {
+            rigidbody.isKinematic = false;
+            rigidbody.gravityScale = 1;
+        }
         FadeEffect();
     }
 

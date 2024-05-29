@@ -51,7 +51,8 @@ public class MonsterAnimationHandler : MonoBehaviour
                 animator.SetFloat(key, (float)value);
                 break;
             case AnimParameterType.TRIGGER:
-                animator.SetTrigger(key);
+                if((bool)value == true)
+                    animator.SetTrigger(key);
                 break;
         }
     }

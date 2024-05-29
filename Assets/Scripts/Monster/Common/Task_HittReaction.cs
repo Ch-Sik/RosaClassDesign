@@ -6,13 +6,15 @@ using Panda;
 /// <summary>
 /// 몬스터의 피격 담당
 /// </summary>
-public class Task_HittReaction : MonoBehaviour
+public class Task_HittReaction : Task_Base
 {
     [SerializeField]
     private Blackboard blackboard;
 
     [SerializeField]
     private float hittReactionTime;    // 피격 리액션 유지 시간
+    [SerializeField]
+    private bool lookPlayerIfHitt;      // 피격 되었을 때 플레이어 바라보기
 
     private Timer hittReactionTimer = null;
 
@@ -55,6 +57,11 @@ public class Task_HittReaction : MonoBehaviour
         {
             hittReactionTimer = Timer.StartTimer();
             ThisTask.debugInfo = $"t: {hittReactionTime - hittReactionTimer.duration}";
+            // lookPlayerIfHitt 옵션이 참이라면, 피격 되었을 때 플레이어 바라보기
+            if(lookPlayerIfHitt)
+            {
+                LookAt2D(PlayerRef.Instance.transform.position);
+            }
             return;
         }
         if(hittReactionTimer.duration >= hittReactionTime)
