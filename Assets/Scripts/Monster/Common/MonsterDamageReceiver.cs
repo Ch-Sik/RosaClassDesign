@@ -12,6 +12,7 @@ public class MonsterDamageReceiver : DamageReceiver
     [SerializeField] apPortrait portrait;
 
     [SerializeField] private bool isSuperArmour;    // 피격 리액션을 하지 않으며 밀려나지 않음
+    [SerializeField, ReadOnly] private bool tempSuperArmour;        // 패턴 도중에 잠깐 얻는 슈퍼아머 효과. 둘 중 하나만 참이어도 슈퍼아머 효과 적용됨.
     [SerializeField] private bool isInvincible;     // 피격 리액션은 수행하지만 데미지를 입지 않음
     [SerializeField] private bool useRagdoll;       // 사망 시에 이리저리 굴러다니게 하는 효과 사용할 것인지?
     [SerializeField] private float knockbackCoeff;  // 넉백 계수
@@ -61,7 +62,7 @@ public class MonsterDamageReceiver : DamageReceiver
         // 그래야 Die로 인한 밝기 변경이 Blink에 의해 덮어씌워지지 않음.
         BlinkEffect();
 
-        if(!isSuperArmour)
+        if(!isSuperArmour && !tempSuperArmour)
         {
             // 여기서는 블랙보드에 isHitt을 true로 설정해두기만 하고
             // 피격 액트 수행은 상태머신에서 실행
@@ -85,6 +86,11 @@ public class MonsterDamageReceiver : DamageReceiver
         {
             monsterState.TakeDamage(damage);
         }
+    }
+
+    public void SetTempSuperArmour(bool value)
+    {
+        this.tempSuperArmour = value;
     }
 
     private void KnockBack(float attackAngle)
