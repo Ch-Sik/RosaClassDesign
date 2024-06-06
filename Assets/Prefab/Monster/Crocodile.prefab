@@ -614,6 +614,7 @@ MonoBehaviour:
   rigidbody: {fileID: 0}
   portrait: {fileID: 0}
   isSuperArmour: 0
+  tempSuperArmour: 0
   isInvincible: 0
   useRagdoll: 0
   knockbackCoeff: 5
@@ -730,8 +731,9 @@ MonoBehaviour:
   damageComponent: {fileID: 0}
   tackleAttackPower: 2
   tackleSpeed: 8
-  tackleAccel: 10
+  tackleAccel: 1000
   allowUturn: 1
+  recoveryDrag: 3
   wallStunEnabled: 0
   wallStunDuration: 0
 --- !u!50 &8508132543111365271

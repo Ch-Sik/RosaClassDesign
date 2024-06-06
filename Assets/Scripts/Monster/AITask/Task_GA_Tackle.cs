@@ -21,6 +21,8 @@ public class Task_GA_Tackle : Task_A_Base
     protected float tackleAccel = 1;
     [SerializeField, Tooltip("돌진 중 방향 전환 허용")]
     protected bool allowUturn = false;
+    [SerializeField, Tooltip("돌진 후 브레이크 계수")]
+    protected float recoveryDrag = 3.0f;
 
     [Header("벽에 박았을 때 관련")]
     [SerializeField, Tooltip("돌진 중 벽에 박았을 때 스턴 활성화")]
@@ -128,6 +130,23 @@ public class Task_GA_Tackle : Task_A_Base
     {
         // 기존 공격력으로 복구
         damageComponent.damage = defaultCollideDamage;
+
+        // 브레이크
+        rigidbody.drag = recoveryDrag;
+    }
+
+    protected override void Succeed()
+    {
+        base.Succeed();
+        // 브레이크 해제
+        rigidbody.drag = 0f;
+    }
+
+    protected override void Fail()
+    {
+        base.Fail();
+        // 브레이크 해제
+        rigidbody.drag = 0f;
     }
 
     protected virtual void CalculateAttackDirection(bool showErrorMsg = true)
@@ -155,7 +174,7 @@ public class Task_GA_Tackle : Task_A_Base
         Vector2 targetVelocity = tackleDir * tackleSpeed;
         if ((targetVelocity.x - rigidbody.velocity.x) * tackleDir.x > 0)    // 목표 속도에 미달한 경우 가속
         {
-            rigidbody.AddForce(tackleDir * tackleAccel * rigidbody.mass, ForceMode2D.Force);
+            rigidbody.AddForce(tackleDir * tackleAccel * rigidbody.mass * Time.deltaTime, ForceMode2D.Force);
         }
         else                    // 목표 속도 이상에 도달한 경우 가속하지 않음.
         {
