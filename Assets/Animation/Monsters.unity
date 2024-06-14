@@ -62020,6 +62020,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SpikeTurtle
       objectReference: {fileID: 0}
+    - target: {fileID: 6628747301969242346, guid: 032d375d93946e44db1599e5b30e2e5b, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7016367278841263168, guid: 032d375d93946e44db1599e5b30e2e5b, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -63010,6 +63014,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b530f3f5719dfc5468e236c8d16adb50, type: 3}
+--- !u!1001 &9177339673308138631
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4584440144340996805, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.8424233
+      objectReference: {fileID: 0}
+    - target: {fileID: 4584440144340996805, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.28986394
+      objectReference: {fileID: 0}
+    - target: {fileID: 4584440144340996805, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.4158698
+      objectReference: {fileID: 0}
+    - target: {fileID: 4584440144340996805, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4584440144340996805, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4584440144340996805, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4584440144340996805, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4584440144340996805, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4584440144340996805, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4584440144340996805, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6825263020373036985, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
+      propertyPath: m_Name
+      value: ShootingPlant_Red
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 9ebf9a831cdf9264f85cdab9a51cbeaf, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -63024,3 +63085,4 @@ SceneRoots:
   - {fileID: 8556698514386564861}
   - {fileID: 7247016735413172942}
   - {fileID: 2102398231451399348}
+  - {fileID: 9177339673308138631}
