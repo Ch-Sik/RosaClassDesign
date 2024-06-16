@@ -27,10 +27,10 @@ public class Task_A_SimpleProjectile : Task_A_Base
     [SerializeField, Tooltip("투사체 진행 속도")]
     private float projectileSpeed;
 
-    private Vector2 enemyPosition;
-    private Vector2 attackDir;
+    protected Vector2 enemyPosition;
+    protected Vector2 attackDir;
 
-    private void Start()
+    protected void Start()
     {
         if(blackboard == null)
         {
@@ -41,14 +41,14 @@ public class Task_A_SimpleProjectile : Task_A_Base
     }
 
     [Task]
-    private void SimpleProjectileAttack()
+    protected void SimpleProjectileAttack()
     {
         ExecuteAttack();
     }
 
     // 공격 패턴을 구체적으로 지정하지 않고 대충 Attack()으로 뭉뚱그려 작성된 BT 스크립트 호환용
     [Task]
-    private void Attack()
+    protected void Attack()
     {
         ExecuteAttack();
     }
@@ -62,7 +62,8 @@ public class Task_A_SimpleProjectile : Task_A_Base
         GameObject enemy;
         if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
         {
-            Debug.LogError($"{gameObject.name}: Blackboard에서 적을 찾을 수 없음!");
+            Debug.Log($"{gameObject.name}: Blackboard에서 적을 찾을 수 없음. 공격 취소");
+            Fail();
         }
         enemyPosition = enemy.transform.position;
 
@@ -72,13 +73,22 @@ public class Task_A_SimpleProjectile : Task_A_Base
 
     protected override void OnActiveBegin()
     {
-        if(projectileDirOption == ProjectileDirOption.FixedDirection)
+        // 공격 시전 준비 중에 적이 이탈했다면 공격 취소
+        if (!blackboard.TryGet(BBK.Enemy, out GameObject enemy) || enemy == null)
+        {
+            Debug.LogWarning($"{gameObject.name}: Attack에서 적을 찾을 수 없음!");
+            Fail();
+            return;
+        }
+
+        // 발사 방향 결정
+        if (projectileDirOption == ProjectileDirOption.FixedDirection)
         {
             attackDir = Vector2.right * gameObject.transform.localScale.x;
         }
         else
         {
-            UpdateAttackDir();
+            UpdateAttackDir(enemy);
         }
 
         // 공격 시전
@@ -86,17 +96,11 @@ public class Task_A_SimpleProjectile : Task_A_Base
         projectile.GetComponent<MonsterProjectile>().InitProjectile(attackDir * projectileSpeed);
     }
 
-    private void UpdateAttackDir()
+    private void UpdateAttackDir(GameObject enemy)
     {
         // 적(플레이어) 위치 파악
         Vector2 dir;
-        GameObject enemy;
-        if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
-        {
-            Debug.LogWarning($"{gameObject.name}: Attack에서 적을 찾을 수 없음!");
-            ThisTask.Fail();
-            return;
-        }
+
         // 발사 준비부터 실제 발사 사이의 짧은 시간 내에 플레이어가 뒤로 넘어갔을 경우
         // 왼쪽을 보고 오른쪽으로 발사되는 현상을 막기 위해 Startup 타이밍에 저장된 위치값 사용.
         dir = enemyPosition - (Vector2)gameObject.transform.position;
@@ -117,12 +121,5 @@ public class Task_A_SimpleProjectile : Task_A_Base
             dir = dir.x < 0 ? Vector2.left : Vector2.right;
         }
         attackDir = dir.normalized;
-    }
-
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawSphere(enemyPosition, 0.3f);
     }
 }
