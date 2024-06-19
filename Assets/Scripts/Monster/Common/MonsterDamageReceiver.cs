@@ -64,22 +64,26 @@ public class MonsterDamageReceiver : DamageReceiver
 
         if(!isSuperArmour && !tempSuperArmour)
         {
-            // 여기서는 블랙보드에 isHitt을 true로 설정해두기만 하고
-            // 피격 액트 수행은 상태머신에서 실행
-            blackboard.Set(BBK.isHitt, true);
-            
             // 넉백 계수가 0보다 크다면 넉백 수행
             if(knockbackCoeff > float.Epsilon)
             {
                 KnockBack(attackAngle);
             }
 
-            // 다음 프레임에서 IsHitt 플래그 False로 만들기
-            StartCoroutine(SetIsHittFalse());
-            IEnumerator SetIsHittFalse()
+            // 블랙보드에다가 플래그 기록
+            string key;
+            if (isInvincible || monsterState.HP > damage)
+                key = BBK.isHitt;
+            else
+                key = BBK.isDead;
+            blackboard.Set(key, true);
+            
+            // 다음 프레임에서 플래그 False로 만들기
+            StartCoroutine(SetFlagFalse());
+            IEnumerator SetFlagFalse()
             {
                 yield return 0;     // 다음프레임까지 대기
-                blackboard.Set(BBK.isHitt, false);
+                blackboard.Set(key, false);
             }
         }
         if(!isInvincible)

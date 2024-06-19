@@ -34294,7 +34294,7 @@ PrefabInstance:
       objectReference: {fileID: 813999359}
     - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.89
+      value: 4.24
       objectReference: {fileID: 0}
     - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
       propertyPath: m_LocalPosition.y
@@ -34356,10 +34356,6 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 1541023880}
-    - target: {fileID: 2950384744905303230, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
-      propertyPath: parameters.Array.size
-      value: 4
-      objectReference: {fileID: 0}
     - target: {fileID: 3308943864630437834, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -34384,10 +34380,6 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 129231074}
-    - target: {fileID: 3726017753005950589, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
-      propertyPath: useAimMotion
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 4199932733897069054, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -34428,10 +34420,6 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1531771432}
-    - target: {fileID: 7360473986672211680, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
-      propertyPath: blackboard
-      value: 
-      objectReference: {fileID: 6595214855160476326}
     - target: {fileID: 7979232097389706122, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -34900,17 +34888,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: beaf5f4acaab32e4a99a0b7de8e8bd4b, type: 3}
---- !u!114 &6595214855160476326 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5376473838336655270, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
-  m_PrefabInstance: {fileID: 3380971103761661151}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06b3ad9f2e397194baf2d5658d9bd26f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &6929078660266229438
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35005,7 +34982,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3647399287180005452, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3670191130821337425, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
       propertyPath: m_Materials.Array.data[0]

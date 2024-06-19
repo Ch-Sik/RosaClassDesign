@@ -254,7 +254,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b20cb10af2dc08c4bb164d108091d559, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 5
+  maxHP: 3
   currentHP: 0
   blackboard: {fileID: 0}
 --- !u!114 &8810492094596928646
@@ -363,8 +363,9 @@ MonoBehaviour:
   currentState: 0
   projectilePrefab: {fileID: 431060034737850338, guid: 0a1b8dc1817d29848945f4acbaef2b81, type: 3}
   muzzle: {fileID: 653838375159494413}
-  projectileDirOption: 0
   projectileSpeed: 3
+  projectileDirOption: 0
+  fixedTarget: {fileID: 0}
 --- !u!114 &8981009401857194193
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -378,8 +379,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
-  hittReactionTime: 0
-  lookPlayerIfHitt: 0
+  hittReactionTime: 0.5
+  lookPlayerIfHitt: 1
 --- !u!114 &7360473986672211680
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -392,6 +393,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ae3ce10c5508914e898732a692e702a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  blackboard: {fileID: 5376473838336655270}
   lookatEnemyOnWakeup: 1
   wakeupDuration: 1
 --- !u!61 &140709556346074311
@@ -690,9 +692,6 @@ MonoBehaviour:
   - blackboardKey: AttackState
     parameterType: 1
     animParameter: AttackState
-  - blackboardKey: 
-    parameterType: 0
-    animParameter: 
 --- !u!114 &3726017753005950589
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -707,6 +706,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetPortrait: {fileID: 2597800331698077254}
   blackboard: {fileID: 5376473838336655270}
-  useEnemyAim: 1
+  useAimMotion: 1
   stopAimWhenAttack: 1
   enemyAimBoneName: Aim
