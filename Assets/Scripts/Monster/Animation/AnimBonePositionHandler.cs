@@ -11,12 +11,14 @@ public class AnimBonePositionHandler : MonoBehaviour
     [SerializeField]
     private Blackboard blackboard;
 
+    [Title("옵션")]
     [SerializeField]
-    private bool useEnemyAim;
-    [SerializeField, ShowIf("useEnemyAim"), Tooltip("공격 도중에는 조준 고정")]
+    private bool useAimMotion;
+    [SerializeField, ShowIf("useAimMotion"), Tooltip("공격 도중에는 조준 고정")]
     private bool stopAimWhenAttack;
-    [SerializeField, ShowIf("useEnemyAim")]
+    [SerializeField, ShowIf("useAimMotion")]
     private string enemyAimBoneName;
+
     private Vector2 currentAimPos;
 
 
@@ -33,10 +35,11 @@ public class AnimBonePositionHandler : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(useEnemyAim)
+        if(useAimMotion)
         {
             bool updateAimPosition = true;
 
+            // 에임을 업데이트해도 되는지 우선 체크
             if (stopAimWhenAttack)
             {
                 int attackState;
@@ -45,6 +48,7 @@ public class AnimBonePositionHandler : MonoBehaviour
                 if (attackState == 1 || attackState == 2) updateAimPosition = false;    
             }
 
+            // 에임을 업데이트해도 된다고 판단되면 에임 위치 정보 가져오기
             if (updateAimPosition)
             {
                 GameObject enemy;

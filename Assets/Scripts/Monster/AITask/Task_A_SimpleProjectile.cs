@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Panda;
+using Sirenix.OdinInspector;
 
 public enum ProjectileDirOption { 
     Deg360,         // 360도 모두 발사
@@ -12,11 +13,15 @@ public enum ProjectileDirOption {
 
 public class Task_A_SimpleProjectile : Task_A_Base
 {
-    [Header("공격 관련")]
+    [Header("공격 관련 기본 요소")]
     [SerializeField, Tooltip("투사체 프리팹")]
     private GameObject projectilePrefab;
-    [SerializeField, Tooltip("투사체가 발사되어야 할 위치")]
+    [SerializeField, Tooltip("투사체가 생성되어야 할 위치")]
     private Transform muzzle;
+    [SerializeField, Tooltip("투사체 진행 속도")]
+    private float projectileSpeed;
+
+    [Header("발사 방향 관련")]
     [SerializeField, Tooltip("공격 방향 옵션\n" +
         "Deg360: 360도 모두 발사\n" +
         "RightAngleOnly: 상하좌우 직각방향으로만\n" +
@@ -24,8 +29,9 @@ public class Task_A_SimpleProjectile : Task_A_Base
         "FixedDirection: 고정 방향 앞으로만"
     )]
     private ProjectileDirOption projectileDirOption;
-    [SerializeField, Tooltip("투사체 진행 속도")]
-    private float projectileSpeed;
+    [SerializeField, ShowIf("projectileDirOption", ProjectileDirOption.FixedDirection)]
+    [Tooltip("고정 방향일 때, 발사 방향")]
+    private Transform fixedTarget;
 
     protected Vector2 enemyPosition;
     protected Vector2 attackDir;
@@ -37,6 +43,13 @@ public class Task_A_SimpleProjectile : Task_A_Base
             blackboard = GetComponent<Blackboard>();
             Debug.Assert(blackboard != null, $"{gameObject.name}: Blackboard를 찾을 수 없음");
         }
+        // fixedDirection 옵션일 경우, 대상 위치를 제대로 설정했는지 체크
+        if(projectileDirOption == ProjectileDirOption.FixedDirection)
+        {
+            Debug.Assert(fixedTarget != null, "고정 터렛의 목표 위치를 지정해주세요");
+            blackboard.Set(BBK.Enemy, fixedTarget.gameObject);
+        }
+
         Debug.Assert(projectilePrefab != null, $"{gameObject.name}: 투사체 프리팹이 설정되어있지 않음");
     }
 
@@ -55,17 +68,24 @@ public class Task_A_SimpleProjectile : Task_A_Base
 
     protected override void OnStartupBegin()
     {
-        if (projectileDirOption == ProjectileDirOption.FixedDirection)
-            return;
+        /// 적 위치 파악하기
 
-        // 블랙보드에서 '적' 정보 가져오기
-        GameObject enemy;
-        if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
+        // fixedDirection 옵션이라면 지정된 방향으로 enemyPosition 고정.
+        if (projectileDirOption == ProjectileDirOption.FixedDirection)
         {
-            Debug.Log($"{gameObject.name}: Blackboard에서 적을 찾을 수 없음. 공격 취소");
-            Fail();
+            enemyPosition = transform.position + fixedTarget.position;
         }
-        enemyPosition = enemy.transform.position;
+        // fixedDirection 옵션이 아니라면, 블랙보드에서 '적' 정보 가져오기
+        else
+        {
+            GameObject enemy;
+            if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
+            {
+                Debug.Log($"{gameObject.name}: Blackboard에서 적을 찾을 수 없음. 공격 취소");
+                Fail();
+            }
+            enemyPosition = enemy.transform.position;
+        }
 
         // 적 위치에 따라 좌우 반전하기
         LookAt2D(enemyPosition);

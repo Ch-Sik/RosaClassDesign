@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public static class BBK // blackboard key
 {
     public const string Enemy = "Enemy";
