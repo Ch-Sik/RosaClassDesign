@@ -170,4 +170,15 @@ public class Task_A_Base : Task_Base
         activeTimer = null;
         recoveryTimer = null;
     }
+
+    /// <summary>
+    /// <br> Startup 또는 Active 상태인 패턴을 즉시 Recovery 상태로 이행함.</br>
+    /// <br> Succeed와 비슷하지만 이 함수는 후딜레이(Recovery)를 수행한다는 차이점이 있음.</br>
+    /// </summary>
+    protected virtual void SkipToRecovery()
+    {
+        attackState = MonsterAtttackState.Recovery;
+        recoveryTimer = Timer.StartTimer();
+        OnRecoveryBegin();
+    }
 }

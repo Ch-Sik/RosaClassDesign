@@ -37,7 +37,7 @@ public class Task_A_GroundAOE : Task_A_Base
         ExecuteAttack();
     }
 
-    protected override void OnActiveBegin()
+    protected override void OnStartupBegin()
     {
         Debug.Log("공격 소환");
         // 적(플레이어) 위치 파악
@@ -61,7 +61,7 @@ public class Task_A_GroundAOE : Task_A_Base
         attackInstance.Init();
     }
 
-    protected override void OnRecoveryBegin()
+    protected override void OnActiveBegin()
     {
         // 공격 범위 미리보기를 실제 공격으로 변환
         attackInstance.ExecuteAttack();

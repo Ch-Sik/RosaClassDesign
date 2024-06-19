@@ -1,0 +1,13 @@
+tree("Root")
+    repeat
+        fallback                            // 실행 우선순위: 피격 리액션 -> 순찰
+            tree("Hitt")
+            tree("Patrol")
+
+tree("Hitt")
+    sequence
+        IsHitt()                        // '피격된 상태'라면
+        HittReaction()                  // 피격 리액션 수행
+
+tree("Patrol")
+    Patrol()
