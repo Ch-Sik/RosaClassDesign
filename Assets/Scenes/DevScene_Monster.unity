@@ -31403,7 +31403,7 @@ PrefabInstance:
       objectReference: {fileID: 153807514}
     - target: {fileID: 3485015899100231171, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
       propertyPath: m_Name
-      value: TurretFlower FixDir New
+      value: TurretFlower Aim New
       objectReference: {fileID: 0}
     - target: {fileID: 3537440722187783872, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
       propertyPath: m_Mesh
@@ -31457,6 +31457,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1531771432}
+    - target: {fileID: 7360473986672211680, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: blackboard
+      value: 
+      objectReference: {fileID: 6595214855160476326}
     - target: {fileID: 7979232097389706122, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -31925,6 +31929,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: beaf5f4acaab32e4a99a0b7de8e8bd4b, type: 3}
+--- !u!114 &6595214855160476326 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5376473838336655270, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+  m_PrefabInstance: {fileID: 3380971103761661151}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06b3ad9f2e397194baf2d5658d9bd26f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &6965548256636112300
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -7,6 +7,7 @@ using Sirenix.OdinInspector;
 public class Task_Sleep : Task_Base
 {
     [InfoBox("Sleep은 적을 발견할 때까지 아무것도 하지 않으며, 적을 발견하면 Fail한다.")]
+    [SerializeField]
     Blackboard blackboard;
     [SerializeField]
     private bool lookatEnemyOnWakeup = false;
