@@ -29,7 +29,8 @@ public class PlayerRef : MonoBehaviour
     public PlayerController Controller;
     public PlayerMovement Move;
     public PlayerMagic Magic;
-    public PlayerCombat combat;
+    public PlayerCombat1 combat;
+    
     public PlayerAnimation Animation;
     public PlayerSound sound;
 
@@ -49,7 +50,7 @@ public class PlayerRef : MonoBehaviour
         if(Controller == null) Controller = GetComponent<PlayerController>();
         if(Move == null) Move = GetComponent<PlayerMovement>();
         if(Magic == null) Magic = GetComponent<PlayerMagic>();
-        if(combat == null) combat = GetComponent<PlayerCombat>();
+        if(combat == null) combat = GetComponent<PlayerCombat1>();
         if(Animation == null) Animation = GetComponent<PlayerAnimation>();
         if(sound == null) sound = GetComponent<PlayerSound>();
 

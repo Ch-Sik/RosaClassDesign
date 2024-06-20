@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
     // 컴포넌트
     [ReadOnly, SerializeField] public InputActionAsset inputAsset;
     [ReadOnly, SerializeField] PlayerMovement playerMove;
-    [ReadOnly, SerializeField] PlayerCombat playerCombat;
+    [ReadOnly, SerializeField] PlayerCombat1 playerCombat;
     [ReadOnly, SerializeField] Rigidbody2D rb;
     [ReadOnly, SerializeField] PlayerAnimation playerAnim;
     
@@ -78,6 +78,7 @@ public class PlayerController : MonoBehaviour
 
         // ActionDefault 액션맵 바인딩
         inputManager.AM_ActionDefault.FindAction("Attack").performed += OnMeleeAttack;
+        inputManager.AM_ActionDefault.FindAction("Attack").canceled += OnCancelMeleeAttack;
         inputManager.AM_ActionDefault.FindAction("MagicSelect").performed += OnMagicSelect;
         inputManager.AM_ActionDefault.FindAction("MagicReady").performed += OnMagicReady;
 
@@ -227,6 +228,14 @@ public class PlayerController : MonoBehaviour
     #region PlayerAction ActionMap 핸들러
     public void OnMeleeAttack(InputAction.CallbackContext context)
     {
+        
+        if (currentMoveState != PlayerMoveState.CLIMBING)
+        {
+            //if(!playerCombat.isAttack) playerAnim.SetTrigger("Attack");
+            playerCombat.isAttacking = true;
+        }
+        
+        /*
         if (context.performed)
         {
             if (currentMoveState != PlayerMoveState.CLIMBING)
@@ -235,6 +244,12 @@ public class PlayerController : MonoBehaviour
                 playerAnim.SetTrigger("Attack");
             }
         }
+        */
+    }
+
+    public void OnCancelMeleeAttack(InputAction.CallbackContext context)
+    {
+        if (PlayerRef.Instance.combat.isAttacking) PlayerRef.Instance.combat.isAttacking = false;
     }
 
     public void OnMagicSelect(InputAction.CallbackContext context)
