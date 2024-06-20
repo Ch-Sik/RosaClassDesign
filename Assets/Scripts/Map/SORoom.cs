@@ -1,0 +1,52 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+
+[CreateAssetMenu(menuName = "", fileName = "")]
+public class SORoom : ScriptableObject
+{
+    public string title;
+    public string subTitle;
+
+    public Vector2Int size;
+    public Vector2Int offset;
+
+    public HashSet<Vector2Int> tiles = new HashSet<Vector2Int>();
+    public List<RoomPort> topPorts = new List<RoomPort>();
+    public List<RoomPort> botPorts = new List<RoomPort>();
+    public List<RoomPort> rigPorts = new List<RoomPort>();
+    public List<RoomPort> lefPorts = new List<RoomPort>();
+
+    public void SetRoomPort(List<RoomPort> top, List<RoomPort> bot, List<RoomPort> rig, List<RoomPort> lef)
+    {
+        topPorts = new List<RoomPort>(top);
+        botPorts = new List<RoomPort>(bot);
+        rigPorts = new List<RoomPort>(rig);
+        lefPorts = new List<RoomPort>(lef);
+    }
+}
+
+[Serializable]
+public class RoomPort
+{
+    public int index;
+    public PortDirection direction;
+    public List<Vector2Int> ports = new List<Vector2Int>();
+    public RoomPort connection;
+
+    public RoomPort(PortDirection direction, List<Vector2Int> ports, int index)
+    {
+        this.direction = direction;
+        this.ports = ports;
+        this.index = index;
+    }
+}
+
+public enum PortDirection
+{
+    Top,
+    Bot,
+    Rig,
+    Lef
+};
