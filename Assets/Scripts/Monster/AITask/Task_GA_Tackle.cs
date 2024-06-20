@@ -15,8 +15,14 @@ public class Task_GA_Tackle : Task_A_Base
     [Header("공격 관련")]
     [SerializeField, Tooltip("돌진 패턴 공격력")]
     protected int tackleAttackPower;
-    [SerializeField, Tooltip("돌진 속도")]
+    [SerializeField, Tooltip("돌진 속도 (m/s)")]
     protected float tackleSpeed = 5;
+    [SerializeField, Tooltip("돌진 가속도 (m/s^2)")]
+    protected float tackleAccel = 1000;
+    [SerializeField, Tooltip("돌진 중 방향 전환 허용")]
+    protected bool allowUturn = false;
+    [SerializeField, Tooltip("돌진 후 브레이크 계수")]
+    protected float recoveryDrag = 3.0f;
 
     [Header("벽에 박았을 때 관련")]
     [SerializeField, Tooltip("돌진 중 벽에 박았을 때 스턴 활성화")]
@@ -27,7 +33,6 @@ public class Task_GA_Tackle : Task_A_Base
     protected Timer stunTimer = null;
     protected Vector2 tackleDir;
     protected int defaultCollideDamage;    // 몸체 충돌 판정이 기본적으로 가지고 있던 데미지
-
 
     private void Start()
     {
@@ -98,6 +103,7 @@ public class Task_GA_Tackle : Task_A_Base
             else if (stunTimer.duration < wallStunDuration)
             {
                 ThisTask.debugInfo = $"stun: {wallStunDuration - stunTimer.duration}";
+                activeTimer.Reset();    // Task_A_Base에 의해 스턴 도중에 패턴 종료되는 것 방지
                 return;
             }
             // 스턴 마지막 프레임
@@ -111,6 +117,12 @@ public class Task_GA_Tackle : Task_A_Base
             }
         }
 
+        // 돌진 도중 방향 전환 옵션 켜진경우, 돌진 도중에도 방향 계속 체크
+        if(allowUturn)
+        {
+            CalculateAttackDirection(false);
+        }
+
         // 실제 돌진 수행
         DoTackle();
     }
@@ -119,14 +131,33 @@ public class Task_GA_Tackle : Task_A_Base
     {
         // 기존 공격력으로 복구
         damageComponent.damage = defaultCollideDamage;
+
+        // 브레이크
+        rigidbody.drag = recoveryDrag;
     }
 
-    protected virtual void CalculateAttackDirection()
+    protected override void Succeed()
+    {
+        base.Succeed();
+        // 브레이크 해제
+        rigidbody.drag = 0f;
+    }
+
+    protected override void Fail()
+    {
+        base.Fail();
+        // 브레이크 해제
+        rigidbody.drag = 0f;
+    }
+
+    protected virtual void CalculateAttackDirection(bool showErrorMsg = true)
     {
         GameObject enemy;
         if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
         {
-            Debug.LogError($"{gameObject.name}: PrepareAttack에서 적을 찾을 수 없음!");
+            if(showErrorMsg)
+                Debug.LogError($"{gameObject.name}: 블랙보드에서 적을 찾을 수 없음!");
+            return;
         }
         tackleDir = (enemy.transform.position.x - transform.position.x) < 0 ? Vector2.left : Vector2.right;
 
@@ -136,11 +167,21 @@ public class Task_GA_Tackle : Task_A_Base
 
     protected virtual void DoTackle()
     {
-        Vector2 velocity = tackleDir * tackleSpeed;
-        velocity.y = rigidbody.velocity.y;
-        rigidbody.velocity = velocity;
-    }
+        /// 속력 즉시 변경 대신 가속도 방식으로 대체
+        // Vector2 velocity = tackleDir * tackleSpeed;
+        // velocity.y = rigidbody.velocity.y;
+        // rigidbody.velocity = velocity;
 
+        Vector2 targetVelocity = tackleDir * tackleSpeed;
+        if ((targetVelocity.x - rigidbody.velocity.x) * tackleDir.x > 0)    // 목표 속도에 미달한 경우 가속
+        {
+            rigidbody.AddForce(tackleDir * tackleAccel * rigidbody.mass * Time.deltaTime, ForceMode2D.Force);
+        }
+        else                    // 목표 속도 이상에 도달한 경우 가속하지 않음.
+        {
+            // do nothing
+        }
+    }
 
     private bool isTargetBehind(GameObject enemy)
     {

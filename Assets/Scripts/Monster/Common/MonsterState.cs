@@ -32,6 +32,7 @@ public class MonsterState : MonoBehaviour
         if(currentHP <= 0)
         {
             BroadcastMessage("OnDie");
+            // Blackboard의 isDead 항목은 DamageReceiver에서 관리함
         }
     }
 
@@ -53,14 +54,9 @@ public class MonsterState : MonoBehaviour
         {
             float frameTime;
 
-            blackboard.Set(BBK.isDead, true);
-            yield return 0;
-
             pandaBT.enabled = false;
             frameTime = Time.deltaTime;
             yield return new WaitForSeconds(3.0f - frameTime);
-
-            // TODO: 여기에 사망 연출 추가하기
 
             // AI Sensor들과 Empty Parent로 묶여있는 것 고려, 부모 삭제
             Destroy(gameObject.transform.parent.gameObject);

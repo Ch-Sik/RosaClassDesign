@@ -18,7 +18,7 @@ public class Task_FA_Tackle : Task_GA_Tackle
     [SerializeField, ReadOnly]
     protected GameObject enemy;
 
-    protected override void CalculateAttackDirection()
+    protected override void CalculateAttackDirection(bool showErrorMsg = true)
     {
         // 디버그
         Debug.Log($"계산 전 스케일: {transform.localScale}\n" +
@@ -27,7 +27,8 @@ public class Task_FA_Tackle : Task_GA_Tackle
 
         if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
         {
-            Debug.LogError($"{gameObject.name}: PrepareAttack에서 적을 찾을 수 없음!");
+            if(showErrorMsg)
+                Debug.LogError($"{gameObject.name}: 블랙보드에서 적을 찾을 수 없음!");
         }
         tackleDir = (enemy.transform.position - transform.position).normalized;
 
