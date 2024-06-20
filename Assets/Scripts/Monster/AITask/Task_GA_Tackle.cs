@@ -103,6 +103,7 @@ public class Task_GA_Tackle : Task_A_Base
             else if (stunTimer.duration < wallStunDuration)
             {
                 ThisTask.debugInfo = $"stun: {wallStunDuration - stunTimer.duration}";
+                activeTimer.Reset();    // Task_A_Base에 의해 스턴 도중에 패턴 종료되는 것 방지
                 return;
             }
             // 스턴 마지막 프레임

@@ -975,6 +975,10 @@ PrefabInstance:
       propertyPath: _animClips.Array.data[6]._animationClipForMecanim
       value: 
       objectReference: {fileID: 7400000, guid: 111e704b134d484419db462e2e838821, type: 2}
+    - target: {fileID: 9085348853541962804, guid: fa0870871c2dcfb47af61fb48c379bda, type: 3}
+      propertyPath: _animClips.Array.data[7]._animationClipForMecanim
+      value: 
+      objectReference: {fileID: 7400000, guid: ee670e90df24cd746b964803672cf200, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1044,3 +1048,6 @@ MonoBehaviour:
   - blackboardKey: isDead
     parameterType: 3
     animParameter: isDead
+  - blackboardKey: isStunned
+    parameterType: 0
+    animParameter: isStunned
