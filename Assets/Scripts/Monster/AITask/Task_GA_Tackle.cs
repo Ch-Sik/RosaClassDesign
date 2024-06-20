@@ -18,7 +18,7 @@ public class Task_GA_Tackle : Task_A_Base
     [SerializeField, Tooltip("돌진 속도 (m/s)")]
     protected float tackleSpeed = 5;
     [SerializeField, Tooltip("돌진 가속도 (m/s^2)")]
-    protected float tackleAccel = 1;
+    protected float tackleAccel = 1000;
     [SerializeField, Tooltip("돌진 중 방향 전환 허용")]
     protected bool allowUturn = false;
     [SerializeField, Tooltip("돌진 후 브레이크 계수")]

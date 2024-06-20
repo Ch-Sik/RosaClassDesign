@@ -56,12 +56,25 @@ public class MonsterDamageReceiver : DamageReceiver
 
     public override void GetHitt(int damage, float attackAngle)
     {
+        // 이미 죽어있을 경우 피격 무시
         if (!isAlive) return;
 
         // BlinkEffect 수행이 mosterState.TakeDamage->BroadcastMessage("OnDie")->this.OnDie 보다 앞서야 함.
         // 그래야 Die로 인한 밝기 변경이 Blink에 의해 덮어씌워지지 않음.
         BlinkEffect();
 
+        // 무적이 아닐 경우, 데미지 입고 사망 여부 판단
+        if(!isInvincible)
+        {
+            monsterState.TakeDamage(damage);
+            if(monsterState.HP < damage)
+            {
+                blackboard.Set(BBK.isDead, true);
+                return;
+            }
+        }
+
+        // 사망하지 않았을 경우, 슈퍼아머 여부에 따라 넉백/피격모션 진행여부 결정
         if(!isSuperArmour && !tempSuperArmour)
         {
             // 넉백 계수가 0보다 크다면 넉백 수행
@@ -71,24 +84,15 @@ public class MonsterDamageReceiver : DamageReceiver
             }
 
             // 블랙보드에다가 플래그 기록
-            string key;
-            if (isInvincible || monsterState.HP > damage)
-                key = BBK.isHitt;
-            else
-                key = BBK.isDead;
-            blackboard.Set(key, true);
+            blackboard.Set(BBK.isHitt, true);
             
             // 다음 프레임에서 플래그 False로 만들기
             StartCoroutine(SetFlagFalse());
             IEnumerator SetFlagFalse()
             {
                 yield return 0;     // 다음프레임까지 대기
-                blackboard.Set(key, false);
+                blackboard.Set(BBK.isHitt, false);
             }
-        }
-        if(!isInvincible)
-        {
-            monsterState.TakeDamage(damage);
         }
     }
 
