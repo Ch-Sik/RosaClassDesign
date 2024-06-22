@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Linq;
-using Unity.VisualScripting;
+
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -24,10 +25,25 @@ public class Room : MonoBehaviour
     [Button]
     public void Init()
     {
+        ClearTriggers();
         SetTriggers(roomData.topPorts);
         SetTriggers(roomData.botPorts);
         SetTriggers(roomData.rigPorts);
         SetTriggers(roomData.lefPorts);
+    }
+
+    public void ClearTriggers()
+    {
+        int flag = 0;
+#if UNITY_EDITOR
+        flag = 1;
+#endif
+        if (flag == 0)
+            for (int i = 0; i < triggerParent.transform.childCount; i++)
+                Destroy(triggerParent.transform.GetChild(triggerParent.transform.childCount - 1 - i).gameObject);
+        else
+            for (int i = 0; i < triggerParent.transform.childCount; i++)
+                DestroyImmediate(triggerParent.transform.GetChild(triggerParent.transform.childCount - 1 - i).gameObject);
     }
 
     public void SetTriggers(List<RoomPort> roomPorts)
@@ -64,7 +80,7 @@ public class Room : MonoBehaviour
         tri.transform.localPosition = mid;
         //tri.transform.position = mid;
         tri.GetComponent<BoxCollider2D>().size = size;
-        tri.GetComponent<RoomPortObject>().SetRoomToPort(this);
+        tri.GetComponent<RoomPortObject>().SetRoomToPort(this, roomPort.direction, roomPort.index);
     }
 
     //방의 데이터를 모두 정리함.
@@ -72,8 +88,12 @@ public class Room : MonoBehaviour
     [Button]
     public void BakeRoom()
     {
+#if UNITY_EDITOR
+        string scenePath = this.gameObject.scene.path;
+        if (!string.IsNullOrEmpty(scenePath))
+            roomData.scene.SetScene(AssetDatabase.LoadAssetAtPath(scenePath, typeof(Object)), gameObject.scene.name);
+#endif
         HashSet<Vector2Int> tilePosition = new HashSet<Vector2Int>(GetTilesPositionInTilemap(tilemap));
-        Vector2Int size;
         int minX = int.MaxValue; int maxX = int.MinValue;
         int minY = int.MaxValue; int maxY = int.MinValue;
 
@@ -107,10 +127,10 @@ public class Room : MonoBehaviour
         roomData.offset = new Vector2Int(minX, minY);
         roomData.size = new Vector2Int(maxX - minX + 1, maxY - minY + 1);
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
         EditorUtility.SetDirty(roomData);
         AssetDatabase.SaveAssets();
-    #endif
+#endif
     }
 
     private List<Vector2Int> GetTilesPositionInTilemap(Tilemap tileMap)
@@ -168,19 +188,29 @@ public class Room : MonoBehaviour
         List<RoomPort> botPort = new List<RoomPort>();
         List<RoomPort> rigPort = new List<RoomPort>();
         List<RoomPort> lefPort = new List<RoomPort>();
-        int index = 0;
+        int[] index = new int[4] { 0, 0, 0, 0 };
         foreach (var port in ports)
         {
             if (port[0].x == minX)
-                lefPort.Add(new RoomPort(PortDirection.Lef, port, index));
+            {
+                lefPort.Add(new RoomPort(PortDirection.Lef, port, index[0]));
+                index[0]++;
+            }
             else if (port[0].x == maxX)
-                rigPort.Add(new RoomPort(PortDirection.Rig, port, index));
+            {
+                rigPort.Add(new RoomPort(PortDirection.Rig, port, index[1]));
+                index[1]++;
+            }
             else if (port[0].y == minY)
-                botPort.Add(new RoomPort(PortDirection.Bot, port, index));
+            {
+                botPort.Add(new RoomPort(PortDirection.Bot, port, index[2]));
+                index[2]++;
+            }
             else if (port[0].y == maxY)
-                topPort.Add(new RoomPort(PortDirection.Top, port, index));
-
-            index++;
+            {
+                topPort.Add(new RoomPort(PortDirection.Top, port, index[3]));
+                index[3]++;
+            }
         }
 
         return (topPort, botPort, rigPort, lefPort);
@@ -201,14 +231,14 @@ public class Room : MonoBehaviour
     #endregion
 
     #region Event
-    public void Enter()
+    public void Enter(PortDirection direction, int index)
     {
-        Debug.Log($"[{roomData.title}] 플레이어 입장");
+        Debug.Log($"[{roomData.title}] [{direction}, {index}] 플레이어 입장");
     }
 
-    public void Exit()
+    public void Exit(PortDirection direction, int index)
     {
-        Debug.Log($"[{roomData.title}] 플레이어 퇴장");
+        Debug.Log($"[{roomData.title}] [{direction}, {index}]플레이어 퇴장");
     }
     #endregion
 }

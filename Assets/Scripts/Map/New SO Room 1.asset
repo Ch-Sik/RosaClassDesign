@@ -10,23 +10,34 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e66c76671cd64cb449192b5c4468e16e, type: 3}
-  m_Name: New SO Room
+  m_Name: New SO Room 1
   m_EditorClassIdentifier: 
   scene:
-    m_SceneAsset: {fileID: 102900000, guid: 8fe0714c935a5a6488d11a02348ba3ee, type: 3}
-    m_SceneName: Test3
-  title: "\uC6B8\uCC3D\uD55C \uC232"
-  subTitle: "\uC232\uC232"
-  size: {x: 19, y: 14}
+    m_SceneAsset: {fileID: 102900000, guid: fc3ffa640de7f1e438c32e887b629981, type: 3}
+    m_SceneName: Test2
+  title: 
+  subTitle: 
+  size: {x: 24, y: 20}
   offset: {x: 2, y: 3}
   topPorts:
   - index: 0
     direction: 0
     ports:
-    - {x: 14, y: 16}
-    - {x: 15, y: 16}
-    - {x: 16, y: 16}
-    - {x: 17, y: 16}
+    - {x: 5, y: 22}
+    - {x: 6, y: 22}
+    - {x: 7, y: 22}
+    - {x: 8, y: 22}
+    - {x: 9, y: 22}
+    connectedPorts: []
+  - index: 1
+    direction: 0
+    ports:
+    - {x: 12, y: 22}
+    - {x: 13, y: 22}
+    - {x: 14, y: 22}
+    - {x: 15, y: 22}
+    - {x: 16, y: 22}
+    - {x: 17, y: 22}
     connectedPorts: []
   botPorts:
   - index: 0
@@ -48,12 +59,33 @@ MonoBehaviour:
   - index: 0
     direction: 2
     ports:
-    - {x: 20, y: 4}
-    - {x: 20, y: 5}
-    - {x: 20, y: 6}
-    - {x: 20, y: 7}
-    - {x: 20, y: 8}
-    - {x: 20, y: 9}
+    - {x: 25, y: 6}
+    - {x: 25, y: 7}
+    connectedPorts: []
+  - index: 1
+    direction: 2
+    ports:
+    - {x: 25, y: 9}
+    - {x: 25, y: 10}
+    connectedPorts: []
+  - index: 2
+    direction: 2
+    ports:
+    - {x: 25, y: 13}
+    - {x: 25, y: 14}
+    - {x: 25, y: 15}
+    connectedPorts: []
+  - index: 3
+    direction: 2
+    ports:
+    - {x: 25, y: 17}
+    - {x: 25, y: 18}
+    connectedPorts: []
+  - index: 4
+    direction: 2
+    ports:
+    - {x: 25, y: 20}
+    - {x: 25, y: 21}
     connectedPorts: []
   lefPorts:
   - index: 0

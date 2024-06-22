@@ -6,6 +6,7 @@ using System;
 [CreateAssetMenu(menuName = "", fileName = "")]
 public class SORoom : ScriptableObject
 {
+    public SceneField scene;
     public string title;
     public string subTitle;
 
@@ -33,7 +34,7 @@ public class RoomPort
     public int index;
     public PortDirection direction;
     public List<Vector2Int> ports = new List<Vector2Int>();
-    public RoomPort connection;
+    public List<ConnectedPort> connectedPorts = new List<ConnectedPort>();
 
     public RoomPort(PortDirection direction, List<Vector2Int> ports, int index)
     {
@@ -41,6 +42,13 @@ public class RoomPort
         this.ports = ports;
         this.index = index;
     }
+}
+
+[Serializable]
+public class ConnectedPort
+{
+    public SceneField scene;
+    public int index;
 }
 
 public enum PortDirection
