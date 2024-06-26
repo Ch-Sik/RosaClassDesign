@@ -40690,6 +40690,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 628173462}
+    - target: {fileID: 1881586570308895268, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
+      propertyPath: m_LinearDrag
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1990928874143195803, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -40886,6 +40890,22 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 852880837}
+    - target: {fileID: 9062571552595150383, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
+      propertyPath: reboundPower
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 9062571552595150383, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
+      propertyPath: recoveryDrag
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 9062571552595150383, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
+      propertyPath: reboundStunTime
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9062571552595150383, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
+      propertyPath: wallStunEnabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9191572057339445002, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
