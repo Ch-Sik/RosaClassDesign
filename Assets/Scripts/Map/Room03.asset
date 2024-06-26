@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e66c76671cd64cb449192b5c4468e16e, type: 3}
+  m_Name: Room03
+  m_EditorClassIdentifier: 
+  scene:
+    m_SceneAsset: {fileID: 102900000, guid: 8fe0714c935a5a6488d11a02348ba3ee, type: 3}
+    m_SceneName: Test3
+  title: "\uBC29 3"
+  subTitle: 
+  size: {x: 18, y: 12}
+  offset: {x: 2, y: 6}
+  topPorts:
+  - index: 0
+    direction: 0
+    ports:
+    - {x: 12, y: 17}
+    - {x: 13, y: 17}
+    - {x: 14, y: 17}
+    - {x: 15, y: 17}
+    connectedPorts:
+    - room: {fileID: 11400000, guid: ff55f817abf218d4588524e71304159e, type: 2}
+      index: 0
+  botPorts:
+  - index: 0
+    direction: 1
+    ports:
+    - {x: 12, y: 6}
+    - {x: 13, y: 6}
+    - {x: 14, y: 6}
+    - {x: 15, y: 6}
+    connectedPorts:
+    - room: {fileID: 11400000, guid: f5bff718b2af4804d8d1e0ca95300607, type: 2}
+      index: 0
+  rigPorts:
+  - index: 0
+    direction: 2
+    ports:
+    - {x: 19, y: 8}
+    - {x: 19, y: 9}
+    - {x: 19, y: 10}
+    connectedPorts:
+    - room: {fileID: 11400000, guid: 20addd166c0f4274dbca5bbf05de5edc, type: 2}
+      index: 1
+  lefPorts:
+  - index: 0
+    direction: 3
+    ports:
+    - {x: 2, y: 14}
+    - {x: 2, y: 15}
+    - {x: 2, y: 16}
+    connectedPorts:
+    - room: {fileID: 11400000, guid: 2f445772d09711f448ecfcb053d74d7a, type: 2}
+      index: 0

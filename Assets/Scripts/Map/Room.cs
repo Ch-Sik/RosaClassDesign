@@ -22,7 +22,11 @@ public class Room : MonoBehaviour
     public GameObject triggerParent;
     public GameObject trigger;
 
-    [Button]
+    private void Start()
+    {
+        Init();
+    }
+
     public void Init()
     {
         ClearTriggers();
@@ -83,6 +87,12 @@ public class Room : MonoBehaviour
         tri.GetComponent<RoomPortObject>().SetRoomToPort(this, roomPort.direction, roomPort.index);
     }
 
+    [Button]
+    public void ClearRoom()
+    {
+        tilemap.ClearAllTiles();
+    }
+
     //방의 데이터를 모두 정리함.
     #region BakeRoom
     [Button]
@@ -123,7 +133,7 @@ public class Room : MonoBehaviour
         List<RoomPort> rig = new List<RoomPort>();
         List<RoomPort> lef = new List<RoomPort>();
         (top, bot, rig, lef) = GetPorts(tempPort, minX, maxX, minY, maxY);
-        roomData.SetRoomPort(top, bot, rig, lef);
+        roomData.SetRoomPorts(top, bot, rig, lef);
         roomData.offset = new Vector2Int(minX, minY);
         roomData.size = new Vector2Int(maxX - minX + 1, maxY - minY + 1);
 
@@ -233,12 +243,15 @@ public class Room : MonoBehaviour
     #region Event
     public void Enter(PortDirection direction, int index)
     {
-        Debug.Log($"[{roomData.title}] [{direction}, {index}] 플레이어 입장");
+        //Debug.Log($"[{roomData.title}] [{direction}, {index}] 플레이어 입장");
+        MapManager.Instance?.Enter(roomData, direction, index);
     }
 
     public void Exit(PortDirection direction, int index)
     {
-        Debug.Log($"[{roomData.title}] [{direction}, {index}]플레이어 퇴장");
+        //Debug.Log($"[{roomData.title}] [{direction}, {index}]플레이어 퇴장");
+        MapManager.Instance?.Exit(roomData);
+
     }
     #endregion
 }
