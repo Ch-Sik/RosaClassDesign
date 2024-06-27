@@ -2,7 +2,9 @@ using DG.Tweening;
 using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class G_CircularPlatform : Gimmick
@@ -67,6 +69,8 @@ public class G_CircularPlatform : Gimmick
 
         nearWaypoints.AddRange(secondPart);
         nearWaypoints.AddRange(firstPart);
+
+        //점 6개일 떄, 7개로 판정, abc abca
 
         return nearWaypoints;
     }
