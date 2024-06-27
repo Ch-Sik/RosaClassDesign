@@ -17,9 +17,39 @@ MonoBehaviour:
     m_SceneName: 1-8
   title: 
   subTitle: 
-  size: {x: 0, y: 0}
-  offset: {x: 0, y: 0}
-  topPorts: []
+  size: {x: 190, y: 97}
+  offset: {x: 3, y: -59}
+  topPorts:
+  - index: 0
+    direction: 0
+    ports:
+    - {x: 153, y: 37}
+    - {x: 154, y: 37}
+    - {x: 155, y: 37}
+    - {x: 156, y: 37}
+    connectedPorts: []
   botPorts: []
-  rigPorts: []
-  lefPorts: []
+  rigPorts:
+  - index: 0
+    direction: 2
+    ports:
+    - {x: 192, y: -59}
+    - {x: 192, y: -58}
+    - {x: 192, y: -57}
+    - {x: 192, y: -56}
+    - {x: 192, y: -55}
+    - {x: 192, y: -54}
+    connectedPorts:
+    - room: {fileID: 11400000, guid: a7888ebe04db4e8409e430f4d2f83113, type: 2}
+      index: 1
+  lefPorts:
+  - index: 1
+    direction: 3
+    ports:
+    - {x: 3, y: -3}
+    - {x: 3, y: -2}
+    - {x: 3, y: -1}
+    - {x: 3, y: 0}
+    connectedPorts:
+    - room: {fileID: 11400000, guid: 35263d2def4143e44b0928162ab40d28, type: 2}
+      index: 1
