@@ -40690,10 +40690,6 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 628173462}
-    - target: {fileID: 1881586570308895268, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
-      propertyPath: m_LinearDrag
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 1990928874143195803, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -40890,22 +40886,6 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 852880837}
-    - target: {fileID: 9062571552595150383, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
-      propertyPath: reboundPower
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 9062571552595150383, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
-      propertyPath: recoveryDrag
-      value: 1000
-      objectReference: {fileID: 0}
-    - target: {fileID: 9062571552595150383, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
-      propertyPath: reboundStunTime
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 9062571552595150383, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
-      propertyPath: wallStunEnabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 9191572057339445002, guid: 665004937c071be4585b38e3662eb0d4, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -41412,10 +41392,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 7489943562899120, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
-      propertyPath: superArmourOnActiveTime
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 278459718066224621, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -41432,10 +41408,6 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 1534830674}
-    - target: {fileID: 833476563639194760, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
-      propertyPath: m_BodyType
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 834598483667121582, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.67
@@ -41475,10 +41447,6 @@ PrefabInstance:
     - target: {fileID: 834598483667121582, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1298649842612640371, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1463345277440852155, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
       propertyPath: m_Mesh

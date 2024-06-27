@@ -240,8 +240,15 @@ MonoBehaviour:
   rigidbody: {fileID: 1881586570308895268}
   acceptableRadius: 5
   chaseSpeed: {x: 1.5, y: 1.5}
+  useFinishAngleRestriction: 1
+  minAngle: 50
+  maxAngle: 130
+  restrictionMoveWeight: 0.2
   terrainSensor: {fileID: 1490975512170407076}
   terrainSensorOffset: 0.5
+  toEnemyDistance: 0
+  toEnemyVector: {x: 0, y: 0}
+  moveVector: {x: 0, y: 0}
 --- !u!114 &9062571552595150383
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -265,13 +272,11 @@ MonoBehaviour:
   tackleAttackPower: 2
   tackleSpeed: 8
   tackleAccel: 1
-  allowUturn: 0
-  recoveryDrag: 0
-  wallStunEnabled: 1
-  wallStunDuration: 1
+  recoveryDrag: 1000
   terrainSensor: {fileID: 1490975512170407076}
   terrainSensorOffset: 0.5
-  enemy: {fileID: 0}
+  reboundPower: 100
+  reboundStunTime: 1
 --- !u!114 &882025072774497056
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -335,7 +340,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
+  m_LinearDrag: 1
   m_AngularDrag: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
