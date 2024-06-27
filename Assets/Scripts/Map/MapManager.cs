@@ -30,6 +30,7 @@ public class MapManager : MonoBehaviour
 
 
     public Transform player;
+    public Transform camera;
     //시작할 씬
     public SORoom startRoom;
     //현재 열린 씬
@@ -92,15 +93,15 @@ public class MapManager : MonoBehaviour
 
         oldRooms = new List<SORoom>(newRooms);
         */
-
-        CloseScene(currentRoom);
+        SORoom oldRoom = currentRoom;
         currentRoom = ports[0].room;     //flag
-        StartCoroutine(OpenScene(currentRoom, Vector2Int.zero));
+        CloseScene(oldRoom);
         Vector2Int position = ports[0].room.GetRoomPort(direction, ports[0].index).ports[0];
+        Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
 
-        Debug.Log(GetMargin(direction));
+        Debug.Log($"{oldRoom.name}에서 {currentRoom.name}으로 이동, {direction}, {destination}");
 
-        player.transform.position = new Vector3(position.x, position.y, 1) + GetMargin(GetOppositeDirection(direction));
+        StartCoroutine(OpenScene(currentRoom, destination));
     }
 
     //포트 충돌 엔터
@@ -123,7 +124,7 @@ public class MapManager : MonoBehaviour
 
         CloseScene(currentRoom);
         currentRoom = room;
-        StartCoroutine(OpenScene(currentRoom, Vector2Int.zero));
+        StartCoroutine(OpenScene(currentRoom, Vector3.zero));
 
         //플래그
         FindConnectedPosition(room, direction, index, percentage, playerPosition);
@@ -165,13 +166,13 @@ public class MapManager : MonoBehaviour
         switch (direction)
         {
             case PortDirection.Top:
-                return new Vector3(0, 2);
-            case PortDirection.Bot:
                 return new Vector3(0, -2);
+            case PortDirection.Bot:
+                return new Vector3(0, 2);
             case PortDirection.Rig:
-                return new Vector3(2, 0);
-            case PortDirection.Lef:
                 return new Vector3(-2, 0);
+            case PortDirection.Lef:
+                return new Vector3(2, 0);
 
             default: return Vector3.zero;
         }
@@ -225,11 +226,11 @@ public class MapManager : MonoBehaviour
 
     public void OpenScene(SORoom room)
     {
-        StartCoroutine(OpenScene(room, Vector2Int.zero));
+        StartCoroutine(OpenScene(room, Vector3.zero));
     }
 
     //동기화를 위한 코루틴 사용
-    public IEnumerator OpenScene(SORoom room, Vector2Int anchor)
+    public IEnumerator OpenScene(SORoom room, Vector3 playerPosition)
     {
         SceneField scene = room.scene;
         if (!SceneManager.GetSceneByName(scene.SceneName).isLoaded)
@@ -242,6 +243,8 @@ public class MapManager : MonoBehaviour
             {
                 yield return null;
             }
+
+            player.position = playerPosition;
         }
 
         /*
