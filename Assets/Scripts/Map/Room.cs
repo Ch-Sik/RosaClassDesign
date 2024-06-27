@@ -17,6 +17,8 @@ public class Room : MonoBehaviour
     public SORoom roomData;
     public Tilemap tilemap;
 
+    public Vector3 tilemapWorldPosition;
+
     [Title("PreDatas"), FoldoutGroup("PreDatas")]
     public TileBase portTile;
     public GameObject triggerParent;
@@ -84,7 +86,7 @@ public class Room : MonoBehaviour
         tri.transform.localPosition = mid;
         //tri.transform.position = mid;
         tri.GetComponent<BoxCollider2D>().size = size;
-        tri.GetComponent<RoomPortObject>().SetRoomToPort(this, roomPort.direction, roomPort.index);
+        tri.GetComponent<RoomPortObject>().SetRoomToPort(roomPort.connectedPorts, roomPort.direction);
     }
 
     [Button]
@@ -241,10 +243,10 @@ public class Room : MonoBehaviour
     #endregion
 
     #region Event
-    public void Enter(PortDirection direction, int index)
+    public void Enter(PortDirection direction, int index, float percentage,Vector3 playerPosition)
     {
         //Debug.Log($"[{roomData.title}] [{direction}, {index}] 플레이어 입장");
-        MapManager.Instance?.Enter(roomData, direction, index);
+        MapManager.Instance?.Enter(roomData, direction, index, percentage, playerPosition);
     }
 
     public void Exit(PortDirection direction, int index)

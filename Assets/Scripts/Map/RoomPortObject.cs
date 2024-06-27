@@ -4,26 +4,41 @@ using UnityEngine;
 
 public class RoomPortObject : MonoBehaviour
 {
-    public Room room;
-    public PortDirection direction;
-    public int index;
+    public PortDirection reverseDirection;      //방향의
+    public List<ConnectedPort> connects;        //콘넥션들
 
-    public void SetRoomToPort(Room room, PortDirection direction, int index)
+    //이동할 방의 포트와 인덱스
+    //포트의 방향이랑, connect
+    public void SetRoomToPort(List<ConnectedPort> connects, PortDirection direction)
     {
-        this.room = room;
-        this.direction = direction;
-        this.index = index;
+        this.reverseDirection = GetOppositeDirection(direction);
+        this.connects = new List<ConnectedPort>(connects);
+    }
+
+    public PortDirection GetOppositeDirection(PortDirection direction)
+    {
+        switch (direction)
+        {
+            case PortDirection.Top: return PortDirection.Bot;
+            case PortDirection.Bot: return PortDirection.Top;
+            case PortDirection.Rig: return PortDirection.Lef;
+            case PortDirection.Lef: return PortDirection.Rig;
+            default: return PortDirection.Top;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "Player")
-            room.Enter(direction, index);
+        {
+            MapManager.Instance?.Enter(reverseDirection, connects);
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "Player")
-            room.Exit(direction, index);
+        { 
+        }
     }
 }
