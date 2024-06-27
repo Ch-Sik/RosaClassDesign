@@ -207,14 +207,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 3370702517267948057}
   superArmourOnActiveTime: 0
-  startupDuration: 1
+  startupDuration: 0.5
   activeDuration: 0
   recoveryDuration: 2
   currentState: 0
   projectilePrefab: {fileID: 431060034737850338, guid: 16f5ff6025a9cba44b7136b2040f998a, type: 3}
   muzzle: {fileID: 311662774964276690}
   projectileDirOption: 3
-  projectileSpeed: 3
+  projectileSpeed: 5
 --- !u!114 &6363191491142300360
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -12,6 +12,7 @@ public class MonsterDamageReceiver : DamageReceiver
     [SerializeField] apPortrait portrait;
 
     [SerializeField] private bool isSuperArmour;    // 피격 리액션을 하지 않으며 밀려나지 않음
+    [SerializeField, ReadOnly] private bool tempSuperArmour;        // 패턴 도중에 잠깐 얻는 슈퍼아머 효과. 둘 중 하나만 참이어도 슈퍼아머 효과 적용됨.
     [SerializeField] private bool isInvincible;     // 피격 리액션은 수행하지만 데미지를 입지 않음
     [SerializeField] private bool useRagdoll;       // 사망 시에 이리저리 굴러다니게 하는 효과 사용할 것인지?
     [SerializeField] private float knockbackCoeff;  // 넉백 계수
@@ -55,36 +56,49 @@ public class MonsterDamageReceiver : DamageReceiver
 
     public override void GetHitt(int damage, float attackAngle)
     {
+        // 이미 죽어있을 경우 피격 무시
         if (!isAlive) return;
 
         // BlinkEffect 수행이 mosterState.TakeDamage->BroadcastMessage("OnDie")->this.OnDie 보다 앞서야 함.
         // 그래야 Die로 인한 밝기 변경이 Blink에 의해 덮어씌워지지 않음.
         BlinkEffect();
 
-        if(!isSuperArmour)
+        // 무적이 아닐 경우, 데미지 입고 사망 여부 판단
+        if(!isInvincible)
         {
-            // 여기서는 블랙보드에 isHitt을 true로 설정해두기만 하고
-            // 피격 액트 수행은 상태머신에서 실행
-            blackboard.Set(BBK.isHitt, true);
-            
+            monsterState.TakeDamage(damage);
+            if(monsterState.HP < damage)
+            {
+                blackboard.Set(BBK.isDead, true);
+                return;
+            }
+        }
+
+        // 사망하지 않았을 경우, 슈퍼아머 여부에 따라 넉백/피격모션 진행여부 결정
+        if(!isSuperArmour && !tempSuperArmour)
+        {
             // 넉백 계수가 0보다 크다면 넉백 수행
             if(knockbackCoeff > float.Epsilon)
             {
                 KnockBack(attackAngle);
             }
 
-            // 다음 프레임에서 IsHitt 플래그 False로 만들기
-            StartCoroutine(SetIsHittFalse());
-            IEnumerator SetIsHittFalse()
+            // 블랙보드에다가 플래그 기록
+            blackboard.Set(BBK.isHitt, true);
+            
+            // 다음 프레임에서 플래그 False로 만들기
+            StartCoroutine(SetFlagFalse());
+            IEnumerator SetFlagFalse()
             {
                 yield return 0;     // 다음프레임까지 대기
                 blackboard.Set(BBK.isHitt, false);
             }
         }
-        if(!isInvincible)
-        {
-            monsterState.TakeDamage(damage);
-        }
+    }
+
+    public void SetTempSuperArmour(bool value)
+    {
+        this.tempSuperArmour = value;
     }
 
     private void KnockBack(float attackAngle)
