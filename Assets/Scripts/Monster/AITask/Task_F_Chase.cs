@@ -1,9 +1,7 @@
 using Panda;
 using Sirenix.OdinInspector;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
 
 public class Task_F_Chase : Task_Base
 {
@@ -43,20 +41,21 @@ public class Task_F_Chase : Task_Base
     [SerializeField, ReadOnly]
     protected Vector2 moveVector;
 
+    // 시각화용
+    protected bool drawGizmos;
+
 
     private void Start()
     {
         if (blackboard == null)
         {
             blackboard = GetComponent<Blackboard>();
-            if (blackboard == null)
-                Debug.LogError($"{gameObject.name}: Blackboard를 찾을 수 없음!");
+            Debug.Assert(blackboard != null, $"{gameObject.name}: Blackboard를 찾을 수 없음!");
         }
         if (rigidbody == null)
         {
             rigidbody = GetComponent<Rigidbody2D>();
-            if (rigidbody == null)
-                Debug.LogError($"{gameObject.name}: Rigidbody2D를 찾을 수 없음!");
+            Debug.Assert(rigidbody != null, $"{gameObject.name}: Rigidbody2D를 찾을 수 없음!");
         }
     }
 
@@ -67,8 +66,7 @@ public class Task_F_Chase : Task_Base
         bool isHitt;
         if (blackboard.TryGet(BBK.isHitt, out isHitt) && isHitt)
         {
-            ThisTask.Fail();
-            StopMoving();
+            Fail();
             return;
         }
 
@@ -76,13 +74,13 @@ public class Task_F_Chase : Task_Base
         GameObject enemy;
         if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
         {
-            ThisTask.Fail();
-            StopMoving();
+            Fail();
             return;
         }
         // 디버그 출력
         toEnemyVector = enemy.transform.position - transform.position;
         toEnemyDistance = Vector2.Distance(enemy.transform.position, transform.position);
+        drawGizmos = true;
 
         // 적과 충분히 가까워졌을 경우
         if (Vector2.Distance(enemy.transform.position, transform.position) < acceptableRadius)
@@ -96,16 +94,14 @@ public class Task_F_Chase : Task_Base
                 // 각도 제한 통과하였다면 추격 종료
                 if(toEnemyAngle > minAngle && toEnemyAngle < maxAngle)
                 {
-                    ThisTask.Succeed();
-                    StopMoving();
+                    Succeed();
                     return;
                 }
             }
             // 각도 제한 사용 안한다면 즉시 추격 종료
             else
             {
-                ThisTask.Succeed();
-                StopMoving();
+                Succeed();
                 return;
             }
         }
@@ -115,8 +111,7 @@ public class Task_F_Chase : Task_Base
         blackboard.TryGet(BBK.StuckAtWall, out isStuckAtWall);
         if (isStuckAtWall)
         {
-            ThisTask.Fail();
-            StopMoving();
+            Fail();
             return;
         }
 
@@ -175,8 +170,25 @@ public class Task_F_Chase : Task_Base
         return Mathf.Atan2(input.y, Mathf.Abs(input.x)) * Mathf.Rad2Deg + 90.0f;
     }
 
+    protected void Succeed()
+    {
+        ThisTask.Succeed();
+        StopMoving();
+        drawGizmos = false;
+    }
+
+    protected void Fail()
+    {
+        ThisTask.Fail();
+        StopMoving();
+        drawGizmos = false;
+    }
+
     private void OnDrawGizmos()
     {
+        if (!drawGizmos)
+            return;
+
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, acceptableRadius);
         if(useFinishAngleRestriction)
