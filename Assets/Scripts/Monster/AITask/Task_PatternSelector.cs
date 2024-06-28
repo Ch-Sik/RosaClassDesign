@@ -11,6 +11,8 @@ public class Task_PatternSelector : Task_Base
 {
     [SerializeField]
     private Blackboard blackboard;
+    [SerializeField]
+    private bool isTock = false;
 
     // Start is called before the first frame update
     private void Start()
@@ -43,4 +45,11 @@ public class Task_PatternSelector : Task_Base
         }
     }
 
+    // true와 false를 한 번씩 번갈아가면서 반환 
+    [Task]
+    public bool TikTok()
+    {
+        isTock = !isTock;
+        return !isTock;
+    }
 }
