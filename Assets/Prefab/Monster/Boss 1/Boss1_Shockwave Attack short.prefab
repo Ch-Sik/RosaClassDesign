@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 2554714974980051149}
   - component: {fileID: 976697169438585296}
   m_Layer: 25
-  m_Name: Shockwave Attack long
+  m_Name: Boss1_Shockwave Attack short
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -49,9 +49,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rigidbody: {fileID: 616992587017311682}
-  collider: {fileID: 2554714974980051149}
+  collider: {fileID: 0}
   frontSpeed: 8
-  backSpeed: 6.3
+  backSpeed: 7
 --- !u!114 &1964203919097936900
 MonoBehaviour:
   m_ObjectHideFlags: 0

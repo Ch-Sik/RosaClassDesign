@@ -1,0 +1,57 @@
+tree("Root")
+    Sequence
+        tree("Idle")
+        tree("Phase1")
+
+// 플레이어가 보스방에 들어가기 전 보스 대기 상태
+tree("Idle")
+  not
+    repeat
+      not
+        isEnemyCloserThan(999.9)  // 플레이어가 인식 범위에 들어오면 Idle 종료
+
+tree("Phase1")
+  repeat                                // 마지막 Phase에서는 HP 체크할 필요 없음.
+    mute                                // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지   
+        fallback
+            sequence
+                tree("LookBack")
+            tree("Breaching")               // 필살기: 브리칭. 쿨타임 중이라면 알아서 fail -> 다른 패턴 수행
+            sequence
+                isEnemyCloserThan(5.0)        // 적이 기준보다 가깝다면,
+                fallback                    // 근접용 2패턴을 돌아가면서 수행
+                    sequence
+                        TikTok()
+                        tree("MeleeAttack")     // 근접 공격
+                    tree("Shockwave")           // 파도풀 패턴 
+            Random()                        // 적이 기준보다 멀다면 원거리용 2패턴 중 랜덤 수행
+                tree("WaterBomb")               // 패턴: 물덩어리 발사
+                tree("WaterLaser")              // 패턴: 물대포
+
+
+// 여기서부터는 각각의 공격패턴만 따로 구현한 서브트리들
+tree("LookBack")
+    // TODO: 뒤돌아보기 패턴 구현
+    parallel
+        Dive()
+        Sequence()
+            Wait(2.1)
+            WaterSplash()
+
+tree("MeleeAttack")
+    MeleeAttack()
+
+tree("Shockwave")              
+    ShockwaveAttack()
+
+tree("WaterBomb")
+    SimpleProjectileAttack()
+
+tree("WaterLaser")
+    // TODO: 물대포 패턴 구현
+    Wait(1)
+
+tree("Breaching")
+    // TODO: 브리칭 패턴 구현
+    Wait(1)
+
