@@ -17,21 +17,11 @@ MonoBehaviour:
     m_SceneName: 1-12
   title: 
   subTitle: 
-  size: {x: 255, y: 15}
-  offset: {x: 2, y: -3}
+  size: {x: 245, y: 12}
+  offset: {x: 2, y: -11}
   topPorts: []
   botPorts: []
-  rigPorts:
-  - index: 0
-    direction: 2
-    ports:
-    - {x: 256, y: 8}
-    - {x: 256, y: 9}
-    - {x: 256, y: 10}
-    - {x: 256, y: 11}
-    connectedPorts:
-    - room: {fileID: 0}
-      index: 0
+  rigPorts: []
   lefPorts:
   - index: 0
     direction: 3
