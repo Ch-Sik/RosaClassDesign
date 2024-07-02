@@ -6,7 +6,6 @@ using UnityEngine;
 using System.Linq;
 using System;
 using UnityEngine.UIElements;
-using PlasticPipe.PlasticProtocol.Messages;
 
 public class RoomNode : Node
 {
@@ -18,8 +17,13 @@ public class RoomNode : Node
 
     private MapGraphView graphView { get; set; }
 
+    public List<PortData> portDatas;
+
     public void Initialize(string nodeName, MapGraphView graphView, Vector2 position)
     {
+        portDatas = new List<PortData>();
+
+        this.RoomName = nodeName;
         this.graphView = graphView;
         this.position = position;
         //this.roomData = room;
@@ -52,7 +56,7 @@ public class RoomNode : Node
         VisualElement rigElement = new VisualElement(); rigElement.SetSize(80, 400);
 
         VisualElement topElement = new VisualElement(); topElement.SetSize(240, 80); midElement.Add(topElement);
-        VisualElement cenElement = new VisualElement(); cenElement.SetSize(240, 240); midElement.Add(cenElement);  cenElement.SetVisualElementStyle(FlexDirection.Column);  cenElement.SetRoomName("Room1");
+        VisualElement cenElement = new VisualElement(); cenElement.SetSize(240, 240); midElement.Add(cenElement);  cenElement.SetVisualElementStyle(FlexDirection.Column);  cenElement.SetRoomName(RoomName);
         VisualElement botElement = new VisualElement(); botElement.SetSize(240, 80); midElement.Add(botElement);
 
         lefElement.SetVisualElementStyle(FlexDirection.Column);
@@ -60,16 +64,36 @@ public class RoomNode : Node
         topElement.SetVisualElementStyle(FlexDirection.Row);
         botElement.SetVisualElementStyle(FlexDirection.Row);
 
-        lefElement.SetPorts(2, Orientation.Horizontal, Direction.Input);
-        rigElement.SetPorts(2, Orientation.Horizontal, Direction.Output);
-        topElement.SetPorts(2, Orientation.Vertical, Direction.Input);
-        botElement.SetPorts(2, Orientation.Vertical, Direction.Output);
+        SetPorts(lefElement, 2, Orientation.Horizontal, Direction.Input, PortDirection.Lef);
+        SetPorts(rigElement, 2, Orientation.Horizontal, Direction.Output, PortDirection.Rig);
+        SetPorts(topElement, 2, Orientation.Vertical, Direction.Input, PortDirection.Top);
+        SetPorts(botElement, 2, Orientation.Vertical, Direction.Output, PortDirection.Bot);
 
         mainContainer.Add(lefElement);
         mainContainer.Add(midElement);
         mainContainer.Add(rigElement);
 
         RefreshExpandedState();
+    }
+
+    public void SetPorts(VisualElement visualElement, int count, Orientation orientation, Direction direction, PortDirection portDirection)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            Port port = Port.Create<Edge>(orientation, direction, Port.Capacity.Multi, typeof(bool));
+            port.portName = "";
+            //port.Q<Label>("type").visible = false;
+            //port.Q<Label>("type").SetEnabled(false);
+            visualElement.Add(port);
+            portDatas.Add(new PortData(port, roomData, portDirection, i));
+
+            Debug.Log($"{portDirection} 방향, {i}인덱스");
+        }
+    }
+
+    public string GetRoomName()
+    {
+        return RoomName;
     }
 }
 
@@ -91,21 +115,25 @@ public static class VisualElementExtensions
         visualElement.style.justifyContent = justify;
     }
 
-    public static void SetPorts(this VisualElement visualElement, int count, Orientation orientation, Direction direction)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            var port = Port.Create<Edge>(orientation, direction, Port.Capacity.Single, typeof(bool));
-            port.portName = "";
-            port.Q<Label>("type").visible = false;
-            port.Q<Label>("type").SetEnabled(false);
-            visualElement.Add(port);
-        }
-    }
-
     public static void SetSize(this VisualElement visualElement, int width, int height)
     {
         visualElement.style.width = new Length(width, LengthUnit.Pixel);
         visualElement.style.height = new Length(height, LengthUnit.Pixel);
+    }
+}
+
+public class PortData
+{
+    public Port port;
+    public SORoom room;
+    public PortDirection portDirection;
+    public int index;
+
+    public PortData(Port port, SORoom room, PortDirection portDirection, int index)
+    {
+        this.port = port;
+        this.room = room;
+        this.portDirection = portDirection;
+        this.index = index;
     }
 }
