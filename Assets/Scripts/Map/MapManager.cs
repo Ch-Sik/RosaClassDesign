@@ -1,4 +1,3 @@
-using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,6 +5,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Linq;
 using Com.LuisPedroFonseca.ProCamera2D;
+using TMPro;
+using DG.Tweening;
+
 
 public class MapManager : MonoBehaviour
 {
@@ -38,6 +40,13 @@ public class MapManager : MonoBehaviour
     //현재 열린 씬
     public SORoom currentRoom;
     public List<SORoom> oldRooms = new List<SORoom>();
+    public TextMeshProUGUI chapter;
+    public TextMeshProUGUI position;
+
+    private void Update()
+    {
+        position.text = $"{player.position.x.ToString("F1")} , {player.position.y.ToString("F1")}";
+    }
 
     private void Start()
     {
@@ -106,6 +115,9 @@ public class MapManager : MonoBehaviour
         */
         SORoom oldRoom = currentRoom;
         currentRoom = ports[0].room;     //flag
+
+        player.SetParent(transform);
+
         CloseScene(oldRoom);
         Vector2Int position = ports[0].room.GetRoomPort(direction, ports[0].index).ports[0];
         Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
@@ -255,8 +267,13 @@ public class MapManager : MonoBehaviour
                 yield return null;
             }
 
+
+            player.SetParent(null);
             player.position = playerPosition;
             cam.MoveCameraInstantlyToPosition(player.position);
+
+            chapter.text = room.scene.SceneName;
+
         }
 
         /*

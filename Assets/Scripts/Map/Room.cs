@@ -26,7 +26,7 @@ public class Room : MonoBehaviour
 
     private void Start()
     {
-        Init();
+        Invoke("Init", 0.5f);
     }
 
     public void Init()
