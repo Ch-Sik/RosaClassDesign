@@ -105380,6 +105380,63 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2586675867307281237, guid: 766334ef67f3eea4e9d1511fe41d55a5, type: 3}
   m_PrefabInstance: {fileID: 476035573}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &481577828
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 111.48
+      objectReference: {fileID: 0}
+    - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 7.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3485015899100231171, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
+      propertyPath: m_Name
+      value: TurretFlower Aim New
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
 --- !u!1001 &511273678
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -108344,6 +108401,10 @@ PrefabInstance:
     - target: {fileID: 6643805035505414905, guid: 204be0c0d4f045e4e8159f05f235e367, type: 3}
       propertyPath: m_Name
       value: TurretFlower A (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6643805035505414905, guid: 204be0c0d4f045e4e8159f05f235e367, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8775606166743496484, guid: 204be0c0d4f045e4e8159f05f235e367, type: 3}
       propertyPath: m_TranslationAtRest.x
@@ -114009,6 +114070,7 @@ SceneRoots:
   - {fileID: 249757690}
   - {fileID: 204121743}
   - {fileID: 1540766612}
+  - {fileID: 481577828}
   - {fileID: 1305504862}
   - {fileID: 1454213665}
   - {fileID: 1902114605}

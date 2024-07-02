@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Linq;
+using Com.LuisPedroFonseca.ProCamera2D;
 
 public class MapManager : MonoBehaviour
 {
@@ -30,7 +31,8 @@ public class MapManager : MonoBehaviour
 
 
     public Transform player;
-    public Transform camera;
+    public ProCamera2D cam;
+    public Vector2Int startPosition;
     //시작할 씬
     public SORoom startRoom;
     //현재 열린 씬
@@ -74,7 +76,16 @@ public class MapManager : MonoBehaviour
 
         oldRooms = new List<SORoom>(newRooms);
         */
+
+
         OpenScene(currentRoom);
+        Invoke("MoveStartPoint", 0.3f);
+    }
+
+    public void MoveStartPoint()
+    {
+        player.position = new Vector3(startPosition.x,
+                                      startPosition.y);
     }
 
     public void Enter(PortDirection direction, List<ConnectedPort> ports)
@@ -245,6 +256,7 @@ public class MapManager : MonoBehaviour
             }
 
             player.position = playerPosition;
+            cam.MoveCameraInstantlyToPosition(player.position);
         }
 
         /*

@@ -233,11 +233,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b8c96e2cdc154e848a3d9fe62464d42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!4 &210034126 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7250734593268076291, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
-  m_PrefabInstance: {fileID: 210034123}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &210034127
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -572,11 +567,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5262888439632956338, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.9
+      value: 7.48
       objectReference: {fileID: 0}
     - target: {fileID: 5262888439632956338, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2
+      value: -2.04
       objectReference: {fileID: 0}
     - target: {fileID: 5262888439632956338, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: m_LocalPosition.z
@@ -894,7 +889,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 390781061}
-  camera: {fileID: 210034126}
+  cam: {fileID: 210034125}
+  startPosition: {x: 7, y: -2}
   startRoom: {fileID: 11400000, guid: 51c60280808fd81428b49ebeab2c7d9c, type: 2}
   currentRoom: {fileID: 0}
   oldRooms: []
