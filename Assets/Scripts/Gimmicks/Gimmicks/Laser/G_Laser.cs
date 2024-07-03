@@ -92,7 +92,7 @@ public class G_Laser : Gimmick
             }
         }
 
-        Debug.Log(hit.collider != null ? hit.collider.gameObject.name : "");
+        // Debug.Log(hit.collider != null ? hit.collider.gameObject.name : "");
 
         if (hit.collider == null)
             length = laserMaxLength;
