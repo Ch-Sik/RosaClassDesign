@@ -93,12 +93,18 @@ public class Task_A_SimpleProjectile : Task_A_Base
 
     protected override void OnActiveBegin()
     {
-        // 공격 시전 준비 중에 적이 이탈했다면 공격 취소
-        if (!blackboard.TryGet(BBK.Enemy, out GameObject enemy) || enemy == null)
+        GameObject enemy = null;
+
+        // 고정 방향 발사 옵션이 아니라면
+        if (projectileDirOption != ProjectileDirOption.FixedDirection)
         {
-            Debug.LogWarning($"{gameObject.name}: Attack에서 적을 찾을 수 없음!");
-            Fail();
-            return;
+            // 공격 시전 준비 중에 적이 이탈했다면 공격 취소
+            if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
+            {
+                Debug.LogWarning($"{gameObject.name}: Attack에서 적을 찾을 수 없음!");
+                Fail();
+                return;
+            }
         }
 
         // 발사 방향 결정

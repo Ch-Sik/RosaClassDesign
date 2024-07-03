@@ -1,0 +1,19 @@
+tree("Root")
+    fallback
+        Sleep()
+        tree("WokeUp")
+
+tree("WokeUp")
+    repeat
+        mute
+            fallback                            // 실행 우선순위: 피격 리액션 -> 공격 -> 대기
+                tree("Hitt")
+                tree("Attack")
+
+tree("Hitt")
+    sequence
+        IsHitt()                        // '피격된 상태'라면
+        HittReaction()                  // 피격 리액션 수행
+
+tree("Attack")
+    Attack()                            // 공격 (선딜 후딜 포함)

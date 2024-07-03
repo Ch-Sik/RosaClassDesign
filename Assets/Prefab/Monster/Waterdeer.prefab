@@ -704,6 +704,7 @@ MonoBehaviour:
   rigidbody: {fileID: 0}
   portrait: {fileID: 0}
   isSuperArmour: 0
+  tempSuperArmour: 0
   isInvincible: 0
   useRagdoll: 0
   knockbackCoeff: 5
@@ -820,7 +821,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 5947960290006385922}
   hittReactionTime: 0.7
-  lookPlayerIfHitt: 0
+  lookPlayerIfHitt: 1
 --- !u!50 &725397827760566173
 Rigidbody2D:
   serializedVersion: 4
