@@ -84,11 +84,11 @@ public class G_Laser : Gimmick
             if (hit.collider.CompareTag("Player"))
             {
                 // 충돌한 콜라이더가 원하는 태그를 가졌는지 확인
-                Debug.Log("태그를 발견했습니다!");
+                //Debug.Log("태그를 발견했습니다!");
             }
             if (hit.collider.CompareTag("Ground"))
             {
-                Debug.Log("벽과 충돌");
+                //Debug.Log("벽과 충돌");
             }
         }
 
