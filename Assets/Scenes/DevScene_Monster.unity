@@ -28358,6 +28358,23 @@ Material:
     m_Colors:
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_BuildTextureStacks: []
+--- !u!1 &1676087897 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9042182175126983161, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
+  m_PrefabInstance: {fileID: 6929078660266229438}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1676087910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1676087897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 105cf105102f8b743af3d196263aa7e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!21 &1680144022
 Material:
   serializedVersion: 8
@@ -41373,6 +41390,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Waterdeer
       objectReference: {fileID: 0}
+    - target: {fileID: 6430373509608497901, guid: b6e3e046dbae80c4d8878df4e302a579, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -42465,7 +42486,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3647399287180005452, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3670191130821337425, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -42543,14 +42564,22 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 834343590}
+    - target: {fileID: 8684715569892815561, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
+      propertyPath: scripts.Array.data[0]
+      value: 
+      objectReference: {fileID: 4900000, guid: c5bac2aeee0e75e49b60796eb697ba3c, type: 3}
     - target: {fileID: 9110833249879369211, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1319836776}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7270711106342752431, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9042182175126983161, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
+      insertIndex: 9
+      addedObject: {fileID: 1676087910}
   m_SourcePrefab: {fileID: 100100000, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
 --- !u!114 &6965193454757995758
 MonoBehaviour:
