@@ -229,7 +229,7 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="inputVector"></param>
     internal void Climb(Vector2 inputVector)
     {        
-        Debug.Log("Climbing");
+        // Debug.Log("Climbing");
         
         moveVector = inputVector;       // 벽 점프 등을 위해 x축 방향 필터링하지 않음.
         if(moveVector.x != 0)
@@ -412,7 +412,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void UnstickFromWall()
     {
-        Debug.Log("unstick");
+        // Debug.Log("unstick");
         playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
         rb.gravityScale = this.gravityScale;
         
@@ -420,7 +420,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void ClimbEnd()
     {
-        Debug.Log("ClimbEnd");
+        // Debug.Log("ClimbEnd");
         
         if(facingDirection == LR.LEFT)
         {
@@ -633,7 +633,7 @@ public class PlayerMovement : MonoBehaviour
         Vector2 knockbackDirection = transform.position - knockbackPos;
         knockbackDirection.Normalize();
 
-        Debug.Log(knockbackDirection);
+        // Debug.Log(knockbackDirection);
         
         if(playerControl.currentMoveState == PlayerMoveState.CLIMBING)
         {
