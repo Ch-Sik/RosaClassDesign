@@ -21,10 +21,16 @@ tree("Phase0")
         mute                            // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지   
             fallback
                 sequence
-                    isEnemyCloserThan(5.0)  // 적이 5M보다 가깝다면 근접 패턴,
-                    tree("Melee1")
-                random                      // 아니라면 나머지 2패턴 중 랜덤 수행
-                    tree("Shockwave1")      // 패턴: 충격파 & 낙하물
+                    isEnemyCloserThan(7.5)  // 적이 7.5M보다 가깝다면 근접 패턴,
+                    fallback                    // 아니라면 나머지 2패턴을 돌아가면서 수행
+                        sequence
+                            TikTok()
+                            tree("HeavyAttack1")      // 강공격
+                        tree("QuickAttack")     // 약공격
+                fallback                    // 아니라면 나머지 2패턴을 돌아가면서 수행
+                    sequence
+                        TikTok()
+                        tree("Shockwave1")  // 패턴: 충격파 & 낙하물
                     TackleAttack()          // 패턴: 몸통박치기
 
 // 페이즈 전환 시
@@ -33,28 +39,37 @@ tree("PhaseChange")
 
 // 2페이즈
 tree("Phase1")
-  repeat                                      // 마지막 Phase에서는 HP 체크할 필요 없음.
+  repeat                                    // 마지막 Phase에서는 HP 체크할 필요 없음.
     mute
         fallback
             sequence
-                isEnemyCloserThan(5.0)      // 적이 5M보다 가깝다면 근접 패턴,
-                tree("Melee2")
-            random                          // 아니라면 나머지 2패턴 중 랜덤
-                tree("Shockwave2")          // 패턴: 강화 충격파 & 낙하물
+                isEnemyCloserThan(7.5)      // 적이 7.5M보다 가깝다면 근접 패턴,
+                fallback                    // 아니라면 나머지 2패턴을 돌아가면서 수행
+                    sequence
+                        TikTok()
+                        tree("HeavyAttack2")
+                    tree("QuickAttack")
+            fallback                        // 아니라면 나머지 2패턴을 돌아가면서 수행
+                sequence                    
+                    TikTok()
+                    tree("Shockwave2")      // 패턴: 강화 충격파 & 낙하물
                 TackleAttack()              // 패턴: 몸통박치기
 
 
 // 여기서부터는 각각의 공격패턴만 따로 구현한 서브트리들
-tree("Melee1")
+tree("QuickAttack")
+    Melee_Quick()
+
+tree("HeavyAttack1")
     parallel
-        MeleeAttack()
+        Melee_Heavy()
         sequence
             Wait(1.6)
             MultipleMortarAttack(3)
 
-tree("Melee2")
+tree("HeavyAttack2")
     parallel
-        MeleeAttack()
+        Melee_Heavy()
         sequence
             Wait(1.6)
             MultipleMortarAttack(5)
