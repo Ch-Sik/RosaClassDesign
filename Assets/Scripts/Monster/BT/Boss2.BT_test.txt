@@ -1,7 +1,8 @@
 tree("Root")
     Sequence
-        tree("Idle")
-        tree("Phase1")
+        tree("Test")
+        // tree("Idle")
+        // tree("Phase1")
 
 // 플레이어가 보스방에 들어가기 전 보스 대기 상태
 tree("Idle")
@@ -10,8 +11,18 @@ tree("Idle")
       not
         isEnemyCloserThan(999.9)  // 플레이어가 인식 범위에 들어오면 Idle 종료
 
+tree("Test")
+  repeat
+    mute
+        fallback
+            sequence
+                not isEnemyAtFront()
+                tree("LookBack")
+            tree("WaterLaser")
+
+
 tree("Phase1")
-  repeat                                // 마지막 Phase에서는 HP 체크할 필요 없음.
+  repeat
     mute                                // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지   
         fallback
             sequence
@@ -48,8 +59,7 @@ tree("WaterBomb")
     SimpleProjectileAttack()
 
 tree("WaterLaser")
-    // TODO: 물대포 패턴 구현
-    Wait(1)
+    LaserAttack()
 
 tree("Breaching")
     // TODO: 브리칭 패턴 구현
