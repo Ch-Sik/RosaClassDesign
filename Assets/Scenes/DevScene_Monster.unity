@@ -41794,6 +41794,7 @@ GameObject:
   - component: {fileID: 8436923784550507300}
   - component: {fileID: 2808076146484549256}
   - component: {fileID: 4247583253916372892}
+  - component: {fileID: 8436923784550507301}
   - component: {fileID: 4026840268874634074}
   - component: {fileID: 6343790656601087166}
   - component: {fileID: 8436923784550507296}
@@ -42576,6 +42577,30 @@ MonoBehaviour:
   laserPrefab: {fileID: 7601855062109172638, guid: a90a2f58cb87fa848972d31a2e422754, type: 3}
   damage: 1
   instance: {fileID: 0}
+--- !u!114 &8436923784550507301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5641121441722052896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fbfb5963a5eb164ca3c03b8ae4cec5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blackboard: {fileID: 601316993473560194}
+  superArmourOnActiveTime: 1
+  startupDuration: 2
+  activeDuration: 2
+  recoveryDuration: 3
+  currentState: 0
+  diveInDepth: 5
+  diveInDuration: 0.5
+  breachMovement: {x: 5, y: 3}
+  fallingDuration: 0.5
+  fallingDiveDepth: 0.5
+  fallingDiveDuration: 0.5
 --- !u!1001 &8549001328018294874
 PrefabInstance:
   m_ObjectHideFlags: 0
