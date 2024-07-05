@@ -31,7 +31,7 @@ public class MonsterLaser : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Assert(beamMid != null);
+        Debug.Assert(beamMid != null, "레이저 이펙트의 길쭉한 부분은 필수로 할당되어야 함!");
         if(laserCollider == null)
         {
             laserCollider = GetComponentInChildren<Collider2D>();
@@ -76,9 +76,13 @@ public class MonsterLaser : MonoBehaviour
         beamEnd?.SetActive(true);
 
         // 레이저 크기/위치 조절
+        if(beamStart != null)
+        {
+            beamStart.transform.localScale = new Vector3(laserWidth, laserWidth, 1);
+        }
         beamMid.transform.localPosition = new Vector3(laserLength / 2, 0, 0);
         beamMid.transform.localScale = new Vector3(laserLength, laserWidth, 1.0f);
-        if(beamEnd!=null)
+        if(beamEnd != null)
         {
             beamEnd.transform.localPosition = new Vector3(laserLength, 0, 0);
             beamEnd.transform.localScale = new Vector3(1.0f, laserWidth, 1.0f);

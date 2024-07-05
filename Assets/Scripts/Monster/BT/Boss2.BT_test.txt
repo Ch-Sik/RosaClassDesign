@@ -18,7 +18,8 @@ tree("Test")
             sequence
                 not isEnemyAtFront()
                 tree("LookBack")
-            tree("WaterLaser")
+            // tree("WaterLaser")
+            tree("Breaching")
 
 
 tree("Phase1")
@@ -62,6 +63,5 @@ tree("WaterLaser")
     LaserAttack()
 
 tree("Breaching")
-    // TODO: 브리칭 패턴 구현
-    Wait(1)
+    Breaching()
 
