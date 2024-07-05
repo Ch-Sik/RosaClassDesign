@@ -80277,6 +80277,14 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 2055040018}
+    - target: {fileID: 3592953510614098783, guid: 84cc13c68a6ab9d44a0b870f51ceb248, type: 3}
+      propertyPath: _srcPrefabAssetForRestore
+      value: 
+      objectReference: {fileID: 6196114695436359477, guid: 84cc13c68a6ab9d44a0b870f51ceb248, type: 3}
+    - target: {fileID: 3592953510614098783, guid: 84cc13c68a6ab9d44a0b870f51ceb248, type: 3}
+      propertyPath: _rootGameObjectAsPrefabInstanceForRestore
+      value: 
+      objectReference: {fileID: 7131972853707962297}
     - target: {fileID: 3670445086493197303, guid: 84cc13c68a6ab9d44a0b870f51ceb248, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -81142,6 +81150,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fa0870871c2dcfb47af61fb48c379bda, type: 3}
+--- !u!1 &7131972853707962297 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6196114695436359477, guid: 84cc13c68a6ab9d44a0b870f51ceb248, type: 3}
+  m_PrefabInstance: {fileID: 3964538740502831244}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7247016735413172942
 PrefabInstance:
   m_ObjectHideFlags: 0
