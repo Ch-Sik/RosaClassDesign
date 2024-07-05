@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e66c76671cd64cb449192b5c4468e16e, type: 3}
+  m_Name: 1-6
+  m_EditorClassIdentifier: 
+  scene:
+    m_SceneAsset: {fileID: 102900000, guid: 7d74721805382334fab3d9127db2b909, type: 3}
+    m_SceneName: 1-6
+  title: 
+  subTitle: 
+  size: {x: 200, y: 62}
+  offset: {x: 2, y: -11}
+  topPorts: []
+  botPorts: []
+  rigPorts:
+  - index: 0
+    direction: 2
+    ports:
+    - {x: 201, y: -1}
+    - {x: 201, y: 0}
+    - {x: 201, y: 1}
+    connectedPorts:
+    - room: {fileID: 11400000, guid: 35263d2def4143e44b0928162ab40d28, type: 2}
+      index: 0
+  lefPorts:
+  - index: 0
+    direction: 3
+    ports:
+    - {x: 2, y: -3}
+    - {x: 2, y: -2}
+    - {x: 2, y: -1}
+    - {x: 2, y: 0}
+    - {x: 2, y: 1}
+    - {x: 2, y: 2}
+    connectedPorts:
+    - room: {fileID: 11400000, guid: bb8eae05dd027f440bbe714c7145e923, type: 2}
+      index: 0
