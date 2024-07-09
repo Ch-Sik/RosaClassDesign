@@ -15,8 +15,10 @@ public class MonsterProjectile : MonoBehaviour
     private new Rigidbody2D rigidbody;
     [SerializeField]
     private new Collider2D collider;
+    [SerializeField]
+    private Animator animator;
 
-    public void InitProjectile(Vector2 velocity)
+    public void InitProjectile(Vector2 direction)
     {
         // 필요 컴포넌트 설정
         if(rigidbody == null)
@@ -30,7 +32,8 @@ public class MonsterProjectile : MonoBehaviour
             rigidbody.isKinematic = true;
 
         // 기본 속도 설정
-        rigidbody.velocity = velocity * speedScale;
+        rigidbody.velocity = direction * speedScale;
+        Debug.Log($"투사체 속도:{direction * speedScale}");
     }
 
     private void OnTriggerEnter2D(Collider2D collider)
@@ -42,7 +45,7 @@ public class MonsterProjectile : MonoBehaviour
             Debug.Log("몬스터 투사체 지형과 접촉");
             rigidbody.velocity = Vector2.zero;
             this.collider.enabled = false;
-            Destroy(gameObject, 1f);
+            DoDestroy(1f);
         }
 
         if(collider.gameObject.CompareTag("Player"))
@@ -50,7 +53,16 @@ public class MonsterProjectile : MonoBehaviour
             Debug.Log("몬스터 투사체 플레이어와 접촉");
             rigidbody.velocity = Vector2.zero;
             this.collider.enabled = false;
-            Destroy(gameObject, 1f);
+            DoDestroy(1f);
         }
+    }
+
+    private void DoDestroy(float delay)
+    {
+        if(animator != null)
+        {
+            animator.SetTrigger("disappear");
+        }
+        Destroy(gameObject, delay);
     }
 }

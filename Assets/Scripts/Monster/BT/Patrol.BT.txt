@@ -1,6 +1,6 @@
 tree("Root")
     repeat
-        fallback                            // 실행 우선순위: 피격 리액션 -> 공격 -> 추격 -> 순찰
+        fallback                            // 실행 우선순위: 피격 리액션 -> 순찰
             tree("Hitt")
             tree("Patrol")
 
@@ -13,4 +13,4 @@ tree("Patrol")
     sequence
         PatrolWait()
         SetNextDest()                   // repeat root에 의해 Hitted나 Chase로 이행되지 않는다면 Patrol 반복
-        Patrol()                       // Patrol은 적을 탐지하면 Fail로 종료됨 -> EnemyFoundReaction으로 이행
+        Patrol()
