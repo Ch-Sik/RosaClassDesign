@@ -16409,8 +16409,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   text: {fileID: 1083184110}
   phaseChanger: {fileID: 1459561984}
-  boss: {fileID: 1459561981}
-  monsterState: {fileID: 1459561985}
+  boss: {fileID: 5641121441722052896}
+  monsterState: {fileID: 0}
 --- !u!114 &1083184110
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21856,31 +21856,15 @@ Material:
     m_Colors:
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_BuildTextureStacks: []
---- !u!1 &1459561981 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2360285979714360365, guid: 1b452d61714e6264481613fe05da3eb0, type: 3}
-  m_PrefabInstance: {fileID: 6965548256636112300}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1459561984 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6087270141199805073, guid: 1b452d61714e6264481613fe05da3eb0, type: 3}
   m_PrefabInstance: {fileID: 6965548256636112300}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1459561981}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cb028967f722ea94fa6eb9aa7058000e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1459561985 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 9219775852463663520, guid: 1b452d61714e6264481613fe05da3eb0, type: 3}
-  m_PrefabInstance: {fileID: 6965548256636112300}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1459561981}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b20cb10af2dc08c4bb164d108091d559, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!43 &1461734462
@@ -35099,7 +35083,7 @@ Transform:
   m_GameObject: {fileID: 2657221935765540003}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.639, y: -0.216, z: 0}
+  m_LocalPosition: {x: 0.639, y: 0.196, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -35523,7 +35507,7 @@ MonoBehaviour:
   currentState: 0
   projectilePrefab: {fileID: 431060034737850338, guid: f50919300d517124ab3b815cad0e5f69, type: 3}
   muzzle: {fileID: 2876260795846352203}
-  projectileSpeed: 0
+  projectileSpeed: 7
   projectileDirOption: 0
   fixedTarget: {fileID: 0}
 --- !u!114 &4247583253916372892
@@ -35554,7 +35538,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scripts:
-  - {fileID: 4900000, guid: 09da63a1580d0f947ae78bd410b2e3cc, type: 3}
+  - {fileID: 4900000, guid: f8ee032b5a0bee64581c197942ec445d, type: 3}
   autoReset: 1
   tickOn: 0
   sourceInfos:
@@ -35857,7 +35841,7 @@ Transform:
   m_GameObject: {fileID: 5641121441722052896}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.84, y: 1.9, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -36159,7 +36143,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -36249,6 +36233,7 @@ GameObject:
   - component: {fileID: 8436923784550507296}
   - component: {fileID: 819623148250215053}
   - component: {fileID: 2755484762381758354}
+  - component: {fileID: 8436923784550507302}
   - component: {fileID: 8436923784550507297}
   - component: {fileID: 5073995886619441194}
   - component: {fileID: 5215362235058375016}
@@ -36274,9 +36259,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 601316993473560194}
   superArmourOnActiveTime: 0
-  startupDuration: 2
+  startupDuration: 1.7
   activeDuration: 0
-  recoveryDuration: 2
+  recoveryDuration: 2.3
   currentState: 0
   attackPrefab: {fileID: 721283632189696070, guid: 43d45e6adc66bcf49b06497a61c244a9, type: 3}
   muzzle: {fileID: 6587672826698552112}
@@ -36335,7 +36320,7 @@ Transform:
   m_GameObject: {fileID: 6489731234347108301}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.4, y: -5.25, z: 0}
+  m_LocalPosition: {x: 4.4, y: -2.54, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -36753,9 +36738,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
   superArmourOnActiveTime: 0
-  startupDuration: 0
-  activeDuration: 0
-  recoveryDuration: 0
+  startupDuration: 0.5
+  activeDuration: 0.2
+  recoveryDuration: 1
   currentState: 0
   attackInstance: {fileID: 1108111344}
 --- !u!114 &8436923784550507297
@@ -36786,12 +36771,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 601316993473560194}
   superArmourOnActiveTime: 1
-  startupDuration: 2
+  startupDuration: 3
   activeDuration: 1
-  recoveryDuration: 1
+  recoveryDuration: 1.5
   currentState: 0
   diveInDepth: 5
   diveInDuration: 0.5
+  maxHorizontalSpeed: 2
+  horizontalMoveDuration: 2
   diveOutDuration: 0.5
 --- !u!114 &8436923784550507299
 MonoBehaviour:
@@ -36864,6 +36851,18 @@ MonoBehaviour:
   fallingDuration: 0.5
   fallingDiveDepth: 0.5
   fallingDiveDuration: 0.5
+--- !u!114 &8436923784550507302
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5641121441722052896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3864744d1efec644f83a02ae458f2505, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &8549001328018294874
 PrefabInstance:
   m_ObjectHideFlags: 0
