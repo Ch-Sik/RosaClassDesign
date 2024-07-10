@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class Boss1Debug : MonoBehaviour
+public class BossDebug : MonoBehaviour
 {
     public TMP_Text text;
     public Task_BossPhaseChange phaseChanger;

@@ -9,6 +9,8 @@ using Sirenix.OdinInspector;
 /// blackboard에 기록되어있는 enemy의 위치값을 중심으로 
 /// x축 방향으로 일정한 간격이 되게 곡사형 투사체를 발사함
 /// </summary>
+
+// TODO: 지면 높이와 상관없이 작동하도록 스크립트 수정하기
 public class Task_A_MultipleMortar : Task_A_Base
 {
     [Header("공격 관련")]

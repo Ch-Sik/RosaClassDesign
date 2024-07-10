@@ -14,8 +14,9 @@ GameObject:
   - component: {fileID: 8302385115658067482}
   - component: {fileID: 3905194349331104663}
   - component: {fileID: 4521437318996962378}
+  - component: {fileID: 2478769075967231417}
   m_Layer: 25
-  m_Name: Boss2Projectile
+  m_Name: Boss2 Water splash
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -183,3 +184,16 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &2478769075967231417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 431060034737850338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 867b9fcc7692c0b4f954835244d15295, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxLifetime: 10

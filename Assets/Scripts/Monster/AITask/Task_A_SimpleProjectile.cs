@@ -19,7 +19,7 @@ public class Task_A_SimpleProjectile : Task_A_Base
     [SerializeField, Tooltip("투사체가 생성되어야 할 위치")]
     private Transform muzzle;
     [SerializeField, Tooltip("투사체 진행 속도")]
-    private float projectileSpeed;
+    private float projectileSpeed = 1.0f;
 
     [Header("발사 방향 관련")]
     [SerializeField, Tooltip("공격 방향 옵션\n" +
