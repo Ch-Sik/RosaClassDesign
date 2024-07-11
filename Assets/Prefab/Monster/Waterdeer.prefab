@@ -704,6 +704,7 @@ MonoBehaviour:
   rigidbody: {fileID: 0}
   portrait: {fileID: 0}
   isSuperArmour: 0
+  tempSuperArmour: 0
   isInvincible: 0
   useRagdoll: 0
   knockbackCoeff: 5
@@ -797,7 +798,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
   superArmourOnActiveTime: 0
-  startupDuration: 1
+  startupDuration: 0.5
   activeDuration: 3
   recoveryDuration: 1
   currentState: 0
@@ -820,7 +821,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 5947960290006385922}
   hittReactionTime: 0.7
-  lookPlayerIfHitt: 0
+  lookPlayerIfHitt: 1
 --- !u!50 &725397827760566173
 Rigidbody2D:
   serializedVersion: 4
@@ -949,7 +950,7 @@ Transform:
   m_GameObject: {fileID: 6430373509608497901}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.31, y: -2.5, z: -0.048123926}
+  m_LocalPosition: {x: 2.31, y: -2.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1030,6 +1031,10 @@ PrefabInstance:
     - target: {fileID: 1344931218926041229, guid: ea19837820a38e545b7c63ed68c6fe9c, type: 3}
       propertyPath: m_Name
       value: Waterdeer_Animation
+      objectReference: {fileID: 0}
+    - target: {fileID: 1344931218926041229, guid: ea19837820a38e545b7c63ed68c6fe9c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6318279304093545829, guid: ea19837820a38e545b7c63ed68c6fe9c, type: 3}
       propertyPath: m_LocalScale.x

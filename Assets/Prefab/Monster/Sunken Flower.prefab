@@ -159,6 +159,7 @@ MonoBehaviour:
   rigidbody: {fileID: 0}
   portrait: {fileID: 0}
   isSuperArmour: 0
+  tempSuperArmour: 0
   isInvincible: 0
   useRagdoll: 0
   knockbackCoeff: 0
@@ -204,7 +205,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
-  superArmourOnActiveTime: 0
+  superArmourOnActiveTime: 1
   startupDuration: 1
   activeDuration: 2
   recoveryDuration: 2
@@ -263,7 +264,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1298649842612640371}
-  m_BodyType: 0
+  m_BodyType: 2
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
