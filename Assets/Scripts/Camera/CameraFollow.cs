@@ -15,16 +15,10 @@ public class CameraFollow : MonoBehaviour
 
     private Vector3 zOffset = new Vector3(0, 0, -10);
 
-    public bool allowCameraFollow = true;
-
     private void Start()
     {
         Init();
     }
-
-    public void AllowCamFollow() { allowCameraFollow = true; }
-
-    public void DisallowCamFollow() { allowCameraFollow = false; }
 
     public void Init()
     {
@@ -34,9 +28,6 @@ public class CameraFollow : MonoBehaviour
 
     private void Update()
     {
-        if (!allowCameraFollow)
-            return;
-
         transform.position = _player.transform.position + zOffset;
     }
 }

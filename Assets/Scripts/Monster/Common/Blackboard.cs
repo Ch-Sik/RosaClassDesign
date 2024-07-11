@@ -30,7 +30,7 @@ public class Blackboard : MonoBehaviour
     // 이벤트 핸들러들이 모두 같은 오브젝트 내에 있기 때문에 같이 소멸됨 = 사라진 리스너 문제 걱정할 필요 없음.
     public BlackboardUpdateEvent OnBlackboardUpdated;       
 
-    private void Awake()
+    private void Start()
     {
         dict = new Dictionary<string, object>();
     }

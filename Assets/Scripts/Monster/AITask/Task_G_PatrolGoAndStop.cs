@@ -283,6 +283,18 @@ public class Task_G_PatrolGoAndStop : Task_Base
         rigidbody.velocity = Vector2.zero;
     }
 
+    private LR GetCurrentDir()
+    {
+        if(transform.localScale.x < 0)
+        {
+            return LR.LEFT;
+        }
+        else
+        {
+            return LR.RIGHT;
+        }
+    }
+
     private void OnDrawGizmos()
     {
         if (hasPatrolRangeLimit)

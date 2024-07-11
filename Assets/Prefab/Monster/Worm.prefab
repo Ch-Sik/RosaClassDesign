@@ -9,11 +9,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6723869086908174502}
+  - component: {fileID: 1846542724639769077}
   - component: {fileID: 4506788961721631417}
   - component: {fileID: 6723654805782428121}
   - component: {fileID: 5172515235319734649}
   - component: {fileID: 2931743151944359072}
-  - component: {fileID: 1846542724639769077}
   - component: {fileID: 2064409454989637426}
   - component: {fileID: 9097754830414402148}
   - component: {fileID: 6229201684226529526}
@@ -46,6 +46,20 @@ Transform:
   - {fileID: 7301296710589363506}
   m_Father: {fileID: 1141028536866704608}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1846542724639769077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 655612095041294197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b302ab9d0e53e54482658867225c8b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MEMO: "TODO: Monster Tag \uC124\uC815\uD558\uAE30\n(TagManager \uCDA9\uB3CC\uD560\uAE4C\uBD10
+    \uD0DC\uADF8 \uC124\uC815 \uC548\uD574\uB193\uC74C)"
 --- !u!114 &4506788961721631417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -94,7 +108,6 @@ MonoBehaviour:
   rigidbody: {fileID: 0}
   portrait: {fileID: 0}
   isSuperArmour: 0
-  tempSuperArmour: 0
   isInvincible: 0
   useRagdoll: 0
   knockbackCoeff: 0
@@ -120,21 +133,6 @@ MonoBehaviour:
     breakPointStatuses: 
     collapsedLines: 
     btScript: 
---- !u!114 &1846542724639769077
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 655612095041294197}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b302ab9d0e53e54482658867225c8b8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MEMO: "OnMeetWall / Cliff \uC635\uC158\uC744 \uD1B5\uD574\n\uBCBD\uC774\uB098 \uB0AD\uB5A0\uB7EC\uC9C0\uC5D0\uC11C
-    \uC9C0\uD615 \uB530\uB77C 90\uB3C4 \uD68C\uC804\uD574\uC11C \uACC4\uC18D \uC6C0\uC9C1\uC77C\uC9C0,
-    \uC544\uB2C8\uBA74 \uB418\uB3CC\uC544\uAC08\uC9C0 \uC120\uD0DD\uD560 \uC218 \uC788\uC74C."
 --- !u!114 &2064409454989637426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -149,9 +147,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
   rigidbody: {fileID: 0}
-  OnMeetWall: 0
   bottomCenter: {fileID: 7301296710589363506}
-  OnMeetCliff: 0
   topCenter: {fileID: 4917263842184292107}
   patrolSpeed: 1
   rotateTime: 0.5
@@ -184,7 +180,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blackboard: {fileID: 9097754830414402148}
   hittReactionTime: 0.7
-  lookPlayerIfHitt: 0
 --- !u!50 &7285279123731025654
 Rigidbody2D:
   serializedVersion: 4

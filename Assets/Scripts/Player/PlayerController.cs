@@ -137,7 +137,7 @@ public class PlayerController : MonoBehaviour
         {
             if (moveVector.y >= 0 || !(playerMove.platformBelow?.CompareTag("Platform") == true))
             {
-                // Debug.Log(playerMove.platformBelow?.tag);
+                Debug.Log(playerMove.platformBelow?.tag);
                 
                 isJumpingUp = true;
                 playerMove.JumpUp();        // 상향 점프

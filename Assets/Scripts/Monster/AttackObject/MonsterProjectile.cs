@@ -15,8 +15,6 @@ public class MonsterProjectile : MonoBehaviour
     private new Rigidbody2D rigidbody;
     [SerializeField]
     private new Collider2D collider;
-    [SerializeField]
-    private Animator animator;
 
     public void InitProjectile(Vector2 direction)
     {
@@ -45,7 +43,7 @@ public class MonsterProjectile : MonoBehaviour
             Debug.Log("몬스터 투사체 지형과 접촉");
             rigidbody.velocity = Vector2.zero;
             this.collider.enabled = false;
-            DoDestroy(1f);
+            Destroy(gameObject, 1f);
         }
 
         if(collider.gameObject.CompareTag("Player"))
@@ -53,16 +51,7 @@ public class MonsterProjectile : MonoBehaviour
             Debug.Log("몬스터 투사체 플레이어와 접촉");
             rigidbody.velocity = Vector2.zero;
             this.collider.enabled = false;
-            DoDestroy(1f);
+            Destroy(gameObject, 1f);
         }
-    }
-
-    private void DoDestroy(float delay)
-    {
-        if(animator != null)
-        {
-            animator.SetTrigger("disappear");
-        }
-        Destroy(gameObject, delay);
     }
 }

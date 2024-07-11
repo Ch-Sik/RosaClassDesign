@@ -14,8 +14,8 @@ public class CSVReader
     public static List<Dictionary<string, object>> Read(string folder, string file)
     {
         var list = new List<Dictionary<string, object>>();
-        TextAsset csvFile = Resources.Load<TextAsset>(folder + "/" + file);
 
+        TextAsset csvFile = Resources.Load<TextAsset>(folder + "/" + file);
 
         string[] lines = Regex.Split(csvFile.text, LINE_SPLIT_RE);
         if (lines.Length <= 1) return list;

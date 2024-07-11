@@ -9,29 +9,27 @@ using Sirenix.OdinInspector;
 /// blackboard에 기록되어있는 enemy의 위치값을 중심으로 
 /// x축 방향으로 일정한 간격이 되게 곡사형 투사체를 발사함
 /// </summary>
-
-// TODO: 지면 높이와 상관없이 작동하도록 스크립트 수정하기
 public class Task_A_MultipleMortar : Task_A_Base
 {
     [Header("공격 관련")]
     [SerializeField, Tooltip("투사체 프리팹")]
-    protected GameObject projectilePrefab;
+    private GameObject projectilePrefab;
     [SerializeField, Tooltip("투사체 갯수")]
-    protected int projectileCount;
+    private int projectileCount;
     [SerializeField, Tooltip("투사체가 발사되는 위치")]
-    protected Transform muzzle;
+    private Transform muzzle;
     [SerializeField, Tooltip("(지면으로부터 기준) 투사체가 얼마나 높게 올라갔다 내려와야하는지. 반드시 muzzle의 높이보다 높아야 함.")]
-    protected float projectileMaxHeight = 3f;
+    private float projectileMaxHeight = 3f;
     [SerializeField, Tooltip("투사체가 지면에 도달할 때를 기준으로, x축 방향으로 간격")]
-    protected float targetInterval = 1f;
+    private float targetInterval = 1f;
 
     [SerializeField, ReadOnly]
-    protected float groundCoordY; // world space 상에서의 지면 y 좌표
+    private float groundCoordY; // world space 상에서의 지면 y 좌표
 
     [SerializeField, ReadOnly]
-    protected Vector2[] targetLocations;
+    private Vector2[] targetLocations;
     [SerializeField, ReadOnly]
-    protected Vector2[] launchVectors;
+    private Vector2[] launchVectors;
 
     private bool computedValuesFlag = false;    // 복잡한 계산은 한번만 하려고
     private float projectileEta;
@@ -79,7 +77,7 @@ public class Task_A_MultipleMortar : Task_A_Base
             computedValuesFlag = true;
         }
         // 적(플레이어) 위치 파악 & 좌표 산정
-        GetTargetLocations();
+        GetTargetLocation();
         // 각도 및 파워 계산
         GetLaunchVectors();
 
@@ -104,9 +102,12 @@ public class Task_A_MultipleMortar : Task_A_Base
         launchVectorY = projectileGravityScale* timeForUp;
     }
 
-    protected void GetTargetLocations()
+    private void GetTargetLocation()
     {
-        float centerXcoord = GetTargetCenterXcoord();
+        GameObject enemy;
+        blackboard.TryGet(BBK.Enemy, out enemy);
+
+        float centerXcoord = enemy.transform.position.x;
         // 투사체 갯수가 짝수일 경우 0.5간격만큼 우로 이동 (즉, 플레이어 가만히 있으면 안맞음)
         if(projectileCount % 2 == 0)
         {
@@ -118,13 +119,6 @@ public class Task_A_MultipleMortar : Task_A_Base
                 centerXcoord + (i - (projectileCount / 2)) * targetInterval, 
                 groundCoordY);
         }
-    }
-
-    protected virtual float GetTargetCenterXcoord()
-    {
-        GameObject enemy;
-        blackboard.TryGet(BBK.Enemy, out enemy);
-        return enemy.transform.position.x;
     }
 
     private void GetLaunchVectors()

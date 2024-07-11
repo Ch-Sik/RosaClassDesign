@@ -11,8 +11,6 @@ public class Task_PatternSelector : Task_Base
 {
     [SerializeField]
     private Blackboard blackboard;
-    [SerializeField]
-    private bool isTock = false;
 
     // Start is called before the first frame update
     private void Start()
@@ -45,23 +43,4 @@ public class Task_PatternSelector : Task_Base
         }
     }
 
-    [Task]
-    public bool isEnemyAtFront()
-    {
-        GameObject enemy;
-        blackboard.TryGet(BBK.Enemy, out enemy);
-        if (enemy == null) return false;
-
-        bool isFacingRight = transform.localScale.x > 0f;
-        bool isEnemyAtRight = (enemy.transform.position - transform.position).x > 0f;
-        return isFacingRight == isEnemyAtRight;
-    }
-
-    // true와 false를 한 번씩 번갈아가면서 반환 
-    [Task]
-    public bool TikTok()
-    {
-        isTock = !isTock;
-        return !isTock;
-    }
 }

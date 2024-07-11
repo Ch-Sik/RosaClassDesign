@@ -15,7 +15,6 @@ public class Task_A_Base : Task_Base
 {
     [SerializeField]
     protected Blackboard blackboard = null;
-    protected MonsterDamageReceiver dmgReceiver = null;
 
     [FoldoutGroup("기본 설정")]
     [SerializeField, Tooltip("패턴이 ActiveTime일 때 슈퍼아머 부여")]
@@ -95,12 +94,6 @@ public class Task_A_Base : Task_Base
                     // 공격 시전 첫프레임
                     attackState = MonsterAtttackState.Active;
                     activeTimer = Timer.StartTimer();
-                    // 슈퍼아머 효과 필요하다면 적용
-                    if(superArmourOnActiveTime)
-                    {
-                        if (dmgReceiver == null) dmgReceiver = GetComponent<MonsterDamageReceiver>();
-                        dmgReceiver.SetTempSuperArmour(true);
-                    }
                     OnActiveBegin();
                 }
                 break;
@@ -116,11 +109,6 @@ public class Task_A_Base : Task_Base
                     // 후딜레이 첫 프레임
                     attackState = MonsterAtttackState.Recovery;
                     recoveryTimer = Timer.StartTimer();
-                    // 슈퍼아머 효과 적용했다면 해제
-                    if (superArmourOnActiveTime)
-                    {
-                        dmgReceiver.SetTempSuperArmour(false);
-                    }
                     OnRecoveryBegin();
                 }
                 break;
@@ -168,11 +156,6 @@ public class Task_A_Base : Task_Base
         startupTimer = null;
         activeTimer = null;
         recoveryTimer = null;
-        // 슈퍼아머 효과 적용했다면 해제
-        if (superArmourOnActiveTime)
-        {
-            dmgReceiver.SetTempSuperArmour(false);
-        }
     }
 
     /// <summary>
@@ -186,11 +169,6 @@ public class Task_A_Base : Task_Base
         startupTimer = null;
         activeTimer = null;
         recoveryTimer = null;
-        // 슈퍼아머 효과 적용했다면 해제
-        if (superArmourOnActiveTime)
-        {
-            dmgReceiver.SetTempSuperArmour(false);
-        }
     }
 
     /// <summary>
@@ -201,11 +179,6 @@ public class Task_A_Base : Task_Base
     {
         attackState = MonsterAtttackState.Recovery;
         recoveryTimer = Timer.StartTimer();
-        // 슈퍼아머 효과 적용했다면 해제
-        if (superArmourOnActiveTime)
-        {
-            dmgReceiver.SetTempSuperArmour(false);
-        }
         OnRecoveryBegin();
     }
 }

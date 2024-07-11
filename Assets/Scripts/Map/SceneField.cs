@@ -16,13 +16,6 @@ public class SceneField
 
     [SerializeField]
     private string m_SceneName = "";
-
-    public void SetScene(Object scene, string name)
-    { 
-        m_SceneAsset = scene;
-        m_SceneName = name;
-    }
-
     public string SceneName
     {
         get { return m_SceneName; }

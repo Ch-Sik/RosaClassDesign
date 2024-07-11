@@ -138,7 +138,7 @@ public class MagicIvy : MonoBehaviour
             // 한칸씩 아래쪽으로 가면서 타일 검사
             downLength--;
             Vector3 centerPos = transform.position + downLength * Vector3.up;
-            // Debug.Log(centerPos);
+            Debug.Log(centerPos);
             Vector3 innerPos = centerPos - (Vector3)(0.5f * wallDirection.toVector2());
             Vector3 outerPos = centerPos + (Vector3)(0.5f * wallDirection.toVector2());
 
