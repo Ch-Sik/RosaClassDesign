@@ -26,6 +26,14 @@ public class SORoom : ScriptableObject
         rigPorts = new List<RoomPort>(rig);
         lefPorts = new List<RoomPort>(lef);
     }
+
+    public void ClearConnectedPort()
+    {
+        foreach (RoomPort port in topPorts) { port.connectedPorts = new List<ConnectedPort>(); }
+        foreach (RoomPort port in botPorts) { port.connectedPorts = new List<ConnectedPort>(); }
+        foreach (RoomPort port in rigPorts) { port.connectedPorts = new List<ConnectedPort>(); }
+        foreach (RoomPort port in lefPorts) { port.connectedPorts = new List<ConnectedPort>(); }
+    }
 }
 
 [Serializable]
@@ -49,6 +57,12 @@ public class ConnectedPort
 {
     public SceneField scene;
     public int index;
+
+    public ConnectedPort(SceneField scene, int index)
+    {
+        this.scene = scene;
+        this.index = index;
+    }
 }
 
 public enum PortDirection

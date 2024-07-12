@@ -1,10 +1,10 @@
-using System.IO;
 using System;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.UI;
 using UnityEngine.UIElements;
-
+using UnityEditor.UIElements;
+using UnityEditor.U2D.Aseprite;
 
 public class MapEditorWindow : EditorWindow
 {
@@ -19,14 +19,58 @@ public class MapEditorWindow : EditorWindow
     private void OnEnable()
     {
         AddGraphView();
+        AddToolbar();
     }
 
     private void AddGraphView()
     {
-        graphView = new MapGraphView(this);
+        string[] guid = AssetDatabase.FindAssets("t:MapDataSO");
+        string path = AssetDatabase.GUIDToAssetPath(guid[0]);
+        MapDataSO mapData = AssetDatabase.LoadAssetAtPath<MapDataSO>(path);
+
+        graphView = new MapGraphView(this, mapData);
 
         graphView.StretchToParentSize();
 
         rootVisualElement.Add(graphView);
+    }
+
+    private void AddToolbar()
+    {
+        Toolbar toolbar = new Toolbar();
+
+        Button saveBtn = CreateButton("Save", Save);
+        Button applyBtn = CreateButton("Apply", Apply);
+
+        toolbar.Add(saveBtn);
+        toolbar.Add(applyBtn);
+        
+
+        toolbar.style.height = 50;
+
+        rootVisualElement.Add(toolbar);
+    }
+
+    private void Save()
+    {
+        graphView.Save();
+    }
+
+    private void Apply()
+    {
+        graphView.Apply();
+    }
+
+    private Button CreateButton(string btnName, Action onClick = null)
+    {
+        Button button = new Button(onClick)
+        {
+            text = btnName
+        };
+
+        button.style.width = 100;
+        button.style.height = 50;
+
+        return button;
     }
 }

@@ -54,7 +54,11 @@ MonoBehaviour:
     - {x: 20, y: 7}
     - {x: 20, y: 8}
     - {x: 20, y: 9}
-    connectedPorts: []
+    connectedPorts:
+    - scene:
+        m_SceneAsset: {fileID: 102900000, guid: fc3ffa640de7f1e438c32e887b629981, type: 3}
+        m_SceneName: Test2
+      index: 0
   lefPorts:
   - index: 0
     direction: 3

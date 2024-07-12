@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e2fb2ef362f32042a0629182e822941, type: 3}
+  m_Name: MapData
+  m_EditorClassIdentifier: 
+  <Groups>k__BackingField:
+  - <FlagName>k__BackingField: NewFlag
+    <Position>k__BackingField: {x: -172.00006, y: 508.00003}
+  - <FlagName>k__BackingField: AAA
+    <Position>k__BackingField: {x: -210, y: -56}
+  <Nodes>k__BackingField:
+  - <Room>k__BackingField: {fileID: 11400000, guid: 5963eab6eb638b54ea2f301759ad3e8e, type: 2}
+    <Position>k__BackingField: {x: -63, y: -594}
+    FlagName: 
+    FlagIndex: 0
+  - <Room>k__BackingField: {fileID: 11400000, guid: ad4ea43855e842d41b5ad6429d08f64a, type: 2}
+    <Position>k__BackingField: {x: 703, y: -946}
+    FlagName: 
+    FlagIndex: 0
+  - <Room>k__BackingField: {fileID: 11400000, guid: 5165258c7a16d3c478abd590db3615fb, type: 2}
+    <Position>k__BackingField: {x: -147, y: 568}
+    FlagName: NewFlag
+    FlagIndex: 0
+  - <Room>k__BackingField: {fileID: 11400000, guid: ef4eee11941f44f44a3267ac07aff0b5, type: 2}
+    <Position>k__BackingField: {x: 259, y: 568}
+    FlagName: NewFlag
+    FlagIndex: 1
+  - <Room>k__BackingField: {fileID: 11400000, guid: 94e00ca5e850d1b4cbbd3d62decc81ee, type: 2}
+    <Position>k__BackingField: {x: -753, y: -350}
+    FlagName: 
+    FlagIndex: 0
+  - <Room>k__BackingField: {fileID: 11400000, guid: 433e7e4d32cbe3e4b8586ae935024bab, type: 2}
+    <Position>k__BackingField: {x: 255, y: 4}
+    FlagName: AAA
+    FlagIndex: 1
+  - <Room>k__BackingField: {fileID: 11400000, guid: 90b8425bc65c0d04ab249a3db79ad9a3, type: 2}
+    <Position>k__BackingField: {x: -185, y: 4}
+    FlagName: AAA
+    FlagIndex: 0
+  - <Room>k__BackingField: {fileID: 11400000, guid: 240ff1bc74f508641bedd622f65e5e8b, type: 2}
+    <Position>k__BackingField: {x: 935, y: 538}
+    FlagName: 
+    FlagIndex: 0

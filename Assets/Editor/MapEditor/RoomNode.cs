@@ -1,15 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
+using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using System.Linq;
-using System;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
 
 public class RoomNode : Node
 {
     public string ID { get; set; }
+    public string FlagName { get; set; }
+    public int FlagIndex { get; set; }
     public string RoomName { get; set; }
     public SORoom roomData { get; set; }
 
@@ -19,13 +21,19 @@ public class RoomNode : Node
 
     public List<PortData> portDatas;
 
-    public void Initialize(string nodeName, MapGraphView graphView, Vector2 position)
+    public bool inGroup = false;
+
+    private TextField intInputField;
+
+    public void Initialize(SORoom room, MapGraphView graphView, Vector2 position, int flagIndex)
     {
         portDatas = new List<PortData>();
 
-        this.RoomName = nodeName;
+        this.roomData = room;
+        this.RoomName = room.name;
         this.graphView = graphView;
         this.position = position;
+        this.FlagIndex = flagIndex;
         //this.roomData = room;
 
         Draw();
@@ -55,19 +63,35 @@ public class RoomNode : Node
         VisualElement midElement = new VisualElement(); midElement.SetSize(240, 400);
         VisualElement rigElement = new VisualElement(); rigElement.SetSize(80, 400);
 
-        VisualElement topElement = new VisualElement(); topElement.SetSize(240, 80); midElement.Add(topElement);
-        VisualElement cenElement = new VisualElement(); cenElement.SetSize(240, 240); midElement.Add(cenElement);  cenElement.SetVisualElementStyle(FlexDirection.Column);  cenElement.SetRoomName(RoomName);
-        VisualElement botElement = new VisualElement(); botElement.SetSize(240, 80); midElement.Add(botElement);
+        VisualElement topElement = new VisualElement(); topElement.SetSize(240, 20); midElement.Add(topElement);
+        VisualElement cenElement = new VisualElement(); cenElement.SetSize(240, 360); midElement.Add(cenElement);  cenElement.SetVisualElementStyle(FlexDirection.Column);  cenElement.SetRoomName(RoomName);
+        VisualElement botElement = new VisualElement(); botElement.SetSize(240, 20); midElement.Add(botElement);
 
-        lefElement.SetVisualElementStyle(FlexDirection.Column);
-        rigElement.SetVisualElementStyle(FlexDirection.Column);
+        intInputField = new TextField("Flag Index :");
+        intInputField.value = FlagIndex.ToString();
+        intInputField.labelElement.style.fontSize = 25;
+        intInputField.style.width = 250;
+        intInputField.style.height = 35;
+        intInputField.style.marginBottom = 10;
+        intInputField.style.fontSize = 25;
+        intInputField.RegisterValueChangedCallback(evt =>
+        {
+            if (int.TryParse(evt.newValue, out int result))
+                FlagIndex = result;
+
+        });
+        cenElement.Add(intInputField);
+        DisableInputField();
+
+        lefElement.SetVisualElementStyle(FlexDirection.ColumnReverse);
+        rigElement.SetVisualElementStyle(FlexDirection.ColumnReverse);
         topElement.SetVisualElementStyle(FlexDirection.Row);
         botElement.SetVisualElementStyle(FlexDirection.Row);
 
-        SetPorts(lefElement, 2, Orientation.Horizontal, Direction.Input, PortDirection.Lef);
-        SetPorts(rigElement, 2, Orientation.Horizontal, Direction.Output, PortDirection.Rig);
-        SetPorts(topElement, 2, Orientation.Vertical, Direction.Input, PortDirection.Top);
-        SetPorts(botElement, 2, Orientation.Vertical, Direction.Output, PortDirection.Bot);
+        SetPorts(lefElement, roomData.lefPorts.Count, Orientation.Horizontal, Direction.Input, PortDirection.Lef);
+        SetPorts(rigElement, roomData.rigPorts.Count, Orientation.Horizontal, Direction.Output, PortDirection.Rig);
+        SetPorts(topElement, roomData.topPorts.Count, Orientation.Vertical, Direction.Input, PortDirection.Top);
+        SetPorts(botElement, roomData.botPorts.Count, Orientation.Vertical, Direction.Output, PortDirection.Bot);
 
         mainContainer.Add(lefElement);
         mainContainer.Add(midElement);
@@ -80,20 +104,59 @@ public class RoomNode : Node
     {
         for (int i = 0; i < count; i++)
         {
-            Port port = Port.Create<Edge>(orientation, direction, Port.Capacity.Multi, typeof(bool));
+            Port port = Port.Create<Edge>(orientation, direction, Port.Capacity.Single, typeof(bool));
             port.portName = "";
-            //port.Q<Label>("type").visible = false;
-            //port.Q<Label>("type").SetEnabled(false);
             visualElement.Add(port);
             portDatas.Add(new PortData(port, roomData, portDirection, i));
-
-            Debug.Log($"{portDirection} 방향, {i}인덱스");
         }
     }
 
-    public string GetRoomName()
+    public void SetGroupState(bool isGrouping, string str = "")
     {
-        return RoomName;
+        inGroup = isGrouping;
+        FlagName = str;
+
+        if (inGroup)
+        {
+            DisablePorts();
+            EnableInputField();
+        }
+        else
+        {
+            EnablePorts();
+            DisableInputField();
+        }
+    }
+
+    private void EnablePorts()
+    {
+        foreach (PortData portData in portDatas)
+        {
+            portData.port.SetEnabled(true);
+            portData.port.visible = true;
+        }
+    }
+
+    private void DisablePorts()
+    {
+        foreach (PortData portData in portDatas)
+        {
+            graphView.DisconnectAllPorts(portData.port);
+            portData.port.SetEnabled(false);
+            portData.port.visible = false;
+        }
+    }
+
+    private void EnableInputField()
+    {
+        intInputField.SetEnabled(true);
+        intInputField.visible = true;
+    }
+
+    private void DisableInputField()
+    {
+        intInputField.SetEnabled(false);
+        intInputField.visible = false;
     }
 }
 
