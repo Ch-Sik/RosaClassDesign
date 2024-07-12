@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Panda;
 using System;
+using Sirenix.OdinInspector;
 
 /// <summary>
 /// 지상형 몬스터의 Patrol Task를 수행하는 스크립트
@@ -26,9 +27,9 @@ public class Task_G_PatrolGoAndStop : Task_Base
 
     [SerializeField]
     private bool hasPatrolRangeLimit = true;   // 순찰 범위를 수동으로 제한할 것인지
-    [SerializeField, DrawIf("hasPatrolRangeLimit", true)]
+    [SerializeField, ShowIf("hasPatrolRangeLimit", true)]
     private float PatrolRangeSize = 5.0f;
-    [SerializeField, DrawIf("hasPatrolRangeLimit", true)]
+    [SerializeField, ShowIf("hasPatrolRangeLimit", true)]
     private float PatrolRangeOffset = 0.0f;
     [SerializeField, ReadOnly]
     private float startXpos, destXpos;      // 한 번 와리가리 할 때 시작점과 도착점의 x좌표
