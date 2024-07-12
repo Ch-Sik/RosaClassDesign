@@ -17,19 +17,25 @@ public class Task_A_Base : Task_Base
     protected Blackboard blackboard = null;
     protected MonsterDamageReceiver dmgReceiver = null;
 
-    [FoldoutGroup("기본 설정")]
-    [SerializeField, Tooltip("패턴이 ActiveTime일 때 슈퍼아머 부여")]
-    protected bool superArmourOnActiveTime = false;
 
     [FoldoutGroup("기본 설정")]
     [SerializeField]
     protected float startupDuration;
-    [FoldoutGroup("기본 설정")]
-    [SerializeField]
+    [FoldoutGroup("기본 설정"), SerializeField]
+    [Tooltip("패턴이 StartupTime일 때 슈퍼아머 부여")]
+    protected bool superArmourOnStartup = true;
+
+    [FoldoutGroup("기본 설정"), SerializeField]
     protected float activeDuration;
-    [FoldoutGroup("기본 설정")]
-    [SerializeField]
+    [FoldoutGroup("기본 설정"), SerializeField]
+    [Tooltip("패턴이 ActiveTime일 때 슈퍼아머 부여")]
+    protected bool superArmourOnActive = true;
+
+    [FoldoutGroup("기본 설정"), SerializeField]
     protected float recoveryDuration;
+    [FoldoutGroup("기본 설정"), SerializeField]
+    [Tooltip("패턴이 RecoveryTime일 때 슈퍼아머 부여")]
+    protected bool superArmourOnRecovery = true;
 
     protected Timer startupTimer;
     protected Timer activeTimer;
@@ -63,24 +69,19 @@ public class Task_A_Base : Task_Base
             return;
         }
 
-        // 공격 active 중에 슈퍼아머 옵션이 꺼져있거나 애초에 공격 active가 아니라면 피격 여부 검사
-        if (attackState != MonsterAtttackState.Active || !superArmourOnActiveTime)
-        {
-            bool isHitt;
-            blackboard.TryGet(BBK.isHitt, out isHitt);
-            if(isHitt)
-            {
-                Fail();
-                return;
-            }
-        }
-
+        // 사망 아니라면 패턴 수행
         switch(attackState)
         {
             case MonsterAtttackState.Null:
                 // 선딜레이 첫 프레임
+                // 필드 값 설정
                 attackState = MonsterAtttackState.Startup;
                 startupTimer = Timer.StartTimer();
+                if (dmgReceiver == null) 
+                    dmgReceiver = GetComponent<MonsterDamageReceiver>();
+                // 슈퍼아머 상태 업데이트
+                dmgReceiver.SetTempSuperArmour(superArmourOnStartup);
+                // 오버로딩된 함수 실행
                 OnStartupBegin();
                 break;
             case MonsterAtttackState.Startup:
@@ -93,14 +94,12 @@ public class Task_A_Base : Task_Base
                 else
                 {
                     // 공격 시전 첫프레임
+                    // 필드 값 설정
                     attackState = MonsterAtttackState.Active;
                     activeTimer = Timer.StartTimer();
-                    // 슈퍼아머 효과 필요하다면 적용
-                    if(superArmourOnActiveTime)
-                    {
-                        if (dmgReceiver == null) dmgReceiver = GetComponent<MonsterDamageReceiver>();
-                        dmgReceiver.SetTempSuperArmour(true);
-                    }
+                    // 슈퍼아머 상태 업데이트
+                    dmgReceiver.SetTempSuperArmour(superArmourOnActive);
+                    // 오버로딩된 함수 실행
                     OnActiveBegin();
                 }
                 break;
@@ -114,13 +113,12 @@ public class Task_A_Base : Task_Base
                 else
                 {
                     // 후딜레이 첫 프레임
+                    // 필드 값 설정
                     attackState = MonsterAtttackState.Recovery;
                     recoveryTimer = Timer.StartTimer();
-                    // 슈퍼아머 효과 적용했다면 해제
-                    if (superArmourOnActiveTime)
-                    {
-                        dmgReceiver.SetTempSuperArmour(false);
-                    }
+                    // 슈퍼아머 상태 업데이트
+                    dmgReceiver.SetTempSuperArmour(superArmourOnRecovery);
+                    // 오버로딩된 함수 실행
                     OnRecoveryBegin();
                 }
                 break;
@@ -133,9 +131,12 @@ public class Task_A_Base : Task_Base
                 }
                 else
                 {
-                    // 후딜 종료, 패턴 완료
-                    attackState = MonsterAtttackState.Null;
+                    // 후딜 종료
+                    // 슈퍼아머 상태 업데이트
+                    dmgReceiver.SetTempSuperArmour(false);
+                    // 오버로딩된 함수 수행
                     OnEnd();
+                    // 패턴 완료
                     Succeed();
                 }
                 break;
@@ -169,7 +170,7 @@ public class Task_A_Base : Task_Base
         activeTimer = null;
         recoveryTimer = null;
         // 슈퍼아머 효과 적용했다면 해제
-        if (superArmourOnActiveTime)
+        if (superArmourOnActive)
         {
             dmgReceiver.SetTempSuperArmour(false);
         }
@@ -187,7 +188,7 @@ public class Task_A_Base : Task_Base
         activeTimer = null;
         recoveryTimer = null;
         // 슈퍼아머 효과 적용했다면 해제
-        if (superArmourOnActiveTime)
+        if (superArmourOnActive)
         {
             dmgReceiver.SetTempSuperArmour(false);
         }
@@ -202,7 +203,7 @@ public class Task_A_Base : Task_Base
         attackState = MonsterAtttackState.Recovery;
         recoveryTimer = Timer.StartTimer();
         // 슈퍼아머 효과 적용했다면 해제
-        if (superArmourOnActiveTime)
+        if (superArmourOnActive)
         {
             dmgReceiver.SetTempSuperArmour(false);
         }

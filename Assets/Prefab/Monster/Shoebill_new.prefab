@@ -86,7 +86,7 @@ GameObject:
   - component: {fileID: 1881586570308895268}
   m_Layer: 23
   m_Name: Shoebill
-  m_TagString: Untagged
+  m_TagString: Monster
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -262,10 +262,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 6045232312697986700}
-  superArmourOnActiveTime: 1
   startupDuration: 0.8
+  superArmourOnStartup: 1
   activeDuration: 0.8
+  superArmourOnActive: 1
   recoveryDuration: 1
+  superArmourOnRecovery: 1
   currentState: 0
   rigidbody: {fileID: 1881586570308895268}
   damageComponent: {fileID: 1876230546071428568}
@@ -364,7 +366,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2632208402772129310}
   - component: {fileID: 2247597876949225475}
-  m_Layer: 23
+  m_Layer: 0
   m_Name: AI Sensors
   m_TagString: Untagged
   m_Icon: {fileID: 0}

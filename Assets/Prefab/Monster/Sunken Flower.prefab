@@ -205,10 +205,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
-  superArmourOnActiveTime: 1
-  startupDuration: 1
-  activeDuration: 2
+  startupDuration: 0.6
+  superArmourOnStartup: 1
+  activeDuration: 1.4
+  superArmourOnActive: 1
   recoveryDuration: 2
+  superArmourOnRecovery: 1
   currentState: 0
   AoePrefab: {fileID: 1119964193091532222, guid: 59040f296d2ff4940be4818b049b6e26, type: 3}
 --- !u!61 &5363826686536181631
@@ -294,7 +296,7 @@ GameObject:
   - component: {fileID: 834598483667121582}
   m_Layer: 23
   m_Name: Sunken Flower
-  m_TagString: Monster
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -326,7 +328,7 @@ GameObject:
   m_Component:
   - component: {fileID: 346880366228066338}
   - component: {fileID: 7042460048005737672}
-  m_Layer: 23
+  m_Layer: 0
   m_Name: AI Sensors
   m_TagString: Untagged
   m_Icon: {fileID: 0}

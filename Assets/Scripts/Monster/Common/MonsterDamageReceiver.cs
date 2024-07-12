@@ -1,4 +1,5 @@
 using AnyPortrait;
+using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,16 +7,40 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class MonsterDamageReceiver : DamageReceiver
 {
+    [Title("컴포넌트 레퍼런스")]
+
     [SerializeField] Blackboard blackboard;
     [SerializeField] MonsterState monsterState;
     [SerializeField] new Rigidbody2D rigidbody;
-    [SerializeField] apPortrait portrait;
+    [SerializeField] apPortrait portrait; // 몬스터 피격 시 깜빡이는 연출에 필요
 
-    [SerializeField] private bool isSuperArmour;    // 피격 리액션을 하지 않으며 밀려나지 않음
-    [SerializeField, ReadOnly] private bool tempSuperArmour;        // 패턴 도중에 잠깐 얻는 슈퍼아머 효과. 둘 중 하나만 참이어도 슈퍼아머 효과 적용됨.
-    [SerializeField] private bool isInvincible;     // 피격 리액션은 수행하지만 데미지를 입지 않음
+
+    [Title("슈퍼 아머 옵션")]
+
+    [Tooltip("기본적으로 슈퍼아머 보유 여부")] 
+    [SerializeField] private bool isSuperArmour;
+    [Tooltip("공격 패턴 등으로 인해 잠깐 얻는 슈퍼아머 효과")]
+    [SerializeField, ReadOnly] private bool tempSuperArmour;
+
+
+    [Title("무적 관련 옵션")]
+
+    [Tooltip("슈퍼아머 여부와 별개로 데미지를 입지 않음 옵션")]
+    [SerializeField] private bool isInvincible;
+
+
+    [Title("넉백 관련 옵션")]
+
+    [Tooltip("넉백 계수")]
+    [SerializeField] private float knockbackCoeff;
+    [Tooltip("슈퍼아머 시에 넉백 무시 옵션")]
+    [SerializeField] private bool ignoreKnockbackOnSuperArmour;
+
+
+    [Title("사망 관련 옵션")]
+
     [SerializeField] private bool useRagdoll;       // 사망 시에 이리저리 굴러다니게 하는 효과 사용할 것인지?
-    [SerializeField] private float knockbackCoeff;  // 넉백 계수
+
 
     bool isAlive = true;
     Coroutine blinkCoroutine;
@@ -74,7 +99,7 @@ public class MonsterDamageReceiver : DamageReceiver
             }
         }
 
-        // 사망하지 않았을 경우, 슈퍼아머 여부에 따라 넉백/피격모션 진행여부 결정
+        // 슈퍼아머가 아닐 경우
         if(!isSuperArmour && !tempSuperArmour)
         {
             // 넉백 계수가 0보다 크다면 넉백 수행
@@ -92,6 +117,15 @@ public class MonsterDamageReceiver : DamageReceiver
             {
                 yield return 0;     // 다음프레임까지 대기
                 blackboard.Set(BBK.isHitt, false);
+            }
+        }
+        // 슈퍼아머일 경우
+        else
+        {
+            // 넉백 무시 옵션이 꺼져있고 넉백 계수가 0보다 크다면 넉백 수행
+            if (!ignoreKnockbackOnSuperArmour && knockbackCoeff > float.Epsilon)
+            {
+                KnockBack(attackAngle);
             }
         }
     }

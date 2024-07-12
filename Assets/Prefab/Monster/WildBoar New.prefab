@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2091620268479207575}
   m_Layer: 23
   m_Name: WildBoar New
-  m_TagString: Monster
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -129,8 +129,9 @@ MonoBehaviour:
   isSuperArmour: 0
   tempSuperArmour: 0
   isInvincible: 0
-  useRagdoll: 0
   knockbackCoeff: 5
+  ignoreKnockbackOnSuperArmour: 0
+  useRagdoll: 0
 --- !u!114 &5428913854903764036
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -235,10 +236,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
-  superArmourOnActiveTime: 1
-  startupDuration: 1
-  activeDuration: 0.8
-  recoveryDuration: 1
+  startupDuration: 0.4
+  superArmourOnStartup: 1
+  activeDuration: 0.6
+  superArmourOnActive: 1
+  recoveryDuration: 1.4
+  superArmourOnRecovery: 0
   currentState: 0
   rigidbody: {fileID: 0}
   damageComponent: {fileID: 1912261046069545197}
@@ -635,7 +638,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7862931510445157570}
   - component: {fileID: 3485183793489272459}
-  m_Layer: 23
+  m_Layer: 0
   m_Name: AI Sensors
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1344969826214912918}
   m_Layer: 23
   m_Name: TurretFlower Aim New
-  m_TagString: Monster
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -356,14 +356,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 5376473838336655270}
-  superArmourOnActiveTime: 0
   startupDuration: 0.5
+  superArmourOnStartup: 1
   activeDuration: 1
+  superArmourOnActive: 1
   recoveryDuration: 1
+  superArmourOnRecovery: 1
   currentState: 0
   projectilePrefab: {fileID: 431060034737850338, guid: 0a1b8dc1817d29848945f4acbaef2b81, type: 3}
   muzzle: {fileID: 653838375159494413}
-  projectileSpeed: 3
+  projectileSpeed: 4.3
   projectileDirOption: 0
   fixedTarget: {fileID: 0}
 --- !u!114 &8981009401857194193

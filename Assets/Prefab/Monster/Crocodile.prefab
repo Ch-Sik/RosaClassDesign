@@ -163,7 +163,7 @@ GameObject:
   - component: {fileID: 469616443224496605}
   m_Layer: 23
   m_Name: Crocodile
-  m_TagString: Monster
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -195,7 +195,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5831138219821414055}
   - component: {fileID: 875448355151837258}
-  m_Layer: 23
+  m_Layer: 0
   m_Name: AI Sensors
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -344,7 +344,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.021250248, y: 1.0824304}
+  m_Offset: {x: 0, y: 0.5}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -355,7 +355,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 8.982413, y: 3.1648607}
+  m_Size: {x: 12, y: 4}
   m_EdgeRadius: 0
 --- !u!1773428102 &2807111509959258866
 ParentConstraint:
@@ -722,10 +722,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 0}
-  superArmourOnActiveTime: 1
-  startupDuration: 0.7
+  startupDuration: 0.6
+  superArmourOnStartup: 1
   activeDuration: 3
-  recoveryDuration: 2
+  superArmourOnActive: 1
+  recoveryDuration: 1.7
+  superArmourOnRecovery: 0
   currentState: 0
   rigidbody: {fileID: 0}
   damageComponent: {fileID: 0}
