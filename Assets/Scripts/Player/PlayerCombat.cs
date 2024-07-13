@@ -97,6 +97,10 @@ public class PlayerCombat : MonoBehaviour
     private void FixedUpdate()
     {
         if (isAttacking) Attack();
+        if (playerControl.currentMoveState == PlayerMoveState.NO_MOVE)
+        {
+            if (!isAttacking) playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+        }
     }
 
     //SetData는 호출되면, 현재의 마우스 위치를 토대로 각도와 방향벡터 Data를 Set해준다.
@@ -113,7 +117,6 @@ public class PlayerCombat : MonoBehaviour
     public void Attack()
     {
         //공격중이라면, 리턴
-        //Todo : 마우스를 누르고 있거나 선입력 판정을 읽는 장치 필요
         if (isAttack)
             return;
 
@@ -227,7 +230,7 @@ public class PlayerCombat : MonoBehaviour
     private void OnEndAttack()
     {
         // 이펙트 & 공격 판정 오브젝트 비활성화
-        playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+        if(!isAttacking) playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
         isAttack = false;
         canInteraction = true;
         comboStep++;
