@@ -96,6 +96,10 @@ public class PlayerController : MonoBehaviour
     public void ChangeMoveState(PlayerMoveState newMoveState)
     {
         //MIDAIR 상태에서 키바인딩은 GROUNDED 상태와 다르지 않기 때문에 GROUNDED
+        if(newMoveState == PlayerMoveState.NO_MOVE)
+        {
+            Debug.Log(".");
+        }
         if (newMoveState == PlayerMoveState.MIDAIR)
         {
             newMoveState = PlayerMoveState.GROUNDED;

@@ -97,6 +97,8 @@ public class PlayerCombat : MonoBehaviour
     private void FixedUpdate()
     {
         if (isAttacking) Attack();
+
+
     }
 
     //SetData는 호출되면, 현재의 마우스 위치를 토대로 각도와 방향벡터 Data를 Set해준다.
@@ -219,7 +221,8 @@ public class PlayerCombat : MonoBehaviour
     private void OnStartAttack()
     {
         playerControl.ChangeMoveState(PlayerMoveState.NO_MOVE);
-        if (comboStep == 0) playerRef.Animation.SetTrigger("Attack");
+        //if (comboStep == 0) playerRef.Animation.SetTrigger("Attack");
+        playerRef.Animation.SetTrigger("Attack");
 
     }
 
@@ -227,11 +230,13 @@ public class PlayerCombat : MonoBehaviour
     private void OnEndAttack()
     {
         // 이펙트 & 공격 판정 오브젝트 비활성화
-        playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+        if(!isAttacking) playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+        //playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
         isAttack = false;
         canInteraction = true;
         comboStep++;
         comboStep = comboStep % comboAttacks.Count;
+        
     }
 
     //추후에 공격시 대미지나 공격력을 계산하기 위해 만들었다. AttackObejct에서 충돌판정부에서 사용하자.
