@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
-using Sirenix.OdinInspector;
 
 public class MagicMangrove : MonoBehaviour
 {
@@ -15,7 +14,7 @@ public class MagicMangrove : MonoBehaviour
 
     [SerializeField, Tooltip("좌우 크기에 제한 둘 것인지 말건지")]
     private bool hasSizeLimit;
-    [SerializeField, ShowIf("hasSizeLimit", true)]
+    [SerializeField, DrawIf("hasSizeLimit", true)]
     [Tooltip("좌우 크기가 제한이 있을 경우의 그 제한 크기 (크기는 오른쪽/왼쪽 절반 따로 계산해서 제한함)")]
     private float sizeLimit = 3f;
     [SerializeField, Tooltip("뿌리가 성장할 때의 틱 속도")]

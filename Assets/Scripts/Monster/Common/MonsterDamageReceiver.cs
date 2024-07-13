@@ -1,5 +1,4 @@
 using AnyPortrait;
-using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,40 +6,15 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class MonsterDamageReceiver : DamageReceiver
 {
-    [Title("컴포넌트 레퍼런스")]
-
     [SerializeField] Blackboard blackboard;
     [SerializeField] MonsterState monsterState;
     [SerializeField] new Rigidbody2D rigidbody;
-    [SerializeField] apPortrait portrait; // 몬스터 피격 시 깜빡이는 연출에 필요
+    [SerializeField] apPortrait portrait;
 
-
-    [Title("슈퍼 아머 옵션")]
-
-    [Tooltip("기본적으로 슈퍼아머 보유 여부")] 
-    [SerializeField] private bool isSuperArmour;
-    [Tooltip("공격 패턴 등으로 인해 잠깐 얻는 슈퍼아머 효과")]
-    [SerializeField, ReadOnly] private bool tempSuperArmour;
-
-
-    [Title("무적 관련 옵션")]
-
-    [Tooltip("슈퍼아머 여부와 별개로 데미지를 입지 않음 옵션")]
-    [SerializeField] private bool isInvincible;
-
-
-    [Title("넉백 관련 옵션")]
-
-    [Tooltip("넉백 계수")]
-    [SerializeField] private float knockbackCoeff;
-    [Tooltip("슈퍼아머 시에 넉백 무시 옵션")]
-    [SerializeField] private bool ignoreKnockbackOnSuperArmour;
-
-
-    [Title("사망 관련 옵션")]
-
+    [SerializeField] private bool isSuperArmour;    // 피격 리액션을 하지 않으며 밀려나지 않음
+    [SerializeField] private bool isInvincible;     // 피격 리액션은 수행하지만 데미지를 입지 않음
     [SerializeField] private bool useRagdoll;       // 사망 시에 이리저리 굴러다니게 하는 효과 사용할 것인지?
-
+    [SerializeField] private float knockbackCoeff;  // 넉백 계수
 
     bool isAlive = true;
     Coroutine blinkCoroutine;
@@ -81,58 +55,36 @@ public class MonsterDamageReceiver : DamageReceiver
 
     public override void GetHitt(int damage, float attackAngle)
     {
-        // 이미 죽어있을 경우 피격 무시
         if (!isAlive) return;
 
         // BlinkEffect 수행이 mosterState.TakeDamage->BroadcastMessage("OnDie")->this.OnDie 보다 앞서야 함.
         // 그래야 Die로 인한 밝기 변경이 Blink에 의해 덮어씌워지지 않음.
         BlinkEffect();
 
-        // 무적이 아닐 경우, 데미지 입고 사망 여부 판단
-        if(!isInvincible)
+        if(!isSuperArmour)
         {
-            monsterState.TakeDamage(damage);
-            if(monsterState.HP < damage)
-            {
-                blackboard.Set(BBK.isDead, true);
-                return;
-            }
-        }
-
-        // 슈퍼아머가 아닐 경우
-        if(!isSuperArmour && !tempSuperArmour)
-        {
+            // 여기서는 블랙보드에 isHitt을 true로 설정해두기만 하고
+            // 피격 액트 수행은 상태머신에서 실행
+            blackboard.Set(BBK.isHitt, true);
+            
             // 넉백 계수가 0보다 크다면 넉백 수행
             if(knockbackCoeff > float.Epsilon)
             {
                 KnockBack(attackAngle);
             }
 
-            // 블랙보드에다가 플래그 기록
-            blackboard.Set(BBK.isHitt, true);
-            
-            // 다음 프레임에서 플래그 False로 만들기
-            StartCoroutine(SetFlagFalse());
-            IEnumerator SetFlagFalse()
+            // 다음 프레임에서 IsHitt 플래그 False로 만들기
+            StartCoroutine(SetIsHittFalse());
+            IEnumerator SetIsHittFalse()
             {
                 yield return 0;     // 다음프레임까지 대기
                 blackboard.Set(BBK.isHitt, false);
             }
         }
-        // 슈퍼아머일 경우
-        else
+        if(!isInvincible)
         {
-            // 넉백 무시 옵션이 꺼져있고 넉백 계수가 0보다 크다면 넉백 수행
-            if (!ignoreKnockbackOnSuperArmour && knockbackCoeff > float.Epsilon)
-            {
-                KnockBack(attackAngle);
-            }
+            monsterState.TakeDamage(damage);
         }
-    }
-
-    public void SetTempSuperArmour(bool value)
-    {
-        this.tempSuperArmour = value;
     }
 
     private void KnockBack(float attackAngle)
@@ -146,8 +98,8 @@ public class MonsterDamageReceiver : DamageReceiver
             // yield return new WaitForSeconds(0.1f);
             yield return 0;
 
-            // Debug.LogWarning(attackAngle);
-            // Debug.LogWarning(-11 / 2);
+            Debug.LogWarning(attackAngle);
+            Debug.LogWarning(-11 / 2);
             // 넉백 방향을 4방향으로 고정?
             attackAngle =  (((int)(attackAngle + 180 + 45)) / 90 - 2)  * 90f;
             Debug.LogWarning(attackAngle);
@@ -155,7 +107,7 @@ public class MonsterDamageReceiver : DamageReceiver
             attackAngle *= Mathf.Deg2Rad;
             // attackDir는 PlayerCombat에서 Normalize되어서 Unit Vector임이 보장됨
             Vector2 knockbackVector = new Vector2(Mathf.Cos(attackAngle), Mathf.Sin(attackAngle)) * knockbackCoeff;
-            // Debug.LogWarning(knockbackVector);
+            Debug.LogWarning(knockbackVector);
             rigidbody.velocity = knockbackVector;
         }
     }
