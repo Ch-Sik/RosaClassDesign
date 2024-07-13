@@ -69785,7 +69785,87 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboResetTime
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[0].attackTime
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[1].attackTime
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[2].attackTime
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[0].attackEntity
+      value: 
+      objectReference: {fileID: 1212913312}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[1].attackEntity
+      value: 
+      objectReference: {fileID: 1578156964}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[2].attackEntity
+      value: 
+      objectReference: {fileID: 1220972076}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[0].attackCooltime
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[0].attackDistance
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[1].attackCooltime
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[1].attackDistance
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[2].attackCooltime
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[2].attackDistance
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[0].attackReadyTime
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[1].attackReadyTime
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[2].attackReadyTime
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[0].attackDamagePercent
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[1].attackDamagePercent
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893349561445416240, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: comboAttacks.Array.data[2].attackDamagePercent
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 7961705585998415436, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: m_Mesh
@@ -69844,10 +69924,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5262888439632956338, guid: dff6c20f5540f3843828c629df070725, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1220972077}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6606165383981438929, guid: dff6c20f5540f3843828c629df070725, type: 3}
-      insertIndex: 9
-      addedObject: {fileID: 525819748}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dff6c20f5540f3843828c629df070725, type: 3}
 --- !u!4 &390781061 stripped
 Transform:
@@ -73941,68 +74018,6 @@ MonoBehaviour:
   _isUseModMeshSet: 1
   _riggingBones: []
   _isCheckFlippingByRiggingBones: 0
---- !u!1 &525819734 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6606165383981438929, guid: dff6c20f5540f3843828c629df070725, type: 3}
-  m_PrefabInstance: {fileID: 390781060}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &525819748
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 525819734}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30a360c7c01b06948831365fb8f640e5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  showGizmo: 1
-  comboAttacks:
-  - attackEntity: {fileID: 1212913312}
-    attackHandler: {fileID: 0}
-    attackReadyTime: 0.1
-    attackDistance: 4
-    attackTime: 0.15
-    attackCooltime: 0.3
-    attackDamagePercent: 0
-  - attackEntity: {fileID: 1578156964}
-    attackHandler: {fileID: 0}
-    attackReadyTime: 0.05
-    attackDistance: 5
-    attackTime: 0.15
-    attackCooltime: 0.25
-    attackDamagePercent: 0
-  - attackEntity: {fileID: 1220972076}
-    attackHandler: {fileID: 0}
-    attackReadyTime: 0.05
-    attackDistance: 6
-    attackTime: 0.25
-    attackCooltime: 0.7
-    attackDamagePercent: 0
-  isAttack: 0
-  isFly: 0
-  canInteraction: 1
-  canAttack: 1
-  wall:
-    serializedVersion: 2
-    m_Bits: 9216
-  attackableObjects:
-    serializedVersion: 2
-    m_Bits: 8388608
-  butterfly:
-    serializedVersion: 2
-    m_Bits: 4194304
-  comboResetTime: 0.6
-  comboStep: 0
-  lastAttackTime: 0
-  angle: 0
-  mouse: {x: 0, y: 0}
-  direction: {x: 0, y: 0}
-  isAttacking: 0
-  playerControl: {fileID: 0}
-  playerRef: {fileID: 0}
 --- !u!1 &555720709
 GameObject:
   m_ObjectHideFlags: 0

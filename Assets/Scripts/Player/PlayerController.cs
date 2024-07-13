@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
     // 컴포넌트
     [ReadOnly, SerializeField] public InputActionAsset inputAsset;
     [ReadOnly, SerializeField] PlayerMovement playerMove;
-    [ReadOnly, SerializeField] PlayerCombat1 playerCombat;
+    [ReadOnly, SerializeField] PlayerCombat playerCombat;
     [ReadOnly, SerializeField] Rigidbody2D rb;
     [ReadOnly, SerializeField] PlayerAnimation playerAnim;
     

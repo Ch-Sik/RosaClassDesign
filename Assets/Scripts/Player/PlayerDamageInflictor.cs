@@ -13,7 +13,6 @@ public class PlayerDamageInflictor : MonoBehaviour
     Collider2D col;                                 //오브젝트의 충돌 컴포넌트
     PlayerCombat playerCombat;                      //PlayerCombat과 이벤트 전달을 위해 직접 연결
 
-    PlayerCombat1 playerCombat1;                    //테스트용 임시변수
 
     float damagePercent;                            //콤보 당 데미지 비중을 가지기 위한 비중 값
 
@@ -33,9 +32,9 @@ public class PlayerDamageInflictor : MonoBehaviour
         layer_butterfly = butterfly;
     }
 
-    public void Init(PlayerCombat1 playerCombat, float damagePercent, LayerMask wall, LayerMask attackableObjects, LayerMask butterfly)
+    public void Init(PlayerCombat playerCombat, float damagePercent, LayerMask wall, LayerMask attackableObjects, LayerMask butterfly)
     {
-        this.playerCombat1 = playerCombat;
+        this.playerCombat = playerCombat;
         this.damagePercent = damagePercent;
         layer_wall = wall;
         layer_attackable = attackableObjects;
@@ -67,7 +66,7 @@ public class PlayerDamageInflictor : MonoBehaviour
         if ((layer_wall & 1 << collision.gameObject.layer) > 0)
         {
             Debug.Log("벽 충돌로 인한 공격 취소");
-            playerCombat1.StopAttack();
+            playerCombat.StopAttack();
         }
     }
 
@@ -78,7 +77,7 @@ public class PlayerDamageInflictor : MonoBehaviour
         if ((layer_wall & 1 << collision.gameObject.layer) > 0)
         {
             Debug.Log("벽 충돌로 인한 공격 취소");
-            playerCombat1.StopAttack();
+            playerCombat.StopAttack();
         }
 
 
@@ -86,19 +85,19 @@ public class PlayerDamageInflictor : MonoBehaviour
         if ((layer_attackable & 1 << collision.gameObject.layer) != 0)
         {
             Debug.Log($"플레이어 공격: {collision.gameObject.name}");
-            collision.GetComponent<DamageReceiver>().GetHitt(Mathf.RoundToInt(PlayerRef.Instance.State.AttackDmg * damagePercent), playerCombat1.angle);
-            playerCombat1.StopAttack();
+            collision.GetComponent<DamageReceiver>().GetHitt(Mathf.RoundToInt(PlayerRef.Instance.State.AttackDmg * damagePercent), playerCombat.angle);
+            playerCombat.StopAttack();
         }
 
         //나비와 충돌한다면,
         if ((layer_butterfly.value & 1 << collision.gameObject.layer) > 0 &&
-            playerCombat1.canInteraction)
+            playerCombat.canInteraction)
         {
             if (collision.GetComponent<Butterfly>().isCaged)
                 return;
             Debug.Log("나비와 충돌됨");
             //PlayerCombat에 RideButterFly함수를 실행시키며, 나비의 부모 데이터를 전달한다.
-            playerCombat1.RideButterFly(collision.transform.parent.GetComponentInChildren<Butterfly>());
+            playerCombat.RideButterFly(collision.transform.parent.GetComponentInChildren<Butterfly>());
         }
     }
 }
