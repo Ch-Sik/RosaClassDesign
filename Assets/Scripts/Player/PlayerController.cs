@@ -232,7 +232,7 @@ public class PlayerController : MonoBehaviour
         if (currentMoveState != PlayerMoveState.CLIMBING)
         {
             //if(!playerCombat.isAttack) playerAnim.SetTrigger("Attack");
-            playerCombat.isAttacking = true;
+            playerCombat.SetAttackTrigger(true);
         }
         
         /*
@@ -249,7 +249,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnCancelMeleeAttack(InputAction.CallbackContext context)
     {
-        if (PlayerRef.Instance.combat.isAttacking) PlayerRef.Instance.combat.isAttacking = false;
+        playerCombat.SetAttackTrigger(false);
     }
 
     public void OnMagicSelect(InputAction.CallbackContext context)

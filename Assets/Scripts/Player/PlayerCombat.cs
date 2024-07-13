@@ -21,10 +21,10 @@ public class PlayerCombat : MonoBehaviour
         public PlayerDamageInflictor attackHandler; // 공격 핸들러
 
         [Header("Combat Properties")]
-        public float attackReadyTime;               // 공격 준비 시간
+        public float attackStartupTime;               // 공격 선딜레이
+        public float attackActiveTime;              // 공격 유지시간
+        public float attackRecoveryTime;            // 공격 후딜레이
         public float attackDistance;                // 공격 사거리
-        public float attackTime;                    // 공격 시간
-        public float attackCooltime;                // 공격 쿨타임
         public float attackDamagePercent;           // 공격 데미지 비중
         public void SetAttackHandler(GameObject entity)
         {
@@ -32,35 +32,49 @@ public class PlayerCombat : MonoBehaviour
         }
     }
 
-    public List<ComboAttack> comboAttacks = new List<ComboAttack>();              // 콤보 공격 배열
-    public bool isAttack = false;                   //공격중이라면 true, 아니라면 false;
-    public bool isFly = false;                      //나비를 타고 있다면 true, 아니라면 false;
+    [Title("컴포넌트 레퍼런스")]
+    [ReadOnly, SerializeField] PlayerController playerControl;
+    [ReadOnly, SerializeField] PlayerRef playerRef;
+
+    [Title("플래그")]
+    public bool isDoingAttack = false;              //공격중이라면 true, 아니라면 false;
+    public bool isRidingButterfly = false;          //나비를 타고 있다면 true, 아니라면 false;
     public bool canInteraction = true;              //좌클릭으로 인터렉션 가능하면 true, 아니라면 false //공격시 범위 내에 적이 있다면 false
-    public bool canAttack = true;                   //쿨타임 계산
 
-    [Header("CombatOptions")]
-    public LayerMask wall;
-    public LayerMask attackableObjects;             //공격가능한 대상 레이어 마스크
-    public LayerMask butterfly;                     //나비 레이어 마스크
+    [Title("레이어 옵션")]
+    public LayerMask mask_wall;
+    public LayerMask mask_attackable;             //공격가능한 대상 레이어 마스크
+    public LayerMask mask_butterfly;                     //나비 레이어 마스크
 
-    [Header("ComboOptions")]
+    [Title("콤보 옵션")]
+    public List<ComboAttack> comboAttacks = new List<ComboAttack>();              // 콤보 공격 배열
     public float comboResetTime = 1.0f;             // 콤보 리셋 시간
     [ReadOnly, SerializeField] public int comboStep = 0;                      // 현재 콤보 단계
     [ReadOnly, SerializeField] private float lastAttackTime;                   // 마지막 공격 시간
 
-    public float angle;                             //마우스의 Euler Angle
-    [HideInInspector] public Vector2 mouse;         //마우스 월드 좌표
-    public Vector2 direction;                       //방향벡터
+    // 마우스 관련 변수
+    private Vector2 mouse;                          // 마우스 월드 좌표
+    private float angle;                            // 마우스의 Euler Angle
+    private Vector2 direction;                      // 마우스 방향벡터
     private InputAction aimInput;
-    public bool isAttacking = false;
 
-    [ReadOnly, SerializeField] PlayerController playerControl;
-    [ReadOnly, SerializeField] PlayerRef playerRef;
+    // 공격 버튼 관련
+    public bool attackTrigger = false;              // 공격 버튼
+
+    public void SetAttackTrigger(bool value)
+    {
+        attackTrigger = value;
+    }
 
     //시작하면서 AttackEntity에 존재하는 attackObject를 얻어오며, attackObject를 Init해준다.
     private void Start()
     {
-        // 플레이어 공격이 flip에 영향받지 않도록 하기 위해 게임이 시작되면 공격을 자식에서 꺼냄
+        // 필드 초기화
+        playerRef = PlayerRef.Instance;
+        playerControl = playerRef.Controller;
+        aimInput = InputManager.Instance._inputAsset.FindActionMap("ActionDefault").FindAction("Aim");
+
+        // 공격 오브젝트가 flip에 영향받지 않도록 하기 위해 게임이 시작되면 공격을 플레이어의 자식이 아니도록 설정
         for (int i = 0; i < comboAttacks.Count; i++)
         {
             if (comboAttacks[i].attackEntity == null)
@@ -79,75 +93,49 @@ public class PlayerCombat : MonoBehaviour
             }
             comboAttacks[i].attackHandler.Init(this, comboAttacks[i].attackDamagePercent, LayerMask.GetMask("Wall"), LayerMask.GetMask("Attackable"), LayerMask.GetMask("Butterfly"));
         }
-
-        /*
-        foreach (var combo in comboAttacks)
-        {
-            combo.attackEntity.transform.SetParent(null);
-            combo.attackEntity.SetActive(false);
-            combo.SetAttackHandler(combo.attackEntity);
-            combo.attackHandler.Init(this, LayerMask.GetMask("Wall"), LayerMask.GetMask("Attackable"), LayerMask.GetMask("Butterfly"));
-        }
-        */
-        playerRef = PlayerRef.Instance;
-        aimInput = InputManager.Instance._inputAsset.FindActionMap("ActionDefault").FindAction("Aim");
-        playerControl = playerRef.Controller;
     }
 
     private void FixedUpdate()
     {
-        if (isAttacking) Attack();
-        if (playerControl.currentMoveState == PlayerMoveState.NO_MOVE)
+        // 공격 시전 가능한지 체크
+        if(attackTrigger && CheckAttackable())
         {
-            if (!isAttacking) playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+            // 가능하다면 공격 시전
+            Attack();
         }
     }
 
-    //SetData는 호출되면, 현재의 마우스 위치를 토대로 각도와 방향벡터 Data를 Set해준다.
-    void SetData()
+    private bool CheckAttackable()
     {
-        Vector2 mouseScreenPos2 = aimInput.ReadValue<Vector2>();
-        float zDistance = transform.position.z - Camera.main.transform.position.z; // 플레이어와 카메라의 z좌표 차이
-        mouse = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPos2.x, mouseScreenPos2.y, zDistance));   //마우스의 월드 좌표 반환
-        angle = Mathf.Atan2(mouse.y - transform.position.y, mouse.x - transform.position.x) * Mathf.Rad2Deg;    //해당 좌표 데이터를 기반으로 각도 얻음
-        direction = new Vector2(mouse.x - transform.position.x, mouse.y - transform.position.y).normalized;     //해당 좌표 데이터를 기반으로 방향벡터 얻음
+        return !isDoingAttack;
     }
 
     //공격 함수
     public void Attack()
     {
-        //공격중이라면, 리턴
-        if (isAttack)
-            return;
+        // 플래그 설정
+        isDoingAttack = true;
 
-        //공격 쿨이라면, 리턴
-        if (!canAttack)
-            return;
+        // 마우스 위치 계산
+        CalculateAttackDirection();
 
+        // 콤보 계산
         if (Time.time - lastAttackTime > comboResetTime)
+        {
             comboStep = 0;
-
-
+        }
+        else
+        {
+            comboStep = (comboStep + 1) % comboAttacks.Count;
+        }
         lastAttackTime = Time.time;
-
-        isAttack = true;
-
-        //공격 쿨다운
-        canAttack = false;
-
         ComboAttack currentCombo = comboAttacks[comboStep];
-
-        Invoke("AttackCooldown", comboStep == comboAttacks.Count - 1 ? currentCombo.attackCooltime : 0.05f); // 오른쪽 자리에 콤보간 딜레이 넣을 것
-
-        //공격전에 마우스 데이터를 추출한다.
-        SetData();
-
         GameObject currentAttackEntity = currentCombo.attackEntity;
         PlayerDamageInflictor currentAttackHandler = currentCombo.attackHandler;
 
-        //시퀀스를 할당한다.
+        // 공격 시퀀스
         Sequence attack = DOTween.Sequence()
-
+        // 시작 즉시
         .AppendCallback(() =>
         {
             currentAttackEntity.SetActive(true);
@@ -155,37 +143,39 @@ public class PlayerCombat : MonoBehaviour
             currentAttackEntity.transform.rotation = Quaternion.Euler(0f, 0f, angle);
             currentAttackHandler.transform.localPosition = Vector3.zero;
         })
-        //공격 준비시간을 적용
-        .AppendInterval(currentCombo.attackReadyTime)
-        //공격전 이벤트와 함께, 공격 판정 ON
+        // 선딜 시간 적용
+        .AppendInterval(currentCombo.attackStartupTime)
+        // 선딜 끝나면 이벤트와 함께, 공격 판정 ON
         .AppendCallback(() =>
         {
             OnStartAttack();
-            currentAttackHandler.StartAttack();
+            currentAttackHandler.SetAttackActive(angle);
         })
-        //얻은 방향벡터로 공격한다.
-        .Append(currentAttackHandler.transform.DOMove(currentCombo.attackDistance * direction, currentCombo.attackTime).SetRelative(true))
-        //공격이 끝난다면, 공격판정체의 위치를 초기화시켜 회수한다.
+        // 공격 판정 발사
+        .Append(currentAttackHandler.transform.DOMove(currentCombo.attackDistance * direction, currentCombo.attackActiveTime).SetRelative(true))
+        // 공격이 끝난다면, 공격판정 회수
         .AppendCallback(() => {
             currentAttackHandler.transform.position = transform.position;
-            currentAttackHandler.EndAttack();
+            currentAttackHandler.SetAttackInactive();
+            currentAttackEntity.SetActive(false);
         })
-        // 공격 이펙트 끝나기까지 기다리기
-        // 이 부분 테스트 필요
-        .AppendInterval(0.05f)
-        //시퀀스가 끝나며, 공격끝 이벤트와 함께 공격판정체의 충돌체를 끈다.
+        // 후딜 시간 적용
+        .AppendInterval(currentCombo.attackRecoveryTime)
+        // 시퀀스가 끝나며, 공격끝 이벤트와 함께 공격판정 OFF
         .OnComplete(() =>
         {
-            currentAttackEntity.SetActive(false);
             OnEndAttack();
         });
     }
 
-    private void AttackCooldown()
+    //SetData는 호출되면, 현재의 마우스 위치를 토대로 각도와 방향벡터 Data를 Set해준다.
+    void CalculateAttackDirection()
     {
-        canAttack = true;
-        if (comboStep == comboAttacks.Count)
-            comboStep = 0;
+        Vector2 mouseScreenPos2 = aimInput.ReadValue<Vector2>();
+        float zDistance = transform.position.z - Camera.main.transform.position.z; // 플레이어와 카메라의 z좌표 차이
+        mouse = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPos2.x, mouseScreenPos2.y, zDistance));   //마우스의 월드 좌표 반환
+        angle = Mathf.Atan2(mouse.y - transform.position.y, mouse.x - transform.position.x) * Mathf.Rad2Deg;    //해당 좌표 데이터를 기반으로 각도 얻음
+        direction = new Vector2(mouse.x - transform.position.x, mouse.y - transform.position.y).normalized;     //해당 좌표 데이터를 기반으로 방향벡터 얻음
     }
 
     [Button]
@@ -211,7 +201,7 @@ public class PlayerCombat : MonoBehaviour
         // 공격 판정 off
         foreach (var combo in comboAttacks)
         {
-            combo.attackHandler.EndAttack();
+            combo.attackHandler.SetAttackInactive();
         }
 
         // 적에게 공격이 닿았다고 공격 이펙트/후딜레이가 없어지면 안됨.
@@ -221,20 +211,18 @@ public class PlayerCombat : MonoBehaviour
     //공격 시작 이벤트
     private void OnStartAttack()
     {
-        playerControl.ChangeMoveState(PlayerMoveState.NO_MOVE);
-        if (comboStep == 0) playerRef.Animation.SetTrigger("Attack");
-
+        // 애니메이션 트리거 설정
+        playerRef.Animation.SetAttackAnimTrigger();
     }
 
     //공격 종료 이벤트
     private void OnEndAttack()
     {
         // 이펙트 & 공격 판정 오브젝트 비활성화
-        if(!isAttacking) playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
-        isAttack = false;
+        if(!attackTrigger) 
+            playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+        isDoingAttack = false;
         canInteraction = true;
-        comboStep++;
-        comboStep = comboStep % comboAttacks.Count;
     }
 
     //추후에 공격시 대미지나 공격력을 계산하기 위해 만들었다. AttackObejct에서 충돌판정부에서 사용하자.
@@ -245,7 +233,7 @@ public class PlayerCombat : MonoBehaviour
     //AttackObject가 나비에 닿을 경우, 해당 나비데이터를 PlayerCombat에 전달해주고, 그 데이터를 나비에 전달하기 위한 함수
     public void RideButterFly(Butterfly butterFly)
     {
-        if (isFly)
+        if (isRidingButterfly)
             return;
 
         StopAttack();

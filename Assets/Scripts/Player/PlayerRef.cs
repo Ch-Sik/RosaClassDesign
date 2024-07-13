@@ -36,7 +36,6 @@ public class PlayerRef : MonoBehaviour
 
     public Rigidbody2D rb;
     public BoxCollider2D col;
-    public Animator anim;
 
     private void Awake()
     {
@@ -56,6 +55,5 @@ public class PlayerRef : MonoBehaviour
 
         if(rb == null) rb = GetComponent<Rigidbody2D>();
         if(col == null) col = GetComponent<BoxCollider2D>();
-        if(anim == null) anim = GetComponent<Animator>();
     }
 }
