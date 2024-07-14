@@ -26,11 +26,6 @@ public class PlayerController : MonoBehaviour
     // private 변수
     private Vector2 moveVector = Vector2.zero;      // 하향점프 판단을 위해 값 보관
 
-    // 플래그
-    private bool isJumpingUp = false;
-    private bool isDoingMagic = false;
-    public bool isMIDAIR = false;
-
     //싱글톤
     [ReadOnly, SerializeField] PlayerRef playerRef;
     InputManager inputManager;
@@ -58,11 +53,11 @@ public class PlayerController : MonoBehaviour
         inputAsset = inputManager._inputAsset;
 
         // MoveDefault 액션맵 바인딩
-        inputManager.AM_MoveGrounded.FindAction("Move").performed += OnMove;
-        inputManager.AM_MoveGrounded.FindAction("Move").canceled += OnCancelMove;
-        inputManager.AM_MoveGrounded.FindAction("Jump").performed += OnJump;
-        inputManager.AM_MoveGrounded.FindAction("Jump").canceled += OnCancelJump;
-        inputManager.AM_MoveGrounded.FindAction("Interact").performed += OnInteract;
+        inputManager.AM_MoveDefault.FindAction("Move").performed += OnMove;
+        inputManager.AM_MoveDefault.FindAction("Move").canceled += OnCancelMove;
+        inputManager.AM_MoveDefault.FindAction("Jump").performed += OnJump;
+        inputManager.AM_MoveDefault.FindAction("Jump").canceled += OnCancelJump;
+        inputManager.AM_MoveDefault.FindAction("Interact").performed += OnInteract;
 
         // Climb 액션맵 바인딩
         inputManager.AM_MoveClimb.FindAction("Move").performed += OnClimbMove;
@@ -78,6 +73,7 @@ public class PlayerController : MonoBehaviour
 
         // ActionDefault 액션맵 바인딩
         inputManager.AM_ActionDefault.FindAction("Attack").performed += OnMeleeAttack;
+        inputManager.AM_ActionDefault.FindAction("Attack").canceled += OnCancelMeleeAttack;
         inputManager.AM_ActionDefault.FindAction("MagicSelect").performed += OnMagicSelect;
         inputManager.AM_ActionDefault.FindAction("MagicReady").performed += OnMagicReady;
 
@@ -94,16 +90,6 @@ public class PlayerController : MonoBehaviour
     // 가능하면 inputManager.ChangeMoveState를 사용할 것.
     public void ChangeMoveState(PlayerMoveState newMoveState)
     {
-        //MIDAIR 상태에서 키바인딩은 GROUNDED 상태와 다르지 않기 때문에 GROUNDED
-        if (newMoveState == PlayerMoveState.MIDAIR)
-        {
-            newMoveState = PlayerMoveState.GROUNDED;
-            isMIDAIR = true;
-        }
-        else
-        {
-            isMIDAIR = false;
-        }
         inputManager.SetMoveInputState(newMoveState);
     }
 
@@ -127,48 +113,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        if(isMIDAIR)
-        {
-            //playerMove.JumpUp();
-            playerMove.ReserveJump();       // 공중에서는 점프 선입력
-        }
-        else
-        {
-            if (moveVector.y >= 0 || !(playerMove.platformBelow?.CompareTag("Platform") == true))
-            {
-                // Debug.Log(playerMove.platformBelow?.tag);
-                
-                isJumpingUp = true;
-                playerMove.JumpUp();        // 상향 점프
-                /*
-                Transform parentTransform = playerMove.platformBelow?.transform.parent;
-                if (parentTransform != null)
-                {
-                    BreakablePlatform component = parentTransform.GetComponent<BreakablePlatform>();
-
-                    if (component != null)
-                    {
-                        component.ColBreak();
-                    }
-                }
-                */
-            }
-            else
-            {
-                playerMove.JumpDown();      // 하향 점프
-            }
-        }
-        /*
-        switch (currentMoveState)
-        {
-            case PlayerMoveState.GROUNDED:
-                
-                break;
-            case PlayerMoveState.MIDAIR:
-                
-                break;
-        }
-        */
+        playerMove.OnJump(moveVector.y < float.Epsilon);
     }
 
     public void OnInteract(InputAction.CallbackContext context)
@@ -191,11 +136,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnCancelJump(InputAction.CallbackContext context)
     {
-        if (isJumpingUp)
-        {
-                isJumpingUp = false;
-                playerMove.FinishJumpUp();        // 점프 종료
-        }
+        playerMove.FinishJumpUp();        // 점프 종료
     }
 
     public void OnClimbJump(InputAction.CallbackContext context)
@@ -227,6 +168,14 @@ public class PlayerController : MonoBehaviour
     #region PlayerAction ActionMap 핸들러
     public void OnMeleeAttack(InputAction.CallbackContext context)
     {
+        
+        if (currentMoveState != PlayerMoveState.CLIMBING)
+        {
+            //if(!playerCombat.isAttack) playerAnim.SetTrigger("Attack");
+            playerCombat.SetAttackTrigger(true);
+        }
+        
+        /*
         if (context.performed)
         {
             if (currentMoveState != PlayerMoveState.CLIMBING)
@@ -235,6 +184,12 @@ public class PlayerController : MonoBehaviour
                 playerAnim.SetTrigger("Attack");
             }
         }
+        */
+    }
+
+    public void OnCancelMeleeAttack(InputAction.CallbackContext context)
+    {
+        playerCombat.SetAttackTrigger(false);
     }
 
     public void OnMagicSelect(InputAction.CallbackContext context)

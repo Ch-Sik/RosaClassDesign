@@ -7,7 +7,7 @@ public class PlayerGroundCheck : MonoBehaviour
     
     [ReadOnly, SerializeField] PlayerRef playerRef;
     PlayerMovement playerMove;
-    PlayerController playerControl;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -18,7 +18,7 @@ public class PlayerGroundCheck : MonoBehaviour
     {
         playerRef = PlayerRef.Instance;
         playerMove = playerRef.Move;
-        playerControl = playerRef.Controller;
+        Debug.Assert(playerMove != null, $"{GetType().Name}: PlayerMove를 찾을 수 없음");
     }
 
     // Update is called once per frame
@@ -35,9 +35,9 @@ public class PlayerGroundCheck : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D collision)
     {
-        if(playerControl.isMIDAIR)
+        if(!playerMove.isGrounded)
         {
-            playerMove?.SetIsGrounded(collision.gameObject);
+            playerMove.SetIsGrounded(collision.gameObject);
         }
     }
 
@@ -48,7 +48,7 @@ public class PlayerGroundCheck : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        Transform parentTransform = playerMove?.platformBelow?.transform.parent;
+        Transform parentTransform = playerMove.platformBelow?.transform.parent;
         if (parentTransform != null)
         {
             BreakablePlatform component = parentTransform.GetComponent<BreakablePlatform>();
@@ -58,6 +58,6 @@ public class PlayerGroundCheck : MonoBehaviour
                 component.ColBreak();
             }
         }
-        playerMove?.SetIsNotGrounded();
+        playerMove.SetIsNotGrounded();
     }
 }

@@ -30,12 +30,12 @@ public class PlayerRef : MonoBehaviour
     public PlayerMovement Move;
     public PlayerMagic Magic;
     public PlayerCombat combat;
+    
     public PlayerAnimation Animation;
     public PlayerSound sound;
 
     public Rigidbody2D rb;
     public BoxCollider2D col;
-    public Animator anim;
 
     private void Awake()
     {
@@ -55,6 +55,5 @@ public class PlayerRef : MonoBehaviour
 
         if(rb == null) rb = GetComponent<Rigidbody2D>();
         if(col == null) col = GetComponent<BoxCollider2D>();
-        if(anim == null) anim = GetComponent<Animator>();
     }
 }

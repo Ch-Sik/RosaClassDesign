@@ -14,149 +14,175 @@ public class PlayerCombat : MonoBehaviour
 {
     public bool showGizmo = false;                  //기즈모 가시 여부
 
-    Sequence attack;                                //공격 시퀀스
-    public GameObject attackEntity;                 //공격을 위한 AttackObject의 게임오브젝트
-    public PlayerDamageInflictor attackHandler;      //공격 이벤트를 위한 PlayerDamageInflictor
-    public bool isAttack = false;                   //공격중이라면 true, 아니라면 false;
-    public bool isFly = false;                      //나비를 타고 있다면 true, 아니라면 false;
+    [System.Serializable]
+    public class ComboAttack
+    {
+        public GameObject attackEntity;             // 공격 오브젝트
+        public PlayerDamageInflictor attackHandler; // 공격 핸들러
+
+        [Header("Combat Properties")]
+        public float attackStartupTime;               // 공격 선딜레이
+        public float attackActiveTime;              // 공격 유지시간
+        public float attackRecoveryTime;            // 공격 후딜레이
+        public float attackDistance;                // 공격 사거리
+        public float attackDamagePercent;           // 공격 데미지 비중
+        public void SetAttackHandler(GameObject entity)
+        {
+            attackHandler = entity.GetComponentInChildren<PlayerDamageInflictor>();
+        }
+    }
+
+    [Title("컴포넌트 레퍼런스")]
+    [ReadOnly, SerializeField] PlayerController playerControl;
+    [ReadOnly, SerializeField] PlayerRef playerRef;
+
+    [Title("플래그")]
+    public bool isDoingAttack = false;              //공격중이라면 true, 아니라면 false;
+    public bool isRidingButterfly = false;          //나비를 타고 있다면 true, 아니라면 false;
     public bool canInteraction = true;              //좌클릭으로 인터렉션 가능하면 true, 아니라면 false //공격시 범위 내에 적이 있다면 false
-    public bool canAttack = true;                   //쿨타임 계산
 
-    [Header("CombatOptions")]
-    public LayerMask wall;
-    public LayerMask attackableObjects;             //공격가능한 대상 레이어 마스크
-    public LayerMask butterfly;                     //나비 레이어 마스크
+    [Title("레이어 옵션")]
+    public LayerMask mask_wall;
+    public LayerMask mask_attackable;             //공격가능한 대상 레이어 마스크
+    public LayerMask mask_butterfly;                     //나비 레이어 마스크
 
-    [Header("Combat Properties")]
-    public float attackReadyTime = 0.25f;                   //공격 준비 시간
-    public float attackDistance;                    //공격 사거리
-    public float attackTime = 0.15f;                        //공격 시간
-    public float attackCooltime;                    //공격을 위한 쿨타임
+    [Title("콤보 옵션")]
+    public List<ComboAttack> comboAttacks = new List<ComboAttack>();              // 콤보 공격 배열
+    public float comboResetTime = 1.0f;             // 콤보 리셋 시간
+    [ReadOnly, SerializeField] public int comboStep = 0;                      // 현재 콤보 단계
+    [ReadOnly, SerializeField] private float lastAttackTime;                   // 마지막 공격 시간
 
-    public float angle;                             //마우스의 Euler Angle
-    [HideInInspector] public Vector2 mouse;         //마우스 월드 좌표
-    public Vector2 direction;                       //방향벡터
+    // 마우스 관련 변수
+    private Vector2 mouse;                          // 마우스 월드 좌표
+    private float angle;                            // 마우스의 Euler Angle
+    private Vector2 direction;                      // 마우스 방향벡터
     private InputAction aimInput;
+
+    // 공격 버튼 관련
+    public bool attackTrigger = false;              // 공격 버튼
+
+    // 콤보 관련 변수
+    private ComboAttack currentCombo;
+    private GameObject currentAttackEffect;
+    private PlayerDamageInflictor currentAttackHandler;
+
+    public void SetAttackTrigger(bool value)
+    {
+        attackTrigger = value;
+    }
 
     //시작하면서 AttackEntity에 존재하는 attackObject를 얻어오며, attackObject를 Init해준다.
     private void Start()
     {
-        // 플레이어 공격이 flip에 영향받지 않도록 하기 위해 게임이 시작되면 공격을 자식에서 꺼냄
-        attackEntity.transform.SetParent(null);
-        attackEntity.gameObject.SetActive(false);
-        // attackObject와 attackEntity.gameObject는 서로 다를 수 있다.
-        attackHandler = attackEntity.GetComponentInChildren<PlayerDamageInflictor>();
-        attackHandler.Init(this, wall, attackableObjects, butterfly);
+        // 필드 초기화
+        playerRef = PlayerRef.Instance;
+        playerControl = playerRef.Controller;
         aimInput = InputManager.Instance._inputAsset.FindActionMap("ActionDefault").FindAction("Aim");
+
+        // 공격 오브젝트가 flip에 영향받지 않도록 하기 위해 게임이 시작되면 공격을 플레이어의 자식이 아니도록 설정
+        for (int i = 0; i < comboAttacks.Count; i++)
+        {
+            if (comboAttacks[i].attackEntity == null)
+            {
+                Debug.LogError($"Combo attack entity at index {i} is not set.");
+                continue;
+            }
+            comboAttacks[i].attackEntity.transform.SetParent(null);
+            comboAttacks[i].attackEntity.SetActive(false);
+
+            comboAttacks[i].SetAttackHandler(comboAttacks[i].attackEntity);
+            if (comboAttacks[i].attackHandler == null)
+            {
+                Debug.LogError($"PlayerDamageInflictor not found in attack entity at index {i}.");
+                continue;
+            }
+            comboAttacks[i].attackHandler.Init(this, comboAttacks[i].attackDamagePercent, LayerMask.GetMask("Wall"), LayerMask.GetMask("Attackable"), LayerMask.GetMask("Butterfly"));
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        // 공격 시전 가능한지 체크
+        if(attackTrigger && CheckAttackable())
+        {
+            // 가능하다면 공격 시전
+            Attack();
+        }
+    }
+
+    private bool CheckAttackable()
+    {
+        return !isDoingAttack;
+    }
+
+    //공격 함수
+    public void Attack()
+    {
+        // 플래그 설정
+        isDoingAttack = true;
+
+        CalculateAttackDirection();     // 마우스 위치 계산
+        CalculateCombo();               // 콤보 관련 계산
+
+        // 공격 시퀀스
+        // 실질적인 공격 판정인 AttackHandler는 여기서 관리하고
+        // 그 외 비주얼 이펙트 등은 OnXXXAttack 이벤트 핸들러에서 관리
+        Sequence attack = DOTween.Sequence()
+        // 선딜레이 타임
+        .AppendCallback(() => {
+            OnStartupAttack(); 
+        })
+        .AppendInterval(currentCombo.attackStartupTime)
+        // 공격 활성화 타임
+        .AppendCallback(() => {
+            currentAttackHandler.transform.localPosition = Vector3.zero;    // 공격판정 초기화
+            currentAttackHandler.SetAttackActive(angle);
+            OnActivateAttack(); 
+        })
+        .Append(currentAttackHandler.transform.DOMove(                      // 공격 판정 발사
+            currentCombo.attackDistance * direction,
+            currentCombo.attackActiveTime).SetRelative(true)
+        )
+        // 공격 활성화 종료
+        .AppendCallback(() => {
+            currentAttackHandler.transform.position = transform.position;   // 공격판정 회수
+            currentAttackHandler.SetAttackInactive();
+            OnDeactiveAttack(); 
+        })
+        // 후딜레이 타임
+        .AppendInterval(currentCombo.attackRecoveryTime)
+        .OnComplete(() =>
+        {
+            // 이번 공격 종료
+            OnEndAttack();
+        });
     }
 
     //SetData는 호출되면, 현재의 마우스 위치를 토대로 각도와 방향벡터 Data를 Set해준다.
-    void SetData()
+    void CalculateAttackDirection()
     {
         Vector2 mouseScreenPos2 = aimInput.ReadValue<Vector2>();
         float zDistance = transform.position.z - Camera.main.transform.position.z; // 플레이어와 카메라의 z좌표 차이
         mouse = Camera.main.ScreenToWorldPoint(new Vector3(mouseScreenPos2.x, mouseScreenPos2.y, zDistance));   //마우스의 월드 좌표 반환
         angle = Mathf.Atan2(mouse.y - transform.position.y, mouse.x - transform.position.x) * Mathf.Rad2Deg;    //해당 좌표 데이터를 기반으로 각도 얻음
         direction = new Vector2(mouse.x - transform.position.x, mouse.y - transform.position.y).normalized;     //해당 좌표 데이터를 기반으로 방향벡터 얻음
-        
-        /*
-        if (transform.lossyScale.x < 0)
-            direction = new Vector2(-1 * direction.x, direction.y);
-        */
     }
 
-    //공격 함수
-    public void Attack()
+    void CalculateCombo()
     {
-        //공격중이라면, 리턴
-        if (isAttack)
-            return;
-
-        //공격 쿨이라면, 리턴
-        if (!canAttack)
-            return;
-
-        isAttack = true;
-
-        //공격 쿨다운
-        canAttack = false;
-        Invoke("AttackCooldown", attackCooltime);
-
-        //공격전에 마우스 데이터를 추출한다.
-        SetData();
-
-        /*
-        //바라보는 방향 == 공격방향을 확인
-        bool isPlayerLookAttackDirection = IsPlayerLookAttackDirection(angle);
-        //공격방향을 바라보도록 플립
-        if (!isPlayerLookAttackDirection)
+        // 콤보 계산
+        if (Time.time - lastAttackTime > comboResetTime)
         {
-            Vector3 theScale = transform.localScale;
-            theScale.x *= -1;
-            transform.localScale = theScale;
-
-            //공격방향과 바라보는 방향이 다를 때, angle과 direction을 모두 변경한다.
-            //굳이 둘 다 변경하는 이유는, angle은 넉백방향에 direction은 공격방향에 영향을 주기 때문이다.
-            angle *= -1;
-            direction.x *= -1;
+            comboStep = 0;
         }
-        */
-        //시퀀스를 할당한다.
-        attack = DOTween.Sequence()
-        //공격판정체의 방향을 변경해주고(사실 의미 없으나 일단 넣은 것입니다.), 충돌체를 켜준다.
-        .AppendCallback(() =>
-        {
-            attackEntity.SetActive(true);
-            attackEntity.transform.position = this.transform.position;
-            attackEntity.transform.rotation = Quaternion.Euler(0f, 0f, angle);
-            attackHandler.transform.localPosition = Vector3.zero;
-        })
-        //공격 준비시간을 적용
-        .AppendInterval(attackReadyTime)
-        //공격전 이벤트와 함께, 공격 판정 ON
-        .AppendCallback(()=>
-        {
-            OnStartAttack();
-            attackHandler.StartAttack();
-        })
-        //얻은 방향벡터로 공격한다.
-        .Append(attackHandler.transform.DOMove(attackDistance * direction, attackTime).SetRelative(true))
-        //공격이 끝난다면, 공격판정체의 위치를 초기화시켜 회수한다.
-        .AppendCallback(() => {
-            attackHandler.transform.position = transform.position;
-            attackHandler.EndAttack();
-        })
-        // 공격 이펙트 끝나기까지 기다리기
-        .AppendInterval(0.2f)
-        //시퀀스가 끝나며, 공격끝 이벤트와 함께 공격판정체의 충돌체를 끈다.
-        .OnComplete(() =>
-        {
-            /*
-            //방향 전환을 원상태로 복구한다.
-            if (!isPlayerLookAttackDirection)
-            {
-                Vector3 theScale = transform.localScale;
-                theScale.x *= -1;
-                transform.localScale = theScale;
-            }
-            */
-            attackEntity.SetActive(false);
-            OnEndAttack();
-        });
-    }
-
-    private void AttackCooldown() { canAttack = true; }
-
-    [Button]
-    //플레이어가 바라보는 방향과 공격방향이 동일한지를 따진다.
-    public bool IsPlayerLookAttackDirection(float angle)
-    {
-        if (transform.localScale.x > 0 && Mathf.Abs(angle) < 90)
-            return true;
-        else if (transform.localScale.x < 0 && Mathf.Abs(angle) > 90)
-            return true;
         else
-            return false;
+        {
+            comboStep = (comboStep + 1) % comboAttacks.Count;
+        }
+        lastAttackTime = Time.time;
+        currentCombo = comboAttacks[comboStep];
+        currentAttackEffect = currentCombo.attackEntity;
+        currentAttackHandler = currentCombo.attackHandler;
     }
 
     [Button]
@@ -168,36 +194,68 @@ public class PlayerCombat : MonoBehaviour
         // attackEntity.transform.localPosition = Vector2.zero;
 
         // 공격 판정 off
-        attackHandler.EndAttack();
+        foreach (var combo in comboAttacks)
+        {
+            combo.attackHandler.SetAttackInactive();
+        }
 
         // 적에게 공격이 닿았다고 공격 이펙트/후딜레이가 없어지면 안됨.
         // OnEndAttack();
     }
 
-    //공격 시작 이벤트
-    private void OnStartAttack()
+    // 선딜레이 시작 시
+    private void OnStartupAttack()
     {
+        // 공격 이펙트 소환
+        currentAttackEffect.SetActive(true);
+        currentAttackEffect.transform.position = this.transform.position;
+        currentAttackEffect.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        // 플레이어 애니메이션 설정
+        playerRef.Animation.SetAttackAnimTrigger();
+        // 공격 방향 바라보기
+        playerRef.Move.LookAt2DLocal(direction);
     }
 
-    //공격 종료 이벤트
+    //공격 판정 시작 시
+    private void OnActivateAttack()
+    {
+
+    }
+
+    private void OnDeactiveAttack()
+    {
+        // 공격 이펙트 종료
+        currentAttackEffect.SetActive(false);
+    }
+
+    //공격 판정 종료시
     private void OnEndAttack()
     {
         // 이펙트 & 공격 판정 오브젝트 비활성화
-        attackEntity.SetActive(false);
-        isAttack = false;
-        canInteraction = true;
-        //쿨타임은 여기 넣자.
+        if(attackTrigger)
+        {
+            // 공격 종료 시에도 공격 버튼이 눌려져있다면 다음 공격 시전
+            Attack();
+        }
+        else
+        {
+            // 공격 버튼 안눌려있다면 공격 해제
+            isDoingAttack = false;
+            canInteraction = true;
+        }
     }
+
+
 
     //추후에 공격시 대미지나 공격력을 계산하기 위해 만들었다. AttackObejct에서 충돌판정부에서 사용하자.
     public void CombatCalcultor(GameObject target)
-    { 
+    {
     }
 
     //AttackObject가 나비에 닿을 경우, 해당 나비데이터를 PlayerCombat에 전달해주고, 그 데이터를 나비에 전달하기 위한 함수
     public void RideButterFly(Butterfly butterFly)
     {
-        if (isFly)
+        if (isRidingButterfly)
             return;
 
         StopAttack();
@@ -212,18 +270,18 @@ public class PlayerCombat : MonoBehaviour
         Vector3 direction = new Vector2(mouse.x - transform.position.x, mouse.y - transform.position.y).normalized;
 
         // 기준점에서 직사각형의 중심을 계산
-        Vector3 center = transform.position + direction * (attackDistance / 2);
+        Vector3 center = transform.position + direction * (comboAttacks[comboStep].attackDistance / 2);
 
         // 직사각형의 회전 각도 계산
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
         // 기즈모에서 그린 영역과 겹치는 충돌체 검사
-        canInteraction = !Physics2D.OverlapBox(center, new Vector2(attackDistance, 1), angle, LayerMask.GetMask("Monster"));
+        canInteraction = !Physics2D.OverlapBox(center, new Vector2(comboAttacks[comboStep].attackDistance, 1), angle, LayerMask.GetMask("Monster"));
         // 기즈모 색상 설정
         Gizmos.color = canInteraction ? Color.green : Color.red;
 
         // 회전된 직사각형 그리기
-        Matrix4x4 rotationMatrix = Matrix4x4.TRS(center, Quaternion.Euler(0, 0, angle), new Vector3(attackDistance, 1, 1));
+        Matrix4x4 rotationMatrix = Matrix4x4.TRS(center, Quaternion.Euler(0, 0, angle), new Vector3(comboAttacks[comboStep].attackDistance, 1, 1));
         Gizmos.matrix = rotationMatrix;
         Gizmos.DrawWireCube(Vector3.zero, Vector3.one); // 회전된 직사각형 그리기
         Gizmos.matrix = Matrix4x4.identity; // 다음 Gizmo에 영향을 미치지 않도록 기본 매트릭스로 돌아가기

@@ -29,11 +29,11 @@ public class MonsterDamageInflictor : MonoBehaviour
             Debug.Log("damaged");
             if(!isUseIgnoreDuration)
             {
-                go.GetComponent<PlayerMovement>().PlayerDamageReceiver(gameObject, damage);
+                go.GetComponent<PlayerDamageReceiver>().GetDamage(gameObject, damage);
             }
             else
             {
-                go.GetComponent<PlayerMovement>().PlayerDamageReceiver(gameObject, damage,ignoreDuration);
+                go.GetComponent<PlayerDamageReceiver>().GetDamage(gameObject, damage,ignoreDuration);
             }
            
         }
