@@ -36,7 +36,7 @@ public class InputManager : MonoBehaviour
     public InputActionAsset _inputAsset;
     // Input ActionMaps
     // 움직임 관련
-    public InputActionMap AM_MoveGrounded;
+    public InputActionMap AM_MoveDefault;
     public InputActionMap AM_MoveClimb;
     public InputActionMap AM_MoveSuperDashReady;
     public InputActionMap AM_MoveSuperDash;
@@ -49,7 +49,7 @@ public class InputManager : MonoBehaviour
     public InputActionMap AM_UiMenu;
     
     // 상태
-    [SerializeField, ReadOnly] public PlayerMoveState _moveState = PlayerMoveState.GROUNDED;
+    [SerializeField, ReadOnly] public PlayerMoveState _moveState = PlayerMoveState.DEFAULT;
     [SerializeField, ReadOnly] public PlayerActionState _actionState = PlayerActionState.DEFAULT;
     [SerializeField, ReadOnly] private UiState _uiState = UiState.IN_GAME;
 
@@ -65,7 +65,7 @@ public class InputManager : MonoBehaviour
 
         // 플레이어 움직임 관련 Action Map
         {
-            AM_MoveGrounded = _inputAsset.FindActionMap("MoveDefault");
+            AM_MoveDefault = _inputAsset.FindActionMap("MoveDefault");
             AM_MoveClimb = _inputAsset.FindActionMap("Climb");
             AM_MoveSuperDashReady = _inputAsset.FindActionMap("SuperDashReady");
             AM_MoveSuperDash = _inputAsset.FindActionMap("SuperDash");
@@ -85,7 +85,7 @@ public class InputManager : MonoBehaviour
         // TODO: 타이틀 화면 추가하면 기본적으로 활성화된 액션맵을 바꾸기
         // 모두 비활성화하고 Grounded, DefaultAction, InGame만 활성화
         _inputAsset.Disable();
-        AM_MoveGrounded.Enable();
+        AM_MoveDefault.Enable();
         AM_ActionDefault.Enable();
         AM_UiInGame.Enable();
     }
@@ -97,8 +97,8 @@ public class InputManager : MonoBehaviour
         {
             switch (_moveState)
             {
-                case PlayerMoveState.GROUNDED:
-                    AM_MoveGrounded.Disable();
+                case PlayerMoveState.DEFAULT:
+                    AM_MoveDefault.Disable();
                     break;
                 case PlayerMoveState.CLIMBING:
                     AM_MoveClimb.Disable();
@@ -116,8 +116,8 @@ public class InputManager : MonoBehaviour
         }
         switch(newMoveState)
         {
-            case PlayerMoveState.GROUNDED:
-                AM_MoveGrounded.Enable();
+            case PlayerMoveState.DEFAULT:
+                AM_MoveDefault.Enable();
                 break;
             case PlayerMoveState.CLIMBING:
                 AM_MoveClimb.Enable();

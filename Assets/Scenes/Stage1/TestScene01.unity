@@ -20,7 +20,7 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientSkyColor: {r: 0, g: 0, b: 0, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
@@ -166,7 +166,7 @@ PrefabInstance:
     - target: {fileID: 7038311778365337352, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
       propertyPath: CameraTargets.Array.data[0].TargetTransform
       value: 
-      objectReference: {fileID: 390781061}
+      objectReference: {fileID: 5262888440015344438}
     - target: {fileID: 7250734593268076291, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
       propertyPath: m_RootOrder
       value: 9
@@ -371,6 +371,14 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 2892005605020491397, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: _srcPrefabAssetForRestore
+      value: 
+      objectReference: {fileID: 6606165383981438929, guid: dff6c20f5540f3843828c629df070725, type: 3}
+    - target: {fileID: 2892005605020491397, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: _rootGameObjectAsPrefabInstanceForRestore
+      value: 
+      objectReference: {fileID: 6606165384137068373}
     - target: {fileID: 2946078924958327092, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -640,11 +648,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dff6c20f5540f3843828c629df070725, type: 3}
---- !u!4 &390781061 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5262888439632956338, guid: dff6c20f5540f3843828c629df070725, type: 3}
-  m_PrefabInstance: {fileID: 390781060}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &797245624
 GameObject:
   m_ObjectHideFlags: 0
@@ -1374,7 +1377,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5ad71239beaf0247ad8af28e14a4867, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 390781061}
+  player: {fileID: 5262888440015344438}
   cam: {fileID: 210034125}
   startPosition: {x: 7, y: -2}
   startRoom: {fileID: 11400000, guid: 51c60280808fd81428b49ebeab2c7d9c, type: 2}
@@ -1594,6 +1597,16 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 23b4c8f4e260d754e96c25b2b0dc712c, type: 3}
+--- !u!4 &5262888440015344438 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5262888439632956338, guid: dff6c20f5540f3843828c629df070725, type: 3}
+  m_PrefabInstance: {fileID: 390781060}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6606165384137068373 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6606165383981438929, guid: dff6c20f5540f3843828c629df070725, type: 3}
+  m_PrefabInstance: {fileID: 390781060}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

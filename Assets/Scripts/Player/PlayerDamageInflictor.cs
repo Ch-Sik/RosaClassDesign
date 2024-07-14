@@ -12,14 +12,22 @@ public class PlayerDamageInflictor : MonoBehaviour
 {
     Collider2D col;                                 //오브젝트의 충돌 컴포넌트
     PlayerCombat playerCombat;                      //PlayerCombat과 이벤트 전달을 위해 직접 연결
+
+
+    float damagePercent;                            //콤보 당 데미지 비중을 가지기 위한 비중 값
+    float attackAngle;
+
     LayerMask layer_wall;
     LayerMask layer_attackable;                    //attackable한 objects의 layermask
     LayerMask layer_butterfly;                      //butterfly인식을 위한 layermask
 
+
+
     //PlayerCombat에서 Init해준다. 기본적으로 
-    public void Init(PlayerCombat playerCombat, LayerMask wall, LayerMask attackableObjects, LayerMask butterfly)
+    public void Init(PlayerCombat playerCombat, float damagePercent, LayerMask wall, LayerMask attackableObjects, LayerMask butterfly)
     {
         this.playerCombat = playerCombat;
+        this.damagePercent = damagePercent;
         layer_wall = wall;
         layer_attackable = attackableObjects;
         layer_butterfly = butterfly;
@@ -33,14 +41,15 @@ public class PlayerDamageInflictor : MonoBehaviour
         col.isTrigger = true;
     }
 
-    //공격 시작 시 콜라이더 활성화
-    public void StartAttack()
+    // 공격 판정 활성화 or 비활성화
+    // attackAngle은 공격 성공시 넉백 계산에 사용
+    public void SetAttackActive(float attackAngle)
     {
+        this.attackAngle = attackAngle;
         col.enabled = true;
     }
 
-    //공격 종료 후 콜라이더 비활성화
-    public void EndAttack()
+    public void SetAttackInactive()
     {
         col.enabled = false;
     }
@@ -69,7 +78,7 @@ public class PlayerDamageInflictor : MonoBehaviour
         if ((layer_attackable & 1 << collision.gameObject.layer) != 0)
         {
             Debug.Log($"플레이어 공격: {collision.gameObject.name}");
-            collision.GetComponent<DamageReceiver>().GetHitt(PlayerRef.Instance.State.AttackDmg, playerCombat.angle);
+            collision.GetComponent<DamageReceiver>().GetHitt(Mathf.RoundToInt(PlayerRef.Instance.State.AttackDmg * damagePercent), attackAngle);
             playerCombat.StopAttack();
         }
 
