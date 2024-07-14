@@ -219,10 +219,17 @@ public class PlayerCombat : MonoBehaviour
     private void OnEndAttack()
     {
         // 이펙트 & 공격 판정 오브젝트 비활성화
-        if(!attackTrigger) 
-            playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
-        isDoingAttack = false;
-        canInteraction = true;
+        if(attackTrigger)
+        {
+            // 공격 종료 시에도 공격 버튼이 눌려져있다면 다음 공격 시전
+            Attack();
+        }
+        else
+        {
+            // 공격 버튼 안눌려있다면 공격 해제
+            isDoingAttack = false;
+            canInteraction = true;
+        }
     }
 
     //추후에 공격시 대미지나 공격력을 계산하기 위해 만들었다. AttackObejct에서 충돌판정부에서 사용하자.
