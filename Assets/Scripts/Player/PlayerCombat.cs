@@ -61,6 +61,11 @@ public class PlayerCombat : MonoBehaviour
     // 공격 버튼 관련
     public bool attackTrigger = false;              // 공격 버튼
 
+    // 콤보 관련 변수
+    private ComboAttack currentCombo;
+    private GameObject currentAttackEffect;
+    private PlayerDamageInflictor currentAttackHandler;
+
     public void SetAttackTrigger(bool value)
     {
         attackTrigger = value;
@@ -116,54 +121,39 @@ public class PlayerCombat : MonoBehaviour
         // 플래그 설정
         isDoingAttack = true;
 
-        // 마우스 위치 계산
-        CalculateAttackDirection();
-
-        // 콤보 계산
-        if (Time.time - lastAttackTime > comboResetTime)
-        {
-            comboStep = 0;
-        }
-        else
-        {
-            comboStep = (comboStep + 1) % comboAttacks.Count;
-        }
-        lastAttackTime = Time.time;
-        ComboAttack currentCombo = comboAttacks[comboStep];
-        GameObject currentAttackEntity = currentCombo.attackEntity;
-        PlayerDamageInflictor currentAttackHandler = currentCombo.attackHandler;
+        CalculateAttackDirection();     // 마우스 위치 계산
+        CalculateCombo();               // 콤보 관련 계산
 
         // 공격 시퀀스
+        // 실질적인 공격 판정인 AttackHandler는 여기서 관리하고
+        // 그 외 비주얼 이펙트 등은 OnXXXAttack 이벤트 핸들러에서 관리
         Sequence attack = DOTween.Sequence()
-        // 시작 즉시
-        .AppendCallback(() =>
-        {
-            currentAttackEntity.SetActive(true);
-            currentAttackEntity.transform.position = this.transform.position;
-            currentAttackEntity.transform.rotation = Quaternion.Euler(0f, 0f, angle);
-            currentAttackHandler.transform.localPosition = Vector3.zero;
-        })
-        // 선딜 시간 적용
-        .AppendInterval(currentCombo.attackStartupTime)
-        // 선딜 끝나면 이벤트와 함께, 공격 판정 ON
-        .AppendCallback(() =>
-        {
-            OnStartAttack();
-            currentAttackHandler.SetAttackActive(angle);
-        })
-        // 공격 판정 발사
-        .Append(currentAttackHandler.transform.DOMove(currentCombo.attackDistance * direction, currentCombo.attackActiveTime).SetRelative(true))
-        // 공격이 끝난다면, 공격판정 회수
+        // 선딜레이 타임
         .AppendCallback(() => {
-            currentAttackHandler.transform.position = transform.position;
-            currentAttackHandler.SetAttackInactive();
-            currentAttackEntity.SetActive(false);
+            OnStartupAttack(); 
         })
-        // 후딜 시간 적용
+        .AppendInterval(currentCombo.attackStartupTime)
+        // 공격 활성화 타임
+        .AppendCallback(() => {
+            currentAttackHandler.transform.localPosition = Vector3.zero;    // 공격판정 초기화
+            currentAttackHandler.SetAttackActive(angle);
+            OnActivateAttack(); 
+        })
+        .Append(currentAttackHandler.transform.DOMove(                      // 공격 판정 발사
+            currentCombo.attackDistance * direction,
+            currentCombo.attackActiveTime).SetRelative(true)
+        )
+        // 공격 활성화 종료
+        .AppendCallback(() => {
+            currentAttackHandler.transform.position = transform.position;   // 공격판정 회수
+            currentAttackHandler.SetAttackInactive();
+            OnDeactiveAttack(); 
+        })
+        // 후딜레이 타임
         .AppendInterval(currentCombo.attackRecoveryTime)
-        // 시퀀스가 끝나며, 공격끝 이벤트와 함께 공격판정 OFF
         .OnComplete(() =>
         {
+            // 이번 공격 종료
             OnEndAttack();
         });
     }
@@ -178,16 +168,21 @@ public class PlayerCombat : MonoBehaviour
         direction = new Vector2(mouse.x - transform.position.x, mouse.y - transform.position.y).normalized;     //해당 좌표 데이터를 기반으로 방향벡터 얻음
     }
 
-    [Button]
-    //플레이어가 바라보는 방향과 공격방향이 동일한지를 따진다.
-    public bool IsPlayerLookAttackDirection(float angle)
+    void CalculateCombo()
     {
-        if (transform.localScale.x > 0 && Mathf.Abs(angle) < 90)
-            return true;
-        else if (transform.localScale.x < 0 && Mathf.Abs(angle) > 90)
-            return true;
+        // 콤보 계산
+        if (Time.time - lastAttackTime > comboResetTime)
+        {
+            comboStep = 0;
+        }
         else
-            return false;
+        {
+            comboStep = (comboStep + 1) % comboAttacks.Count;
+        }
+        lastAttackTime = Time.time;
+        currentCombo = comboAttacks[comboStep];
+        currentAttackEffect = currentCombo.attackEntity;
+        currentAttackHandler = currentCombo.attackHandler;
     }
 
     [Button]
@@ -208,14 +203,32 @@ public class PlayerCombat : MonoBehaviour
         // OnEndAttack();
     }
 
-    //공격 시작 이벤트
-    private void OnStartAttack()
+    // 선딜레이 시작 시
+    private void OnStartupAttack()
     {
-        // 애니메이션 트리거 설정
+        // 공격 이펙트 소환
+        currentAttackEffect.SetActive(true);
+        currentAttackEffect.transform.position = this.transform.position;
+        currentAttackEffect.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        // 플레이어 애니메이션 설정
         playerRef.Animation.SetAttackAnimTrigger();
+        // 공격 방향 바라보기
+        playerRef.Move.LookAt2DLocal(direction);
     }
 
-    //공격 종료 이벤트
+    //공격 판정 시작 시
+    private void OnActivateAttack()
+    {
+
+    }
+
+    private void OnDeactiveAttack()
+    {
+        // 공격 이펙트 종료
+        currentAttackEffect.SetActive(false);
+    }
+
+    //공격 판정 종료시
     private void OnEndAttack()
     {
         // 이펙트 & 공격 판정 오브젝트 비활성화
@@ -231,6 +244,8 @@ public class PlayerCombat : MonoBehaviour
             canInteraction = true;
         }
     }
+
+
 
     //추후에 공격시 대미지나 공격력을 계산하기 위해 만들었다. AttackObejct에서 충돌판정부에서 사용하자.
     public void CombatCalcultor(GameObject target)

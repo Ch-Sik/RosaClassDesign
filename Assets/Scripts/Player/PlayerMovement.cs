@@ -179,7 +179,7 @@ public class PlayerMovement : MonoBehaviour
             isWallClimbingTop = false;
         }
         isDoingAttack = playerRef.combat.isDoingAttack;
-        isNotMoveable = isWallClimbingTop || isKnockbacked;
+        isNotMoveable = isWallClimbingTop || isKnockbacked || isWallJumping;
     }
 
     /// <summary>
@@ -189,6 +189,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isNotMoveable) return;
 
+        // CLIMBING 상태면 벽오르기
         if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
         {
             if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
@@ -203,24 +204,18 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
         }
+        // DEFAULT 상태라면 좌우 이동
         else
         {
-            if(!isWallJumping)
+            // 공격 중에는 이동 불가
+            if(isDoingAttack)
             {
-                if(isDoingAttack)
-                {
-                    rb.velocity = new Vector2(0, rb.velocity.y);
-                }
-                else
-                {
-                    rb.velocity = new Vector2(moveVector.x * moveSpeed, rb.velocity.y);
-                }
+                rb.velocity = new Vector2(0, rb.velocity.y);
             }
-                
-            if ((moveVector.x > 0 && facingDirection.isLEFT())
-            || (moveVector.x < 0 && facingDirection.isRIGHT()))
+            else
             {
-                Flip();
+                rb.velocity = new Vector2(moveVector.x * moveSpeed, rb.velocity.y);
+                LookAt2DLocal(moveVector);
             }
         }
     }
@@ -564,10 +559,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Debug.Log("Launch Super Dash");
         isDoingSuperDash = true;
-        if (facingDirection != direction)
-        {
-            Flip();
-        }
+        LookAt2DLocal(direction.toVector2());
         playerControl.ChangeMoveState(PlayerMoveState.SUPERDASH);
         moveVector = direction.toVector2() * superDashSpeed;
     }
@@ -644,7 +636,26 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
 
-    void Flip()
+    public void LookAt2D(Vector2 worldPoint)
+    {
+        float delta = worldPoint.x - transform.position.x;
+        if((facingDirection.isLEFT() && delta > 0) 
+            || (facingDirection.isRIGHT() && delta < 0))
+        {
+            Flip();
+        }
+    }
+
+    public void LookAt2DLocal(Vector2 localPoint)
+    {
+        if ((facingDirection.isLEFT() && localPoint.x > 0)
+            || (facingDirection.isRIGHT() && localPoint.x < 0))
+        {
+            Flip();
+        }
+    }
+
+    public void Flip()
     {
         // 플레이어가 바라보는 방향을 전환
         if (facingDirection.isLEFT()) facingDirection = LR.RIGHT;
@@ -655,7 +666,7 @@ public class PlayerMovement : MonoBehaviour
         transform.localScale = theScale;
         //aimLine.transform.localScale = theScale;
     }
-    
+
     public void OnKnockback(Vector3 knockbackPos)
     {
         Vector2 knockbackDirection = transform.position - knockbackPos;
@@ -675,11 +686,7 @@ public class PlayerMovement : MonoBehaviour
         IEnumerator Knockback()
         {
             playerControl.ChangeMoveState(PlayerMoveState.NO_MOVE);
-            if ((knockbackDirection.x < 0 && facingDirection.isLEFT())
-            || (knockbackDirection.x > 0 && facingDirection.isRIGHT()))
-            {
-                Flip();
-            }
+            LookAt2DLocal(-knockbackDirection);     // 넉백되는 방향의 반대편 바라보기
             playerRef.Animation.SetTrigger("Hit");
             playerRef.Animation.ResetTrigger("Grounded");
             isKnockbacked = true;
