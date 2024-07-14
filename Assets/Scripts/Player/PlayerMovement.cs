@@ -1,9 +1,7 @@
-using AnyPortrait;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using Sirenix.OdinInspector;
 
 
 /// <summary>
@@ -73,19 +71,35 @@ public class PlayerMovement : MonoBehaviour
     [ReadOnly, SerializeField] private Timer climbTimer;                // 반대방향 입력후 벽에 메달림 유지 타이머
 
     // 플래그
+    [FoldoutGroup("플래그")]
+    [ReadOnly] public bool isGrounded = false;
+    [FoldoutGroup("플래그")]
+    [ReadOnly] public bool isJumpingUp = false;
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isFacingWall = false;
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isWallClimbing = false;      // 벽에 붙어서 이동중
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isWallJumpReady = false;      // 벽에 붙어서 이동중
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isWallClimbingTop = false;      // 벽에 붙어서 이동중 정상도달
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isWallJumping = false;       // 벽 점프 중인지
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isDoingMagic = false;
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isKnockbacked = false;
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isSlidingOnWall = false;
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isDoingHooking = false;      // 후크액션을 수행하고 있는지
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isHitHookingTarget = false;  // 후크액션중 후크목표에 도달했는지
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isDoingAttack = false;
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isDoingSuperDash = false;
-
+    [FoldoutGroup("플래그")]
     [ReadOnly] public bool isNotMoveable = false;   // 종합적으로 고려하여 플레이어가 움직일 수 있는지 없는지
     
     // 상수
@@ -212,7 +226,7 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
 
-    #region 움직임 관련 함수들
+    #region 걷기 관련
 
     /// <summary>
     /// 지상과 공중에서 x축 방향으로의 이동. 
@@ -224,59 +238,29 @@ public class PlayerMovement : MonoBehaviour
         moveVector = new Vector2(inputVector.x, 0);
     }
 
-    /// <summary>
-    /// 벽면에서의 y축 방향으로의 이동.
-    /// 여기서는 조작 입력값만 받고 실제 속도 업데이트는 UpdateMovement에서 이루어짐.
-    /// </summary>
-    /// <param name="inputVector"></param>
-    internal void Climb(Vector2 inputVector)
-    {        
-        Debug.Log("Climbing");
-        
-        moveVector = inputVector;       // 벽 점프 등을 위해 x축 방향 필터링하지 않음.
-        if(moveVector.x != 0)
+    #endregion
+
+    #region 점프 관련
+    internal void OnJump(bool pressedDown)
+    {
+        if (!isGrounded)
         {
-            if (!DetectWall())
-            {
-                Debug.Log("start Timer");
-                climbTimer = Timer.StartTimer();
-                isWallJumpReady = true;
-            }
+            ReserveJump();       // 공중에서는 점프 선입력
         }
         else
         {
-            if (!DetectWall())
+            if (pressedDown && (platformBelow?.CompareTag("Platform") == true))
             {
-                // TODO: 지면으로 올라가기 구현
-                //Debug.Log("AAA");
-                //UnstickFromWall();
+                Debug.Log(platformBelow?.tag);
+                JumpDown();      // 하향 점프
+            }
+            else
+            {
+                isJumpingUp = true;
+                JumpUp();        // 상향 점프
             }
         }
-        
-
     }
-
-    internal void StopClimb(Vector2 inputVector)
-    {
-        if (isNotMoveable) return;
-        if (moveVector.x != 0 && !isWallClimbingTop)
-        {
-            if(!DetectWall() && climbTimer != null)
-            {
-                Debug.Log("TimerCheck: " + climbTimer.duration);
-                if (climbTimer.duration > maxClimbTime)
-                {
-                    UnstickFromWall();
-                    Flip();
-                    isSlidingOnWall = true;
-                    isWallJumpReady = false;
-                }
-            }
-        }
-        moveVector = inputVector;
-        isWallJumpReady = false;
-    }
-
 
     internal void JumpUp()
     {
@@ -292,8 +276,11 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void FinishJumpUp()
     {
+        // early return
         if (isNotMoveable) return;
+        if (!isJumpingUp) return;
 
+        isJumpingUp = false;
         // 최소 점프 시간에 도달했는지 체크
         if (jumpTimer.duration > minJumpUpDuration) 
         {
@@ -356,7 +343,7 @@ public class PlayerMovement : MonoBehaviour
 
         // 벽으로부터 떨어지고 상태 바꾸기
         UnstickFromWall();
-        playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
+        playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
 
         if (!isSlidingOnWall)
         {
@@ -380,21 +367,61 @@ public class PlayerMovement : MonoBehaviour
             isWallJumping = false;
         }
     }
+    #endregion
+
+    #region 벽 오르기 관련
 
     /// <summary>
-    /// 그라운드 체크 관리는 PlayerController.cs에서 수행하고 OnLanded를 호출해줌.
+    /// 벽면에서의 y축 방향으로의 이동.
+    /// 여기서는 조작 입력값만 받고 실제 속도 업데이트는 UpdateMovement에서 이루어짐.
     /// </summary>
-    internal void OnLanded()
+    /// <param name="inputVector"></param>
+    internal void Climb(Vector2 inputVector)
     {
-        if (isSlidingOnWall)
+        Debug.Log("Climbing");
+
+        moveVector = inputVector;       // 벽 점프 등을 위해 x축 방향 필터링하지 않음.
+        if (moveVector.x != 0)
         {
-            isSlidingOnWall = false;
+            if (!DetectWall())
+            {
+                Debug.Log("start Timer");
+                climbTimer = Timer.StartTimer();
+                isWallJumpReady = true;
+            }
         }
-        if (jumpBufferTimer?.duration < 0.3) // 최근 O.3초 이내에 점프 선입력이 있었을 경우
+        else
         {
-            JumpUp();
-            Debug.Log("선입력으로 인한 점프");
+            if (!DetectWall())
+            {
+                // TODO: 지면으로 올라가기 구현
+                //Debug.Log("AAA");
+                //UnstickFromWall();
+            }
         }
+
+
+    }
+
+    internal void StopClimb(Vector2 inputVector)
+    {
+        if (isNotMoveable) return;
+        if (moveVector.x != 0 && !isWallClimbingTop)
+        {
+            if (!DetectWall() && climbTimer != null)
+            {
+                Debug.Log("TimerCheck: " + climbTimer.duration);
+                if (climbTimer.duration > maxClimbTime)
+                {
+                    UnstickFromWall();
+                    Flip();
+                    isSlidingOnWall = true;
+                    isWallJumpReady = false;
+                }
+            }
+        }
+        moveVector = inputVector;
+        isWallJumpReady = false;
     }
 
     /// <summary>
@@ -402,6 +429,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void StickToWall()
     {
+        isWallClimbing = true;
         playerControl.ChangeMoveState(PlayerMoveState.CLIMBING);
         rb.gravityScale = 0;
     }
@@ -411,8 +439,8 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void UnstickFromWall()
     {
-        Debug.Log("unstick");
-        playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
+        isWallClimbing = false;
+        playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
         rb.gravityScale = this.gravityScale;
         
     }
@@ -431,7 +459,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         isWallClimbingTop = false;
-        playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+        playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
         rb.gravityScale = this.gravityScale;
     }
 
@@ -483,6 +511,43 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    bool DetectWall()
+    {
+        if ((moveVector.x == -1 && facingDirection == LR.RIGHT) || (moveVector.x == 1 && facingDirection == LR.LEFT)) return false;
+        Vector2 pointTop = (Vector2)transform.position
+                            + Vector2.Scale(detectWallTop, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
+        Vector2 pointBot = (Vector2)transform.position
+                            + Vector2.Scale(detectWallBot, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
+        Collider2D[] hitWall = Physics2D.OverlapAreaAll(pointTop, pointBot);
+        // OverlapArea가 clibableLayer로 지정하였을 때 항상 null을 리턴하는 문제가 있어 아래와 같이 구현함.
+        foreach (var i in hitWall)
+        {
+            if (i.gameObject.layer == climbableLayer)
+                return true;
+        }
+        return false;
+    }
+
+    bool CheckWallEnd()
+    {
+        Vector2 pointTop = (Vector2)transform.position
+                            + Vector2.Scale(detectWallEndTop, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
+        Vector2 pointBot = (Vector2)transform.position
+                            + Vector2.Scale(detectWallEndBot, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
+        Collider2D[] hitWall = Physics2D.OverlapAreaAll(pointTop, pointBot);
+        foreach (var i in hitWall)
+        {
+            if (i.gameObject.layer == climbableLayer)
+                return false;
+        }
+        return true;
+    }
+    public void Falling()
+    {
+        isSlidingOnWall = true;
+        UnstickFromWall();
+    }
+
     #endregion
 
     #region 슈퍼대시 관련
@@ -511,7 +576,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Debug.Log("Cancel Super Dash Before Launch");
         rb.gravityScale = gravityScale;
-        playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+        playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
     }
 
     public void CancelSuperDashAfterLaunch()
@@ -520,7 +585,7 @@ public class PlayerMovement : MonoBehaviour
         isDoingSuperDash = false;
         rb.gravityScale = gravityScale;
         moveVector = Vector2.zero;
-        playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+        playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
     }
 
     public void OnMoveDuringSuperDash(LR direction)
@@ -530,45 +595,57 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
 
-    bool DetectWall()
+    #region 그라운드 체크. PlayerGroundCheck.cs에서 참조
+    public void SetIsGrounded(GameObject belowObject)
     {
-        if ((moveVector.x == -1 && facingDirection == LR.RIGHT) || (moveVector.x == 1 && facingDirection == LR.LEFT)) return false;
-        Vector2 pointTop = (Vector2)transform.position
-                            + Vector2.Scale(detectWallTop, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1)); 
-        Vector2 pointBot = (Vector2)transform.position
-                            + Vector2.Scale(detectWallBot, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
-        Collider2D[] hitWall = Physics2D.OverlapAreaAll(pointTop, pointBot);
-        // OverlapArea가 clibableLayer로 지정하였을 때 항상 null을 리턴하는 문제가 있어 아래와 같이 구현함.
-        foreach (var i in hitWall)
+        //해당 값이 0일 경우, 플랫폼에 평행하게 진입할 경우 바로 리턴되는 아래와 같은 문제가 있었음.
+        //1. 이동하면서 더블점프하면 점프가 안 되는 버그
+        //2. A방향으로 더블점프를 착지 전에 -A 방향으로 전환 시 점프 리셋이 안 됌.
+        if (rb.velocity.y > 0.1f) return; // 1-way platform의 groundcheck 방지
+        if (playerControl.currentMoveState == PlayerMoveState.CLIMBING) return; // climb 중 groundcheck 방지
+
+        if (!isGrounded)
         {
-            if (i.gameObject.layer == climbableLayer)
-                return true;
+            // 막 착지했을 때
+            OnLanded();
         }
-        return false;
+        isGrounded = true;
+        platformBelow = belowObject;
+        // playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
     }
 
-    bool CheckWallEnd()
+    public void SetIsNotGrounded()
     {
-        Vector2 pointTop = (Vector2)transform.position
-                            + Vector2.Scale(detectWallEndTop, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
-        Vector2 pointBot = (Vector2)transform.position
-                            + Vector2.Scale(detectWallEndBot, new Vector2(facingDirection.isRIGHT() ? 1 : -1, 1));
-        Collider2D[] hitWall = Physics2D.OverlapAreaAll(pointTop, pointBot);
-        foreach (var i in hitWall)
+        isGrounded = false;
+        platformBelow = null;
+        // state가 기본 상태일 경우에만 state를 수정하지 않음.
+        if (playerControl.currentMoveState == PlayerMoveState.DEFAULT)
         {
-            if (i.gameObject.layer == climbableLayer)
-                return false;
+            // playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
+            playerRef.Animation.ResetTrigger("Grounded");
         }
-        return true;
     }
+
+    /// <summary>
+    /// 그라운드 체크 관리는 PlayerController.cs에서 수행하고 OnLanded를 호출해줌.
+    /// </summary>
+    internal void OnLanded()
+    {
+        playerRef.Animation.SetTrigger("Grounded");
+        if (isSlidingOnWall)
+        {
+            isSlidingOnWall = false;
+        }
+        if (jumpBufferTimer?.duration < 0.3) // 최근 O.3초 이내에 점프 선입력이 있었을 경우
+        {
+            JumpUp();
+            Debug.Log("선입력으로 인한 점프");
+        }
+    }
+    #endregion
 
     void Flip()
     {
-        /* 공격 시스템이 설치형으로 변경되며 수정됨.
-        if (PlayerRef.Instance.combat.isAttack)
-            return;
-        */
-
         // 플레이어가 바라보는 방향을 전환
         if (facingDirection.isLEFT()) facingDirection = LR.RIGHT;
         else facingDirection = LR.LEFT;
@@ -610,7 +687,7 @@ public class PlayerMovement : MonoBehaviour
             bool isGrounded = false;
             while (waitTime > 0)
             {
-                if(playerControl.currentMoveState == PlayerMoveState.GROUNDED)
+                if(playerControl.currentMoveState == PlayerMoveState.DEFAULT)
                 {
                     isGrounded = true;
                     break;
@@ -618,49 +695,10 @@ public class PlayerMovement : MonoBehaviour
                 waitTime -= Time.deltaTime;
                 yield return null;
             }
-            if(!isGrounded) playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
+            if(!isGrounded) playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
             isKnockbacked = false;
         }
     }
-
-    public void Falling()
-    {
-        isSlidingOnWall = true;
-        UnstickFromWall();
-    }
-
-    #region 그라운드 체크. PlayerGroundCheck.cs에서 호출되는 함수들
-    public void SetIsGrounded(GameObject belowObject)
-    {
-        //해당 값이 0일 경우, 플랫폼에 평행하게 진입할 경우 바로 리턴되는 아래와 같은 문제가 있었음.
-        //1. 이동하면서 더블점프하면 점프가 안 되는 버그
-        //2. A방향으로 더블점프를 착지 전에 -A 방향으로 전환 시 점프 리셋이 안 됌.
-        if (rb.velocity.y > 0.1f) return; // 1-way platform의 groundcheck 방지
-        if (playerControl.currentMoveState == PlayerMoveState.CLIMBING) return; // climb 중 groundcheck 방지
-
-
-        platformBelow = belowObject;
-        if (playerControl.isMIDAIR)
-        {
-            // 막 착지했을 때
-            OnLanded();
-        }
-        playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
-        playerRef.Animation.SetTrigger("Grounded");
-    }
-
-    public void SetIsNotGrounded()
-    {
-        platformBelow = null;
-        if (playerControl.currentMoveState == PlayerMoveState.GROUNDED)
-        {
-            playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
-            playerRef.Animation.ResetTrigger("Grounded");
-        }
-            
-        // state가 Climbing일 경우 state를 수정하지 않음.
-    }
-    #endregion
 
     private void OnDrawGizmos()
     {

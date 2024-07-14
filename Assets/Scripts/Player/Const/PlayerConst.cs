@@ -4,8 +4,7 @@
 
 public enum PlayerMoveState
 {
-    GROUNDED, 
-    MIDAIR,
+    DEFAULT, 
     CLIMBING,
     SUPERDASH_READY, // 스쿼팅 오이를 타고 발사되기 직전 상태
     SUPERDASH,      // 스쿼팅 오이를 타고 실제 발사된 상태

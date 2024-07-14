@@ -54,14 +54,21 @@ public class PlayerAnimation : MonoBehaviour
 
     void UpdateAnimParameters()
     {
-        
-        anim.SetBool("isWalking", (playerControl.currentMoveState == PlayerMoveState.GROUNDED && !isDoingAttack && playerMove.moveVector.x != 0) ? true : false);
-        anim.SetBool("isJumping", (playerControl.isMIDAIR && !playerMove.isDoingHooking) ? true : false);
-        anim.SetBool("isClimbing", (playerControl.currentMoveState == PlayerMoveState.CLIMBING) ? true : false);
-        anim.SetBool("isClimbEnd", (playerMove.isWallClimbingTop) ? true : false);
-        anim.SetBool("isInputClimbX", (playerControl.currentMoveState == PlayerMoveState.CLIMBING && 
-            (playerMove.facingDirection.toVector2().x == -playerMove.moveVector.x)) ? true : false);
-        anim.SetBool("isMagicReady", (playerControl.currentActionState == PlayerActionState.MAGIC_READY) ? true : false);
+        anim.SetBool("isWalking", 
+            (playerControl.currentMoveState == PlayerMoveState.DEFAULT 
+            && !isDoingAttack && playerMove.moveVector.x != 0) ? true : false);
+        anim.SetBool("isJumping", 
+            (playerControl.currentMoveState == PlayerMoveState.DEFAULT 
+            && !playerMove.isGrounded && !playerMove.isDoingHooking) ? true : false);
+        anim.SetBool("isClimbing", 
+            (playerControl.currentMoveState == PlayerMoveState.CLIMBING) ? true : false);
+        anim.SetBool("isClimbEnd", 
+            (playerMove.isWallClimbingTop) ? true : false);
+        anim.SetBool("isInputClimbX", 
+            (playerControl.currentMoveState == PlayerMoveState.CLIMBING 
+            && (playerMove.facingDirection.toVector2().x == -playerMove.moveVector.x)) ? true : false);
+        anim.SetBool("isMagicReady", 
+            (playerControl.currentActionState == PlayerActionState.MAGIC_READY) ? true : false);
         //anim.SetBool("isClimbOver", ((playerControl.currentMoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
         anim.SetFloat("yVel", rb.velocity.y);
     }

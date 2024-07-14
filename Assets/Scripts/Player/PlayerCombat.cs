@@ -220,7 +220,7 @@ public class PlayerCombat : MonoBehaviour
     {
         // 이펙트 & 공격 판정 오브젝트 비활성화
         if(!attackTrigger) 
-            playerControl.ChangeMoveState(PlayerMoveState.GROUNDED);
+            playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
         isDoingAttack = false;
         canInteraction = true;
     }

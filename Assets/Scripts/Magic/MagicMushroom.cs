@@ -10,7 +10,7 @@ public class MagicMushroom : MonoBehaviour
     {
         if(collision.gameObject.CompareTag("Player"))
         {
-            if (PlayerRef.Instance.Controller.isMIDAIR)
+            if (PlayerRef.Instance.Move.isGrounded)
                 collision.gameObject.GetComponent<Rigidbody2D>().velocity = (Vector2.up * jumpPower);
         }
     }
