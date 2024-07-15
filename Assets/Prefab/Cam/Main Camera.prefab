@@ -272,11 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b8c96e2cdc154e848a3d9fe62464d42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CameraTargets:
-  - TargetTransform: {fileID: 0}
-    TargetInfluenceH: 1
-    TargetInfluenceV: 1
-    TargetOffset: {x: 0, y: 0}
+  CameraTargets: []
   CenterTargetOnStart: 1
   Axis: 0
   UpdateType: 1
@@ -333,7 +329,7 @@ MonoBehaviour:
   _pc2D: {fileID: 7038311778365337352}
   _serializedAxis: 0
   MaxHorizontalInfluence: 1
-  MaxVerticalInfluence: 1.5
+  MaxVerticalInfluence: 2
   InfluenceSmoothness: 0.2
 --- !u!114 &4033578707123838555
 MonoBehaviour:
@@ -485,7 +481,7 @@ MonoBehaviour:
     x: 0
     y: 0
     width: 0.2
-    height: 0.2
+    height: 0.1
   IsRelativeSizeAndPosition: 1
 --- !u!1001 &5452815901347306802
 PrefabInstance:
