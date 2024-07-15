@@ -155,7 +155,7 @@ GameObject:
   - component: {fileID: 7250734593268076291}
   - component: {fileID: 1562838267116656084}
   - component: {fileID: 3612029987590494770}
-  - component: {fileID: 9208830483791258128}
+  - component: {fileID: 2787016588067103031}
   - component: {fileID: 7038311778365337352}
   - component: {fileID: 760144525027219976}
   - component: {fileID: 93132452444496374}
@@ -247,7 +247,7 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5012507004362759126}
   m_Enabled: 1
---- !u!114 &9208830483791258128
+--- !u!114 &2787016588067103031
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -259,6 +259,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b03d8f4e3b6b0e45add932652aecc9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allowCameraFollow: 1
 --- !u!114 &7038311778365337352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -271,20 +272,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b8c96e2cdc154e848a3d9fe62464d42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CameraTargets:
-  - TargetTransform: {fileID: 0}
-    TargetInfluenceH: 1
-    TargetInfluenceV: 1
-    TargetOffset: {x: 0, y: 0}
+  CameraTargets: []
   CenterTargetOnStart: 1
   Axis: 0
   UpdateType: 1
   FollowHorizontal: 1
   HorizontalFollowSmoothness: 0.15
   FollowVertical: 1
-  VerticalFollowSmoothness: 0.15
+  VerticalFollowSmoothness: 0.05
   OffsetX: 0
-  OffsetY: 0.4
+  OffsetY: 0.1
   IsRelativeOffset: 1
   ZoomWithFOV: 0
   IgnoreTimeScale: 0
@@ -435,7 +432,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5012507004362759126}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6903f12ac8ae44a41ba2a44700ec60ed, type: 3}
   m_Name: 
@@ -446,7 +443,7 @@ MonoBehaviour:
   UseTopBoundary: 0
   TopBoundary: 10
   TargetTopBoundary: 0
-  UseBottomBoundary: 1
+  UseBottomBoundary: 0
   BottomBoundary: -10
   TargetBottomBoundary: 0
   UseLeftBoundary: 0
@@ -484,7 +481,7 @@ MonoBehaviour:
     x: 0
     y: 0
     width: 0.2
-    height: 0.4
+    height: 0.1
   IsRelativeSizeAndPosition: 1
 --- !u!1001 &5452815901347306802
 PrefabInstance:

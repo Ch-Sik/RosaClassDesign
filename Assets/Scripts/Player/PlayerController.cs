@@ -113,7 +113,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        playerMove.OnJump(moveVector.y < float.Epsilon);
+        playerMove.OnJump(moveVector.y < -float.Epsilon);
     }
 
     public void OnInteract(InputAction.CallbackContext context)
