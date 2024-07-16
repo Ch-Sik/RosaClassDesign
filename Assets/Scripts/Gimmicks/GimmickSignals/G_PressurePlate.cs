@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class G_PressurePlate : GimmickSignal
+public class G_PressurePlate : GimmickSignalSender
 {
     public Sprite active;
     public Sprite inactive;

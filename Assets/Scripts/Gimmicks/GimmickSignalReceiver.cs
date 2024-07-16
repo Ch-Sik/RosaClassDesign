@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Gimmick : MonoBehaviour
+public abstract class GimmickSignalReceiver : MonoBehaviour
 {
     //모든 Trigger가 On일 때 작동할 함수
     public abstract void OnAct();

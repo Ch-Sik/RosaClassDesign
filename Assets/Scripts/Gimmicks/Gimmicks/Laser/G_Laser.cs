@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
 
-public class G_Laser : Gimmick
+public class G_Laser : GimmickSignalReceiver
 {
     public bool showGizmos = true;
     public SpriteRenderer sp;

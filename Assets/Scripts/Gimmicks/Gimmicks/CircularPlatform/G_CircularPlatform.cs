@@ -7,7 +7,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class G_CircularPlatform : Gimmick
+public class G_CircularPlatform : GimmickSignalReceiver
 {
     public bool showGizmos = true;
     public float speed = 2.0f;

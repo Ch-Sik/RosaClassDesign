@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class G_Lever : GimmickSignal
+public class G_Lever : GimmickSignalSender
 {
     [SerializeField] Transform leverHandle;
 
