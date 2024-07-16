@@ -79,6 +79,11 @@ public class PlayerCombat : MonoBehaviour
         playerControl = playerRef.Controller;
         aimInput = InputManager.Instance._inputAsset.FindActionMap("ActionDefault").FindAction("Aim");
 
+        // 마스크 옵션 정상적인지 확인
+        Debug.Assert(mask_wall != 0, "레이어 마스크 설정이 잘못되어있음");
+        Debug.Assert(mask_attackable != 0, "레이어 마스크 설정이 잘못되어있음");
+        Debug.Assert(mask_butterfly != 0, "레이어 마스크 설정이 잘못되어있음");
+
         // 공격 오브젝트가 flip에 영향받지 않도록 하기 위해 게임이 시작되면 공격을 플레이어의 자식이 아니도록 설정
         for (int i = 0; i < comboAttacks.Count; i++)
         {
@@ -96,7 +101,7 @@ public class PlayerCombat : MonoBehaviour
                 Debug.LogError($"PlayerDamageInflictor not found in attack entity at index {i}.");
                 continue;
             }
-            comboAttacks[i].attackHandler.Init(this, comboAttacks[i].attackDamagePercent, LayerMask.GetMask("Wall"), LayerMask.GetMask("Attackable"), LayerMask.GetMask("Butterfly"));
+            comboAttacks[i].attackHandler.Init(this, comboAttacks[i].attackDamagePercent, mask_wall, mask_attackable, mask_butterfly);
         }
     }
 
