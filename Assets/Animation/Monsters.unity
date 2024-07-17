@@ -7273,7 +7273,7 @@ GameObject:
   - component: {fileID: 383058150}
   - component: {fileID: 383058151}
   m_Layer: 0
-  m_Name: "\uBAA9_Mesh"
+  m_Name: "\uBAA9_\uAC00\uC2B4\uD138_Mesh"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11891,33 +11891,33 @@ MonoBehaviour:
   _vertexData:
   - _index: 0
     _uniqueID: 67971990
-    _pos: {x: 467.73932, y: 30.859566}
-    _uv: {x: 0.9567767, y: 0.5301363}
+    _pos: {x: 412.33896, y: 51.640934}
+    _uv: {x: 0.9026748, y: 0.5504306}
     _zDepth: 0
   - _index: 1
     _uniqueID: 37702593
-    _pos: {x: 498.88217, y: 49.14528}
-    _uv: {x: 0.98718965, y: 0.5479934}
+    _pos: {x: 492.83896, y: 63.515934}
+    _uv: {x: 0.9812881, y: 0.5620273}
     _zDepth: 0
   - _index: 2
     _uniqueID: 7231293
-    _pos: {x: 489.73932, y: 76.00242}
-    _uv: {x: 0.97826105, y: 0.57422113}
+    _pos: {x: 486.46396, y: 83.26593}
+    _uv: {x: 0.9750625, y: 0.5813144}
     _zDepth: 0
   - _index: 3
     _uniqueID: 39165133
-    _pos: {x: 418.88217, y: 48.002422}
-    _uv: {x: 0.90906465, y: 0.5468774}
+    _pos: {x: 403.46396, y: 57.265934}
+    _uv: {x: 0.8940078, y: 0.55592376}
     _zDepth: 0
   - _index: 4
     _uniqueID: 61958245
-    _pos: {x: 376.59647, y: 71.716705}
-    _uv: {x: 0.86776996, y: 0.5700358}
+    _pos: {x: 379.08896, y: 76.89093}
+    _uv: {x: 0.8702041, y: 0.5750888}
     _zDepth: 0
   - _index: 5
     _uniqueID: 65460373
-    _pos: {x: 488.31073, y: 91.43099}
-    _uv: {x: 0.97686595, y: 0.58928806}
+    _pos: {x: 486.21396, y: 99.14093}
+    _uv: {x: 0.97481835, y: 0.5968173}
     _zDepth: 0
   - _index: 6
     _uniqueID: 59287830
@@ -11949,12 +11949,22 @@ MonoBehaviour:
     _pos: {x: 397.73932, y: 171.14528}
     _uv: {x: 0.8884173, y: 0.66713405}
     _zDepth: 0
-  _indexBuffer: 02000000000000000300000000000000020000000100000005000000020000000300000004000000050000000300000006000000040000000700000004000000060000000500000009000000060000000800000007000000080000000600000009000000080000000b000000090000000b0000000a000000
+  - _index: 12
+    _uniqueID: 35351127
+    _pos: {x: 486.33896, y: 31.26593}
+    _uv: {x: 0.9749404, y: 0.53053313}
+    _zDepth: 0
+  - _index: 13
+    _uniqueID: 21750467
+    _pos: {x: 419.46396, y: 48.140934}
+    _uv: {x: 0.9096328, y: 0.5470126}
+    _zDepth: 0
+  _indexBuffer: 02000000000000000300000000000000020000000100000005000000020000000300000004000000050000000300000006000000040000000700000004000000060000000500000009000000060000000800000007000000080000000600000009000000080000000b000000090000000b0000000a000000010000000d000000000000000c0000000d00000001000000
   _edges:
   - _vertID_1: 67971990
     _vertID_2: 37702593
     _isHidden: 0
-    _isOutline: 1
+    _isOutline: 0
   - _vertID_1: 37702593
     _vertID_2: 7231293
     _isHidden: 0
@@ -12013,6 +12023,18 @@ MonoBehaviour:
     _isOutline: 1
   - _vertID_1: 43897889
     _vertID_2: 78525439
+    _isHidden: 0
+    _isOutline: 1
+  - _vertID_1: 37702593
+    _vertID_2: 35351127
+    _isHidden: 0
+    _isOutline: 1
+  - _vertID_1: 35351127
+    _vertID_2: 21750467
+    _isHidden: 0
+    _isOutline: 1
+  - _vertID_1: 67971990
+    _vertID_2: 21750467
     _isHidden: 0
     _isOutline: 1
   _polygons:
@@ -12106,6 +12128,24 @@ MonoBehaviour:
     _tris:
     - _vertIDs: 626da900ff33ae0421d49d02
     - _vertIDs: 626da90021d49d02ae19ef02
+  - _vertIDs: 962b0d04c3e24b01576a1b02c14b3f02
+    _edgeIDs:
+    - _ID1: 67971990
+      _ID2: 21750467
+    - _ID1: 35351127
+      _ID2: 21750467
+    - _ID1: 37702593
+      _ID2: 35351127
+    - _ID1: 67971990
+      _ID2: 37702593
+    _hidddenEdges:
+    - _vertID_1: 21750467
+      _vertID_2: 37702593
+      _isHidden: 1
+      _isOutline: 0
+    _tris:
+    - _vertIDs: c14b3f02c3e24b01962b0d04
+    - _vertIDs: 576a1b02c3e24b01c14b3f02
   _offsetPos: {x: 429.5, y: 101}
   _isPSDParsed: 1
   _atlasFromPSD_LT: {x: 368, y: 164}
@@ -23521,6 +23561,3220 @@ Material:
     m_Colors:
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_BuildTextureStacks: []
+--- !u!1 &966354289
+GameObject:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 966354290}
+  - component: {fileID: 966354291}
+  m_Layer: 0
+  m_Name: Modifier - Rigging
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &966354290
+Transform:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 966354289}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1287300186}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &966354291
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 966354289}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68d67bedbbd74e842b0c2fab32fda5f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _uniqueID: 2305469
+  _layer: 0
+  _layerWeight: 1
+  _meshGroupUniqueID: 90590842
+  _blendMethod: 0
+  _paramSetGroup_controller:
+  - _syncTarget: 0
+    _keyControlParamID: -1
+    _keyAnimClipID: -1
+    _keyAnimTimelineID: -1
+    _keyAnimTimelineLayerID: -1
+    _paramSetList:
+    - _conSyncValue_Int: 0
+      _conSyncValue_Float: 0
+      _conSyncValue_Vector2: {x: 0, y: 0}
+      _conSyncValueRange_Under: {x: 0, y: 0}
+      _conSyncValueRange_Over: {x: 0, y: 0}
+      _keyframeUniqueID: -1
+      _overlapWeight: 1
+      _meshData:
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 97222181
+        _meshUniqueID: 11630256
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 0
+        _vertRigs:
+        - _vertexUniqueID: 24791342
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 64978366
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 32884254
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 79750199
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 79191080
+        _meshUniqueID: 58252911
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 984316
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 8873543
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 59785205
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 14057121
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 34969870
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 21479917
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 96815008
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 54042727
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 11873858
+        _meshUniqueID: 79293360
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 58503525
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 28014215
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.6
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.4
+          _totalWeight: 1
+        - _vertexUniqueID: 98838153
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 84727628
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 94029643
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 17939974
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 4540421
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 90131252
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 4514953
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 94638971
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 42357383
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 5863115
+          _vertIndex: 11
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 35040201
+          _vertIndex: 12
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 83043207
+          _vertIndex: 13
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 50197775
+          _vertIndex: 14
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 13429342
+          _vertIndex: 15
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 70534386
+        _meshUniqueID: 44744185
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 24144448
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 28406995
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 214909
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 65690316
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 15387106
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 47880353
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 88331674
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 60265762
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 45255208
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 49159001
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 14160265
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 5102286
+          _vertIndex: 11
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 11207585
+          _vertIndex: 12
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 87594491
+          _vertIndex: 13
+          _weightPairs:
+          - _boneID: 80202750
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 99856751
+        _meshUniqueID: 47573775
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 64804505
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 45214464
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 1765388
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 85709929
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 14559779
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 34734072
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 71419673
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 91026051
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 40868599
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 31253383
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 31137712
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 57835555
+          _vertIndex: 11
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 10132771
+          _vertIndex: 12
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 60895466
+          _vertIndex: 13
+          _weightPairs:
+          - _boneID: 28246085
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 69903900
+        _meshUniqueID: 6604850
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 56896042
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 46187677
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 29625213
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 79303492
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 98428994
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 94222479
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 99730927
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 65577101
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 5882160
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 69536542
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 30340841
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 19355538
+          _vertIndex: 11
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 77779989
+          _vertIndex: 12
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 83865150
+          _vertIndex: 13
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 27803298
+          _vertIndex: 14
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 70624239
+          _vertIndex: 15
+          _weightPairs:
+          - _boneID: 57927087
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 95075248
+        _meshUniqueID: 28254313
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 40039690
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 28810946
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 67343316
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 57007067
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 88104808
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 95942536
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 43042793
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 3887006
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 72812470
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 8772296
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 83789878
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 77659646
+          _vertIndex: 11
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 67578663
+          _vertIndex: 12
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 21660035
+          _vertIndex: 13
+          _weightPairs:
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 77807349
+        _meshUniqueID: 7416507
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 0
+        _vertRigs:
+        - _vertexUniqueID: 60314167
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 54569995
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 67912250
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 71662625
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 78006922
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 99225868
+        _meshUniqueID: 65741179
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 54316856
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 43468242
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 29817114
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 42207709
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 38619767
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 16079527
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 50521877
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 16079527
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 50620883
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 16079527
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 45263986
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 16079527
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 61827329
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 16079527
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 59163343
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 16079527
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 15952355
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 16079527
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 78956824
+        _meshUniqueID: 5789654
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 67971990
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.100000024
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.9
+          _totalWeight: 1
+        - _vertexUniqueID: 37702593
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 7231293
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 39165133
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 61958245
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 65460373
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 1
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0
+          _totalWeight: 1
+        - _vertexUniqueID: 59287830
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 93402025
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 78525439
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 11103586
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 49224110
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 43897889
+          _vertIndex: 11
+          _weightPairs:
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 35351127
+          _vertIndex: 12
+          _weightPairs:
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 21750467
+          _vertIndex: 13
+          _weightPairs:
+          - _boneID: 39666285
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 22604131
+            _meshGroupID: 90590842
+            _weight: 0.100000024
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 30763376
+        _meshUniqueID: 92299561
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 27717843
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 25713505
+            _meshGroupID: 90590842
+            _weight: 1
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 0
+          _totalWeight: 1
+        - _vertexUniqueID: 56492027
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 25713505
+            _meshGroupID: 90590842
+            _weight: 1
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 0
+          _totalWeight: 1
+        - _vertexUniqueID: 70365357
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 25713505
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 25007291
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 25713505
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 83183536
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 25713505
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 91066159
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 54059606
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 25713505
+            _meshGroupID: 90590842
+            _weight: 1
+          - _boneID: 91066159
+            _meshGroupID: 90590842
+            _weight: 0
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 0
+          _totalWeight: 1
+        - _vertexUniqueID: 38933183
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 91066159
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 64463886
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 91066159
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 98530383
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 91066159
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 18737723
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 91066159
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 25713505
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 14479723
+        _meshUniqueID: 27821800
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 28058506
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 25713505
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 27817998
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 30535729
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 7133859
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 25713505
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 64104548
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 4741880
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 844633
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 74879538
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 67586124
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 25713505
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 14314386
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 98040901
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 1
+          - _boneID: 25713505
+            _meshGroupID: 90590842
+            _weight: 0
+          _totalWeight: 1
+        - _vertexUniqueID: 91845905
+          _vertIndex: 11
+          _weightPairs:
+          - _boneID: 47467432
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 64870558
+        _meshUniqueID: 73868131
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 50455316
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 51993384
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 31680382
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 51993384
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 83869958
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 51993384
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 91953586
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 5581953
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 51993384
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 50473462
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 51993384
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 1193087
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 33981402
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 2870940
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 65914297
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 91088050
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 20864011
+          _vertIndex: 11
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 68453387
+          _vertIndex: 12
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 40539386
+          _vertIndex: 13
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 27505976
+          _vertIndex: 14
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 83293556
+          _vertIndex: 15
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 64063928
+          _vertIndex: 16
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 16117633
+          _vertIndex: 17
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 62743366
+          _vertIndex: 18
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 31354307
+          _vertIndex: 19
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 19106234
+          _vertIndex: 20
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 68702340
+          _vertIndex: 21
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 91509502
+          _vertIndex: 22
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 50396364
+          _vertIndex: 23
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 65795852
+          _vertIndex: 24
+          _weightPairs:
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 56511951
+          _vertIndex: 25
+          _weightPairs:
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 7758350
+          _vertIndex: 26
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 12205001
+          _vertIndex: 27
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 55077161
+          _vertIndex: 28
+          _weightPairs:
+          - _boneID: 86461965
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 59480860
+          _vertIndex: 29
+          _weightPairs:
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 23224597
+          _vertIndex: 30
+          _weightPairs:
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 58643373
+          _vertIndex: 31
+          _weightPairs:
+          - _boneID: 51993384
+            _meshGroupID: 90590842
+            _weight: 0.81
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.09
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.10000001
+          _totalWeight: 1
+        - _vertexUniqueID: 40037158
+          _vertIndex: 32
+          _weightPairs:
+          - _boneID: 51993384
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 90155070
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 27830774
+          _vertIndex: 33
+          _weightPairs:
+          - _boneID: 51993384
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 69728341
+          _vertIndex: 34
+          _weightPairs:
+          - _boneID: 51993384
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 21348267
+        _meshUniqueID: 34819099
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 1
+        _vertRigs:
+        - _vertexUniqueID: 10196453
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 89067834
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 11152006
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 89067834
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 60398244
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 89067834
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 98455234
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 89067834
+            _meshGroupID: 90590842
+            _weight: 0.81
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.09
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.10000001
+          _totalWeight: 1
+        - _vertexUniqueID: 19550235
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 89067834
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 55674822
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 50077381
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 88149162
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 89067834
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 63236013
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 89067834
+            _meshGroupID: 90590842
+            _weight: 0.81
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.09
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.10000001
+          _totalWeight: 1
+        - _vertexUniqueID: 17253098
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 89067834
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 881339
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 82118599
+          _vertIndex: 11
+          _weightPairs:
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 96112885
+          _vertIndex: 12
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.55
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.45
+          _totalWeight: 1
+        - _vertexUniqueID: 3514514
+          _vertIndex: 13
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.55
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.45
+          _totalWeight: 1
+        - _vertexUniqueID: 56272356
+          _vertIndex: 14
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.6
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.4
+          _totalWeight: 1
+        - _vertexUniqueID: 54791693
+          _vertIndex: 15
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 95805755
+          _vertIndex: 16
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 68304093
+          _vertIndex: 17
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 35655541
+          _vertIndex: 18
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 33947931
+          _vertIndex: 19
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 61765408
+          _vertIndex: 20
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 29160332
+          _vertIndex: 21
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 95737242
+          _vertIndex: 22
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 24002476
+          _vertIndex: 23
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 27704565
+          _vertIndex: 24
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 1843032
+          _vertIndex: 25
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 83418871
+          _vertIndex: 26
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 35670996
+          _vertIndex: 27
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 46741693
+          _vertIndex: 28
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 5212067
+          _vertIndex: 29
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 22252235
+          _vertIndex: 30
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 88262041
+          _vertIndex: 31
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 6910388
+          _vertIndex: 32
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 79240880
+          _vertIndex: 33
+          _weightPairs:
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 14031402
+          _vertIndex: 34
+          _weightPairs:
+          - _boneID: 55196856
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 56501510
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 77542483
+        _meshUniqueID: 70729430
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 0
+        _vertRigs:
+        - _vertexUniqueID: 94669214
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 72001160
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 54747185
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 72001160
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 75105125
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 72001160
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 74702202
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 72001160
+            _meshGroupID: 90590842
+            _weight: 0.81
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.09
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.10000001
+          _totalWeight: 1
+        - _vertexUniqueID: 57961626
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 72001160
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 78753150
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 62214123
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 72001160
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 74175734
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 72001160
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 31477370
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 88050323
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 72001160
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 72376678
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 72001160
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 53340419
+          _vertIndex: 11
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 93262519
+          _vertIndex: 12
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.4
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.6
+          _totalWeight: 1
+        - _vertexUniqueID: 44054013
+          _vertIndex: 13
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.4
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.6
+          _totalWeight: 1
+        - _vertexUniqueID: 66836774
+          _vertIndex: 14
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.6
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.4
+          _totalWeight: 1
+        - _vertexUniqueID: 50758170
+          _vertIndex: 15
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.6
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.4
+          _totalWeight: 1
+        - _vertexUniqueID: 41167143
+          _vertIndex: 16
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.6
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.4
+          _totalWeight: 1
+        - _vertexUniqueID: 12255826
+          _vertIndex: 17
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 16906764
+          _vertIndex: 18
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 15954364
+          _vertIndex: 19
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 71809960
+          _vertIndex: 20
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 72571166
+          _vertIndex: 21
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 618543
+          _vertIndex: 22
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 84653805
+          _vertIndex: 23
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 2187395
+          _vertIndex: 24
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 20830355
+          _vertIndex: 25
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 86074415
+          _vertIndex: 26
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 56743266
+          _vertIndex: 27
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 55298004
+          _vertIndex: 28
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 13441948
+          _vertIndex: 29
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.3
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.7
+          _totalWeight: 1
+        - _vertexUniqueID: 42891687
+          _vertIndex: 30
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 20450538
+          _vertIndex: 31
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 8139461
+          _vertIndex: 32
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 71436613
+          _vertIndex: 33
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 4136781
+          _vertIndex: 34
+          _weightPairs:
+          - _boneID: 31789358
+            _meshGroupID: 90590842
+            _weight: 0.6
+          - _boneID: 30504373
+            _meshGroupID: 90590842
+            _weight: 0.4
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      - _meshGroupUniqueID_Modifier: 90590842
+        _transformUniqueID: 76409784
+        _meshUniqueID: 80942159
+        _isMeshTransform: 1
+        _isUsePhysicParam: 0
+        _physicMeshParam:
+          _isRestrictMoveRange: 0
+          _moveRange: 0
+          _isRestrictStretchRange: 0
+          _stretchRangeRatio_Max: 0
+          _stretchK: 0
+          _inertiaK: 0
+          _damping: 0
+          _mass: 100
+          _gravityParamType: 0
+          _gravityConstValue: {x: 0, y: 0}
+          _gravityControlParamID: -1
+          _windParamType: 0
+          _windConstValue: {x: 0, y: 0}
+          _windControlParamID: -1
+          _windRandomRange: {x: 0, y: 0}
+          _airDrag: 0
+          _viscosity: 0
+          _restoring: 1
+          _presetID: -1
+        _modValueType: 16
+        _isRecursiveChildTransform: 0
+        _meshGroupUniqueID_Transform: 90590842
+        _vertices: []
+        _pins: []
+        _transformMatrix:
+          _pos: {x: 0, y: 0}
+          _angleDeg: 0
+          _scale: {x: 1, y: 1}
+        _meshColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        _isVisible: 0
+        _vertRigs:
+        - _vertexUniqueID: 91033520
+          _vertIndex: 0
+          _weightPairs:
+          - _boneID: 81800565
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 17958303
+          _vertIndex: 1
+          _weightPairs:
+          - _boneID: 81800565
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 17910305
+          _vertIndex: 2
+          _weightPairs:
+          - _boneID: 81800565
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 96568419
+          _vertIndex: 3
+          _weightPairs:
+          - _boneID: 81800565
+            _meshGroupID: 90590842
+            _weight: 0.63
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.07
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 20780041
+          _vertIndex: 4
+          _weightPairs:
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.6142857
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.3857143
+          _totalWeight: 1
+        - _vertexUniqueID: 83328793
+          _vertIndex: 5
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 38093902
+          _vertIndex: 6
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 53250453
+          _vertIndex: 7
+          _weightPairs:
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 93533263
+          _vertIndex: 8
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 47422623
+          _vertIndex: 9
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 77668259
+          _vertIndex: 10
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 58361594
+          _vertIndex: 11
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 66208480
+          _vertIndex: 12
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 8740031
+          _vertIndex: 13
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 84670710
+          _vertIndex: 14
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 53855149
+          _vertIndex: 15
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 45524933
+          _vertIndex: 16
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.100000024
+          _totalWeight: 1
+        - _vertexUniqueID: 88467118
+          _vertIndex: 17
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.85
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.14999998
+          _totalWeight: 1
+        - _vertexUniqueID: 31632631
+          _vertIndex: 18
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.85
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.14999998
+          _totalWeight: 1
+        - _vertexUniqueID: 69902683
+          _vertIndex: 19
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.7285714
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.27142859
+          _totalWeight: 1
+        - _vertexUniqueID: 2074640
+          _vertIndex: 20
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.7285715
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.27142853
+          _totalWeight: 1
+        - _vertexUniqueID: 90076681
+          _vertIndex: 21
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.7285715
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.27142853
+          _totalWeight: 1
+        - _vertexUniqueID: 29927516
+          _vertIndex: 22
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.54285717
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.45714286
+          _totalWeight: 1
+        - _vertexUniqueID: 17615527
+          _vertIndex: 23
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.55714285
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.44285715
+          _totalWeight: 1
+        - _vertexUniqueID: 10232657
+          _vertIndex: 24
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.55714285
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.44285715
+          _totalWeight: 1
+        - _vertexUniqueID: 6388608
+          _vertIndex: 25
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 45274660
+          _vertIndex: 26
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.9
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.1
+          _totalWeight: 1
+        - _vertexUniqueID: 52430532
+          _vertIndex: 27
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.7
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 96937903
+          _vertIndex: 28
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 90792075
+          _vertIndex: 29
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.5
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.5
+          _totalWeight: 1
+        - _vertexUniqueID: 34222664
+          _vertIndex: 30
+          _weightPairs:
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 93449688
+          _vertIndex: 31
+          _weightPairs:
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.7714286
+          - _boneID: 2915177
+            _meshGroupID: 90590842
+            _weight: 0.22857143
+          _totalWeight: 1
+        - _vertexUniqueID: 63865529
+          _vertIndex: 32
+          _weightPairs:
+          - _boneID: 81800565
+            _meshGroupID: 90590842
+            _weight: 0.63
+          - _boneID: 26081281
+            _meshGroupID: 90590842
+            _weight: 0.07
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 0.3
+          _totalWeight: 1
+        - _vertexUniqueID: 90515041
+          _vertIndex: 33
+          _weightPairs:
+          - _boneID: 37296423
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        - _vertexUniqueID: 95999164
+          _vertIndex: 34
+          _weightPairs:
+          - _boneID: 81800565
+            _meshGroupID: 90590842
+            _weight: 1
+          _totalWeight: 1
+        _vertWeights: []
+        _isExtraValueEnabled: 0
+        _extraValue:
+          _isDepthChanged: 0
+          _deltaDepth: 0
+          _isTextureChanged: 0
+          _textureDataID: -1
+          _weightCutout: 0.5
+          _weightCutout_AnimPrev: 0.5
+          _weightCutout_AnimNext: 0.6
+      _boneData: []
+    _layerIndex: 0
+    _layerWeight: 1
+    _blendMethod: 0
+    _isColorPropertyEnabled: 1
+    _isToggleShowHideWithoutBlend: 0
+    _tfRotationLerpMethod: 0
+  _isColorPropertyEnabled: 0
+  _isExtraPropertyEnabled: 0
 --- !u!43 &970327922
 Mesh:
   m_ObjectHideFlags: 0
@@ -27074,13 +30328,13 @@ MonoBehaviour:
   _vertexData:
   - _index: 0
     _uniqueID: 28058506
-    _pos: {x: 422.43768, y: 171.29889}
-    _uv: {x: 0.9125368, y: 0.6672841}
+    _pos: {x: 395.75, y: 201.375}
+    _uv: {x: 0.8864746, y: 0.6966553}
     _zDepth: 0
   - _index: 1
     _uniqueID: 27817998
-    _pos: {x: 464.10434, y: 172.29889}
-    _uv: {x: 0.9532269, y: 0.66826063}
+    _pos: {x: 464.25, y: 194.125}
+    _uv: {x: 0.95336914, y: 0.6895752}
     _zDepth: 0
   - _index: 2
     _uniqueID: 30535729
@@ -27089,8 +30343,8 @@ MonoBehaviour:
     _zDepth: 0
   - _index: 3
     _uniqueID: 7133859
-    _pos: {x: 376.771, y: 211.96556}
-    _uv: {x: 0.8679404, y: 0.70699763}
+    _pos: {x: 387, y: 207}
+    _uv: {x: 0.8779297, y: 0.70214844}
     _zDepth: 0
   - _index: 4
     _uniqueID: 64104548
@@ -27112,12 +30366,32 @@ MonoBehaviour:
     _pos: {x: 382.771, y: 305.96558}
     _uv: {x: 0.8737998, y: 0.7987945}
     _zDepth: 0
-  _indexBuffer: 020000000000000003000000000000000200000001000000050000000200000003000000040000000500000003000000060000000400000007000000040000000600000005000000
+  - _index: 8
+    _uniqueID: 67586124
+    _pos: {x: 401.25, y: 195.25}
+    _uv: {x: 0.8918457, y: 0.6906738}
+    _zDepth: 0
+  - _index: 9
+    _uniqueID: 14314386
+    _pos: {x: 460.125, y: 183.25}
+    _uv: {x: 0.9493408, y: 0.6789551}
+    _zDepth: 0
+  - _index: 10
+    _uniqueID: 98040901
+    _pos: {x: 424.875, y: 174}
+    _uv: {x: 0.914917, y: 0.6699219}
+    _zDepth: 0
+  - _index: 11
+    _uniqueID: 91845905
+    _pos: {x: 447, y: 168.125}
+    _uv: {x: 0.93652344, y: 0.6641846}
+    _zDepth: 0
+  _indexBuffer: 020000000000000003000000000000000200000001000000050000000200000003000000040000000500000003000000060000000400000007000000040000000600000005000000010000000800000000000000010000000900000008000000090000000a00000008000000090000000b0000000a000000
   _edges:
   - _vertID_1: 28058506
     _vertID_2: 27817998
     _isHidden: 0
-    _isOutline: 1
+    _isOutline: 0
   - _vertID_1: 27817998
     _vertID_2: 30535729
     _isHidden: 0
@@ -27152,6 +30426,30 @@ MonoBehaviour:
     _isOutline: 1
   - _vertID_1: 74879538
     _vertID_2: 64104548
+    _isHidden: 0
+    _isOutline: 1
+  - _vertID_1: 28058506
+    _vertID_2: 67586124
+    _isHidden: 0
+    _isOutline: 1
+  - _vertID_1: 67586124
+    _vertID_2: 14314386
+    _isHidden: 0
+    _isOutline: 0
+  - _vertID_1: 14314386
+    _vertID_2: 27817998
+    _isHidden: 0
+    _isOutline: 1
+  - _vertID_1: 67586124
+    _vertID_2: 98040901
+    _isHidden: 0
+    _isOutline: 1
+  - _vertID_1: 98040901
+    _vertID_2: 91845905
+    _isHidden: 0
+    _isOutline: 1
+  - _vertID_1: 91845905
+    _vertID_2: 14314386
     _isHidden: 0
     _isOutline: 1
   _polygons:
@@ -27209,6 +30507,42 @@ MonoBehaviour:
     _tris:
     - _vertIDs: 59e30c006428d20332927604
     - _vertIDs: 6428d20359e30c00f85a4800
+  - _vertIDs: 8a23ac014c480704926bda000e78a801
+    _edgeIDs:
+    - _ID1: 28058506
+      _ID2: 67586124
+    - _ID1: 67586124
+      _ID2: 14314386
+    - _ID1: 14314386
+      _ID2: 27817998
+    - _ID1: 28058506
+      _ID2: 27817998
+    _hidddenEdges:
+    - _vertID_1: 67586124
+      _vertID_2: 27817998
+      _isHidden: 1
+      _isOutline: 0
+    _tris:
+    - _vertIDs: 0e78a8014c4807048a23ac01
+    - _vertIDs: 0e78a801926bda004c480704
+  - _vertIDs: 4c48070445fcd70511757905926bda00
+    _edgeIDs:
+    - _ID1: 67586124
+      _ID2: 98040901
+    - _ID1: 98040901
+      _ID2: 91845905
+    - _ID1: 91845905
+      _ID2: 14314386
+    - _ID1: 67586124
+      _ID2: 14314386
+    _hidddenEdges:
+    - _vertID_1: 98040901
+      _vertID_2: 14314386
+      _isHidden: 1
+      _isOutline: 0
+    _tris:
+    - _vertIDs: 926bda0045fcd7054c480704
+    - _vertIDs: 926bda001175790545fcd705
   _offsetPos: {x: 423, y: 232.5}
   _isPSDParsed: 1
   _atlasFromPSD_LT: {x: 368, y: 295}
@@ -29501,7 +32835,9 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 966354290}
+  - {fileID: 1381939886}
   m_Father: {fileID: 1881825395}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!21 &1289418745
@@ -31378,6 +34714,58 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &1381939885
+GameObject:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1381939886}
+  - component: {fileID: 1381939887}
+  m_Layer: 0
+  m_Name: Modifier - AnimatedTF
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1381939886
+Transform:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1381939885}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1287300186}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1381939887
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1381939885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e60ed97f70bdfef479e7cb9167984c31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _uniqueID: 1922130
+  _layer: 1
+  _layerWeight: 1
+  _meshGroupUniqueID: 90590842
+  _blendMethod: 0
+  _paramSetGroup_controller: []
+  _isColorPropertyEnabled: 0
+  _isExtraPropertyEnabled: 0
 --- !u!21 &1394670633
 Material:
   serializedVersion: 8
@@ -39557,7 +42945,24 @@ MonoBehaviour:
   - {fileID: 2128977466}
   _controller:
     _controlParams: []
-  _animClips: []
+  _animClips:
+  - _uniqueID: 47074431
+    _name: Idle
+    _targetMeshGroupID: 90590842
+    _FPS: 30
+    _secPerFrame: 0.033333335
+    _startFrame: 0
+    _endFrame: 100
+    _isLoop: 0
+    _timelines:
+    - _uniqueID: 8407723
+      _guiColor: {r: 0.15, g: 0.5, b: 0.7, a: 1}
+      _linkType: 0
+      _modifierUniqueID: 1922130
+      _layers: []
+      _guiTimelineFolded: 0
+    _animEvents: []
+    _animationClipForMecanim: {fileID: 0}
   _animPlayManager:
     _animPlayDataList: []
   _mainMeshGroupIDList: 7a4e6605
@@ -39955,7 +43360,10 @@ MonoBehaviour:
     - _objectType: 3
       _ID: 90590842
       _customOrder: 0
-    _orderSets_AnimClip: []
+    _orderSets_AnimClip:
+    - _objectType: 4
+      _ID: 47074431
+      _customOrder: 0
     _orderSets_ControlParam: []
   _isSizeOptimizedV117: 0
   _materialSets:
@@ -40039,9 +43447,6 @@ MonoBehaviour:
       _commonTexturePath: 
       _value_CommonTexture: {fileID: 0}
       _imageTexturePairs:
-      - _textureDataID: 93145404
-        _textureAssetPath: 
-        _textureAsset: {fileID: 0}
       - _textureDataID: 25099720
         _textureAssetPath: 
         _textureAsset: {fileID: 0}
@@ -40060,9 +43465,6 @@ MonoBehaviour:
       _commonTexturePath: 
       _value_CommonTexture: {fileID: 0}
       _imageTexturePairs:
-      - _textureDataID: 93145404
-        _textureAssetPath: 
-        _textureAsset: {fileID: 0}
       - _textureDataID: 25099720
         _textureAssetPath: 
         _textureAsset: {fileID: 0}
@@ -46709,8 +50111,8 @@ MonoBehaviour:
     _transformUniqueID: 97222181
     _nickName: "\uBA38\uB9AC_\uACF5\uACA9"
     _matrix:
-      _pos: {x: -396.1112, y: 252.38892}
-      _angleDeg: 0
+      _pos: {x: -415.7541, y: 222.03174}
+      _angleDeg: -41.90328
       _scale: {x: 2.5000002, y: 2.5000002}
     _meshColor2X_Default: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     _isVisible_Default: 0
@@ -46732,7 +50134,1159 @@ MonoBehaviour:
     _isUseDefaultMaterialSet: 1
     _customMaterialProperties: []
   _parentMeshGroupID: -1
-  _boneList_All: []
+  _boneList_All:
+  - _name: Body
+    _uniqueID: 26081281
+    _meshGroupID: 90590842
+    _parentBoneID: -1
+    _level: 0
+    _recursiveIndex: 0
+    _childBoneIDs: 8a4aa604
+    _defaultMatrix:
+      _pos: {x: 171.77917, y: -107.16862}
+      _angleDeg: 50.04245
+      _scale: {x: 1, y: 1}
+    _depth: 0
+    _color: {r: 0.9056897, g: 0.8584762, b: 0.07359891, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 430
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 0
+    _IKTargetBoneID: 78006922
+    _IKNextChainedBoneID: 78006922
+    _IKHeaderBoneID: -1
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Head
+    _uniqueID: 78006922
+    _meshGroupID: 90590842
+    _parentBoneID: 26081281
+    _level: 1
+    _recursiveIndex: 1
+    _childBoneIDs: 
+    _defaultMatrix:
+      _pos: {x: -0.000027641856, y: 430.9828}
+      _angleDeg: 8.350037
+      _scale: {x: 1, y: 1}
+    _depth: 1
+    _color: {r: 0.7858999, g: 0.97975194, b: 0.10621199, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 327
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 0
+    _isIKTail: 1
+    _IKTargetBoneID: -1
+    _IKNextChainedBoneID: -1
+    _IKHeaderBoneID: 26081281
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Bone 3
+    _uniqueID: 22604131
+    _meshGroupID: 90590842
+    _parentBoneID: -1
+    _level: 0
+    _recursiveIndex: 2
+    _childBoneIDs: 6d425d02
+    _defaultMatrix:
+      _pos: {x: 178.57143, y: -194.64285}
+      _angleDeg: -159.44395
+      _scale: {x: 1, y: 1}
+    _depth: 2
+    _color: {r: 0.98218, g: 0.5437834, b: 0.08589916, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 244
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 0
+    _IKTargetBoneID: 39666285
+    _IKNextChainedBoneID: 39666285
+    _IKHeaderBoneID: -1
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Bone 4
+    _uniqueID: 39666285
+    _meshGroupID: 90590842
+    _parentBoneID: 22604131
+    _level: 1
+    _recursiveIndex: 3
+    _childBoneIDs: a75af500
+    _defaultMatrix:
+      _pos: {x: 0.0000306632, y: 244.11443}
+      _angleDeg: -97.163574
+      _scale: {x: 1, y: 1}
+    _depth: 3
+    _color: {r: 0.5733108, g: 0.91648924, b: 0.050232764, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 231
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 1
+    _IKTargetBoneID: 16079527
+    _IKNextChainedBoneID: 16079527
+    _IKHeaderBoneID: 22604131
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Bone 5
+    _uniqueID: 16079527
+    _meshGroupID: 90590842
+    _parentBoneID: 39666285
+    _level: 2
+    _recursiveIndex: 4
+    _childBoneIDs: 
+    _defaultMatrix:
+      _pos: {x: -0.00011068113, y: 231.28963}
+      _angleDeg: -47.08252
+      _scale: {x: 1, y: 1}
+    _depth: 4
+    _color: {r: 0.8339004, g: 0.65229046, b: 0.046812788, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 160
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 0
+    _isIKTail: 1
+    _IKTargetBoneID: -1
+    _IKNextChainedBoneID: -1
+    _IKHeaderBoneID: 39666285
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Bone 4
+    _uniqueID: 47467432
+    _meshGroupID: 90590842
+    _parentBoneID: -1
+    _level: 0
+    _recursiveIndex: 5
+    _childBoneIDs: 615b8801
+    _defaultMatrix:
+      _pos: {x: -58.92857, y: -257.14285}
+      _angleDeg: -171.09326
+      _scale: {x: 1, y: 1}
+    _depth: 5
+    _color: {r: 0.31398872, g: 0.9134434, b: 0.039275218, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 242
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 0
+    _IKTargetBoneID: 25713505
+    _IKNextChainedBoneID: 25713505
+    _IKHeaderBoneID: -1
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Bone 5
+    _uniqueID: 25713505
+    _meshGroupID: 90590842
+    _parentBoneID: 47467432
+    _level: 1
+    _recursiveIndex: 6
+    _childBoneIDs: 2f8f6d05
+    _defaultMatrix:
+      _pos: {x: -0.000017255115, y: 242.20633}
+      _angleDeg: -86.61841
+      _scale: {x: 1, y: 1}
+    _depth: 6
+    _color: {r: 0.8923896, g: 0.92867464, b: 0.083401404, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 184
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 1
+    _IKTargetBoneID: 91066159
+    _IKNextChainedBoneID: 91066159
+    _IKHeaderBoneID: 47467432
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Bone 6
+    _uniqueID: 91066159
+    _meshGroupID: 90590842
+    _parentBoneID: 25713505
+    _level: 2
+    _recursiveIndex: 7
+    _childBoneIDs: 
+    _defaultMatrix:
+      _pos: {x: 0.000027485536, y: 184.58621}
+      _angleDeg: -46.424255
+      _scale: {x: 1, y: 1}
+    _depth: 7
+    _color: {r: 0.7293273, g: 0.8857386, b: 0.0555606, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 127
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 0
+    _isIKTail: 1
+    _IKTargetBoneID: -1
+    _IKNextChainedBoneID: -1
+    _IKHeaderBoneID: 25713505
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Bone 5
+    _uniqueID: 28246085
+    _meshGroupID: 90590842
+    _parentBoneID: -1
+    _level: 0
+    _recursiveIndex: 8
+    _childBoneIDs: 
+    _defaultMatrix:
+      _pos: {x: 435.7143, y: -217.85715}
+      _angleDeg: -113.221405
+      _scale: {x: 1, y: 1}
+    _depth: 8
+    _color: {r: 0.43089667, g: 0.013105547, b: 0.9559432, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 588
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 0
+    _isIKTail: 0
+    _IKTargetBoneID: -1
+    _IKNextChainedBoneID: -1
+    _IKHeaderBoneID: -1
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Bone 6
+    _uniqueID: 80202750
+    _meshGroupID: 90590842
+    _parentBoneID: -1
+    _level: 0
+    _recursiveIndex: 9
+    _childBoneIDs: 
+    _defaultMatrix:
+      _pos: {x: 435.7143, y: -200}
+      _angleDeg: -137.2605
+      _scale: {x: 1, y: 1}
+    _depth: 9
+    _color: {r: 0.067648284, g: 0.9985834, b: 0.45722017, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 576
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 0
+    _isIKTail: 0
+    _IKTargetBoneID: -1
+    _IKNextChainedBoneID: -1
+    _IKHeaderBoneID: -1
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Bone 7
+    _uniqueID: 57927087
+    _meshGroupID: 90590842
+    _parentBoneID: -1
+    _level: 0
+    _recursiveIndex: 10
+    _childBoneIDs: 
+    _defaultMatrix:
+      _pos: {x: 403.57144, y: -226.78572}
+      _angleDeg: -147.54433
+      _scale: {x: 1, y: 1}
+    _depth: 10
+    _color: {r: 0.38785434, g: 0.92322135, b: 0.18439609, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 505
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 0
+    _isIKTail: 0
+    _IKTargetBoneID: -1
+    _IKNextChainedBoneID: -1
+    _IKHeaderBoneID: -1
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Root
+    _uniqueID: 62927003
+    _meshGroupID: 90590842
+    _parentBoneID: -1
+    _level: 0
+    _recursiveIndex: 11
+    _childBoneIDs: 
+    _defaultMatrix:
+      _pos: {x: -5.006545, y: 3.5456657}
+      _angleDeg: 0.7440491
+      _scale: {x: 1, y: 1}
+    _depth: 11
+    _color: {r: 0.59828204, g: 0.1223932, b: 0.9101417, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 137
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 0
+    _isIKTail: 0
+    _IKTargetBoneID: -1
+    _IKNextChainedBoneID: -1
+    _IKHeaderBoneID: -1
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing L1 U
+    _uniqueID: 89067834
+    _meshGroupID: 90590842
+    _parentBoneID: -1
+    _level: 0
+    _recursiveIndex: 12
+    _childBoneIDs: b83c4a03
+    _defaultMatrix:
+      _pos: {x: -14.285714, y: 205.35715}
+      _angleDeg: -45
+      _scale: {x: 1, y: 1}
+    _depth: 12
+    _color: {r: 0.5591391, g: 0.12032309, b: 0.90747344, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 330
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 0
+    _IKTargetBoneID: 55196856
+    _IKNextChainedBoneID: 55196856
+    _IKHeaderBoneID: -1
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing L2 U
+    _uniqueID: 55196856
+    _meshGroupID: 90590842
+    _parentBoneID: 89067834
+    _level: 1
+    _recursiveIndex: 13
+    _childBoneIDs: 06255e03
+    _defaultMatrix:
+      _pos: {x: -0.0000022135573, y: 330.82498}
+      _angleDeg: 16.33603
+      _scale: {x: 1, y: 1}
+    _depth: 13
+    _color: {r: 0.9943065, g: 0.08239955, b: 0.6988566, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 305
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 1
+    _IKTargetBoneID: 56501510
+    _IKNextChainedBoneID: 56501510
+    _IKHeaderBoneID: 89067834
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing L3 U
+    _uniqueID: 56501510
+    _meshGroupID: 90590842
+    _parentBoneID: 55196856
+    _level: 2
+    _recursiveIndex: 14
+    _childBoneIDs: 
+    _defaultMatrix:
+      _pos: {x: -0.00007614742, y: 305.26837}
+      _angleDeg: -37.539886
+      _scale: {x: 1, y: 1}
+    _depth: 14
+    _color: {r: 0.9035987, g: 0.106788516, b: 0.4311078, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 562
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 0
+    _isIKTail: 1
+    _IKTargetBoneID: -1
+    _IKNextChainedBoneID: -1
+    _IKHeaderBoneID: 55196856
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing R1 U
+    _uniqueID: 51993384
+    _meshGroupID: 90590842
+    _parentBoneID: -1
+    _level: 0
+    _recursiveIndex: 15
+    _childBoneIDs: 3ea85f05
+    _defaultMatrix:
+      _pos: {x: -291.07144, y: 187.5}
+      _angleDeg: -42.878906
+      _scale: {x: 1, y: 1}
+    _depth: 15
+    _color: {r: 0.9072964, g: 0.036683787, b: 0.20552307, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 341
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 0
+    _IKTargetBoneID: 90155070
+    _IKNextChainedBoneID: 90155070
+    _IKHeaderBoneID: -1
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing R2 U
+    _uniqueID: 90155070
+    _meshGroupID: 90590842
+    _parentBoneID: 51993384
+    _level: 1
+    _recursiveIndex: 16
+    _childBoneIDs: 0d4e2705
+    _defaultMatrix:
+      _pos: {x: 0.0000021261517, y: 341.16025}
+      _angleDeg: 26.30011
+      _scale: {x: 1, y: 1}
+    _depth: 16
+    _color: {r: 0.9501205, g: 0.42815048, b: 0.066613935, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 244
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 1
+    _IKTargetBoneID: 86461965
+    _IKNextChainedBoneID: 86461965
+    _IKHeaderBoneID: 51993384
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing R3 U
+    _uniqueID: 86461965
+    _meshGroupID: 90590842
+    _parentBoneID: 90155070
+    _level: 2
+    _recursiveIndex: 17
+    _childBoneIDs: 
+    _defaultMatrix:
+      _pos: {x: -0.000058114772, y: 244.07524}
+      _angleDeg: -51.590485
+      _scale: {x: 1, y: 1}
+    _depth: 17
+    _color: {r: 0.9273111, g: 0.09059934, b: 0.28905004, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 648
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 0
+    _isIKTail: 1
+    _IKTargetBoneID: -1
+    _IKNextChainedBoneID: -1
+    _IKHeaderBoneID: 90155070
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing R1 D
+    _uniqueID: 81800565
+    _meshGroupID: 90590842
+    _parentBoneID: -1
+    _level: 0
+    _recursiveIndex: 18
+    _childBoneIDs: 27193902
+    _defaultMatrix:
+      _pos: {x: -284.0028, y: 113.78854}
+      _angleDeg: 135
+      _scale: {x: 1, y: 1}
+    _depth: 0
+    _color: {r: 0.57188517, g: 0.9840346, b: 0.19354944, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 272
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 0
+    _IKTargetBoneID: 37296423
+    _IKNextChainedBoneID: 37296423
+    _IKHeaderBoneID: -1
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing R2 D
+    _uniqueID: 37296423
+    _meshGroupID: 90590842
+    _parentBoneID: 81800565
+    _level: 1
+    _recursiveIndex: 19
+    _childBoneIDs: 697b2c00
+    _defaultMatrix:
+      _pos: {x: 0.000016358663, y: 272.3671}
+      _angleDeg: -14.097778
+      _scale: {x: 1, y: 1}
+    _depth: 0
+    _color: {r: 0.70945483, g: 0.8566474, b: 0.20557301, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 295
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 1
+    _IKTargetBoneID: 2915177
+    _IKNextChainedBoneID: 2915177
+    _IKHeaderBoneID: 81800565
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing R3 D
+    _uniqueID: 2915177
+    _meshGroupID: 90590842
+    _parentBoneID: 37296423
+    _level: 2
+    _recursiveIndex: 20
+    _childBoneIDs: 
+    _defaultMatrix:
+      _pos: {x: -0.000017364415, y: 295.67642}
+      _angleDeg: 45.46466
+      _scale: {x: 1, y: 1}
+    _depth: 0
+    _color: {r: 0.575613, g: 0.8166936, b: 0.23121375, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 510
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 0
+    _isIKTail: 1
+    _IKTargetBoneID: -1
+    _IKNextChainedBoneID: -1
+    _IKHeaderBoneID: 37296423
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing L1 D
+    _uniqueID: 72001160
+    _meshGroupID: 90590842
+    _parentBoneID: -1
+    _level: 0
+    _recursiveIndex: 21
+    _childBoneIDs: b575d101
+    _defaultMatrix:
+      _pos: {x: -91.41021, y: 143.41817}
+      _angleDeg: 134.48384
+      _scale: {x: 1, y: 1}
+    _depth: 0
+    _color: {r: 0.2683959, g: 0.962366, b: 0.0022766772, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 290
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 0
+    _IKTargetBoneID: 30504373
+    _IKNextChainedBoneID: 30504373
+    _IKHeaderBoneID: -1
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing L2 D
+    _uniqueID: 30504373
+    _meshGroupID: 90590842
+    _parentBoneID: 72001160
+    _level: 1
+    _recursiveIndex: 22
+    _childBoneIDs: 2e11e501
+    _defaultMatrix:
+      _pos: {x: 0.000047588746, y: 290.71127}
+      _angleDeg: -16.229584
+      _scale: {x: 1, y: 1}
+    _depth: 0
+    _color: {r: 0.16685162, g: 0.9576877, b: 0.025842622, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 309
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 1
+    _isIKTail: 1
+    _IKTargetBoneID: 31789358
+    _IKNextChainedBoneID: 31789358
+    _IKHeaderBoneID: 72001160
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
+  - _name: Wing L3 D
+    _uniqueID: 31789358
+    _meshGroupID: 90590842
+    _parentBoneID: 30504373
+    _level: 2
+    _recursiveIndex: 23
+    _childBoneIDs: 
+    _defaultMatrix:
+      _pos: {x: 0.000049063965, y: 309.04297}
+      _angleDeg: 41.762634
+      _scale: {x: 1, y: 1}
+    _depth: 0
+    _color: {r: 0.054622725, g: 0.9376657, b: 0.5259305, a: 1}
+    _shapeWidth: 30
+    _shapeLength: 650
+    _shapeTaper: 100
+    _shapeHelper: 0
+    _optionLocalMove: 0
+    _optionIK: 0
+    _isIKTail: 1
+    _IKTargetBoneID: -1
+    _IKNextChainedBoneID: -1
+    _IKHeaderBoneID: 30504373
+    _isIKAngleRange: 0
+    _IKAngleRange_Lower: -90
+    _IKAngleRange_Upper: 90
+    _IKAnglePreferred: 0
+    _isRigTestPosing: 0
+    _isSocketEnabled: 0
+    _IKController:
+      _controllerType: 0
+      _effectorBoneID: -1
+      _defaultMixWeight: 0
+      _isWeightByControlParam: 0
+      _weightControlParamID: -1
+    _mirrorBoneID: -1
+    _mirrorOption: 0
+    _mirrorCenterOffset: 0
+    _isJiggle: 0
+    _jiggle_Mass: 1
+    _jiggle_K: 50
+    _jiggle_Drag: 0.8
+    _jiggle_Damping: 5
+    _isJiggleAngleConstraint: 0
+    _jiggle_AngleLimit_Min: -30
+    _jiggle_AngleLimit_Max: 30
+    _jiggle_IsControlParamWeight: 0
+    _jiggle_WeightControlParamID: -1
   _childMeshGroupTransforms: []
   _rootMeshGroupTransform:
     _meshGroupUniqueID: 90590842
@@ -46741,7 +51295,7 @@ MonoBehaviour:
     _matrix:
       _pos: {x: 0, y: 0}
       _angleDeg: 0
-      _scale: {x: 1, y: 1}
+      _scale: {x: -1, y: 1}
     _meshColor2X_Default: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     _isVisible_Default: 1
     _depth: 0
@@ -46750,10 +51304,12 @@ MonoBehaviour:
     _modifiers_Volume: []
     _modifiers_Morph: []
     _modifiers_AnimatedMorph: []
-    _modifiers_Rigging: []
+    _modifiers_Rigging:
+    - {fileID: 966354291}
     _modifiers_Physic: []
     _modifiers_TF: []
-    _modifiers_AnimatedTF: []
+    _modifiers_AnimatedTF:
+    - {fileID: 1381939887}
     _modifiers_FFD: []
     _modifiers_AnimatedFFD: []
     _modifiers_ColorOnly: []
@@ -47904,6 +52460,10 @@ PrefabInstance:
     - target: {fileID: 6196114695436359477, guid: 84cc13c68a6ab9d44a0b870f51ceb248, type: 3}
       propertyPath: m_Name
       value: Shoebill
+      objectReference: {fileID: 0}
+    - target: {fileID: 6196114695436359477, guid: 84cc13c68a6ab9d44a0b870f51ceb248, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6242014092923667173, guid: 84cc13c68a6ab9d44a0b870f51ceb248, type: 3}
       propertyPath: m_Materials.Array.data[0]
