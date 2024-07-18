@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e66c76671cd64cb449192b5c4468e16e, type: 3}
-  m_Name: 1-2
+  m_Name: Test-1
   m_EditorClassIdentifier: 
   scene:
     m_SceneAsset: {fileID: 102900000, guid: 1f94c04e092f3d94582a23456e788636, type: 3}
     m_SceneName: Test-1
-  title: 1-2
+  title: Test-1
   subTitle: 
-  size: {x: 222, y: 37}
+  size: {x: 257, y: 50}
   offset: {x: 1, y: -11}
   topPorts: []
   botPorts: []
@@ -25,10 +25,12 @@ MonoBehaviour:
   - index: 0
     direction: 2
     ports:
-    - {x: 222, y: -3}
-    - {x: 222, y: -2}
-    - {x: 222, y: -1}
-    - {x: 222, y: 0}
-    - {x: 222, y: 1}
-    connectedPorts: []
+    - {x: 257, y: -2}
+    - {x: 257, y: -1}
+    - {x: 257, y: 0}
+    - {x: 257, y: 1}
+    - {x: 257, y: 2}
+    connectedPorts:
+    - room: {fileID: 11400000, guid: 5223b7982c8eee940a0978b688af4b00, type: 2}
+      index: 0
   lefPorts: []
