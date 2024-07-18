@@ -1,4 +1,3 @@
-using Codice.Client.Common.FsNodeReaders;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -208,6 +207,36 @@ public class MapGraphView : GraphView
         }
     }
 
+    public void LoadDatas()
+    {
+        List<SORoom> containedRoom = new List<SORoom>();
+        List<string> containedFlag = new List<string>();
+
+        foreach (var element in graphElements)
+        {
+            if (element is RoomNode node)
+            {
+                containedRoom.Add(node.roomData);
+            }
+            else if (element is FlagGroup flag)
+            {
+                containedFlag.Add(flag.title);
+            }
+        }
+
+        foreach (var room in rooms)
+        {
+            if (!containedRoom.Contains(room))
+                CreateNode(room, Vector2.zero);
+        }
+
+        foreach (var flag in mapData.Groups)
+        {
+            if (!containedFlag.Contains(flag.FlagName))
+                CreateGroup(flag.FlagName, Vector2.zero);
+        }
+    }
+
     public void Save()
     {
         mapData.Clear();
@@ -229,6 +258,27 @@ public class MapGraphView : GraphView
 
                 mapData.Groups.Add(new FlagGroupSaveData(group.title,
                                                          group.GetPosition().position));
+
+                List<SORoom> rooms = new List<SORoom>();
+                foreach (var elements in group.containedElements)
+                    if (elements is RoomNode node)
+                    {
+                        SORoom room = node.roomData;
+                        room.flagName = group.title;
+                        room.flagIndex = node.FlagIndex;
+
+                        rooms.Add(room);
+
+                        EditorUtility.SetDirty(room);
+                        AssetDatabase.SaveAssets();
+                    }
+
+                mapData.Flags.Add(group.title, rooms);
+            }
+            else if (element is Edge)
+            { 
+                Edge edge = (Edge)element;
+
             }
         }
 
@@ -263,7 +313,7 @@ public class MapGraphView : GraphView
         {
             if (element is RoomNode node)
             {
-                ConnectEdge(node);
+                //ConnectEdge(node);
             }
         }
     }
@@ -409,11 +459,23 @@ public class MapGraphView : GraphView
 
         foreach (var t in inputNode.portDatas)
             if (t.port == input)
+            {
+                Debug.Log("Node a 발견");
                 a = t;
+
+                Debug.Log($"{a.index}");
+            }
 
         foreach (var t in outputNode.portDatas)
             if (t.port == output)
+            {
+                Debug.Log("Node b 발견");
+
+                Debug.Log($"{b.index}");
                 b = t;
+            }
+
+        Debug.Log(inputNode.RoomName + "과 " + outputNode.RoomName + "연결 됨");
 
         ConnectPortData(a, b);
     }
@@ -459,11 +521,19 @@ public class MapGraphView : GraphView
 
         foreach (var t in node.portDatas)
             if (t.port == input)
+            {
+                Debug.Log("Node a 발견");
                 a = t;
+            }
 
         foreach (var t in group.portDatas)
             if (t.port == output)
+            {
+                Debug.Log("Group b 발견");
                 b = t;
+            }
+
+        Debug.Log(node.RoomName + "과 " + group.FlagName + "연결 됨");
 
         foreach (var t in group.containedElements)
         {
@@ -489,11 +559,17 @@ public class MapGraphView : GraphView
 
         foreach (var t in group1.portDatas)
             if (t.port == input)
+            {
+                Debug.Log("Group a 발견");
                 a = t;
+            }
 
         foreach (var t in group2.portDatas)
             if (t.port == output)
+            {
+                Debug.Log("Group b 발견");
                 b = t;
+            }
 
         foreach (var t in group1.containedElements)
         {
@@ -510,6 +586,8 @@ public class MapGraphView : GraphView
                 d.Add(roomNode);
             }
         }
+
+        Debug.Log(group1.FlagName + "과 " + group2.FlagName + "연결 됨");
 
         foreach (var i in c)
         {

@@ -7,6 +7,8 @@ using System;
 public class SORoom : ScriptableObject
 {
     public SceneField scene;
+    public string flagName;
+    public int flagIndex;
     public string title;
     public string subTitle;
 
@@ -55,6 +57,8 @@ public class RoomPort
 [Serializable]
 public class ConnectedPort
 {
+    public string flag;
+    public int flagIndex;
     public SceneField scene;
     public int index;
 

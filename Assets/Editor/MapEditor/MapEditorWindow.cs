@@ -41,10 +41,11 @@ public class MapEditorWindow : EditorWindow
 
         Button saveBtn = CreateButton("Save", Save);
         Button applyBtn = CreateButton("Apply", Apply);
+        Button loadBtn = CreateButton("Load Datas", LoadDatas);
 
         toolbar.Add(saveBtn);
         toolbar.Add(applyBtn);
-        
+        toolbar.Add(loadBtn);
 
         toolbar.style.height = 50;
 
@@ -59,6 +60,11 @@ public class MapEditorWindow : EditorWindow
     private void Apply()
     {
         graphView.Apply();
+    }
+
+    private void LoadDatas()
+    {
+        graphView.LoadDatas();
     }
 
     private Button CreateButton(string btnName, Action onClick = null)

@@ -38,13 +38,7 @@ public class FlagGroup : Group
         roomDatas = new List<SORoom>();
         portDatas = new List<PortData>();
 
-        this.title = FlagName;      //요건 타이틀여
-
-        var titleField = this.Q<TextField>("title-field");
-        if (titleField != null)
-        {
-            titleField.RegisterValueChangedCallback(evt => OnTitleChanged(evt.newValue));
-        }
+        this.title = FlagName;
 
         this.style.fontSize = 25;
 
@@ -58,20 +52,6 @@ public class FlagGroup : Group
         autoUpdateGeometry = true;
 
         CreateSurroundingElements();
-    }
-
-    private void OnTitleChanged(string newTitle)
-    {
-        FlagName = newTitle;
-
-        foreach (var element in this.containedElements)
-        {
-            if (element is RoomNode)
-            {
-                RoomNode node = (RoomNode)element;
-                node.FlagName = newTitle;
-            }
-        }
     }
 
     public void Draw(SORoom roomData)
@@ -195,6 +175,26 @@ public class FlagGroup : Group
         //아무것도 없다면, 리셋
         if (containedElements.Count() == 0)
             Reset();
+    }
+
+    protected override void OnGroupRenamed(string oldName, string newName)
+    {
+        base.OnGroupRenamed(oldName, newName);
+        OnTitleChanged(newName);
+    }
+
+    private void OnTitleChanged(string newTitle)
+    {
+        FlagName = newTitle;
+
+        foreach (var element in this.containedElements)
+        {
+            if (element is RoomNode)
+            {
+                RoomNode node = (RoomNode)element;
+                node.FlagName = newTitle;
+            }
+        }
     }
 
     private void Setup(SORoom room)

@@ -15,6 +15,8 @@ MonoBehaviour:
   scene:
     m_SceneAsset: {fileID: 0}
     m_SceneName: 
+  flagName: CDB
+  flagIndex: 0
   title: 
   subTitle: 
   size: {x: 0, y: 0}
@@ -37,11 +39,7 @@ MonoBehaviour:
   - index: 0
     direction: 0
     ports: []
-    connectedPorts:
-    - scene:
-        m_SceneAsset: {fileID: 102900000, guid: fc3ffa640de7f1e438c32e887b629981, type: 3}
-        m_SceneName: Test2
-      index: 0
+    connectedPorts: []
   lefPorts:
   - index: 0
     direction: 0
