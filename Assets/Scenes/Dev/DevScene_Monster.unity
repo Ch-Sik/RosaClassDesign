@@ -40001,6 +40001,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 7489943562899120, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
+      propertyPath: superArmourOnRecovery
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 278459718066224621, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -40135,7 +40139,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4849970388735374230, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5022244015494027827, guid: 278d1d8ecab2c7548b610278f17a46fd, type: 3}
       propertyPath: m_Materials.Array.data[0]
