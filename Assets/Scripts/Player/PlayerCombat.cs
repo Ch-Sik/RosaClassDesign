@@ -212,9 +212,9 @@ public class PlayerCombat : MonoBehaviour
     private void OnStartupAttack()
     {
         // 공격 이펙트 소환
-        currentAttackEffect.SetActive(true);
         currentAttackEffect.transform.position = this.transform.position;
         currentAttackEffect.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        currentAttackEffect.SetActive(true);
         // 플레이어 애니메이션 설정
         playerRef.Animation.SetAttackAnimTrigger();
         // 공격 방향 바라보기

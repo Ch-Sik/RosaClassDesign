@@ -9,66 +9,102 @@ using Sirenix.OdinInspector;
 /// </summary>
 public class PlayerMovement : MonoBehaviour
 {
-
-    [Header("좌우 이동 관련 매개변수")]// 이동 관련 파라미터
+    // 이동 관련 파라미터
+    [FoldoutGroup("좌우 이동 관련")]
     [Tooltip("플레이어 이동 속도")]
     [SerializeField] float moveSpeed = 1f;
+
+    [FoldoutGroup("좌우 이동 관련")]
     [Tooltip("시작 시 플레이어 스프라이트의 방향")]
     [SerializeField] LR spriteDirection = LR.RIGHT;
 
-    [Header("점프 관련 매개변수")]
+    [FoldoutGroup("좌우 이동 관련")]
+    [Tooltip("공격 중에 좌우 이동 불가능하게 설정")]
+    public bool noMoveOnAttack;
+
+    // 점프 관련 파라미터
+    [FoldoutGroup("점프 관련")]
     [Tooltip("플레이어 점프 파워")]
     [SerializeField] float jumpPower = 10f;
+
+    [FoldoutGroup("점프 관련")]
     [Tooltip("플레이어 하향 점프 파워")]
     [SerializeField] float jumpDownPower = 1f;
+
+    [FoldoutGroup("점프 관련")]
     [Tooltip("최소 상승 시간")]
     [SerializeField] float minJumpUpDuration = 0.1f;
+
+    [FoldoutGroup("점프 관련")]
     [Tooltip("하향 점프 플렛폼 적용 시간")]
     [SerializeField] float downJumpPlatformDuration = 0.1f;
 
-    [Header("벽이동 관련 매개변수")]
+    // 벽이동 관련 파라미터
+    [FoldoutGroup("벽이동 관련")]
     [Tooltip("벽 기어오르기 활성화")]
     [SerializeField] bool wallClimbEnabled;
+
+    [FoldoutGroup("벽이동 관련")]
     [Tooltip("기어오르기 속도")]
     [SerializeField] float climbUpSpeed;
+
+    [FoldoutGroup("벽이동 관련")]
     [Tooltip("기어내려가기 속도")]
     [SerializeField] float climbDownSpeed;
+
+    [FoldoutGroup("벽이동 관련")]
     [Tooltip("벽 점프 활성화")]
     [SerializeField] bool wallJumpEnabled;
+
+    [FoldoutGroup("벽이동 관련")]
     [Tooltip("벽 점프 시 속도")]
     [SerializeField] Vector2 wallJumpPower;
+
+    [FoldoutGroup("벽이동 관련")]
     [Tooltip("벽 점프 최소시간")]
-    [SerializeField] float minWallJumpDuration; // 기존 boomerangTime
+    [SerializeField] float minWallJumpDuration;
+
+    [FoldoutGroup("벽이동 관련")]
     [Tooltip("반대를 보고 벽에 메달리는 시간")]
     [SerializeField] float maxClimbTime;
 
-    [Header("오이대쉬 관련 매개변수")]
+    [FoldoutGroup("벽이동 관련")]
+    [Tooltip("벽오르기 root motion 대체")]
+    public Vector3 ClimbEndOffset = new Vector3(0.85f, 0.744f);
+
+    // 슈퍼대시 관련
+    [FoldoutGroup("슈퍼대쉬(오이) 관련")]
     [Tooltip("오이대쉬 속도")]
     [SerializeField] float superDashSpeed = 3f;
 
-    [Header("넉백 관련 매개변수")]
-    [Tooltip("넉백 힘")]
+    // 넉백 관련
+    [FoldoutGroup("넉백 관련")]
+    [Tooltip("넉백 계수")]
     [SerializeField] float knockbackStrength = 1f;
-    // 컴포넌트 레퍼런스
+
+    // 필드값 중 일부는 디버그용으로 Inspector에 노출
+    [FoldoutGroup("Debug")]
+    [VerticalGroup("Debug/Vertical")]
+    [BoxGroup("Debug/Vertical/Component")]
     [ReadOnly, SerializeField] Rigidbody2D rb;
+
+    [BoxGroup("Debug/Vertical/Component")]
     [ReadOnly, SerializeField] BoxCollider2D col;
+
+    [BoxGroup("Debug/Vertical/Component")]
     [ReadOnly, SerializeField] PlayerRef playerRef;
+
+    [BoxGroup("Debug/Vertical/Component")]
     [ReadOnly, SerializeField] PlayerController playerControl;
 
-    [Space(20)]
-
-    // 필드
-    [Header("Debug View")]
+    [BoxGroup("Debug/Vertical/General")]
     [ReadOnly, SerializeField] public GameObject platformBelow = null;
-    //[ReadOnly, SerializeField] public GameObject aimLine;
-    [ReadOnly, SerializeField] public Vector2 moveVector;
-    [ReadOnly, SerializeField] public LR facingDirection;                 // 플레이어 바라보는 방향
-    [SerializeField] public Vector3 ClimbEndOffset = new Vector3(0.85f, 0.744f);
 
-    // 타이머
-    [ReadOnly, SerializeField] private Timer jumpTimer;                 // 최소 점프 시간을 위한 타이머
-    [ReadOnly, SerializeField] private Timer jumpBufferTimer;           // 점프 선입력 타이머
-    [ReadOnly, SerializeField] private Timer climbTimer;                // 반대방향 입력후 벽에 메달림 유지 타이머
+    [BoxGroup("Debug/Vertical/General")]
+    [ReadOnly, SerializeField] public Vector2 moveVector;
+
+    [BoxGroup("Debug/Vertical/General")]
+    [ReadOnly, SerializeField] public LR facingDirection;                 // 플레이어 바라보는 방향
 
     // 플래그
     [FoldoutGroup("플래그")]
@@ -101,17 +137,26 @@ public class PlayerMovement : MonoBehaviour
     [ReadOnly] public bool isDoingSuperDash = false;
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isNotMoveable = false;   // 종합적으로 고려하여 플레이어가 움직일 수 있는지 없는지
-    
+
+    // 범위 지정
+    [FoldoutGroup("벽 감지 범위")]
+    public Vector2 detectWallTop = new Vector2(0.0f, 0.5f);
+    [FoldoutGroup("벽 감지 범위")]
+    public Vector2 detectWallBot = new Vector2(0.6f, -0.7f);
+    [FoldoutGroup("벽 감지 범위")]
+    public Vector2 detectWallEndTop = new Vector2(0.0f, 0.5f);
+    [FoldoutGroup("벽 감지 범위")]
+    public Vector2 detectWallEndBot = new Vector2(0.6f, 0.0f);
+
+    // 타이머 (non-serializable)
+    private Timer jumpTimer;                 // 최소 점프 시간을 위한 타이머
+    private Timer jumpBufferTimer;           // 점프 선입력 타이머
+    private Timer climbTimer;                // 반대방향 입력후 벽에 메달림 유지 타이머
+
     // 상수
     LayerMask groundLayer;      // NameToLayer가 constructor에서 호출 불가능하여 InitFields에서 초기화
     LayerMask climbableLayer;
     float gravityScale = 2.8f;
-    
-    // 범위 지정
-    public Vector2 detectWallTop = new Vector2(0.0f, 0.5f);
-    public Vector2 detectWallBot = new Vector2(0.6f, -0.7f);
-    public Vector2 detectWallEndTop = new Vector2(0.0f, 0.5f);
-    public Vector2 detectWallEndBot = new Vector2(0.6f, 0.0f);
 
     #region 초기화
     private void Start()
@@ -208,7 +253,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             // 공격 중에는 이동 불가
-            if(isDoingAttack)
+            if(noMoveOnAttack && isDoingAttack)
             {
                 rb.velocity = new Vector2(0, rb.velocity.y);
             }
@@ -679,7 +724,7 @@ public class PlayerMovement : MonoBehaviour
             UnstickFromWall();
         }
         rb.velocity = Vector2.zero;
-        GetComponent<Rigidbody2D>().AddForce(knockbackDirection * knockbackStrength, ForceMode2D.Impulse);
+        rb.AddForce(knockbackDirection * knockbackStrength, ForceMode2D.Impulse);
 
         StartCoroutine(Knockback());
 
