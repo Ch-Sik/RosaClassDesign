@@ -41,6 +41,7 @@ public class SORoom : ScriptableObject
 [Serializable]
 public class RoomPort
 {
+    public string flag;
     public int index;
     public PortDirection direction;
     public List<Vector2Int> ports = new List<Vector2Int>();
@@ -61,6 +62,16 @@ public class ConnectedPort
     public int flagIndex;
     public SceneField scene;
     public int index;
+
+    public ConnectedPort(SceneField scene, int index, string flagName, int flagIndex)
+    {
+        Debug.Log(flagName + " " + flagIndex);
+
+        this.scene = scene;
+        this.index = index;
+        this.flag = flagName;
+        this.flagIndex = flagIndex; 
+    }
 
     public ConnectedPort(SceneField scene, int index)
     {

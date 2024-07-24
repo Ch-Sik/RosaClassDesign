@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: 1-1 6
   m_EditorClassIdentifier: 
   scene:
-    m_SceneAsset: {fileID: 0}
-    m_SceneName: 
+    m_SceneAsset: {fileID: 102900000, guid: 33b0b124ede87164e9631cb27621a3f8, type: 3}
+    m_SceneName: 1-8
   flagName: 
   flagIndex: 0
   title: 
@@ -22,28 +22,44 @@ MonoBehaviour:
   size: {x: 0, y: 0}
   offset: {x: 0, y: 0}
   topPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 0
     ports: []
     connectedPorts: []
   botPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 1
-    ports: []
-    connectedPorts: []
-  rigPorts:
-  - index: 0
-    direction: 3
-    ports: []
-    connectedPorts: []
-  lefPorts:
-  - index: 0
-    direction: 2
     ports: []
     connectedPorts:
     - flag: 
       flagIndex: 0
       scene:
-        m_SceneAsset: {fileID: 102900000, guid: fc3ffa640de7f1e438c32e887b629981, type: 3}
-        m_SceneName: Test2
+        m_SceneAsset: {fileID: 102900000, guid: fa8437993dda5db4f97334490c5c83d8, type: 3}
+        m_SceneName: 1-2
       index: 0
+  rigPorts:
+  - flag: CDB
+    index: 0
+    direction: 2
+    ports: []
+    connectedPorts:
+    - flag: CDB
+      flagIndex: 1
+      scene:
+        m_SceneAsset: {fileID: 102900000, guid: e811c8c9a0ff60045b54b73ffaf6d129, type: 3}
+        m_SceneName: 1-3
+      index: 0
+    - flag: CDB
+      flagIndex: 0
+      scene:
+        m_SceneAsset: {fileID: 102900000, guid: 8fe0714c935a5a6488d11a02348ba3ee, type: 3}
+        m_SceneName: Test3
+      index: 0
+  lefPorts:
+  - flag: 
+    index: 0
+    direction: 3
+    ports: []
+    connectedPorts: []

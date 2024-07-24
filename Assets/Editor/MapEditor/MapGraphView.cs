@@ -1,3 +1,4 @@
+using Sirenix.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,12 +15,14 @@ public class MapGraphView : GraphView
     public List<SORoom> rooms;
     public List<RoomNode> roomNodes;
     public MapDataSO mapData;
+    Dictionary<string, FlagGroup> groupDatas;
 
 
     public MapGraphView(MapEditorWindow mapEditorWindow, MapDataSO mapData)
     {
         rooms = new List<SORoom>();
         roomNodes = new List<RoomNode>();
+        groupDatas = new Dictionary<string, FlagGroup>();
 
         editorWindow = mapEditorWindow;
         this.mapData = mapData;
@@ -199,14 +202,6 @@ public class MapGraphView : GraphView
         this.styleSheets.Add(styleSheet);
     }
 
-    private void CreateNodes()
-    {
-        foreach (SORoom room in rooms)
-        {
-            roomNodes.Add(CreateNode(room, Vector2.zero));
-        }
-    }
-
     public void LoadDatas()
     {
         List<SORoom> containedRoom = new List<SORoom>();
@@ -276,7 +271,7 @@ public class MapGraphView : GraphView
                 mapData.Flags.Add(group.title, rooms);
             }
             else if (element is Edge)
-            { 
+            {
                 Edge edge = (Edge)element;
 
             }
@@ -288,7 +283,7 @@ public class MapGraphView : GraphView
 
     public void Load()
     {
-        Dictionary<string, FlagGroup> groupDatas = new Dictionary<string, FlagGroup>();
+        groupDatas = new Dictionary<string, FlagGroup>();
 
         foreach (FlagGroupSaveData group in mapData.Groups)
         {
@@ -309,13 +304,7 @@ public class MapGraphView : GraphView
             }
         }
 
-        foreach (var element in graphElements)
-        {
-            if (element is RoomNode node)
-            {
-                //ConnectEdge(node);
-            }
-        }
+        ConnectEdges();
     }
 
     /*
@@ -347,17 +336,164 @@ public class MapGraphView : GraphView
     }
     */
 
-    public void ConnectEdge(RoomNode node)
+
+    public void ConnectEdges()
     {
-        //node.GetFirstAncestorOfType<FlagGroup>();
-        if (node.inGroup)
+        List<RoomLoadDataSet> sets = new List<RoomLoadDataSet>(mapData.GetRoomLoadDataSet());
+
+        foreach (RoomLoadDataSet set in sets)
         {
+            //셋이 그룹인 경우
+            if (set.isGroup)
+            {
+                //내 그룹
+                FlagGroup group = groupDatas[set.flag];
+
+                int rigIndex = 0;
+                foreach(var rig in set.room.rigPorts)
+                {
+                    if (rig.connectedPorts.IsNullOrEmpty())
+                        continue;
+
+                    if (rig.connectedPorts.Count < 2)
+                    {
+                        Debug.Log("그룹-노드");
+                        RoomNode _node = GetNode(rig.connectedPorts[0].scene);
+                        Connect(group.GetPort(PortDirection.Rig, rigIndex),
+                                _node.GetPort(PortDirection.Lef, rig.connectedPorts[0].index));
+                    }
+                    else
+                    {
+                        Debug.Log("그룹-그룹");
+                        //대상 그룹 찾기
+                        FlagGroup _group = GetGroup(rig.connectedPorts[0].scene.SceneName);
+                        Connect(group.GetPort(PortDirection.Rig, rigIndex),
+                                _group.GetPort(PortDirection.Lef, rig.connectedPorts[0].index));
+                        Debug.Log($"{group.FlagName} {_group.FlagName}");
+                    }
+                    rigIndex++;
+                }
+
+                int botIndex = 0;
+                foreach (var bot in set.room.botPorts)
+                {
+                    if (bot.connectedPorts.IsNullOrEmpty())
+                        continue;
+
+                    if (bot.connectedPorts.Count < 2)
+                    {
+                        Debug.Log("그룹-노드");
+                        RoomNode _node = GetNode(bot.connectedPorts[0].scene);
+                        Connect(group.GetPort(PortDirection.Bot, botIndex),
+                                _node.GetPort(PortDirection.Top, bot.connectedPorts[0].index));
+                    }
+                    else
+                    {
+                        Debug.Log("그룹-그룹");
+                        FlagGroup _group = GetGroup(bot.connectedPorts[0].scene.SceneName);
+                        Connect(group.GetPort(PortDirection.Bot, botIndex),
+                                _group.GetPort(PortDirection.Top, bot.connectedPorts[0].index));
+                    }
+                    botIndex++;
+                }
+            }
+            //셋이 노드인 경우
+            else
+            {
+                RoomNode node = GetNode(set.room.scene);
+
+                int rigIndex = 0;
+                foreach (var rig in set.room.rigPorts)
+                {
+                    if (rig.connectedPorts.IsNullOrEmpty())
+                        continue;
+
+                    if (rig.connectedPorts.Count < 2)
+                    {
+                        Debug.Log("노드-노드");
+                        RoomNode _node = GetNode(rig.connectedPorts[0].scene);
+                        Connect(node.GetPort(PortDirection.Rig, rigIndex),
+                                _node.GetPort(PortDirection.Lef, rig.connectedPorts[0].index));
+                    }
+                    else
+                    {
+                        Debug.Log("노드-그룹");
+                        FlagGroup _group = GetGroup(rig.connectedPorts[0].scene.SceneName);
+                        Connect(node.GetPort(PortDirection.Rig, rigIndex),
+                                _group.GetPort(PortDirection.Lef, rig.connectedPorts[0].index));
+                    }
+                    rigIndex++;
+                }
+
+                int botIndex = 0;
+                foreach (var bot in set.room.botPorts)
+                {
+                    if (bot.connectedPorts.IsNullOrEmpty())
+                        continue;
+
+                    if (bot.connectedPorts.Count < 2)
+                    {
+                        Debug.Log("노드-노드");
+                        RoomNode _node = GetNode(bot.connectedPorts[0].scene);
+                        Debug.Log("길이 : " + roomNodes.Count);
+                        Connect(node.GetPort(PortDirection.Bot, botIndex),
+                                _node.GetPort(PortDirection.Top, bot.connectedPorts[0].index));
+                    }
+                    else
+                    {
+                        Debug.Log("노드-그룹");
+                        FlagGroup _group = GetGroup(bot.connectedPorts[0].scene.SceneName);
+                        Connect(node.GetPort(PortDirection.Bot, botIndex),
+                                _group.GetPort(PortDirection.Top, bot.connectedPorts[0].index));
+                    }
+                    botIndex++;
+                }
+            }
         }
-        else
+    }
+
+    public void Connect(Port output, Port input)
+    {
+        // 엣지 생성
+        var edge = new Edge
         {
-            //Edge edge = port.port.ConnectTo(GetPort(room.portDatas, port.portDirection, port));
-            //node의 connectedPorts와 같은 얘들을 찾아야 함.반대의 connectedPort의 Index로 저장됨.
+            output = output,
+            input = input
+        };
+
+        // 엣지 연결
+        edge.output.Connect(edge);
+        edge.input.Connect(edge);
+
+        // 그래프 뷰에 엣지 추가
+        this.AddElement(edge);
+    }
+
+    public RoomNode GetNode(SceneField scene)
+    {
+        foreach (var node in roomNodes)
+        {
+            if (node.roomData.scene.SceneName == scene.SceneName)
+            {
+                return node;
+            }
         }
+
+        return null;
+    }
+
+    public FlagGroup GetGroup(string SceneName)
+    {
+        foreach (var node in roomNodes)
+        {
+            if (!node.inGroup)
+                continue;
+
+            if (node.roomData.scene.SceneName == SceneName)
+                return groupDatas[node.FlagName];
+        }
+
+        return null;
     }
 
     public void Apply()
@@ -379,7 +515,6 @@ public class MapGraphView : GraphView
             }
             else if (element is Edge)
             {
-                Debug.Log("Edge");
                 Edge edge = (Edge)element;
 
                 PortParent input = PortParent.None;
@@ -388,7 +523,7 @@ public class MapGraphView : GraphView
                 input = GetPortParent(edge.input);
                 output = GetPortParent(edge.output);
 
-                Debug.Log(input + " - " + output);
+                //Debug.Log(input + " - " + output);
 
                 if (input == PortParent.Node && output == PortParent.Node)
                     NodeToNode(edge.input, edge.output, GetRoomNodeToPort(edge.input), GetRoomNodeToPort(edge.output));
@@ -460,35 +595,55 @@ public class MapGraphView : GraphView
         foreach (var t in inputNode.portDatas)
             if (t.port == input)
             {
-                Debug.Log("Node a 발견");
                 a = t;
-
-                Debug.Log($"{a.index}");
+                //a.PrintPortData();
             }
 
         foreach (var t in outputNode.portDatas)
             if (t.port == output)
             {
-                Debug.Log("Node b 발견");
-
-                Debug.Log($"{b.index}");
                 b = t;
+                //b.PrintPortData();
             }
 
-        Debug.Log(inputNode.RoomName + "과 " + outputNode.RoomName + "연결 됨");
-
-        ConnectPortData(a, b);
+        ConnectPortData(a, b, "", 0, "", 0);
     }
 
-    public void ConnectPortData(PortData a, PortData b, int aindex = 0, int bindex = 0)
+                                //노드      //그룹      //노드 인덱스     //그룹 인덱스
+    public void ConnectPortData(PortData a, PortData b, string aFlag, int aIndex, string bFlag, int bIndex) //플래그명과 인덱스를 모두 받아야 함.
     {
-        List<ConnectedPort> portsA = GetPort(a); bool containsA = false;
-        List<ConnectedPort> portsB = GetPort(b); bool containsB = false;
+        a.PrintPortData();
+        b.PrintPortData();
 
-        if (!containsA)
-            portsA.Add(new ConnectedPort(b.room.scene, bindex));
-        if (!containsB)
-            portsB.Add(new ConnectedPort(a.room.scene, aindex));
+        RoomPort portA = GetPort(a);
+        RoomPort portB = GetPort(b);
+
+        List<ConnectedPort> portsA = GetConnectedPort(a);// bool containsA = false;
+        List<ConnectedPort> portsB = GetConnectedPort(b);// bool containsB = false;
+
+        //포트가 노드인지 그룹인지 확인 필요
+        //if (!containsA)
+        if (String.IsNullOrWhiteSpace(bFlag))
+        {
+            portA.flag = "";
+            portsA.Add(new ConnectedPort(b.room.scene, b.index));
+        }
+        else
+        {
+            portA.flag = bFlag;
+            portsA.Add(new ConnectedPort(b.room.scene, b.index, bFlag, bIndex));
+        }
+        //if (!containsB)
+        if (String.IsNullOrWhiteSpace(aFlag))
+        {
+            portB.flag = "";
+            portsB.Add(new ConnectedPort(a.room.scene, a.index));
+        }
+        else
+        {
+            portB.flag = aFlag;
+            portsB.Add(new ConnectedPort(a.room.scene, b.index, aFlag, aIndex));
+        }
 
         EditorUtility.SetDirty(a.room);
         EditorUtility.SetDirty(b.room);
@@ -496,8 +651,27 @@ public class MapGraphView : GraphView
         AssetDatabase.SaveAssets();
     }
 
-    public List<ConnectedPort> GetPort(PortData a)
+    public RoomPort GetPort(PortData a)
     {
+        switch (a.portDirection)
+        {
+            case PortDirection.Top:
+                return a.room.topPorts[a.index];
+            case PortDirection.Bot:
+                return a.room.botPorts[a.index];
+            case PortDirection.Rig:
+                return a.room.rigPorts[a.index];
+            case PortDirection.Lef:
+                return a.room.lefPorts[a.index];
+        }
+
+        return null;
+    }
+
+    public List<ConnectedPort> GetConnectedPort(PortData a)
+    {
+        a.PrintPortData();
+
         switch (a.portDirection)
         {
             case PortDirection.Top:
@@ -515,26 +689,23 @@ public class MapGraphView : GraphView
 
     public void NodeToGroup(Port input, Port output, RoomNode node, FlagGroup group)
     {
-        PortData a = null;
-        PortData b = null;
-        List<RoomNode> c = new List<RoomNode>();
+        PortData a = null;                          //노드의 포트
+        PortData b = null;                          //그룹의 포트
+        List<RoomNode> c = new List<RoomNode>();    //그룹의 룸 데이터
 
         foreach (var t in node.portDatas)
             if (t.port == input)
             {
-                Debug.Log("Node a 발견");
                 a = t;
             }
 
         foreach (var t in group.portDatas)
             if (t.port == output)
             {
-                Debug.Log("Group b 발견");
                 b = t;
             }
 
-        Debug.Log(node.RoomName + "과 " + group.FlagName + "연결 됨");
-
+        //그룹 데이터를 C에 옮김.
         foreach (var t in group.containedElements)
         {
             if (t is RoomNode roomNode)
@@ -543,10 +714,12 @@ public class MapGraphView : GraphView
             }
         }
 
+        //C에 있는 모든 룸 순회
         foreach (var i in c)
         {
-            PortData data = new PortData(null, i.roomData, b.portDirection, a.index);
-            ConnectPortData(a, data, 0, a.index);
+            PortData data = new PortData(null, i.roomData, b.portDirection, b.index);       //a.index
+            ConnectPortData(a, data, "", 0, group.FlagName, i.FlagIndex);                       //0
+            Debug.Log(i.FlagIndex);
         }
     }
 
@@ -560,14 +733,12 @@ public class MapGraphView : GraphView
         foreach (var t in group1.portDatas)
             if (t.port == input)
             {
-                Debug.Log("Group a 발견");
                 a = t;
             }
 
         foreach (var t in group2.portDatas)
             if (t.port == output)
             {
-                Debug.Log("Group b 발견");
                 b = t;
             }
 
@@ -587,15 +758,14 @@ public class MapGraphView : GraphView
             }
         }
 
-        Debug.Log(group1.FlagName + "과 " + group2.FlagName + "연결 됨");
-
         foreach (var i in c)
         {
             PortData data1 = new PortData(null, i.roomData, a.portDirection, a.index);
             foreach (var j in d)
             {
                 PortData data2 = new PortData(null, j.roomData, b.portDirection, b.index);
-                ConnectPortData(data1, data2, a.index, b.index);
+                Debug.Log("i : " + i.FlagIndex + ", j : " + j.FlagIndex);
+                ConnectPortData(data1, data2, group1.FlagName, i.FlagIndex,  group2.FlagName, j.FlagIndex);
             }
         }
     }
@@ -614,6 +784,8 @@ public class MapGraphView : GraphView
         RoomNode node = (RoomNode)Activator.CreateInstance(typeof(RoomNode));
 
         node.Initialize(room, this, position, flagIndex);
+
+        roomNodes.Add(node);
 
         return node;
     }

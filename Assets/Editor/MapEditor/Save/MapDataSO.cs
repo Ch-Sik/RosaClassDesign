@@ -1,4 +1,5 @@
 using Sirenix.OdinInspector;
+using Sirenix.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,53 +10,82 @@ public class MapDataSO : ScriptableObject
     [field: SerializeField] [ShowInInspector] public Dictionary<string, List<SORoom>> Flags;
     [field: SerializeField] public List<FlagGroupSaveData> Groups { get; set; }
     [field: SerializeField] public List<RoomNodeSaveData> Nodes { get; set; }
-    [field: SerializeField] public List<NNEdgeSaveData> NNEdges { get; set; }
-    [field: SerializeField] public List<NGEdgeSaveData> NGEdges { get; set; }
-    [field: SerializeField] public List<GGEdgeSaveData> GGEdges { get; set; }
+
+    public List<RoomLoadDataSet> GetRoomLoadDataSet()
+    {
+        List<RoomLoadDataSet> datas = new List<RoomLoadDataSet>();
+
+        foreach (var data in Nodes)
+        {
+            if (data.FlagName == "")
+                datas.Add(new RoomLoadDataSet(data.Room));
+            else
+            {
+                List<SORoom> rooms = new List<SORoom>();
+                bool isContained = false;
+                foreach (var a in datas)
+                {
+                    if (a.flag == data.FlagName)
+                    {
+                        isContained = true;
+                        break;
+                    }
+                }
+                if (isContained)
+                    continue;
 
 
+                foreach (var node in Nodes)
+                {
+                    if (data.FlagName == node.FlagName)
+                        rooms.Add(node.Room);
+                }
+
+                datas.Add(new RoomLoadDataSet(data.FlagName,
+                                              rooms));
+            }
+        }
+
+        return datas;
+    }
 
     public void Clear()
     {
         Flags = new Dictionary<string, List<SORoom>>();
         Groups = new List<FlagGroupSaveData>();
         Nodes = new List<RoomNodeSaveData>();
-
-        NNEdges = new List<NNEdgeSaveData>();
-        NGEdges = new List<NGEdgeSaveData>();
-        GGEdges = new List<GGEdgeSaveData>();
     }
 }
 
-public class NNEdgeSaveData
+public class RoomLoadDataSet
 {
-    public SORoom port1;
-    public PortDirection direction1;
-    public int index1;
+    public bool isGroup = false;
+    public string flag = "";
+    public SORoom room;
+    public List<SORoom> rooms;
 
-    public SORoom port2;
-    public PortDirection direction2;
-    public int index2;
-}
+    public RoomLoadDataSet(SORoom room)
+    {
+        this.room = room;
+    }
+    public RoomLoadDataSet(string flag, List<SORoom> rooms)
+    {
+        isGroup = true;
+        this.flag = flag;
+        this.room = rooms[0];
+        this.rooms = new List<SORoom>(rooms);
+    }
+    public bool IsContain(string SceneName)
+    {
+        if (rooms.IsNullOrEmpty())
+            return false;
 
-public class NGEdgeSaveData
-{
-    public SORoom port1;
-    public PortDirection direction1;
-    public int index1;
+        foreach (var room in rooms)
+        {
+            if (room.name == SceneName)
+                return true;
+        }
 
-    public string port2;
-    public PortDirection direction2;
-    public int index2;
-}
-
-public class GGEdgeSaveData
-{
-    public string port1;
-    public PortDirection direction1;
-    public int index1;
-
-    public string port2;
-    public PortDirection direction2;
-    public int index2;
+        return false;
+    }
 }

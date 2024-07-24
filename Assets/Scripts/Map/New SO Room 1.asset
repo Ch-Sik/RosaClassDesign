@@ -22,7 +22,8 @@ MonoBehaviour:
   size: {x: 24, y: 20}
   offset: {x: 2, y: 3}
   topPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 0
     ports:
     - {x: 5, y: 22}
@@ -31,7 +32,8 @@ MonoBehaviour:
     - {x: 8, y: 22}
     - {x: 9, y: 22}
     connectedPorts: []
-  - index: 1
+  - flag: 
+    index: 1
     direction: 0
     ports:
     - {x: 12, y: 22}
@@ -42,7 +44,8 @@ MonoBehaviour:
     - {x: 17, y: 22}
     connectedPorts: []
   botPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 1
     ports:
     - {x: 8, y: 3}
@@ -50,7 +53,8 @@ MonoBehaviour:
     - {x: 10, y: 3}
     - {x: 11, y: 3}
     connectedPorts: []
-  - index: 1
+  - flag: 
+    index: 1
     direction: 1
     ports:
     - {x: 14, y: 3}
@@ -58,52 +62,71 @@ MonoBehaviour:
     - {x: 16, y: 3}
     connectedPorts: []
   rigPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 2
     ports:
     - {x: 25, y: 6}
     - {x: 25, y: 7}
     connectedPorts: []
-  - index: 1
+  - flag: 
+    index: 1
     direction: 2
     ports:
     - {x: 25, y: 9}
     - {x: 25, y: 10}
     connectedPorts: []
-  - index: 2
+  - flag: 
+    index: 2
     direction: 2
     ports:
     - {x: 25, y: 13}
     - {x: 25, y: 14}
     - {x: 25, y: 15}
-    connectedPorts:
-    - flag: 
-      flagIndex: 0
-      scene:
-        m_SceneAsset: {fileID: 0}
-        m_SceneName: 
-      index: 0
-  - index: 3
+    connectedPorts: []
+  - flag: 
+    index: 3
     direction: 2
     ports:
     - {x: 25, y: 17}
     - {x: 25, y: 18}
     connectedPorts: []
-  - index: 4
+  - flag: 
+    index: 4
     direction: 2
     ports:
     - {x: 25, y: 20}
     - {x: 25, y: 21}
     connectedPorts: []
   lefPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 3
     ports:
     - {x: 2, y: 13}
     - {x: 2, y: 14}
     - {x: 2, y: 15}
-    connectedPorts: []
-  - index: 0
+    connectedPorts:
+    - flag: 
+      flagIndex: 0
+      scene:
+        m_SceneAsset: {fileID: 102900000, guid: fa8437993dda5db4f97334490c5c83d8, type: 3}
+        m_SceneName: 1-2
+      index: 0
+  - flag: AAA
+    index: 0
     direction: 0
     ports: []
-    connectedPorts: []
+    connectedPorts:
+    - flag: AAA
+      flagIndex: 1
+      scene:
+        m_SceneAsset: {fileID: 102900000, guid: e16779982f3ff5f4c9017865f23344f3, type: 3}
+        m_SceneName: 1-9
+      index: 0
+    - flag: AAA
+      flagIndex: 0
+      scene:
+        m_SceneAsset: {fileID: 102900000, guid: a34fef1a5ffe7ad4eac6b9327dc82de2, type: 3}
+        m_SceneName: 1-4
+      index: 0

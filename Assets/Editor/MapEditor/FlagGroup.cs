@@ -221,4 +221,18 @@ public class FlagGroup : Group
         lefElement.Clear();
         rigElement.Clear();
     }
+
+    public Port GetPort(PortDirection direction, int index)
+    {
+        foreach (PortData port in portDatas)
+        {
+            if (port.portDirection == direction &&
+                port.index == index)
+            {
+                return port.port;
+            }
+        }
+
+        return null;
+    }
 }

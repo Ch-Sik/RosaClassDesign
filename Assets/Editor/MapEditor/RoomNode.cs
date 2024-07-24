@@ -158,6 +158,20 @@ public class RoomNode : Node
         intInputField.SetEnabled(false);
         intInputField.visible = false;
     }
+
+    public Port GetPort(PortDirection direction, int index)
+    {
+        foreach (PortData port in portDatas)
+        {
+            if (port.portDirection == direction &&
+                port.index == index)
+            {
+                return port.port;
+            }
+        }
+
+        return null;
+    }
 }
 
 public static class VisualElementExtensions
@@ -198,5 +212,10 @@ public class PortData
         this.room = room;
         this.portDirection = portDirection;
         this.index = index;
+    }
+
+    public void PrintPortData()
+    {
+        //Debug.Log($"{room.name}의 {portDirection}의 {index}번");
     }
 }
