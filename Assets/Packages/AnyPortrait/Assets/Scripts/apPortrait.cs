@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -426,7 +426,8 @@ namespace AnyPortrait
 		{
 			None = 0,
 			Billboard = 1,
-			UpFixed = 2
+			UpFixed = 2,
+			LocalUpFixed = 3
 		}
 		[SerializeField, HideInInspector]
 		public BILLBOARD_TYPE _billboardType = BILLBOARD_TYPE.None;
@@ -12571,12 +12572,17 @@ namespace AnyPortrait
 				//_transform.rotation = _curCameraTransform.rotation;//이전
 				_transform.rotation = _mainCamera.Rotation;//변경
 			}
-			else
+			else if(_billboardType == BILLBOARD_TYPE.UpFixed)
 			{
 				//Up 고정 빌보드
 				//_transform.rotation = Quaternion.LookRotation(_curCameraTransform.forward, Vector3.up);//이전
 				_transform.rotation = Quaternion.LookRotation(_mainCamera.Forward, Vector3.up);//변경
 			}
+			else
+			{
+				// local up 고정 빌보드
+				_transform.rotation = Quaternion.LookRotation(_mainCamera.Forward, Vector3.up) * transform.parent.rotation;
+            }
 
 			
 			//카메라 좌표계에서의 Z값 (ZDepth)
