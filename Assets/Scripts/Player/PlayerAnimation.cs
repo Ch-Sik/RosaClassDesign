@@ -55,20 +55,22 @@ public class PlayerAnimation : MonoBehaviour
     void UpdateAnimParameters()
     {
         anim.SetBool("isWalking", 
-            (playerControl.currentMoveState == PlayerMoveState.DEFAULT 
-            && !isDoingAttack && playerMove.moveVector.x != 0) ? true : false);
+            playerControl.currentMoveState == PlayerMoveState.DEFAULT 
+            && (!isDoingAttack || !playerMove.noMoveOnAttack)
+            && playerMove.moveVector.x != 0);
         anim.SetBool("isJumping", 
-            (playerControl.currentMoveState == PlayerMoveState.DEFAULT 
-            && !playerMove.isGrounded && !playerMove.isDoingHooking) ? true : false);
+            playerControl.currentMoveState == PlayerMoveState.DEFAULT 
+            && !playerMove.isGrounded 
+            && !playerMove.isDoingHooking);
         anim.SetBool("isClimbing", 
-            (playerControl.currentMoveState == PlayerMoveState.CLIMBING) ? true : false);
+            playerControl.currentMoveState == PlayerMoveState.CLIMBING);
         anim.SetBool("isClimbEnd", 
-            (playerMove.isWallClimbingTop) ? true : false);
+            playerMove.isWallClimbingTop);
         anim.SetBool("isInputClimbX", 
-            (playerControl.currentMoveState == PlayerMoveState.CLIMBING 
-            && (playerMove.facingDirection.toVector2().x == -playerMove.moveVector.x)) ? true : false);
+            playerControl.currentMoveState == PlayerMoveState.CLIMBING 
+            && (playerMove.facingDirection.toVector2().x == -playerMove.moveVector.x));
         anim.SetBool("isMagicReady", 
-            (playerControl.currentActionState == PlayerActionState.MAGIC_READY) ? true : false);
+            playerControl.currentActionState == PlayerActionState.MAGIC_READY);
         //anim.SetBool("isClimbOver", ((playerControl.currentMoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
         anim.SetFloat("yVel", rb.velocity.y);
     }

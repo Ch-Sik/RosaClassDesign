@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GimmickSignalHandler : MonoBehaviour
+public class GimmickSignalConnector : MonoBehaviour
 {
-    public List<Gimmick> gimmicks = new List<Gimmick>();
-    public List<GimmickSignal> signals = new List<GimmickSignal>();
+    public List<GimmickSignalReceiver> gimmicks = new List<GimmickSignalReceiver>();
+    public List<GimmickSignalSender> signals = new List<GimmickSignalSender>();
 
     public bool isActive = false;
     private bool curIsActive = false;

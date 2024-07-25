@@ -14,7 +14,7 @@ public struct cinematicsSetting
 }
 */
 
-public class G_Door : Gimmick
+public class G_Door : GimmickSignalReceiver
 {
     [SerializeField] private BoxCollider2D collider;
     [SerializeField] private Transform doorSprite;
