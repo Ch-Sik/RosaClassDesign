@@ -153,11 +153,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7250734593268076291, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 13.1
+      value: 33.26
       objectReference: {fileID: 0}
     - target: {fileID: 7250734593268076291, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.1
+      value: -24.800001
       objectReference: {fileID: 0}
     - target: {fileID: 7250734593268076291, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -274,6 +274,14 @@ PrefabInstance:
     - target: {fileID: 1069313562234670493, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1210515925474742746, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: jumpPower
+      value: 11.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1210515925474742746, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: moveSpeed
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 1210515925474742746, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: maxClimbTime
@@ -453,11 +461,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5262888439632956338, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 13.1
+      value: 33.26
       objectReference: {fileID: 0}
     - target: {fileID: 5262888439632956338, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.59
+      value: -27.49
       objectReference: {fileID: 0}
     - target: {fileID: 5262888439632956338, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1364,7 +1372,7 @@ MonoBehaviour:
   player: {fileID: 5262888440015344438}
   cam: {fileID: 210034125}
   startPosition: {x: 7, y: -2}
-  startRoom: {fileID: 11400000, guid: 83fa09bdd48b4e145bd6c0622be775a9, type: 2}
+  startRoom: {fileID: 11400000, guid: 3e893eb64caa0d0468e064233baf2d1f, type: 2}
   currentRoom: {fileID: 0}
   oldRooms: []
   chapter: {fileID: 1838996231}
