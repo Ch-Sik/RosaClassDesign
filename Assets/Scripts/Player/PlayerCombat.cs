@@ -50,7 +50,7 @@ public class PlayerCombat : MonoBehaviour
     public List<ComboAttack> comboAttacks = new List<ComboAttack>();              // 콤보 공격 배열
     public float comboResetTime = 1.0f;             // 콤보 리셋 시간
     [ReadOnly, SerializeField] public int comboStep = 0;                      // 현재 콤보 단계
-    [ReadOnly, SerializeField] private float lastAttackTime;                   // 마지막 공격 시간
+    [ReadOnly, SerializeField] private Timer lastAttackTimer;                   // 마지막 공격 시간
 
     // 마우스 관련 변수
     private Vector2 mouse;                          // 마우스 월드 좌표
@@ -79,6 +79,11 @@ public class PlayerCombat : MonoBehaviour
         playerControl = playerRef.Controller;
         aimInput = InputManager.Instance._inputAsset.FindActionMap("ActionDefault").FindAction("Aim");
 
+        // 마스크 옵션 정상적인지 확인
+        Debug.Assert(mask_wall != 0, "레이어 마스크 설정이 잘못되어있음");
+        Debug.Assert(mask_attackable != 0, "레이어 마스크 설정이 잘못되어있음");
+        Debug.Assert(mask_butterfly != 0, "레이어 마스크 설정이 잘못되어있음");
+
         // 공격 오브젝트가 flip에 영향받지 않도록 하기 위해 게임이 시작되면 공격을 플레이어의 자식이 아니도록 설정
         for (int i = 0; i < comboAttacks.Count; i++)
         {
@@ -96,7 +101,7 @@ public class PlayerCombat : MonoBehaviour
                 Debug.LogError($"PlayerDamageInflictor not found in attack entity at index {i}.");
                 continue;
             }
-            comboAttacks[i].attackHandler.Init(this, comboAttacks[i].attackDamagePercent, LayerMask.GetMask("Wall"), LayerMask.GetMask("Attackable"), LayerMask.GetMask("Butterfly"));
+            comboAttacks[i].attackHandler.Init(this, comboAttacks[i].attackDamagePercent, mask_wall, mask_attackable, mask_butterfly);
         }
     }
 
@@ -171,18 +176,20 @@ public class PlayerCombat : MonoBehaviour
     void CalculateCombo()
     {
         // 콤보 계산
-        if (Time.time - lastAttackTime > comboResetTime)
+        if (lastAttackTimer == null || lastAttackTimer.duration > comboResetTime)
         {
             comboStep = 0;
+            Debug.Log($"{lastAttackTimer?.duration}");
         }
         else
         {
             comboStep = (comboStep + 1) % comboAttacks.Count;
         }
-        lastAttackTime = Time.time;
         currentCombo = comboAttacks[comboStep];
         currentAttackEffect = currentCombo.attackEntity;
         currentAttackHandler = currentCombo.attackHandler;
+        // 콤보 타이머 관리는 OnEndAttack으로 이동
+        // 사유: 공격 한번의 길이에 따라 다음 공격이 콤보로 인정되는 시간이 들쭉날쭉하거나 아예 다음 콤보로 이어지지 않는 문제
     }
 
     [Button]
@@ -207,9 +214,9 @@ public class PlayerCombat : MonoBehaviour
     private void OnStartupAttack()
     {
         // 공격 이펙트 소환
-        currentAttackEffect.SetActive(true);
         currentAttackEffect.transform.position = this.transform.position;
         currentAttackEffect.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        currentAttackEffect.SetActive(true);
         // 플레이어 애니메이션 설정
         playerRef.Animation.SetAttackAnimTrigger();
         // 공격 방향 바라보기
@@ -231,6 +238,11 @@ public class PlayerCombat : MonoBehaviour
     //공격 판정 종료시
     private void OnEndAttack()
     {
+        // 콤보 이어지는지 판단하기 위한 타이머 리셋
+        if (lastAttackTimer == null)
+            lastAttackTimer = Timer.StartTimer();
+        else
+            lastAttackTimer.Reset();
         // 이펙트 & 공격 판정 오브젝트 비활성화
         if(attackTrigger)
         {
