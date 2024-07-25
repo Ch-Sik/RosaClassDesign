@@ -271,7 +271,7 @@ public class PlayerCombat : MonoBehaviour
             return;
 
         StopAttack();
-        butterFly.ButterFlyAct(transform);
+        //butterFly.ButterFlyAct(transform);
     }
 
     private void OnDrawGizmos()
