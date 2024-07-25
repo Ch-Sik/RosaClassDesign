@@ -15,6 +15,8 @@ MonoBehaviour:
   scene:
     m_SceneAsset: {fileID: 102900000, guid: 33b0b124ede87164e9631cb27621a3f8, type: 3}
     m_SceneName: 1-8
+  flagName: 
+  flagIndex: 0
   title: 
   subTitle: 
   size: {x: 190, y: 130}
@@ -22,7 +24,8 @@ MonoBehaviour:
   topPorts: []
   botPorts: []
   rigPorts:
-  - index: 1
+  - flag: 
+    index: 1
     direction: 2
     ports:
     - {x: 192, y: -59}
@@ -31,10 +34,15 @@ MonoBehaviour:
     - {x: 192, y: -56}
     - {x: 192, y: -55}
     connectedPorts:
-    - room: {fileID: 11400000, guid: a7888ebe04db4e8409e430f4d2f83113, type: 2}
+    - flag: 
+      flagIndex: 0
+      scene:
+        m_SceneAsset: {fileID: 102900000, guid: b0dfdaf638bb65540bf889fc053355a7, type: 3}
+        m_SceneName: 1-10
       index: 1
   lefPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 3
     ports:
     - {x: 3, y: -3}
@@ -43,5 +51,9 @@ MonoBehaviour:
     - {x: 3, y: 0}
     - {x: 3, y: 1}
     connectedPorts:
-    - room: {fileID: 11400000, guid: 35263d2def4143e44b0928162ab40d28, type: 2}
+    - flag: 
+      flagIndex: 0
+      scene:
+        m_SceneAsset: {fileID: 102900000, guid: a4c8c16732edb88448aaa4af937777ce, type: 3}
+        m_SceneName: 1-7
       index: 1
