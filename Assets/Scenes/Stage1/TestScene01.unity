@@ -276,6 +276,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1210515925474742746, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: jumpPower
+      value: 11.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1210515925474742746, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: moveSpeed
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1210515925474742746, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: maxClimbTime
       value: 1
       objectReference: {fileID: 0}
@@ -1364,7 +1372,7 @@ MonoBehaviour:
   player: {fileID: 5262888440015344438}
   cam: {fileID: 210034125}
   startPosition: {x: 7, y: -2}
-  startRoom: {fileID: 11400000, guid: 83fa09bdd48b4e145bd6c0622be775a9, type: 2}
+  startRoom: {fileID: 0}
   currentRoom: {fileID: 0}
   oldRooms: []
   chapter: {fileID: 1838996231}
