@@ -262,6 +262,7 @@ public class PlayerMagic : MonoBehaviour
             //previewObject.SetActive(true);
             //previewObject.transform.position = (Vector3)magicPos;
             CursorFairy.Instance.SetMagicPreview(true, (Vector3)magicPos);
+            Debug.Log($"{((TerrainCastHit)terrainHit).cellPos}");
         }
         // 아니면 시전 불가능하다고 표시하기
         else
@@ -304,7 +305,7 @@ public class PlayerMagic : MonoBehaviour
                         Vector3Int tmpCellPos = targetTilemapGroup.WorldToCell(raycastResult.point - 0.1f * cDirections[i]);  // 움직이는 플랫폼을 고려하여 FloorToInt 대신 WorldToCell 사용
                         TileData tileData = targetTilemapGroup.GetTileData(tmpCellPos);
                         
-                        if (tileData.isPlantable)
+                        if (tileData != null && tileData.isPlantable)
                         {
                             minDistanceSqr = tmpDistanceSqr;
                             targetTerrainType = i;
@@ -349,7 +350,7 @@ public class PlayerMagic : MonoBehaviour
                     Vector3Int tmpCellPos = targetTilemapGroup.WorldToCell(raycastResult.point - 0.1f * cDirections[i]);  // 움직이는 플랫폼을 고려하여 FloorToInt 대신 WorldToCell 사용
                     TileData tileData = targetTilemapGroup.GetTileData(tmpCellPos);
 
-                    if (tileData.isPlantable)
+                    if (tileData != null && tileData.isPlantable)
                     {
                         minDistance = raycastResult.distance;
                         targetTerrainType = i;

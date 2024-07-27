@@ -101,6 +101,10 @@ public class PlayerMovement : MonoBehaviour
     [ReadOnly, SerializeField] public GameObject platformBelow = null;
 
     [BoxGroup("Debug/Vertical/General")]
+    [Tooltip("현재 매달려있는 담쟁이")]
+    [ReadOnly, SerializeField] public GameObject hangingIvy = null;
+
+    [BoxGroup("Debug/Vertical/General")]
     [ReadOnly, SerializeField] public Vector2 moveVector;
 
     [BoxGroup("Debug/Vertical/General")]
@@ -467,11 +471,15 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>
     /// 벽 오르기 상태로 전환
     /// </summary>
-    internal void StickToWall()
+    internal void StickToWall(GameObject ivy)
     {
+        Debug.Assert(ivy != null);
+
         isWallClimbing = true;
         playerControl.ChangeMoveState(PlayerMoveState.CLIMBING);
         rb.gravityScale = 0;
+        hangingIvy = ivy;
+        transform.parent = ivy.transform;
     }
 
     /// <summary>
@@ -482,7 +490,9 @@ public class PlayerMovement : MonoBehaviour
         isWallClimbing = false;
         playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
         rb.gravityScale = this.gravityScale;
-        
+
+        hangingIvy = null;
+        transform.parent = null;
     }
 
     public void ClimbEnd()
@@ -521,6 +531,8 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="collision"></param>
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        // Debug.Log($"{collision.gameObject}:{LayerMask.LayerToName(collision.gameObject.layer)}");
+
         if (isDoingSuperDash)
         {
             isDoingSuperDash = false;
@@ -533,8 +545,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 if (isFacingWall && !isSlidingOnWall)
                 {
-
-                    StickToWall();
+                    StickToWall(collision.gameObject);
                     //playerAnim.SetTrigger("ClimbTrigger");
                 }
             }
@@ -547,7 +558,7 @@ public class PlayerMovement : MonoBehaviour
         if (collision.gameObject.layer.Equals(climbableLayer))
         {
             if (isFacingWall && !isSlidingOnWall)
-                StickToWall();
+                StickToWall(collision.gameObject);
         }
     }
 
