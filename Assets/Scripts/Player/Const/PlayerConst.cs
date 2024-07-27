@@ -15,7 +15,7 @@ public enum PlayerActionState
 {
     DEFAULT,
     MAGIC_READY,
-    NO_ACTION,  // 대화 등으로 인해 공격이 불가능한 상태
+    DISABLED,  // 대화 등으로 인해 공격이 불가능한 상태
 }
 
 

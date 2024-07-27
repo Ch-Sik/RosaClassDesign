@@ -19,6 +19,7 @@ public class CursorFairy : MonoBehaviour
 
     InputAction defaultAim;
     InputAction magicAim;
+    InputAction noActionAim;
 
     // Start is called before the first frame update
     void Start()
@@ -34,8 +35,10 @@ public class CursorFairy : MonoBehaviour
         }
         defaultAim = InputManager.Instance.AM_ActionDefault.FindAction("Aim");
         magicAim = InputManager.Instance.AM_ActionMagicReady.FindAction("Aim");
+        noActionAim = InputManager.Instance.AM_ActionDisabled.FindAction("Aim");
         defaultAim.performed += GetMousePosition;
         magicAim.performed += GetMousePosition;
+        noActionAim.performed += GetMousePosition;
     }
 
     void GetMousePosition(InputAction.CallbackContext context)

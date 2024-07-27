@@ -176,12 +176,28 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7855161928197896393, guid: 23b4c8f4e260d754e96c25b2b0dc712c, type: 3}
+      propertyPath: AM_ActionNo.m_Id
+      value: eb450a06-6618-414b-b29b-aff00bf0a6de
+      objectReference: {fileID: 0}
+    - target: {fileID: 7855161928197896393, guid: 23b4c8f4e260d754e96c25b2b0dc712c, type: 3}
+      propertyPath: AM_ActionNo.m_Name
+      value: AM_Action No
+      objectReference: {fileID: 0}
+    - target: {fileID: 7855161928197896393, guid: 23b4c8f4e260d754e96c25b2b0dc712c, type: 3}
       propertyPath: AM_MoveDefault.m_Id
       value: 011fe6f9-c664-4ee4-b1ee-6d99fee033af
       objectReference: {fileID: 0}
     - target: {fileID: 7855161928197896393, guid: 23b4c8f4e260d754e96c25b2b0dc712c, type: 3}
       propertyPath: AM_MoveDefault.m_Name
       value: AM_Move Default
+      objectReference: {fileID: 0}
+    - target: {fileID: 7855161928197896393, guid: 23b4c8f4e260d754e96c25b2b0dc712c, type: 3}
+      propertyPath: AM_ActionDisabled.m_Id
+      value: c2b443e0-5ecb-4b69-a292-9dc4912db978
+      objectReference: {fileID: 0}
+    - target: {fileID: 7855161928197896393, guid: 23b4c8f4e260d754e96c25b2b0dc712c, type: 3}
+      propertyPath: AM_ActionDisabled.m_Name
+      value: AM_Action Disabled
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

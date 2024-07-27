@@ -34,8 +34,8 @@ public class PlayerMagic : MonoBehaviour
     [Header("정보")]
     [SerializeField, ReadOnly]
     private SO_Magic selectedMagic;
-    [SerializeField, ReadOnly]
-    private bool isPreviewOn = false;
+    [ReadOnly]
+    public bool isMagicMode = false;    // 마법 시전 준비중인지 아닌지
     [SerializeField, ReadOnly]
     private Vector3? magicPos;          // null이라면 현재 조준하고 있는 위치가 유효하지 않다는 뜻
     [SerializeField, ReadOnly]
@@ -92,7 +92,7 @@ public class PlayerMagic : MonoBehaviour
 
     private void Update()
     {
-        if (isPreviewOn)
+        if (isMagicMode)
             UpdatePreview();
     }
 
@@ -114,7 +114,7 @@ public class PlayerMagic : MonoBehaviour
     public void ReadyMagic()
     {
         // TODO: PlayerState와 연동하여 현재 선택된 마법이 유효한지 확인하기
-        inputInstance.SetActionInputState(PlayerActionState.MAGIC_READY);
+        PlayerRef.Instance.Controller.SetActionState(PlayerActionState.MAGIC_READY);
         Debug.Log("식물 마법 시전 준비");
 
         ShowPreview();
@@ -136,7 +136,7 @@ public class PlayerMagic : MonoBehaviour
         Debug.Log($"식물마법 시전\n 종류: {selectedMagic.name}\n 지형타입: {targetTerrainType}");
         HidePreview();
 
-        inputInstance.SetActionInputState(PlayerActionState.DEFAULT);
+        PlayerRef.Instance.Controller.SetActionState(PlayerActionState.DEFAULT);
     }
 
     private void DoMagic()
@@ -198,7 +198,7 @@ public class PlayerMagic : MonoBehaviour
     /// </summary>
     public void CancelMagic()
     {
-        inputInstance.SetActionInputState(PlayerActionState.DEFAULT);
+        PlayerRef.Instance.Controller.SetActionState(PlayerActionState.DEFAULT);
         Debug.LogWarning("식물마법 취소");
         HidePreview();
     }
@@ -207,7 +207,7 @@ public class PlayerMagic : MonoBehaviour
     [ContextMenu("Set Preview ON")]
     private void ShowPreview()
     {
-        isPreviewOn = true;
+        isMagicMode = true;
         CursorFairy.Instance.SetMagicMode(true);
     }
 
@@ -215,7 +215,7 @@ public class PlayerMagic : MonoBehaviour
     [ContextMenu("Set Preview OFF")]
     private void HidePreview()
     {
-        isPreviewOn = false;
+        isMagicMode = false;
         //previewObject.SetActive(false);
         CursorFairy.Instance.SetMagicMode(false);
     }
