@@ -188,7 +188,7 @@ public class PlayerMagic : MonoBehaviour
         if (spawnedObject[(int)selectedMagic.skillCode] != null)
         {
             // TODO: 기존에 설치된 식물이 자연스럽게 사라지는 것 연출
-            Destroy(spawnedObject[(int)selectedMagic.skillCode], 1f);
+            Destroy(spawnedObject[(int)selectedMagic.skillCode], 0f);
         }
         spawnedObject[(int)selectedMagic.skillCode] = magicInstance;
     }
