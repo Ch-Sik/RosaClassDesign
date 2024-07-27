@@ -10,7 +10,17 @@ public class Task_Base : MonoBehaviour
     protected void LookAt2D(Vector2 targetPosition)
     {
         Vector2 toTarget = targetPosition - (Vector2)transform.position;
-        if(toTarget.toLR() != transform.localScale.toLR())
+        Vector2 localRight = transform.rotation * Vector3.right;  // 몬스터 입장에서의 '오른쪽'
+        LR curDir;
+        if(Vector2.Dot(toTarget, localRight) > 0)
+        {
+            curDir = LR.RIGHT;
+        }
+        else
+        {
+            curDir = LR.LEFT;
+        }
+        if(curDir != transform.localScale.toLR())
         {
             Flip();
         }
