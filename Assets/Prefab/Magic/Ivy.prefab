@@ -10069,7 +10069,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   edgeCol: {fileID: 1740112074270076679}
-  tilemapManager: {fileID: 0}
   originCellPos: {x: 0, y: 0, z: 0}
   audioSource: {fileID: 887120942043321818}
   spriteUp: {fileID: 2165564126396332894}
@@ -10234,7 +10233,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 86a62c633cab8c94eabf25ba14224bcc, type: 2}
+  - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -15216,7 +15215,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 86a62c633cab8c94eabf25ba14224bcc, type: 2}
+  - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
