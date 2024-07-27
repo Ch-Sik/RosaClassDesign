@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 6407586844888233896}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.75, y: 0.18, z: 0}
+  m_LocalPosition: {x: 2, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -59,15 +59,20 @@ PrefabInstance:
       propertyPath: MEMO
       value: "\uACE0\uC815\uBC29\uD5A5\uC73C\uB85C \uBC1C\uC0AC\uD558\uB294 \uAF43\n\uC0C8\uB85C\uC6B4
         \uC2A4\uD504\uB77C\uC774\uD2B8 \uC801\uC6A9\n\n\uC790\uC2DD\uC73C\uB85C \uB4E4\uC5B4\uC788\uB294
-        Target\uC744 \uBAA9\uD45C \uC704\uCE58\uB85C \uC774\uB3D9\uC2DC\uD0AC \uAC83."
+        Target\uC744 \uBAA9\uD45C \uC704\uCE58\uB85C \uC774\uB3D9\uC2DC\uD0AC \uAC83.\n\n\uBAAC\uC2A4\uD130\uC758
+        \uCCAB\uBC88\uC9F8 \uACF5\uACA9 \uC560\uB2C8\uBA54\uC774\uC158\uC774 \uC774\uC0C1\uD574\uC9C0\uB294
+        \uAC83\uC744 \uB9C9\uC73C\uB824\uBA74 \uBC1C\uC0AC\uAF43\uC758 \uC88C\uC6B0\uBC18\uC804\uC744
+        \uBBF8\uB9AC \uBAA9\uD45C \uBC29\uD5A5\uC73C\uB85C \uC124\uC815\uD574\uB46C\uC57C
+        \uD568.\nMain Body.Position.x \uAC12\uC744 +1 \uB610\uB294 -1\uB85C \uC124\uC815\uD560
+        \uAC83."
       objectReference: {fileID: 0}
     - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.89
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.485
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2060068542760789541, guid: 61760a3cf6518f845ac0114ce6fc616c, type: 3}
       propertyPath: m_LocalPosition.z
@@ -177,6 +182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 105cf105102f8b743af3d196263aa7e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  wakeupDuration: 1
 --- !u!1001 &5518135979310412199
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -394,3 +400,4 @@ MonoBehaviour:
   useAimMotion: 1
   stopAimWhenAttack: 1
   enemyAimBoneName: Aim
+  aimFollowSpeed: 0.5
