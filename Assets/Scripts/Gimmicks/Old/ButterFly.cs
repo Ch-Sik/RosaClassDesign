@@ -1,7 +1,6 @@
 using Com.LuisPedroFonseca.ProCamera2D;
 using DG.Tweening;
 using Sirenix.OdinInspector;
-using Sirenix.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -28,6 +27,8 @@ public class Butterfly : MonoBehaviour
 
     Transform riderTF;                                  //현재 나비를 탄 대상의 트랜스폼
 
+    public InteractiveObject interactiveObject;
+
     public Vector2 startPoint;
     public Vector2 endPoint;
     public float angle;
@@ -40,6 +41,7 @@ public class Butterfly : MonoBehaviour
         SetData();
         InitPosition();
         InitDirection();
+        SetInteractive();
     }
 
     public void InitDirection()
@@ -72,14 +74,34 @@ public class Butterfly : MonoBehaviour
         DistanceCalcultor();
     }
 
+    public void SetInteractive()
+    {
+        if (isCaged)
+            interactiveObject.canUse = false;
+    }
+
     private void InitPosition()
     {
         if(!isCaged)
             transform.position = waypoints[0];
     }
 
+    public void RideButterFly()
+    {
+        Debug.Log("ButterFlyAct");
+        if (PlayerRef.Instance.combat.isRidingButterfly)
+            return;
+
+        PlayerRef.Instance.combat.StopAttack();
+        ButterFlyAct(PlayerRef.Instance.transform);
+    }
+
+    public void Release()
+    {
+        interactiveObject.canUse = true;
+    }
+
     //나비가 날게 되는 핵심 코드
-    [Button]
     public void ButterFlyAct(Transform player)
     {
         if (onWayTracking)

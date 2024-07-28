@@ -57,6 +57,7 @@ public class ButterflyCage : MonoBehaviour
         GetComponent<SpriteRenderer>().enabled = false;
         GetComponent<BoxCollider2D>().enabled = false;
         butterfly.isCaged = false;
+        butterfly.Release();
         butterfly.transform.position = butterfly.waypointsTransform.GetChild(0).position;
     }
 
@@ -77,6 +78,7 @@ public class ButterflyCage : MonoBehaviour
             .AppendCallback(() =>                                                       // 그리고 상호작용 활성화
             {
                 butterfly.isCaged = false;
+                butterfly.Release();
                 butterfly.ShowDirection();
             });
     }
