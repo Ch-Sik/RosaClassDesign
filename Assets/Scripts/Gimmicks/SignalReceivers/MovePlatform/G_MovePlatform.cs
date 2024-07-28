@@ -6,7 +6,13 @@ public class G_MovePlatform : GimmickSignalReceiver
 {
     [SerializeField] private MovePlatform mp;
 
-    public override void OffAct() { mp.enabled = false; }
+    public override void OffAct()
+    {
+        mp.OffAct();
+    }
 
-    public override void OnAct() { mp.enabled = true; }
+    public override void OnAct()
+    {
+        mp.OnAct();
+    }
 }
