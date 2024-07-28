@@ -21,6 +21,16 @@ public class InteractiveObject : MonoBehaviour
         col.isTrigger = true;
     }
 
+    public void ActivateInteraction()
+    {
+        this.col.enabled = true;
+    }
+
+    public void InactiveInteraction()
+    {
+        this.col.enabled = false;
+    }
+
     public void RemoveEvent()
     {
         PlayerRef.Instance.Controller.interactFunction.RemoveAllListeners();
