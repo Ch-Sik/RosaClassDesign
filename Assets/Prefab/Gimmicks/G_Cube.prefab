@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 8992418557857670050}
   - component: {fileID: 8311774716565427323}
   - component: {fileID: 1076518023203953855}
+  - component: {fileID: 1568025220447600524}
   m_Layer: 10
   m_Name: G_Cube
   m_TagString: Cube
@@ -439,3 +440,15 @@ EdgeCollider2D:
   m_AdjacentEndPoint: {x: 0, y: 0}
   m_UseAdjacentStartPoint: 0
   m_UseAdjacentEndPoint: 0
+--- !u!114 &1568025220447600524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5462877471785716701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a49c06d95ba09e47b2981920f19e2da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

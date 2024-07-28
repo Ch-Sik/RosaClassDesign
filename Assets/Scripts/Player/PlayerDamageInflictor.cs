@@ -77,7 +77,6 @@ public class PlayerDamageInflictor : MonoBehaviour
         // 몬스터 등등과 충돌한다면,
         if ((layer_attackable & 1 << collision.gameObject.layer) != 0)
         {
-            Debug.Log($"플레이어 공격: {collision.gameObject.name}");
             DamageReceiver receiver = collision.GetComponent<DamageReceiver>();
             receiver?.GetHitt(Mathf.RoundToInt(PlayerRef.Instance.State.AttackDmg * damagePercent), attackAngle);
             playerCombat.StopAttack();

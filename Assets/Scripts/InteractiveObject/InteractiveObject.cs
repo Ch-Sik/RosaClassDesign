@@ -33,7 +33,7 @@ public class InteractiveObject : MonoBehaviour
 
     public void RemoveEvent()
     {
-        PlayerRef.Instance.Controller.interactFunction.RemoveAllListeners();
+        PlayerRef.Instance.Controller.ResetInteraction();
     }
 
     public void SetEvent()
@@ -41,8 +41,8 @@ public class InteractiveObject : MonoBehaviour
         if (!canUse)
             return;
 
-        PlayerRef.Instance.Controller.interactFunction.RemoveAllListeners();
-        PlayerRef.Instance.Controller.interactFunction.AddListener(() => function.Invoke());
+        PlayerRef.Instance.Controller.ResetInteraction();
+        PlayerRef.Instance.Controller.SetInteraction(() => function.Invoke());
     }
 
     private void OnActive() 
@@ -63,8 +63,6 @@ public class InteractiveObject : MonoBehaviour
         if (collision.tag != "Player")
             return;
 
-        Debug.Log("이벤트 할당");
-
         OnActive();
         SetEvent();
     }
@@ -76,8 +74,6 @@ public class InteractiveObject : MonoBehaviour
 
         if (collision.tag != "Player")
             return;
-
-        Debug.Log("이벤트 수거");
 
         OnInactive();
         RemoveEvent();
