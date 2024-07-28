@@ -412,6 +412,8 @@ public class MapGraphView : GraphView
                     {
                         Debug.Log("노드-노드");
                         RoomNode _node = GetNode(rig.connectedPorts[0].scene);
+                        if (_node == null)  //
+                            continue;
                         Connect(node.GetPort(PortDirection.Rig, rigIndex),
                                 _node.GetPort(PortDirection.Lef, rig.connectedPorts[0].index));
                     }
@@ -419,6 +421,8 @@ public class MapGraphView : GraphView
                     {
                         Debug.Log("노드-그룹");
                         FlagGroup _group = GetGroup(rig.connectedPorts[0].scene.SceneName);
+                        if (_group == null) //
+                            continue;
                         Connect(node.GetPort(PortDirection.Rig, rigIndex),
                                 _group.GetPort(PortDirection.Lef, rig.connectedPorts[0].index));
                     }
@@ -436,6 +440,8 @@ public class MapGraphView : GraphView
                         Debug.Log("노드-노드");
                         RoomNode _node = GetNode(bot.connectedPorts[0].scene);
                         Debug.Log("길이 : " + roomNodes.Count);
+                        if (_node == null)
+                            continue;
                         Connect(node.GetPort(PortDirection.Bot, botIndex),
                                 _node.GetPort(PortDirection.Top, bot.connectedPorts[0].index));
                     }
@@ -443,6 +449,8 @@ public class MapGraphView : GraphView
                     {
                         Debug.Log("노드-그룹");
                         FlagGroup _group = GetGroup(bot.connectedPorts[0].scene.SceneName);
+                        if (_group == null)
+                            continue;
                         Connect(node.GetPort(PortDirection.Bot, botIndex),
                                 _group.GetPort(PortDirection.Top, bot.connectedPorts[0].index));
                     }
