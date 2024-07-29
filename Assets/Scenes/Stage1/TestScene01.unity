@@ -1277,17 +1277,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3584452616051174464, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
+    - {fileID: 8015320046028753853, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5012507004362759126, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 706209477}
   m_SourcePrefab: {fileID: 100100000, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
 --- !u!114 &210034125 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7038311778365337352, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
   m_PrefabInstance: {fileID: 210034123}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 706209465}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b8c96e2cdc154e848a3d9fe62464d42, type: 3}
@@ -5651,6 +5656,48 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &706209465 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5012507004362759126, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
+  m_PrefabInstance: {fileID: 210034123}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &706209477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 706209465}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6903f12ac8ae44a41ba2a44700ec60ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _pc2D: {fileID: 210034125}
+  _serializedAxis: 0
+  UseNumericBoundaries: 1
+  UseTopBoundary: 0
+  TopBoundary: 10
+  TargetTopBoundary: 0
+  UseBottomBoundary: 0
+  BottomBoundary: -10
+  TargetBottomBoundary: 0
+  UseLeftBoundary: 0
+  LeftBoundary: -10
+  TargetLeftBoundary: 0
+  UseRightBoundary: 0
+  RightBoundary: 10
+  TargetRightBoundary: 0
+  IsCameraPositionHorizontallyBounded: 0
+  IsCameraPositionVerticallyBounded: 0
+  CurrentBoundariesTrigger: {fileID: 0}
+  HasFiredTransitionStarted: 0
+  HasFiredTransitionFinished: 0
+  UseSoftBoundaries: 1
+  Softness: 0.5
+  SoftAreaSize: 0.1
+  UseBoundaryDelayOnEnterScene: 0
+  BoundaryDelayFrames: 10
 --- !u!21 &765373970
 Material:
   serializedVersion: 8
@@ -9755,7 +9802,7 @@ Transform:
   m_GameObject: {fileID: 2061483550}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.8, y: -4.1, z: 0}
+  m_LocalPosition: {x: -20, y: -6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
