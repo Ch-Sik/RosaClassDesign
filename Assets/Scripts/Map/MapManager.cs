@@ -31,11 +31,11 @@ public class MapManager : MonoBehaviour
         }
     }
 
-
+    public MapDataSO map;
     public Transform player;
     public ProCamera2D cam;
-    public Vector2Int startPosition;
     //시작할 씬
+    public Transform startPoint;
     public SORoom startRoom;
     //현재 열린 씬
     public SORoom currentRoom;
@@ -93,8 +93,24 @@ public class MapManager : MonoBehaviour
 
     public void MoveStartPoint()
     {
-        player.position = new Vector3(startPosition.x,
-                                      startPosition.y);
+        player.position = startPoint.position;
+    }
+
+    public SORoom GetRoomSOtoConnectedPorts(List<ConnectedPort> ports)
+    {
+        SORoom room = null;
+
+        string flag = "";
+        string sceneName = "";
+
+        flag = ports[0].flag;
+        sceneName = ports[0].scene.SceneName;
+
+        //플래그 없을 때
+        if (string.IsNullOrEmpty(flag))
+            return map.GetSORoomBySceneName(sceneName);
+
+        return null;
     }
 
     public void Enter(PortDirection direction, List<ConnectedPort> ports)
@@ -114,12 +130,16 @@ public class MapManager : MonoBehaviour
         oldRooms = new List<SORoom>(newRooms);
         */
         SORoom oldRoom = currentRoom;
-        currentRoom = ports[0].room;     //flag
+
+        //        currentRoom = ports[0].room;     //flag
+        currentRoom = GetRoomSOtoConnectedPorts(ports);
 
         player.SetParent(transform);
 
         CloseScene(oldRoom);
-        Vector2Int position = ports[0].room.GetRoomPort(direction, ports[0].index).ports[0];
+        //        Vector2Int position = ports[0].room.(direction, ports[0].index).ports[0];
+        //        Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
+        Vector2Int position = currentRoom.GetRoomPort(direction, ports[0].index).ports[0];
         Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
 
         Debug.Log($"{oldRoom.name}에서 {currentRoom.name}으로 이동, {direction}, {destination}");
@@ -170,7 +190,7 @@ public class MapManager : MonoBehaviour
 
         ConnectedPort exitPort = connects[flag];
 
-        Debug.Log($"{exitPort.room.title}의 {GetOppositeDirection(direction)}의 {exitPort.index}의 {port.GetPortPosition(percentage)}연결됨");
+//        Debug.Log($"{exitPort.room.title}의 {GetOppositeDirection(direction)}의 {exitPort.index}의 {port.GetPortPosition(percentage)}연결됨");
 
         Vector3 transportPosition = port.GetPortPosition(percentage);
         if (port.isHorizontal())
@@ -205,7 +225,8 @@ public class MapManager : MonoBehaviour
     public Vector3 GetTransportPostion(ConnectedPort port, PortDirection direction)
     {
         Vector3 position = Vector3.zero;
-        SORoom targetRoom = port.room;
+        //        SORoom targetRoom = port.room;
+        SORoom targetRoom = map.GetSORoomBySceneName(port.scene);
         Vector2Int portPosition = targetRoom.GetPort(direction, port.index).ports[0];
 
         //position += targetRoom.tilemapWorldPosition;

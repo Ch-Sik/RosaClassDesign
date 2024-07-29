@@ -82,29 +82,8 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("넉백 계수")]
     [SerializeField] float knockbackStrength = 1f;
 
-    // 필드값 중 일부는 디버그용으로 Inspector에 노출
-    [FoldoutGroup("Debug")]
-    [VerticalGroup("Debug/Vertical")]
-    [BoxGroup("Debug/Vertical/Component")]
-    [ReadOnly, SerializeField] Rigidbody2D rb;
-
-    [BoxGroup("Debug/Vertical/Component")]
-    [ReadOnly, SerializeField] BoxCollider2D col;
-
-    [BoxGroup("Debug/Vertical/Component")]
-    [ReadOnly, SerializeField] PlayerRef playerRef;
-
-    [BoxGroup("Debug/Vertical/Component")]
-    [ReadOnly, SerializeField] PlayerController playerControl;
-
-    [BoxGroup("Debug/Vertical/General")]
-    [ReadOnly, SerializeField] public GameObject platformBelow = null;
-
-    [BoxGroup("Debug/Vertical/General")]
-    [ReadOnly, SerializeField] public Vector2 moveVector;
-
-    [BoxGroup("Debug/Vertical/General")]
-    [ReadOnly, SerializeField] public LR facingDirection;                 // 플레이어 바라보는 방향
+    [FoldoutGroup("큐브 관련")]
+    [SerializeField] float grabSpeedCoef = 0.5f;
 
     // 플래그
     [FoldoutGroup("플래그")]
@@ -137,6 +116,8 @@ public class PlayerMovement : MonoBehaviour
     [ReadOnly] public bool isDoingSuperDash = false;
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isNotMoveable = false;   // 종합적으로 고려하여 플레이어가 움직일 수 있는지 없는지
+    [FoldoutGroup("플래그")]
+    [ReadOnly] public bool isGrabCube = false;          //큐브를 잡고 있는지
 
     // 범위 지정
     [FoldoutGroup("벽 감지 범위")]
@@ -147,6 +128,34 @@ public class PlayerMovement : MonoBehaviour
     public Vector2 detectWallEndTop = new Vector2(0.0f, 0.5f);
     [FoldoutGroup("벽 감지 범위")]
     public Vector2 detectWallEndBot = new Vector2(0.6f, 0.0f);
+
+    // 필드값 중 일부는 디버그용으로 Inspector에 노출
+    [FoldoutGroup("Debug")]
+    [VerticalGroup("Debug/Vertical")]
+    [BoxGroup("Debug/Vertical/Component")]
+    [ReadOnly, SerializeField] Rigidbody2D rb;
+
+    [BoxGroup("Debug/Vertical/Component")]
+    [ReadOnly, SerializeField] BoxCollider2D col;
+
+    [BoxGroup("Debug/Vertical/Component")]
+    [ReadOnly, SerializeField] PlayerRef playerRef;
+
+    [BoxGroup("Debug/Vertical/Component")]
+    [ReadOnly, SerializeField] PlayerController playerControl;
+
+    [BoxGroup("Debug/Vertical/General")]
+    [ReadOnly, SerializeField] public GameObject platformBelow = null;
+
+    [BoxGroup("Debug/Vertical/General")]
+    [Tooltip("현재 매달려있는 담쟁이")]
+    [ReadOnly, SerializeField] public GameObject hangingIvy = null;
+
+    [BoxGroup("Debug/Vertical/General")]
+    [ReadOnly, SerializeField] public Vector2 moveVector;
+
+    [BoxGroup("Debug/Vertical/General")]
+    [ReadOnly, SerializeField] public LR facingDirection;                 // 플레이어 바라보는 방향
 
     // 타이머 (non-serializable)
     private Timer jumpTimer;                 // 최소 점프 시간을 위한 타이머
@@ -259,7 +268,25 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                rb.velocity = new Vector2(moveVector.x * moveSpeed, rb.velocity.y);
+                //큐브를 옮기는 동안은 이동속도를 조정
+                float xVelocity = moveVector.x * moveSpeed;
+                if (isGrabCube)
+                {
+                    xVelocity *= grabSpeedCoef;
+                    //속도에 따라 값의 조정
+                    if (xVelocity == 0)
+                        playerControl.currentCubeActionState = PlayerCubeActionState.GRAB;
+                    else
+                    {
+                        if (IsFacingDirection(xVelocity))
+                            playerControl.currentCubeActionState = PlayerCubeActionState.PUSH;
+                        else
+                            playerControl.currentCubeActionState = PlayerCubeActionState.PULL;
+                    }
+                }
+                else
+                    playerControl.currentCubeActionState = PlayerCubeActionState.DEFAULT;
+                rb.velocity = new Vector2(xVelocity, rb.velocity.y);
                 LookAt2DLocal(moveVector);
             }
         }
@@ -283,6 +310,10 @@ public class PlayerMovement : MonoBehaviour
     #region 점프 관련
     internal void OnJump(bool pressedDown)
     {
+        //큐브를 옮기는 중엔 점프 불가능
+        if (isGrabCube)
+            return;
+
         if (!isGrounded)
         {
             ReserveJump();       // 공중에서는 점프 선입력
@@ -383,7 +414,7 @@ public class PlayerMovement : MonoBehaviour
 
         // 벽으로부터 떨어지고 상태 바꾸기
         UnstickFromWall();
-        playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
+        playerControl.SetMoveState(PlayerMoveState.DEFAULT);
 
         if (!isSlidingOnWall)
         {
@@ -418,6 +449,10 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="inputVector"></param>
     internal void Climb(Vector2 inputVector)
     {
+        //큐브를 옮기는 중엔 벽타기 불가능
+        if (isGrabCube)
+            return;
+
         Debug.Log("Climbing");
 
         moveVector = inputVector;       // 벽 점프 등을 위해 x축 방향 필터링하지 않음.
@@ -467,11 +502,25 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>
     /// 벽 오르기 상태로 전환
     /// </summary>
-    internal void StickToWall()
+    internal void StickToWall(GameObject ivy)
     {
+        //큐브를 옮기는 중엔 벽에 붙기 불가능
+        if (isGrabCube)
+            return;
+        Debug.Assert(ivy != null);
+
         isWallClimbing = true;
-        playerControl.ChangeMoveState(PlayerMoveState.CLIMBING);
+        playerControl.SetMoveState(PlayerMoveState.CLIMBING);
+        // 액션 state를 no_action으로 변경: 공격 및 새로운 마법 시전 불가능
+        playerControl.SetActionState(PlayerActionState.DISABLED);
+        // 기존에 마법을 준비중이었으면 그것을 취소
+        if(playerRef.Magic.isMagicMode)
+        {
+            playerRef.Magic.CancelMagic();
+        }
         rb.gravityScale = 0;
+        hangingIvy = ivy;
+        transform.parent = ivy.transform;
     }
 
     /// <summary>
@@ -480,9 +529,12 @@ public class PlayerMovement : MonoBehaviour
     internal void UnstickFromWall()
     {
         isWallClimbing = false;
-        playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
+        playerControl.SetMoveState(PlayerMoveState.DEFAULT);
+        playerControl.SetActionState(PlayerActionState.DEFAULT);
         rb.gravityScale = this.gravityScale;
-        
+
+        hangingIvy = null;
+        transform.parent = null;
     }
 
     public void ClimbEnd()
@@ -498,8 +550,11 @@ public class PlayerMovement : MonoBehaviour
             gameObject.transform.position += new Vector3(ClimbEndOffset.x, ClimbEndOffset.y);
         }
 
+        hangingIvy = null;
+        transform.parent = null;
         isWallClimbingTop = false;
-        playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
+        playerControl.SetMoveState(PlayerMoveState.DEFAULT);
+        playerControl.SetActionState(PlayerActionState.DEFAULT);
         rb.gravityScale = this.gravityScale;
     }
 
@@ -521,6 +576,8 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="collision"></param>
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        // Debug.Log($"{collision.gameObject}:{LayerMask.LayerToName(collision.gameObject.layer)}");
+
         if (isDoingSuperDash)
         {
             isDoingSuperDash = false;
@@ -533,8 +590,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 if (isFacingWall && !isSlidingOnWall)
                 {
-
-                    StickToWall();
+                    StickToWall(collision.gameObject);
                     //playerAnim.SetTrigger("ClimbTrigger");
                 }
             }
@@ -547,7 +603,7 @@ public class PlayerMovement : MonoBehaviour
         if (collision.gameObject.layer.Equals(climbableLayer))
         {
             if (isFacingWall && !isSlidingOnWall)
-                StickToWall();
+                StickToWall(collision.gameObject);
         }
     }
 
@@ -597,7 +653,7 @@ public class PlayerMovement : MonoBehaviour
         rb.gravityScale = 0;
         rb.velocity = Vector2.zero;
         moveVector = Vector2.zero;
-        playerControl.ChangeMoveState(PlayerMoveState.SUPERDASH_READY);
+        playerControl.SetMoveState(PlayerMoveState.SUPERDASH_READY);
     }
 
     public void LaunchSuperDash(LR direction)
@@ -605,7 +661,7 @@ public class PlayerMovement : MonoBehaviour
         Debug.Log("Launch Super Dash");
         isDoingSuperDash = true;
         LookAt2DLocal(direction.toVector2());
-        playerControl.ChangeMoveState(PlayerMoveState.SUPERDASH);
+        playerControl.SetMoveState(PlayerMoveState.SUPERDASH);
         moveVector = direction.toVector2() * superDashSpeed;
     }
 
@@ -613,7 +669,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Debug.Log("Cancel Super Dash Before Launch");
         rb.gravityScale = gravityScale;
-        playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
+        playerControl.SetMoveState(PlayerMoveState.DEFAULT);
     }
 
     public void CancelSuperDashAfterLaunch()
@@ -622,7 +678,7 @@ public class PlayerMovement : MonoBehaviour
         isDoingSuperDash = false;
         rb.gravityScale = gravityScale;
         moveVector = Vector2.zero;
-        playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
+        playerControl.SetMoveState(PlayerMoveState.DEFAULT);
     }
 
     public void OnMoveDuringSuperDash(LR direction)
@@ -700,8 +756,19 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public bool IsFacingDirection(float x)
+    { 
+        if ((facingDirection.isLEFT() && x > 0) ||
+            (facingDirection.isRIGHT() && x < 0))
+            return false;
+        return true;
+    }
+
     public void Flip()
     {
+        if (isGrabCube)
+            return;
+
         // 플레이어가 바라보는 방향을 전환
         if (facingDirection.isLEFT()) facingDirection = LR.RIGHT;
         else facingDirection = LR.LEFT;
@@ -730,7 +797,7 @@ public class PlayerMovement : MonoBehaviour
 
         IEnumerator Knockback()
         {
-            playerControl.ChangeMoveState(PlayerMoveState.NO_MOVE);
+            playerControl.SetMoveState(PlayerMoveState.NO_MOVE);
             LookAt2DLocal(-knockbackDirection);     // 넉백되는 방향의 반대편 바라보기
             playerRef.Animation.SetTrigger("Hit");
             playerRef.Animation.ResetTrigger("Grounded");
@@ -747,7 +814,7 @@ public class PlayerMovement : MonoBehaviour
                 waitTime -= Time.deltaTime;
                 yield return null;
             }
-            if(!isGrounded) playerControl.ChangeMoveState(PlayerMoveState.DEFAULT);
+            if(!isGrounded) playerControl.SetMoveState(PlayerMoveState.DEFAULT);
             isKnockbacked = false;
         }
     }

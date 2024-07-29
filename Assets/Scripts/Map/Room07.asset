@@ -13,14 +13,17 @@ MonoBehaviour:
   m_Name: Room07
   m_EditorClassIdentifier: 
   scene:
-    m_SceneAsset: {fileID: 102900000, guid: 8f9c3eaf4cc1c5b4a8a221506284004d, type: 3}
-    m_SceneName: Test7
+    m_SceneAsset: {fileID: 102900000, guid: 902632bbe527b9047bcaeb9e36107ff6, type: 3}
+    m_SceneName: Test4
+  flagName: 
+  flagIndex: 0
   title: "\uC6B8\uCC3D\uD55C \uC232"
   subTitle: 
   size: {x: 30, y: 19}
   offset: {x: 33, y: 0}
   topPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 0
     ports:
     - {x: 50, y: 18}
@@ -31,7 +34,8 @@ MonoBehaviour:
   botPorts: []
   rigPorts: []
   lefPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 3
     ports:
     - {x: 33, y: 2}
@@ -39,7 +43,8 @@ MonoBehaviour:
     - {x: 33, y: 4}
     - {x: 33, y: 5}
     connectedPorts: []
-  - index: 1
+  - flag: 
+    index: 1
     direction: 3
     ports:
     - {x: 33, y: 13}

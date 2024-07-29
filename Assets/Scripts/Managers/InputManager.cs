@@ -43,6 +43,7 @@ public class InputManager : MonoBehaviour
     // 액션 관련
     public InputActionMap AM_ActionDefault;
     public InputActionMap AM_ActionMagicReady;
+    public InputActionMap AM_ActionDisabled;
     // UI 조작 관련
     public InputActionMap AM_UiInGame;
     public InputActionMap AM_UiDialogue;
@@ -74,6 +75,7 @@ public class InputManager : MonoBehaviour
         {
             AM_ActionDefault = _inputAsset.FindActionMap("ActionDefault");
             AM_ActionMagicReady = _inputAsset.FindActionMap("MagicReady");
+            AM_ActionDisabled = _inputAsset.FindActionMap("ActionDisable");
         }
         // 일시정지, 메뉴, 상점 등 UI 관련 Action Map
         {
@@ -150,8 +152,8 @@ public class InputManager : MonoBehaviour
                 case PlayerActionState.MAGIC_READY:
                     AM_ActionMagicReady.Disable();
                     break;
-                case PlayerActionState.NO_ACTION:
-                    // 아무것도 안함
+                case PlayerActionState.DISABLED:
+                    AM_ActionDisabled.Disable();
                     break;
             }
         }
@@ -163,8 +165,8 @@ public class InputManager : MonoBehaviour
             case PlayerActionState.MAGIC_READY:
                 AM_ActionMagicReady.Enable();
                 break;
-            case PlayerActionState.NO_ACTION:
-                // 아무것도 안함
+            case PlayerActionState.DISABLED:
+                AM_ActionDisabled.Enable();
                 break;
             default:
                 Debug.LogError("잘못된 Action State 변환 요청");

@@ -15,38 +15,55 @@ MonoBehaviour:
   scene:
     m_SceneAsset: {fileID: 102900000, guid: 902632bbe527b9047bcaeb9e36107ff6, type: 3}
     m_SceneName: Test4
+  flagName: 
+  flagIndex: 0
   title: "\uBC29 4"
   subTitle: 
   size: {x: 11, y: 13}
   offset: {x: 32, y: 5}
   topPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 0
     ports:
     - {x: 38, y: 17}
     - {x: 39, y: 17}
     - {x: 40, y: 17}
     connectedPorts:
-    - room: {fileID: 11400000, guid: ff55f817abf218d4588524e71304159e, type: 2}
+    - flag: 
+      flagIndex: 0
+      scene:
+        m_SceneAsset: {fileID: 0}
+        m_SceneName: 
       index: 1
   botPorts: []
   rigPorts: []
   lefPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 3
     ports:
     - {x: 32, y: 6}
     - {x: 32, y: 7}
     - {x: 32, y: 8}
     connectedPorts:
-    - room: {fileID: 11400000, guid: f5bff718b2af4804d8d1e0ca95300607, type: 2}
+    - flag: 
+      flagIndex: 0
+      scene:
+        m_SceneAsset: {fileID: 0}
+        m_SceneName: 
       index: 0
-  - index: 1
+  - flag: 
+    index: 1
     direction: 3
     ports:
     - {x: 32, y: 13}
     - {x: 32, y: 14}
     - {x: 32, y: 15}
     connectedPorts:
-    - room: {fileID: 11400000, guid: 3cf4089b2b6dacd48a77eb6bbf861338, type: 2}
+    - flag: 
+      flagIndex: 0
+      scene:
+        m_SceneAsset: {fileID: 0}
+        m_SceneName: 
       index: 0

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
@@ -16,12 +17,15 @@ public class PlayerController : MonoBehaviour
         get { return inputManager._actionState; }
     }
 
+    public PlayerCubeActionState currentCubeActionState = PlayerCubeActionState.DEFAULT;
+
     // 컴포넌트
     [ReadOnly, SerializeField] public InputActionAsset inputAsset;
     [ReadOnly, SerializeField] PlayerMovement playerMove;
     [ReadOnly, SerializeField] PlayerCombat playerCombat;
     [ReadOnly, SerializeField] Rigidbody2D rb;
     [ReadOnly, SerializeField] PlayerAnimation playerAnim;
+    private UnityEvent interactFunction = new UnityEvent();
     
     // private 변수
     private Vector2 moveVector = Vector2.zero;      // 하향점프 판단을 위해 값 보관
@@ -88,9 +92,14 @@ public class PlayerController : MonoBehaviour
 
     // PlayerController.ChangeMoveState를 참조하는 게 많아서 프록시(?)를 두긴 했는데
     // 가능하면 inputManager.ChangeMoveState를 사용할 것.
-    public void ChangeMoveState(PlayerMoveState newMoveState)
+    public void SetMoveState(PlayerMoveState newMoveState)
     {
         inputManager.SetMoveInputState(newMoveState);
+    }
+
+    public void SetActionState(PlayerActionState newActionState)
+    {
+        inputManager.SetActionInputState(newActionState);
     }
 
     #region InputAction 이벤트 핸들러
@@ -117,7 +126,12 @@ public class PlayerController : MonoBehaviour
     }
 
     public void OnInteract(InputAction.CallbackContext context)
-    { }
+    {
+        //특정 상태에서 인터렉트 안 할 시 이곳에서 처리
+        if (interactFunction == null)
+            return;
+        interactFunction.Invoke();
+    }
 
     public void OnClimbMove(InputAction.CallbackContext context)
     {
@@ -214,4 +228,22 @@ public class PlayerController : MonoBehaviour
     #endregion
     #endregion
 
+    #region Interaction관련
+    public void ResetInteraction(bool isGrabAction = false)
+    {
+        if (playerMove.isGrabCube && !isGrabAction)
+            return;
+
+        if (interactFunction != null)
+            interactFunction.RemoveAllListeners();
+    }
+
+    public void SetInteraction(UnityAction action, bool isGrabAction = false)
+    {
+        if (playerMove.isGrabCube && !isGrabAction)
+            return;
+
+        interactFunction.AddListener(action);
+    }
+    #endregion
 }
