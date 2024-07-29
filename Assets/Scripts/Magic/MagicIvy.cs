@@ -59,7 +59,10 @@ public class MagicIvy : MonoBehaviour
         }
 
         // y축 방향 위치 보정
-        magicPos.y = Mathf.Round(magicPos.y - 0.5f) + 0.5f;
+        // 움직이는 플랫폼을 대비해서, grid가 (0,0)에서 얼마나 벗어났는지를 계산해서 보정값에 반영함
+        float gridPosY = targetTilemapGroup.transform.position.y;
+        float gridOffset = gridPosY - Mathf.Floor(gridPosY);        // grid가 (0,0)에서 얼마나 벗어났는지 (소수점 위는 버림)
+        magicPos.y = Mathf.Round(magicPos.y - 0.5f) + 0.5f + gridOffset;
         transform.position = magicPos;
         originCellPos = targetTilemapGroup.WorldToCell(magicPos + new Vector2(0.5f, 0));
 

@@ -92,9 +92,14 @@ public class PlayerController : MonoBehaviour
 
     // PlayerController.ChangeMoveState를 참조하는 게 많아서 프록시(?)를 두긴 했는데
     // 가능하면 inputManager.ChangeMoveState를 사용할 것.
-    public void ChangeMoveState(PlayerMoveState newMoveState)
+    public void SetMoveState(PlayerMoveState newMoveState)
     {
         inputManager.SetMoveInputState(newMoveState);
+    }
+
+    public void SetActionState(PlayerActionState newActionState)
+    {
+        inputManager.SetActionInputState(newActionState);
     }
 
     #region InputAction 이벤트 핸들러

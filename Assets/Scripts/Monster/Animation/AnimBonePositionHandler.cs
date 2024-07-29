@@ -12,12 +12,15 @@ public class AnimBonePositionHandler : MonoBehaviour
     private Blackboard blackboard;
 
     [Title("옵션")]
-    [SerializeField]
-    private bool useAimMotion;
-    [SerializeField, ShowIf("useAimMotion"), Tooltip("공격 도중에는 조준 고정")]
-    private bool stopAimWhenAttack;
-    [SerializeField, ShowIf("useAimMotion")]
-    private string enemyAimBoneName;
+
+    [Tooltip("애니메이션에 Aim 위치 사용")]
+    public bool useAimMotion;
+    [ShowIf("useAimMotion"), Tooltip("공격 도중에는 Aim 고정")]
+    [SerializeField] private bool stopAimWhenAttack;
+    [ShowIf("useAimMotion"), Tooltip("Aim 위치를 반영할 Portrait의 Bone 이름")]
+    [SerializeField] private string enemyAimBoneName;
+    [ShowIf("useAimMotion"), Tooltip("Aim 따라가기 속도")]
+    [SerializeField] private float aimFollowSpeed = 0.3f;
 
     private Vector2 currentAimPos;
 
@@ -56,7 +59,7 @@ public class AnimBonePositionHandler : MonoBehaviour
                 if (enemy != null)
                 {
                     // currentAimPos = Vector2.Lerp(currentAimPos, enemy.transform.position, 0.1f);
-                    currentAimPos = Vector2.MoveTowards(currentAimPos, enemy.transform.position, 0.3f);
+                    currentAimPos = Vector2.MoveTowards(currentAimPos, enemy.transform.position, aimFollowSpeed);
                 }
             }
 
