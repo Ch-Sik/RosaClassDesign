@@ -15,29 +15,31 @@ MonoBehaviour:
   scene:
     m_SceneAsset: {fileID: 102900000, guid: 820891b2ee3f11443a028e3e63cccab7, type: 3}
     m_SceneName: 1-10
+  flagName: 
+  flagIndex: 0
   title: Test-4
   subTitle: 
-  size: {x: 203, y: 51}
-  offset: {x: 2, y: -22}
+  size: {x: 200, y: 51}
+  offset: {x: 4, y: -22}
   topPorts: []
   botPorts: []
   rigPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 2
     ports:
-    - {x: 204, y: 16}
-    - {x: 204, y: 17}
-    - {x: 204, y: 18}
-    - {x: 204, y: 19}
-    - {x: 204, y: 20}
-    - {x: 204, y: 21}
+    - {x: 203, y: 17}
+    - {x: 203, y: 18}
+    - {x: 203, y: 19}
+    - {x: 203, y: 20}
     connectedPorts: []
   lefPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 3
     ports:
-    - {x: 2, y: -3}
-    - {x: 2, y: -2}
-    - {x: 2, y: -1}
-    - {x: 2, y: 0}
+    - {x: 4, y: -3}
+    - {x: 4, y: -2}
+    - {x: 4, y: -1}
+    - {x: 4, y: 0}
     connectedPorts: []

@@ -5947,6 +5947,10 @@ PrefabInstance:
       propertyPath: m_Value
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 11452418, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
+      propertyPath: startMinimized
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 11490438, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
       propertyPath: m_BlockingMask.m_Bits
       value: 2280718079
@@ -8579,11 +8583,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5ad71239beaf0247ad8af28e14a4867, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  map: {fileID: 0}
+  map: {fileID: 11400000, guid: 5b04adb3897b80946b4b67a819695b8c, type: 2}
   player: {fileID: 5262888440015344438}
   cam: {fileID: 210034125}
   startPoint: {fileID: 2061483551}
-  startRoom: {fileID: 11400000, guid: 51c60280808fd81428b49ebeab2c7d9c, type: 2}
+  startRoom: {fileID: 11400000, guid: e9cfa23d658d4ab49b0bea12e7b1236e, type: 2}
   currentRoom: {fileID: 0}
   oldRooms: []
   chapter: {fileID: 1838996231}
