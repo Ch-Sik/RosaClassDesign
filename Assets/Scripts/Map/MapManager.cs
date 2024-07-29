@@ -34,8 +34,8 @@ public class MapManager : MonoBehaviour
     public MapDataSO map;
     public Transform player;
     public ProCamera2D cam;
-    public Vector2Int startPosition;
     //시작할 씬
+    public Transform startPoint;
     public SORoom startRoom;
     //현재 열린 씬
     public SORoom currentRoom;
@@ -93,8 +93,7 @@ public class MapManager : MonoBehaviour
 
     public void MoveStartPoint()
     {
-        player.position = new Vector3(startPosition.x,
-                                      startPosition.y);
+        player.position = startPoint.position;
     }
 
     public SORoom GetRoomSOtoConnectedPorts(List<ConnectedPort> ports)
