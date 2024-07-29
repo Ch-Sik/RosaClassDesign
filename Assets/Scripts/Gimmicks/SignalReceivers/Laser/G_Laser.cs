@@ -10,6 +10,7 @@ public class G_Laser : GimmickSignalReceiver
     public SpriteRenderer sp;
     public LayerMask playerLayerMask;
     public LayerMask obstaclesLayerMask;
+    public float startDelay = 0.0f;
     public float laserMaxLength;
     public bool isActivate = true;      //작동 여부 Activate일 때만 사이클이 작동
     public float onTime = 1.0f;
@@ -23,7 +24,7 @@ public class G_Laser : GimmickSignalReceiver
 
     private void Start()
     {
-        ActivateLaser();
+        Invoke("ActivateLaser", startDelay);
     }
 
     private void Update()
