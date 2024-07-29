@@ -10,12 +10,12 @@ public class MovePlatform : MonoBehaviour
     {
         OnOff,
         Once,
-        Reverse
+        Reverse,
+        EndPoint
     }
 
     [Header("선택")]
     [SerializeField] MovePlatformType type;
-    private bool isOnce = false;             //단발성인지
     public float waitDelay = 0.0f;          //웨이포인트에서 대기할 것인지? 
 
     [Space]
@@ -46,6 +46,14 @@ public class MovePlatform : MonoBehaviour
             case MovePlatformType.Reverse:
                 Reverse();
                 break;
+            case MovePlatformType.EndPoint:
+                if (!isReverse)
+                    return;
+
+                canMove = true;
+                isArrive = false;
+                isReverse = false;
+                break;
         }
     }
 
@@ -63,6 +71,14 @@ public class MovePlatform : MonoBehaviour
             case MovePlatformType.Reverse:
                 Reverse();
                 break;
+            case MovePlatformType.EndPoint:
+                if (isReverse)
+                    return;
+
+                canMove = true;
+                isArrive = false;
+                isReverse = true;
+                break;
         }
     }
 
@@ -70,24 +86,29 @@ public class MovePlatform : MonoBehaviour
     {
         transform.position = points[0].position;
 
-        
-
-        if (type == MovePlatformType.OnOff || type == MovePlatformType.Once)
+        if (type == MovePlatformType.OnOff ||
+            type == MovePlatformType.Once ||
+            type == MovePlatformType.EndPoint)
             canMove = false;
         else
             canMove = true;
+
+        if (type == MovePlatformType.EndPoint)
+            isReverse = true;
     }
 
     void Update()
     {
         if (!canMove) return;
         if (points.Count == 0) return;
-        if (isOnce && isArrive) return;
+        if (type == MovePlatformType.Once && isArrive) return;
+        if (type == MovePlatformType.EndPoint && isArrive) return;
         if (onWait) return;
 
         if (curReverseState != isReverse)
         {
             curReverseState = isReverse;
+
             if (isReverse)
                 currentIndex = (currentIndex - 1) > -1 ? currentIndex - 1 : points.Count - 1;
             else
@@ -104,10 +125,17 @@ public class MovePlatform : MonoBehaviour
             else
                 currentIndex = (currentIndex + 1) % points.Count;
 
-
             // 일회성인지 파악
-            if (isOnce && currentIndex == 0)
+            if (type == MovePlatformType.Once && currentIndex == 0 && !isReverse)
                 isArrive = true;
+            if (type == MovePlatformType.Once && currentIndex == points.Count - 1 && isReverse)
+                isArrive = true;
+
+            if (type == MovePlatformType.EndPoint && currentIndex == 0 && !isReverse)
+                isArrive = true;
+            if (type == MovePlatformType.EndPoint && currentIndex == points.Count - 1 && isReverse)
+                isArrive = true;
+
             // 도착 지연
             if (waitDelay <= 0.0f)
                 return;
@@ -119,7 +147,7 @@ public class MovePlatform : MonoBehaviour
 
     public void Reverse()
     {
-        if (isOnce)
+        if (type == MovePlatformType.Once)
             return;
 
         isReverse = !isReverse;
