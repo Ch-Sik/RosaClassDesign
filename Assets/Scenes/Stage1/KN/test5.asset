@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scene:
     m_SceneAsset: {fileID: 102900000, guid: d7fa286c80b0e4b4e89bb36d98e5fbf4, type: 3}
-    m_SceneName: 1-9 1
+    m_SceneName: test5
   title: 
   subTitle: 
-  size: {x: 190, y: 130}
-  offset: {x: 3, y: -77}
+  size: {x: 177, y: 130}
+  offset: {x: 16, y: -77}
   topPorts: []
   botPorts: []
   rigPorts:
@@ -30,18 +30,12 @@ MonoBehaviour:
     - {x: 192, y: -5}
     - {x: 192, y: -4}
     - {x: 192, y: -3}
-    connectedPorts:
-    - room: {fileID: 11400000, guid: a7888ebe04db4e8409e430f4d2f83113, type: 2}
-      index: 0
+    connectedPorts: []
   lefPorts:
   - index: 0
     direction: 3
     ports:
-    - {x: 3, y: -39}
-    - {x: 3, y: -38}
-    - {x: 3, y: -37}
-    - {x: 3, y: -36}
-    - {x: 3, y: -35}
-    connectedPorts:
-    - room: {fileID: 11400000, guid: 35263d2def4143e44b0928162ab40d28, type: 2}
-      index: 0
+    - {x: 16, y: -43}
+    - {x: 16, y: -42}
+    - {x: 16, y: -41}
+    connectedPorts: []
