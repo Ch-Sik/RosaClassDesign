@@ -97,6 +97,23 @@ public class MapManager : MonoBehaviour
                                       startPosition.y);
     }
 
+    public SORoom GetRoomSOtoConnectedPorts(List<ConnectedPort> ports)
+    {
+        SORoom room = null;
+
+        string flag = "";
+        string sceneName = "";
+
+        flag = ports[0].flag;
+        sceneName = ports[0].scene.SceneName;
+
+        //플래그 없을 때
+        if (string.IsNullOrEmpty(flag))
+            return map.GetSORoomBySceneName(sceneName);
+
+        return null;
+    }
+
     public void Enter(PortDirection direction, List<ConnectedPort> ports)
     {
         /*
@@ -114,15 +131,17 @@ public class MapManager : MonoBehaviour
         oldRooms = new List<SORoom>(newRooms);
         */
         SORoom oldRoom = currentRoom;
-//        currentRoom = ports[0].room;     //flag
+
+        //        currentRoom = ports[0].room;     //flag
+        currentRoom = GetRoomSOtoConnectedPorts(ports);
 
         player.SetParent(transform);
 
         CloseScene(oldRoom);
-//        Vector2Int position = ports[0].room.GetRoomPort(direction, ports[0].index).ports[0];
-//        Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
-
-        Vector3 destination = Vector3.zero;
+        //        Vector2Int position = ports[0].room.(direction, ports[0].index).ports[0];
+        //        Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
+        Vector2Int position = currentRoom.GetRoomPort(direction, ports[0].index).ports[0];
+        Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
 
         Debug.Log($"{oldRoom.name}에서 {currentRoom.name}으로 이동, {direction}, {destination}");
 
@@ -207,8 +226,8 @@ public class MapManager : MonoBehaviour
     public Vector3 GetTransportPostion(ConnectedPort port, PortDirection direction)
     {
         Vector3 position = Vector3.zero;
-//        SORoom targetRoom = port.room;
-        SORoom targetRoom = null;
+        //        SORoom targetRoom = port.room;
+        SORoom targetRoom = map.GetSORoomBySceneName(port.scene);
         Vector2Int portPosition = targetRoom.GetPort(direction, port.index).ports[0];
 
         //position += targetRoom.tilemapWorldPosition;
