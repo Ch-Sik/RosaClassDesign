@@ -82,6 +82,9 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("넉백 계수")]
     [SerializeField] float knockbackStrength = 1f;
 
+    [FoldoutGroup("큐브 관련")]
+    [SerializeField] float grabSpeedCoef = 0.5f;
+
     // 필드값 중 일부는 디버그용으로 Inspector에 노출
     [FoldoutGroup("Debug")]
     [VerticalGroup("Debug/Vertical")]
@@ -137,6 +140,8 @@ public class PlayerMovement : MonoBehaviour
     [ReadOnly] public bool isDoingSuperDash = false;
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isNotMoveable = false;   // 종합적으로 고려하여 플레이어가 움직일 수 있는지 없는지
+    [FoldoutGroup("플래그")]
+    [ReadOnly] public bool isGrabCube = false;          //큐브를 잡고 있는지
 
     // 범위 지정
     [FoldoutGroup("벽 감지 범위")]
@@ -259,7 +264,25 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                rb.velocity = new Vector2(moveVector.x * moveSpeed, rb.velocity.y);
+                //큐브를 옮기는 동안은 이동속도를 조정
+                float xVelocity = moveVector.x * moveSpeed;
+                if (isGrabCube)
+                {
+                    xVelocity *= grabSpeedCoef;
+                    //속도에 따라 값의 조정
+                    if (xVelocity == 0)
+                        playerControl.currentCubeActionState = PlayerCubeActionState.GRAB;
+                    else
+                    {
+                        if (IsFacingDirection(xVelocity))
+                            playerControl.currentCubeActionState = PlayerCubeActionState.PUSH;
+                        else
+                            playerControl.currentCubeActionState = PlayerCubeActionState.PULL;
+                    }
+                }
+                else
+                    playerControl.currentCubeActionState = PlayerCubeActionState.DEFAULT;
+                rb.velocity = new Vector2(xVelocity, rb.velocity.y);
                 LookAt2DLocal(moveVector);
             }
         }
@@ -283,6 +306,10 @@ public class PlayerMovement : MonoBehaviour
     #region 점프 관련
     internal void OnJump(bool pressedDown)
     {
+        //큐브를 옮기는 중엔 점프 불가능
+        if (isGrabCube)
+            return;
+
         if (!isGrounded)
         {
             ReserveJump();       // 공중에서는 점프 선입력
@@ -418,6 +445,10 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="inputVector"></param>
     internal void Climb(Vector2 inputVector)
     {
+        //큐브를 옮기는 중엔 벽타기 불가능
+        if (isGrabCube)
+            return;
+
         Debug.Log("Climbing");
 
         moveVector = inputVector;       // 벽 점프 등을 위해 x축 방향 필터링하지 않음.
@@ -469,6 +500,10 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void StickToWall()
     {
+        //큐브를 옮기는 중엔 벽에 붙기 불가능
+        if (isGrabCube)
+            return;
+
         isWallClimbing = true;
         playerControl.ChangeMoveState(PlayerMoveState.CLIMBING);
         rb.gravityScale = 0;
@@ -700,8 +735,19 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public bool IsFacingDirection(float x)
+    { 
+        if ((facingDirection.isLEFT() && x > 0) ||
+            (facingDirection.isRIGHT() && x < 0))
+            return false;
+        return true;
+    }
+
     public void Flip()
     {
+        if (isGrabCube)
+            return;
+
         // 플레이어가 바라보는 방향을 전환
         if (facingDirection.isLEFT()) facingDirection = LR.RIGHT;
         else facingDirection = LR.LEFT;

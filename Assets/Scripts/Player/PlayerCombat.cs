@@ -264,16 +264,6 @@ public class PlayerCombat : MonoBehaviour
     {
     }
 
-    //AttackObject가 나비에 닿을 경우, 해당 나비데이터를 PlayerCombat에 전달해주고, 그 데이터를 나비에 전달하기 위한 함수
-    public void RideButterFly(Butterfly butterFly)
-    {
-        if (isRidingButterfly)
-            return;
-
-        StopAttack();
-        butterFly.ButterFlyAct(transform);
-    }
-
     private void OnDrawGizmos()
     {
         if (!showGizmo)

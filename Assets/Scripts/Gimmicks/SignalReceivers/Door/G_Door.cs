@@ -16,7 +16,7 @@ public struct cinematicsSetting
 
 public class G_Door : GimmickSignalReceiver
 {
-    [SerializeField] private BoxCollider2D collider;
+    [SerializeField] private BoxCollider2D col;
     [SerializeField] private Transform doorSprite;
     [SerializeField] private float openTime;
     [SerializeField] private float openDelay = 1.5f;                                      //Procam2dCinem은 기본 1초의 Easing 타임을 ㅏㄱ짐.
@@ -28,13 +28,14 @@ public class G_Door : GimmickSignalReceiver
     {
         cam = Camera.main.gameObject;
         cinematics = cam.GetComponent<ProCamera2DCinematics>();
+        col.enabled = true;
     }
 
     public void Init(bool activated)
     {
         if (activated)
         {
-            collider.enabled = false;
+            col.enabled = false;
             doorSprite.localPosition = new Vector3(0, 2.5f, 0);
         }
     }
@@ -47,7 +48,7 @@ public class G_Door : GimmickSignalReceiver
             .Append(doorSprite.DOMoveY(1.5f, openTime * 0.6f).SetRelative(true))
             .AppendCallback(() =>
             {
-                collider.enabled = false;
+                col.enabled = false;
             })
             .Append(doorSprite.DOMoveY(1f, openTime * 0.4f).SetRelative(true));
     }

@@ -49,6 +49,7 @@ public class PlayerState : MonoBehaviour
     }
     public void TakeDamage(int amount) 
     {
+        Debug.Log("피해 입힘 : " + amount);
         stateUI.TakeDamage(amount);
         while (amount > 0)
         {

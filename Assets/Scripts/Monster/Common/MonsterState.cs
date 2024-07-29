@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Panda;
+using Sirenix.OdinInspector;
 
 /// <summary>
 /// 몬스터의 체력 등 상태를 관리. 몬스터가 사망했을 때의 이벤트도 여기서 처리함.
@@ -12,6 +13,7 @@ public class MonsterState : MonoBehaviour
     [SerializeField] private int maxHP = 5;
     [SerializeField, ReadOnly] private int currentHP;
     [SerializeField] private Blackboard blackboard;
+    [HideInInspector] public G_MobCounter mobCounter;
 
     public int HP { get { return currentHP; } }
 
@@ -26,6 +28,7 @@ public class MonsterState : MonoBehaviour
         currentHP = maxHP;
     }
 
+    [Button]
     public void TakeDamage(int dmg)
     {
         currentHP -= dmg;
@@ -59,6 +62,7 @@ public class MonsterState : MonoBehaviour
             yield return new WaitForSeconds(3.0f - frameTime);
 
             // AI Sensor들과 Empty Parent로 묶여있는 것 고려, 부모 삭제
+            mobCounter?.DieSignal();
             Destroy(gameObject.transform.parent.gameObject);
         }
     }
