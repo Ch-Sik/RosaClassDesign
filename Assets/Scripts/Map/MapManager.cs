@@ -142,6 +142,9 @@ public class MapManager : MonoBehaviour
         Vector2Int position = currentRoom.GetRoomPort(direction, ports[0].index).ports[0];
         Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
 
+        Debug.Log($"Scene : {currentRoom.scene.SceneName}");
+        Debug.Log($"position :  {position}, detination : {destination}");
+
         Debug.Log($"{oldRoom.name}에서 {currentRoom.name}으로 이동, {direction}, {destination}");
 
         StartCoroutine(OpenScene(currentRoom, destination));
