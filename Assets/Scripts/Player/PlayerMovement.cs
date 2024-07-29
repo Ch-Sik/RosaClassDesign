@@ -85,30 +85,6 @@ public class PlayerMovement : MonoBehaviour
     [FoldoutGroup("큐브 관련")]
     [SerializeField] float grabSpeedCoef = 0.5f;
 
-    // 필드값 중 일부는 디버그용으로 Inspector에 노출
-    [FoldoutGroup("Debug")]
-    [VerticalGroup("Debug/Vertical")]
-    [BoxGroup("Debug/Vertical/Component")]
-    [ReadOnly, SerializeField] Rigidbody2D rb;
-
-    [BoxGroup("Debug/Vertical/Component")]
-    [ReadOnly, SerializeField] BoxCollider2D col;
-
-    [BoxGroup("Debug/Vertical/Component")]
-    [ReadOnly, SerializeField] PlayerRef playerRef;
-
-    [BoxGroup("Debug/Vertical/Component")]
-    [ReadOnly, SerializeField] PlayerController playerControl;
-
-    [BoxGroup("Debug/Vertical/General")]
-    [ReadOnly, SerializeField] public GameObject platformBelow = null;
-
-    [BoxGroup("Debug/Vertical/General")]
-    [ReadOnly, SerializeField] public Vector2 moveVector;
-
-    [BoxGroup("Debug/Vertical/General")]
-    [ReadOnly, SerializeField] public LR facingDirection;                 // 플레이어 바라보는 방향
-
     // 플래그
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isGrounded = false;
@@ -574,6 +550,8 @@ public class PlayerMovement : MonoBehaviour
             gameObject.transform.position += new Vector3(ClimbEndOffset.x, ClimbEndOffset.y);
         }
 
+        hangingIvy = null;
+        transform.parent = null;
         isWallClimbingTop = false;
         playerControl.SetMoveState(PlayerMoveState.DEFAULT);
         playerControl.SetActionState(PlayerActionState.DEFAULT);
