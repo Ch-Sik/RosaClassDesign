@@ -17,9 +17,25 @@ MonoBehaviour:
     m_SceneName: test1
   title: 
   subTitle: 
-  size: {x: 0, y: 0}
-  offset: {x: 0, y: 0}
+  size: {x: 146, y: 89}
+  offset: {x: 4, y: -12}
   topPorts: []
   botPorts: []
-  rigPorts: []
-  lefPorts: []
+  rigPorts:
+  - index: 0
+    direction: 2
+    ports:
+    - {x: 149, y: 14}
+    - {x: 149, y: 15}
+    - {x: 149, y: 16}
+    - {x: 149, y: 17}
+    connectedPorts: []
+  lefPorts:
+  - index: 0
+    direction: 3
+    ports:
+    - {x: 4, y: -3}
+    - {x: 4, y: -2}
+    - {x: 4, y: -1}
+    - {x: 4, y: 0}
+    connectedPorts: []

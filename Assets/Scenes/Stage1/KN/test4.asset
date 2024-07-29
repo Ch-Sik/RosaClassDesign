@@ -14,45 +14,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scene:
     m_SceneAsset: {fileID: 102900000, guid: 39e96d2e06660524f836a5ddc95004d5, type: 3}
-    m_SceneName: 1-5
+    m_SceneName: test4
   title: 
   subTitle: 
-  size: {x: 124, y: 192}
-  offset: {x: 3, y: -115}
+  size: {x: 56, y: 50}
+  offset: {x: 4, y: -51}
   topPorts: []
   botPorts: []
   rigPorts:
   - index: 0
     direction: 2
     ports:
-    - {x: 126, y: -84}
-    - {x: 126, y: -83}
-    - {x: 126, y: -82}
-    - {x: 126, y: -81}
-    - {x: 126, y: -80}
-    connectedPorts:
-    - room: {fileID: 11400000, guid: 597fdf8ef89dc4c4ca29c8a0c2cc1722, type: 2}
-      index: 0
+    - {x: 59, y: -44}
+    - {x: 59, y: -43}
+    - {x: 59, y: -42}
+    - {x: 59, y: -41}
+    connectedPorts: []
   - index: 1
     direction: 2
     ports:
-    - {x: 126, y: 42}
-    - {x: 126, y: 43}
-    - {x: 126, y: 44}
-    - {x: 126, y: 45}
-    - {x: 126, y: 46}
-    connectedPorts:
-    - room: {fileID: 11400000, guid: a358dd0a7029c974595ff416adfb7558, type: 2}
-      index: 0
+    - {x: 59, y: -11}
+    - {x: 59, y: -10}
+    - {x: 59, y: -9}
+    connectedPorts: []
   lefPorts:
   - index: 0
     direction: 3
     ports:
-    - {x: 3, y: -34}
-    - {x: 3, y: -33}
-    - {x: 3, y: -32}
-    - {x: 3, y: -31}
-    - {x: 3, y: -30}
-    connectedPorts:
-    - room: {fileID: 11400000, guid: 03dbdc517a07bcb4ab611791bc84770e, type: 2}
-      index: 0
+    - {x: 4, y: -34}
+    - {x: 4, y: -33}
+    - {x: 4, y: -32}
+    - {x: 4, y: -31}
+    - {x: 4, y: -30}
+    connectedPorts: []
