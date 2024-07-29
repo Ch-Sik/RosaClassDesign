@@ -83863,8 +83863,16 @@ PrefabInstance:
     m_TransformParent: {fileID: 1419536518}
     m_Modifications:
     - target: {fileID: 2169191205568881796, guid: 4323d699cd9179a4994bc4dfeebfeb9a, type: 3}
+      propertyPath: onTime
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2169191205568881796, guid: 4323d699cd9179a4994bc4dfeebfeb9a, type: 3}
       propertyPath: offTime
-      value: 3
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2169191205568881796, guid: 4323d699cd9179a4994bc4dfeebfeb9a, type: 3}
+      propertyPath: startDelay
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4478779846015214675, guid: 4323d699cd9179a4994bc4dfeebfeb9a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -84807,7 +84815,15 @@ PrefabInstance:
     m_TransformParent: {fileID: 1419536518}
     m_Modifications:
     - target: {fileID: 2169191205568881796, guid: 4323d699cd9179a4994bc4dfeebfeb9a, type: 3}
+      propertyPath: onTime
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2169191205568881796, guid: 4323d699cd9179a4994bc4dfeebfeb9a, type: 3}
       propertyPath: offTime
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2169191205568881796, guid: 4323d699cd9179a4994bc4dfeebfeb9a, type: 3}
+      propertyPath: startDelay
       value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 4478779846015214675, guid: 4323d699cd9179a4994bc4dfeebfeb9a, type: 3}
