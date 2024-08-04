@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Linq;
+using Unity.VisualScripting;
+
 
 
 
@@ -13,15 +15,25 @@ using UnityEditor;
 
 public class Room : MonoBehaviour
 {
+    public bool showGizmos = false;
+
+    public Tilemap tilemap;
+
     [Title("RoomDatas")]
     public SORoom roomData;
-    public Tilemap tilemap;
+    public Tilemap tempTilemap;
 
     public Vector3 tilemapWorldPosition;
 
-    [Title("PreDatas"), FoldoutGroup("PreDatas")]
+    [FoldoutGroup("PreDatas")]
     public TileBase portTile;
+    [FoldoutGroup("PreDatas")]
+    public TileBase dangerTile;
+    [FoldoutGroup("PreDatas")]
+    public TileBase safeTile;
+    [FoldoutGroup("PreDatas")]
     public GameObject triggerParent;
+    [FoldoutGroup("PreDatas")]
     public GameObject trigger;
 
     private void Start()
@@ -92,7 +104,7 @@ public class Room : MonoBehaviour
     [Button]
     public void ClearRoom()
     {
-        tilemap.ClearAllTiles();
+        tempTilemap.ClearAllTiles();
     }
 
     //방의 데이터를 모두 정리함.
@@ -105,7 +117,7 @@ public class Room : MonoBehaviour
         if (!string.IsNullOrEmpty(scenePath))
             roomData.scene.SetScene(AssetDatabase.LoadAssetAtPath(scenePath, typeof(Object)), gameObject.scene.name);
 #endif
-        HashSet<Vector2Int> tilePosition = new HashSet<Vector2Int>(GetTilesPositionInTilemap(tilemap));
+        HashSet<Vector2Int> tilePosition = new HashSet<Vector2Int>(GetTilesPositionInTilemap(tempTilemap));
         int minX = int.MaxValue; int maxX = int.MinValue;
         int minY = int.MaxValue; int maxY = int.MinValue;
 
@@ -123,7 +135,7 @@ public class Room : MonoBehaviour
             if (maxY < tile.y)
                 maxY = tile.y;
 
-            if (tilemap.GetTile((Vector3Int)tile) == portTile)
+            if (tempTilemap.GetTile((Vector3Int)tile) == portTile)
                 tempPort.Add(tile);
         }
 
@@ -139,10 +151,45 @@ public class Room : MonoBehaviour
         roomData.offset = new Vector2Int(minX, minY);
         roomData.size = new Vector2Int(maxX - minX + 1, maxY - minY + 1);
 
+        roomData.safePositions = new HashSet<Vector2Int>(GetSafeLandingPosition());
+
 #if UNITY_EDITOR
         EditorUtility.SetDirty(roomData);
         AssetDatabase.SaveAssets();
 #endif
+    }
+
+    private HashSet<Vector2Int> GetSafeLandingPosition()
+    {
+        HashSet<Vector2Int> tiles = new HashSet<Vector2Int>(GetTilesPositionInTilemap(tilemap));
+        HashSet<Vector2Int> tempTiles = new HashSet<Vector2Int>(GetTilesPositionInTilemap(tempTilemap));
+        HashSet<Vector2Int> safeTiles = new HashSet<Vector2Int>();
+
+        HashSet<Vector2Int> danger = new HashSet<Vector2Int>();
+
+        foreach (Vector2Int tile in tempTiles)
+        {
+            if (tempTilemap.GetTile((Vector3Int)tile) == dangerTile)
+                danger.Add(tile);
+            else if (tempTilemap.GetTile((Vector3Int)tile) == safeTile)
+                safeTiles.Add(tile);
+        }
+
+        foreach (Vector2Int tile in tiles)
+        {
+            Vector2Int pos = tile + Vector2Int.up;
+
+            if (pos.y >= roomData.offset.y + roomData.size.y)
+                continue;
+
+            if (danger.Contains(pos))
+                continue;
+
+            if (!tiles.Contains(pos))
+                safeTiles.Add(pos);
+        }
+
+        return safeTiles;
     }
 
     private List<Vector2Int> GetTilesPositionInTilemap(Tilemap tileMap)
@@ -154,7 +201,15 @@ public class Room : MonoBehaviour
             {
                 Vector3Int localPlace = (new Vector3Int(n, p, (int)tileMap.transform.position.y));
                 if (tileMap.HasTile(localPlace))
+                {
+                    UnityEngine.Tilemaps.TileData data = new UnityEngine.Tilemaps.TileData();
+                    tileMap.GetTile(localPlace).GetTileData(localPlace, tileMap, ref data);
+
+                    if (data.colliderType == Tile.ColliderType.None)
+                        continue;
+
                     availablePlaces.Add((Vector2Int)localPlace);
+                }
             }
         }
 
@@ -256,4 +311,15 @@ public class Room : MonoBehaviour
 
     }
     #endregion
+
+    private void OnDrawGizmos()
+    {
+        if (!showGizmos)
+            return;
+
+        foreach (Vector2Int pos in roomData.safePositions)
+        {
+            Gizmos.DrawCube(new Vector3(pos.x + 0.5f, pos.y + 0.5f), Vector3.one);
+        }
+    }
 }

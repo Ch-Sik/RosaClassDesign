@@ -35,6 +35,7 @@ public class PlayerGroundCheck : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D collision)
     {
+        playerMove.SetRespawnPoint();
         if(!playerMove.isGrounded)
         {
             playerMove.SetIsGrounded(collision.gameObject);
