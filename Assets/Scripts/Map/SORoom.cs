@@ -22,8 +22,6 @@ public class SORoom : ScriptableObject
     public List<RoomPort> rigPorts = new List<RoomPort>();
     public List<RoomPort> lefPorts = new List<RoomPort>();
 
-    public HashSet<Vector2Int> safePositions = new HashSet<Vector2Int>();
-
     #region Port Methods
     public void SetRoomPorts(List<RoomPort> top, List<RoomPort> bot, List<RoomPort> rig, List<RoomPort> lef)
     {

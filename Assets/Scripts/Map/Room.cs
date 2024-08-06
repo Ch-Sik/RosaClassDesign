@@ -36,9 +36,16 @@ public class Room : MonoBehaviour
     [FoldoutGroup("PreDatas")]
     public GameObject trigger;
 
+    public HashSet<Vector2Int> safePositions = new HashSet<Vector2Int>();
+
     private void Start()
     {
         Invoke("Init", 0.5f);
+
+        if (MapManager.Instance != null)
+            MapManager.Instance.room = this;
+
+        safePositions = new HashSet<Vector2Int>(GetSafeLandingPosition());
     }
 
     public void Init()
@@ -151,15 +158,13 @@ public class Room : MonoBehaviour
         roomData.offset = new Vector2Int(minX, minY);
         roomData.size = new Vector2Int(maxX - minX + 1, maxY - minY + 1);
 
-        roomData.safePositions = new HashSet<Vector2Int>(GetSafeLandingPosition());
-
 #if UNITY_EDITOR
         EditorUtility.SetDirty(roomData);
         AssetDatabase.SaveAssets();
 #endif
     }
 
-    private HashSet<Vector2Int> GetSafeLandingPosition()
+    public HashSet<Vector2Int> GetSafeLandingPosition()
     {
         HashSet<Vector2Int> tiles = new HashSet<Vector2Int>(GetTilesPositionInTilemap(tilemap));
         HashSet<Vector2Int> tempTiles = new HashSet<Vector2Int>(GetTilesPositionInTilemap(tempTilemap));
@@ -317,7 +322,7 @@ public class Room : MonoBehaviour
         if (!showGizmos)
             return;
 
-        foreach (Vector2Int pos in roomData.safePositions)
+        foreach (Vector2Int pos in safePositions)
         {
             Gizmos.DrawCube(new Vector3(pos.x + 0.5f, pos.y + 0.5f), Vector3.one);
         }

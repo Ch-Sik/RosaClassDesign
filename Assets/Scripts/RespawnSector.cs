@@ -18,7 +18,7 @@ public class RespawnSector : MonoBehaviour
     {
         if(collision.CompareTag("Player"))
         {
-            respawnManager.SwitchRespawnPoint(respawnPoint);
+            //respawnManager.SwitchRespawnPoint(respawnPoint);
         }
     }
 }

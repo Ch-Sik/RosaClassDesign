@@ -35,6 +35,7 @@ public class MapManager : MonoBehaviour
     public Transform player;
     public ProCamera2D cam;
     //시작할 씬
+    public Room room;
     public Transform startPoint;
     public SORoom startRoom;
     //현재 열린 씬

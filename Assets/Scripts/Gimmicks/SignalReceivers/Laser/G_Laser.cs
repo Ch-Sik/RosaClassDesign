@@ -78,8 +78,7 @@ public class G_Laser : GimmickSignalReceiver
             // 레이캐스트가 어떤 콜라이더와 충돌했을 때
             if (hit.collider.CompareTag("Player"))
             {
-                // 충돌한 콜라이더가 원하는 태그를 가졌는지 확인
-                //Debug.Log("태그를 발견했습니다!");
+                RespawnManager.Instance?.Respawn();
             }
             if (hit.collider.CompareTag("Ground"))
             {

@@ -52364,6 +52364,10 @@ PrefabInstance:
       value: 65535
       objectReference: {fileID: 0}
     - target: {fileID: 5377027198806411859, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
+      propertyPath: tilemap
+      value: 
+      objectReference: {fileID: 1502263020}
+    - target: {fileID: 5377027198806411859, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
       propertyPath: roomData
       value: 
       objectReference: {fileID: 11400000, guid: 697656c0d52fddc48bf6d7ad29dcf78b, type: 2}
@@ -52412,6 +52416,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
+--- !u!1839735485 &1502263020 stripped
+Tilemap:
+  m_CorrespondingSourceObject: {fileID: 3595058535895865111, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
+  m_PrefabInstance: {fileID: 1502263019}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1507726539
 PrefabInstance:
   m_ObjectHideFlags: 0

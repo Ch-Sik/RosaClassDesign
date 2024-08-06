@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
+using UnityEngine.Tilemaps;
 
 
 /// <summary>
@@ -688,24 +689,12 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
 
-    #region 리스폰 관련
-    public void SetRespawnPoint()
-    {
-    }
-
-    public void Respawn()
-    {
-        
-    }
-    #endregion
-
     #region 그라운드 체크. PlayerGroundCheck.cs에서 참조
     public void SetIsGrounded(GameObject belowObject)
     {
         //해당 값이 0일 경우, 플랫폼에 평행하게 진입할 경우 바로 리턴되는 아래와 같은 문제가 있었음.
         //1. 이동하면서 더블점프하면 점프가 안 되는 버그
         //2. A방향으로 더블점프를 착지 전에 -A 방향으로 전환 시 점프 리셋이 안 됌.
-        Debug.Log(11);
         if (rb.velocity.y > 0.1f) return; // 1-way platform의 groundcheck 방지
         if (playerControl.currentMoveState == PlayerMoveState.CLIMBING) return; // climb 중 groundcheck 방지
        
