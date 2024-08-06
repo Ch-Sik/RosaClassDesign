@@ -408,6 +408,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53f8e78a2fcaec24c848dff3c9e1f0e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useAutoCinematic: 1
   type: 0
   waitDelay: 0.5
   showGizmos: 0
@@ -419,3 +420,7 @@ MonoBehaviour:
   onWait: 0
   isReverse: 0
   curReverseState: 0
+  cinematicsSettings:
+  - easeInDur: 1
+    holdDur: 2
+    zoomAmount: 2

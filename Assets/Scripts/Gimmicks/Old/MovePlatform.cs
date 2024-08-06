@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections;
 using Sirenix.OdinInspector;
 using System.Net.Http.Headers;
+using Com.LuisPedroFonseca.ProCamera2D;
 
 public class MovePlatform : MonoBehaviour
 {
@@ -14,8 +15,9 @@ public class MovePlatform : MonoBehaviour
         EndPoint
     }
 
-    [Header("선택")]
-    [SerializeField] MovePlatformType type;
+    [FoldoutGroup("선택"), SerializeField, Tooltip("Cinematic은 OnOff와 Reverse에서만 동작함")]
+    [ShowIf("ShowCinematicOption")]bool useAutoCinematic = true;
+    [FoldoutGroup("선택"), SerializeField] MovePlatformType type;
     public float waitDelay = 0.0f;          //웨이포인트에서 대기할 것인지? 
 
     [Space]
@@ -32,6 +34,25 @@ public class MovePlatform : MonoBehaviour
     public bool curReverseState = false;
     private bool canMove = false;
 
+    GameObject cam;
+    ProCamera2DCinematics cinematics;
+    public List<cinematicsSetting> cinematicsSettings = new List<cinematicsSetting>();
+
+    bool ShowCinematicOption()
+    {
+        switch (type)
+        {
+            case MovePlatformType.OnOff:
+            case MovePlatformType.Reverse:
+                return true;
+            case MovePlatformType.Once:
+            case MovePlatformType.EndPoint:
+                return false;
+        }
+
+        return false;
+    }
+
     [Button]
     public void OnAct()
     {
@@ -39,12 +60,16 @@ public class MovePlatform : MonoBehaviour
         {
             case MovePlatformType.OnOff:
                 canMove = true;
+                if (useAutoCinematic)
+                    Cinematic();
                 break;
             case MovePlatformType.Once:
                 canMove = true;
                 break;
             case MovePlatformType.Reverse:
                 Reverse();
+                if (useAutoCinematic)
+                    Cinematic();
                 break;
             case MovePlatformType.EndPoint:
                 if (!isReverse)
@@ -84,6 +109,9 @@ public class MovePlatform : MonoBehaviour
 
     private void Start()
     {
+        cam = Camera.main.gameObject;
+        cinematics = cam.GetComponent<ProCamera2DCinematics>();
+
         transform.position = points[0].position;
 
         if (type == MovePlatformType.OnOff ||
@@ -97,7 +125,26 @@ public class MovePlatform : MonoBehaviour
             isReverse = true;
     }
 
-    void Update()
+    public void Cinematic()
+    {
+        if (cinematics != null)
+        {
+            while (cinematics.CinematicTargets.Count > 0)
+            {
+                cinematics.CinematicTargets.RemoveAt(0);
+            }
+
+            for (int i = 0; i < cinematicsSettings.Count; i++)
+            {
+                cinematics.AddCinematicTarget(transform, cinematicsSettings[i].easeInDur, cinematicsSettings[i].holdDur, cinematicsSettings[i].zoomAmount);
+            }
+
+            cinematics.Play();
+            //추후에 이벤트 취급으로 하여 플레이어의 조작을 막을 필요가 있음
+        }
+    }
+
+    void FixedUpdate()
     {
         if (!canMove) return;
         if (points.Count == 0) return;

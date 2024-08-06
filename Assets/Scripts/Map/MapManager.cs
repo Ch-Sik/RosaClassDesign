@@ -292,13 +292,11 @@ public class MapManager : MonoBehaviour
                 yield return null;
             }
 
-
             player.SetParent(null);
             player.position = playerPosition;
             cam.MoveCameraInstantlyToPosition(player.position);
 
             chapter.text = room.scene.SceneName;
-
         }
 
         /*
