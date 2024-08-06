@@ -86,6 +86,9 @@ public class PlayerMovement : MonoBehaviour
     [FoldoutGroup("큐브 관련")]
     [SerializeField] float grabSpeedCoef = 0.5f;
 
+    [FoldoutGroup("공격 관련")]
+    [SerializeField] float attackSpeedCoef = 0.5f;
+
     // 플래그
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isGrounded = false;
@@ -262,34 +265,30 @@ public class PlayerMovement : MonoBehaviour
         // DEFAULT 상태라면 좌우 이동
         else
         {
-            // 공격 중에는 이동 불가
-            if(noMoveOnAttack && isDoingAttack)
+            //큐브를 옮기는 동안은 이동속도를 조정
+            float xVelocity = moveVector.x * moveSpeed;
+            if (isGrabCube)
             {
-                rb.velocity = new Vector2(0, rb.velocity.y);
+                xVelocity *= grabSpeedCoef;
+                //속도에 따라 값의 조정
+                if (xVelocity == 0)
+                    playerControl.currentCubeActionState = PlayerCubeActionState.GRAB;
+                else
+                {
+                    if (IsFacingDirection(xVelocity))
+                        playerControl.currentCubeActionState = PlayerCubeActionState.PUSH;
+                    else
+                        playerControl.currentCubeActionState = PlayerCubeActionState.PULL;
+                }
             }
             else
-            {
-                //큐브를 옮기는 동안은 이동속도를 조정
-                float xVelocity = moveVector.x * moveSpeed;
-                if (isGrabCube)
-                {
-                    xVelocity *= grabSpeedCoef;
-                    //속도에 따라 값의 조정
-                    if (xVelocity == 0)
-                        playerControl.currentCubeActionState = PlayerCubeActionState.GRAB;
-                    else
-                    {
-                        if (IsFacingDirection(xVelocity))
-                            playerControl.currentCubeActionState = PlayerCubeActionState.PUSH;
-                        else
-                            playerControl.currentCubeActionState = PlayerCubeActionState.PULL;
-                    }
-                }
-                else
-                    playerControl.currentCubeActionState = PlayerCubeActionState.DEFAULT;
-                rb.velocity = new Vector2(xVelocity, rb.velocity.y);
-                LookAt2DLocal(moveVector);
-            }
+                playerControl.currentCubeActionState = PlayerCubeActionState.DEFAULT;
+
+            if (isDoingAttack)
+                xVelocity *= attackSpeedCoef;
+
+            rb.velocity = new Vector2(xVelocity, rb.velocity.y);
+            LookAt2DLocal(moveVector);
         }
     }
     #endregion
