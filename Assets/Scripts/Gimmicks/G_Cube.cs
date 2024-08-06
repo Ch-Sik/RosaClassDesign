@@ -24,7 +24,7 @@ public class G_Cube : MonoBehaviour
         onGrab = true;
 
         transform.position = new Vector3(transform.position.x,
-                                         grabPosition.position.y + 0.015f);
+                                         grabPosition.position.y + 0.515f);
 
         rb.bodyType = RigidbodyType2D.Kinematic;
         rb.simulated = false;

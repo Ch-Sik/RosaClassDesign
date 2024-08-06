@@ -36,6 +36,9 @@ public class PlayerGrabCube : MonoBehaviour
 
     public void UnGrab()
     {
+        if (!onGrab)
+            return;
+
         curCube.GetComponent<G_Cube>().UnGrab();
 
         canGrab = true;

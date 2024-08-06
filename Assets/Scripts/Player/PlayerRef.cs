@@ -30,6 +30,7 @@ public class PlayerRef : MonoBehaviour
     public PlayerMovement Move;
     public PlayerMagic Magic;
     public PlayerCombat combat;
+    public PlayerGrabCube GrabCube;
     
     public PlayerAnimation Animation;
     public PlayerSound sound;
@@ -50,6 +51,7 @@ public class PlayerRef : MonoBehaviour
         if(Move == null) Move = GetComponent<PlayerMovement>();
         if(Magic == null) Magic = GetComponent<PlayerMagic>();
         if(combat == null) combat = GetComponent<PlayerCombat>();
+        if (GrabCube == null) GrabCube = GetComponentInChildren<PlayerGrabCube>();
         if(Animation == null) Animation = GetComponent<PlayerAnimation>();
         if(sound == null) sound = GetComponent<PlayerSound>();
 

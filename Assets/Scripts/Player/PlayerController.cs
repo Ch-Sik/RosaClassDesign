@@ -182,7 +182,9 @@ public class PlayerController : MonoBehaviour
     #region PlayerAction ActionMap 핸들러
     public void OnMeleeAttack(InputAction.CallbackContext context)
     {
-        
+        if (playerMove.isGrabCube)
+            PlayerRef.Instance.GrabCube.UnGrab();
+
         if (currentMoveState != PlayerMoveState.CLIMBING)
         {
             //if(!playerCombat.isAttack) playerAnim.SetTrigger("Attack");

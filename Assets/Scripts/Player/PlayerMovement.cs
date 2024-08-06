@@ -311,9 +311,9 @@ public class PlayerMovement : MonoBehaviour
     #region 점프 관련
     internal void OnJump(bool pressedDown)
     {
-        //큐브를 옮기는 중엔 점프 불가능
+        //큐브를 옮기는 중이라면, 큐브를 놓아버림
         if (isGrabCube)
-            return;
+            PlayerRef.Instance.GrabCube.UnGrab();
 
         if (!isGrounded)
         {
