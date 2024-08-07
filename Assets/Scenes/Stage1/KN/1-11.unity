@@ -477,7 +477,7 @@ TilemapRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0.5000005, z: 0}
+  m_ChunkCullingBounds: {x: 0.0031446815, y: 0.5000005, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -35766,63 +35766,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 775094319}
   m_CullTransparentMesh: 1
---- !u!1001 &796153659
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1141028536866704608, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 35.628586
-      objectReference: {fileID: 0}
-    - target: {fileID: 1141028536866704608, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 13.879997
-      objectReference: {fileID: 0}
-    - target: {fileID: 1141028536866704608, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1141028536866704608, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1141028536866704608, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1141028536866704608, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1141028536866704608, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1141028536866704608, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1141028536866704608, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1141028536866704608, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8731468078630190448, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
-      propertyPath: m_Name
-      value: Worm
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 7c1e59e430a5c074eb452426145ffa00, type: 3}
 --- !u!1001 &885718333
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37776,6 +37719,14 @@ PrefabInstance:
     - target: {fileID: 4520447404637267053, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599334112030463462, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
+      propertyPath: m_ChunkCullingBounds.x
+      value: 0.0031446815
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599334112030463462, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
+      propertyPath: m_ChunkCullingBounds.y
+      value: 0.0031446815
       objectReference: {fileID: 0}
     - target: {fileID: 7633424491403140428, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
       propertyPath: m_Size.x
@@ -50299,6 +50250,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7599334112030463462, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
+      propertyPath: m_ChunkCullingBounds.x
+      value: 0.0031446815
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599334112030463462, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
+      propertyPath: m_ChunkCullingBounds.y
+      value: 0.0031446815
+      objectReference: {fileID: 0}
     - target: {fileID: 7633424491403140428, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
       propertyPath: m_Size.x
       value: 141
@@ -58818,7 +58777,6 @@ SceneRoots:
   - {fileID: 307226833}
   - {fileID: 443039653}
   - {fileID: 988219591}
-  - {fileID: 796153659}
   - {fileID: 1378897797}
   - {fileID: 177166950}
   - {fileID: 623373043}

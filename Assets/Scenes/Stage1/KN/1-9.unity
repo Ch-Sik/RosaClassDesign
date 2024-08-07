@@ -1303,6 +1303,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53f8e78a2fcaec24c848dff3c9e1f0e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useAutoCinematic: 1
   type: 0
   waitDelay: 0
   showGizmos: 0
@@ -1314,6 +1315,7 @@ MonoBehaviour:
   onWait: 0
   isReverse: 0
   curReverseState: 0
+  cinematicsSettings: []
 --- !u!1 &204481086
 GameObject:
   m_ObjectHideFlags: 0
@@ -1426,7 +1428,7 @@ TilemapRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0.5000005, z: 0}
+  m_ChunkCullingBounds: {x: 0.0031446815, y: 0.5000005, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -38707,7 +38709,7 @@ TilemapRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 0.0031446815, y: 0.0031446815, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -39328,11 +39330,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4889714717349398131, guid: 3fd5e9f8389190246a9304773330ac40, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4889714717349398131, guid: 3fd5e9f8389190246a9304773330ac40, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4889714717349398131, guid: 3fd5e9f8389190246a9304773330ac40, type: 3}
       propertyPath: m_LocalPosition.x
@@ -44146,11 +44148,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4889714717349398131, guid: 3fd5e9f8389190246a9304773330ac40, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4889714717349398131, guid: 3fd5e9f8389190246a9304773330ac40, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4889714717349398131, guid: 3fd5e9f8389190246a9304773330ac40, type: 3}
       propertyPath: m_LocalPosition.x
