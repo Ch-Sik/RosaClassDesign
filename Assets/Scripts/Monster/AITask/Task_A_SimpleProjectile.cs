@@ -73,7 +73,7 @@ public class Task_A_SimpleProjectile : Task_A_Base
         // fixedDirection 옵션이라면 지정된 방향으로 enemyPosition 고정.
         if (projectileDirOption == ProjectileDirOption.FixedDirection)
         {
-            enemyPosition = transform.position + fixedTarget.position;
+            enemyPosition = fixedTarget.position;
         }
         // fixedDirection 옵션이 아니라면, 블랙보드에서 '적' 정보 가져오기
         else
@@ -110,7 +110,7 @@ public class Task_A_SimpleProjectile : Task_A_Base
         // 발사 방향 결정
         if (projectileDirOption == ProjectileDirOption.FixedDirection)
         {
-            attackDir = Vector2.right * gameObject.transform.localScale.x;
+            attackDir = (fixedTarget.position - transform.position).normalized;
         }
         else
         {

@@ -77,12 +77,13 @@ public class PlayerDamageInflictor : MonoBehaviour
         // 몬스터 등등과 충돌한다면,
         if ((layer_attackable & 1 << collision.gameObject.layer) != 0)
         {
-            Debug.Log($"플레이어 공격: {collision.gameObject.name}");
             DamageReceiver receiver = collision.GetComponent<DamageReceiver>();
-            receiver.GetHitt(Mathf.RoundToInt(PlayerRef.Instance.State.AttackDmg * damagePercent), attackAngle);
+            receiver?.GetHitt(Mathf.RoundToInt(PlayerRef.Instance.State.AttackDmg * damagePercent), attackAngle);
             playerCombat.StopAttack();
         }
 
+        /*
+        //더 이상 나비와의 충돌이 아니기에 삭제함.
         //나비와 충돌한다면,
         if ((layer_butterfly.value & 1 << collision.gameObject.layer) > 0 &&
             playerCombat.canInteraction)
@@ -93,5 +94,6 @@ public class PlayerDamageInflictor : MonoBehaviour
             //PlayerCombat에 RideButterFly함수를 실행시키며, 나비의 부모 데이터를 전달한다.
             playerCombat.RideButterFly(collision.transform.parent.GetComponentInChildren<Butterfly>());
         }
+        */
     }
 }

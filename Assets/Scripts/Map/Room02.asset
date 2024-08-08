@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: Room02
   m_EditorClassIdentifier: 
   scene:
-    m_SceneAsset: {fileID: 102900000, guid: fc3ffa640de7f1e438c32e887b629981, type: 3}
-    m_SceneName: Test2
+    m_SceneAsset: {fileID: 102900000, guid: 902632bbe527b9047bcaeb9e36107ff6, type: 3}
+    m_SceneName: Test4
+  flagName: 
+  flagIndex: 0
   title: "\uBC29 2"
   subTitle: 
   size: {x: 11, y: 12}
@@ -22,13 +24,18 @@ MonoBehaviour:
   topPorts: []
   botPorts: []
   rigPorts:
-  - index: 0
+  - flag: 
+    index: 0
     direction: 2
     ports:
     - {x: 0, y: 14}
     - {x: 0, y: 15}
     - {x: 0, y: 16}
     connectedPorts:
-    - room: {fileID: 11400000, guid: 3cf4089b2b6dacd48a77eb6bbf861338, type: 2}
+    - flag: 
+      flagIndex: 0
+      scene:
+        m_SceneAsset: {fileID: 0}
+        m_SceneName: 
       index: 0
   lefPorts: []

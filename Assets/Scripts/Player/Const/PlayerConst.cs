@@ -15,9 +15,16 @@ public enum PlayerActionState
 {
     DEFAULT,
     MAGIC_READY,
-    NO_ACTION,  // 대화 등으로 인해 공격이 불가능한 상태
+    DISABLED,  // 대화 등으로 인해 공격이 불가능한 상태
 }
 
+public enum PlayerCubeActionState
+{
+    DEFAULT,           //플레이어가 큐브를 집지 않은 상태
+    GRAB,           //플레이어가 큐브를 집은 상태
+    PUSH,           //플레이어가 큐브를 집고 미는 상태
+    PULL            //플레이어가 큐브를 집고 당기는 상태
+}
 
 /// Util/Enums.cs로 옮겨짐.
 /*

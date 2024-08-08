@@ -1,7 +1,6 @@
 using Com.LuisPedroFonseca.ProCamera2D;
 using DG.Tweening;
 using Sirenix.OdinInspector;
-using Sirenix.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,7 +17,7 @@ public class Butterfly : MonoBehaviour
     public Color gizmoColor = Color.red;                //라인 구분을 위한 기즈모 컬러 세팅
     [ShowInInspector] bool onWayTracking = false;       //waytacking을 하고 있는가?
 
-    [ShowInInspector] private Vector3[] waypoints;      //연결된 웨이포인트 점의 집합
+    [ShowInInspector] private Vector2[] waypoints;      //연결된 웨이포인트 점의 집합
     [ShowInInspector] private float distance;           //웨이포인트 점을 따라 갈 때의 거리
 
     [ShowInInspector] private GameObject direction;     //디렉션 표시
@@ -27,6 +26,8 @@ public class Butterfly : MonoBehaviour
     public Transform waypointsTransform;                //웨이포인트점들의 부모 오브젝트
 
     Transform riderTF;                                  //현재 나비를 탄 대상의 트랜스폼
+
+    public InteractiveObject interactiveObject;
 
     public Vector2 startPoint;
     public Vector2 endPoint;
@@ -40,6 +41,7 @@ public class Butterfly : MonoBehaviour
         SetData();
         InitPosition();
         InitDirection();
+        SetInteractive();
     }
 
     public void InitDirection()
@@ -72,14 +74,35 @@ public class Butterfly : MonoBehaviour
         DistanceCalcultor();
     }
 
+    public void SetInteractive()
+    {
+        if (isCaged)
+            interactiveObject.canUse = false;
+    }
+
     private void InitPosition()
     {
         if(!isCaged)
             transform.position = waypoints[0];
     }
 
+    public void RideButterFly()
+    {
+        Debug.Log("ButterFlyAct");
+        if (PlayerRef.Instance.combat.isRidingButterfly)
+            return;
+
+        PlayerRef.Instance.combat.StopAttack();
+        ButterFlyAct(PlayerRef.Instance.transform);
+    }
+
+    public void Release()
+    {
+        interactiveObject.canUse = true;
+
+    }
+
     //나비가 날게 되는 핵심 코드
-    [Button]
     public void ButterFlyAct(Transform player)
     {
         if (onWayTracking)
@@ -95,9 +118,10 @@ public class Butterfly : MonoBehaviour
             HideDirection();
         })
         //플레이어의 위치를 나비의 위치로 0.3초 동안 이동시킨다.
-        .Append(player.DOMove(transform.position, 0.3f))
+        .Append(player.GetComponent<Rigidbody2D>().DOMove(transform.position, 0.3f))
         //나비의 자식으로 플레이어가 있기에, 나비를 이동시키며 플레이어를 동시에 이동시킨다. 이때 나비는 waypoints를 순차적으로 방문한다.
-        .Append(transform.DOPath(waypoints, distance / 10))  // 속도 버프
+        .Append(transform.GetComponent<Rigidbody2D>().DOPath(waypoints, distance / 10))  // 속도 버프
+        .Join(player.GetComponent<Rigidbody2D>().DOPath(waypoints, distance / 10))
         //DOPath 완료후 세팅 // tracking 여부를 false로 설정하고, 트래킹을 초기화 하며, 플레이어를 내리게한다.
         .AppendCallback(() =>
         {
@@ -126,11 +150,14 @@ public class Butterfly : MonoBehaviour
     public void Ride(Transform playerTF)
     {
         // 나비 탑승 중 떨림을 막기 위해 나비 탑승중에는 카메라 업데이트 모드를 LateUpdate로 바꿈 
-        Camera.main.GetComponent<ProCamera2D>().UpdateType = Com.LuisPedroFonseca.ProCamera2D.UpdateType.LateUpdate;
+        //Camera.main.GetComponent<ProCamera2D>().UpdateType = Com.LuisPedroFonseca.ProCamera2D.UpdateType.LateUpdate;
 
         riderTF = playerTF;                                         //탑승자 데이터를 저장한다.
-        playerTF.SetParent(transform);                            //플레이어를 자식으로 설정해준다.
+        //playerTF.SetParent(transform);                            //플레이어를 자식으로 설정해준다.
         transform.GetComponent<Collider2D>().enabled = false;   //나비와의 재충돌을 대비해 콜라이더를 끈다.
+
+        playerTF.GetComponent<Collider2D>().enabled = false;
+
         savedGravity = PlayerRef.Instance.rb.gravityScale;
         PlayerRef.Instance.rb.gravityScale = 0;
         // 낙하 or 상승 중일 떄 velocityY가 남아있는 것을 고려하여 속도를 초기화시킨다.
@@ -141,10 +168,14 @@ public class Butterfly : MonoBehaviour
     public void UnRide()
     {
         // 나비에서 내린 후 카메라 업데이트 모드를 원상복구
-        Camera.main.GetComponent<ProCamera2D>().UpdateType = Com.LuisPedroFonseca.ProCamera2D.UpdateType.FixedUpdate;
+        //Camera.main.GetComponent<ProCamera2D>().UpdateType = Com.LuisPedroFonseca.ProCamera2D.UpdateType.FixedUpdate;
 
-        riderTF.SetParent(null);                                  //탑승자를 내린다.
+        //riderTF.SetParent(null);                                  //탑승자를 내린다.
+
+        riderTF.GetComponent<Collider2D>().enabled = true;
         transform.GetComponent<Collider2D>().enabled = true;    //나비의 재활성화
+
+
         PlayerRef.Instance.rb.gravityScale = savedGravity;
     }
 
@@ -153,7 +184,7 @@ public class Butterfly : MonoBehaviour
     {
         int count = waypointsTransform.childCount;          //Waypoint 자식의 개수
 
-        waypoints = new Vector3[count];
+        waypoints = new Vector2[count];
 
         for (int i = 0; i < count; i++)                 //자식을 순회하며 waypoint를 설정해준다.
             waypoints[i] = waypointsTransform.GetChild(i).position;

@@ -2,15 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using Unity.VisualScripting;
-using Sirenix.Utilities;
-using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
 using Sirenix.OdinInspector;
 
 [CreateAssetMenu(menuName = "", fileName = "")]
 public class SORoom : ScriptableObject
 {
     public SceneField scene;
+    public string flagName;
+    public int flagIndex;
     public string title;
     public string subTitle;
 
@@ -73,13 +72,13 @@ public class SORoom : ScriptableObject
         switch (direction)
         {
             case PortDirection.Top:
-                return topPorts[index].connectedPorts[flag].room;
+//                return topPorts[index].connectedPorts[flag].room;
             case PortDirection.Bot:
-                return botPorts[index].connectedPorts[flag].room;
+//                return botPorts[index].connectedPorts[flag].room;
             case PortDirection.Rig:
-                return rigPorts[index].connectedPorts[flag].room;
+//                return rigPorts[index].connectedPorts[flag].room;
             case PortDirection.Lef:
-                return lefPorts[index].connectedPorts[flag].room;
+//                return lefPorts[index].connectedPorts[flag].room;
 
             default: return null;
         }
@@ -117,6 +116,14 @@ public class SORoom : ScriptableObject
             default: return null;
         }
     }
+
+    public void ClearConnectedPort()
+    {
+        foreach (RoomPort port in topPorts) { port.connectedPorts = new List<ConnectedPort>(); }
+        foreach (RoomPort port in botPorts) { port.connectedPorts = new List<ConnectedPort>(); }
+        foreach (RoomPort port in rigPorts) { port.connectedPorts = new List<ConnectedPort>(); }
+        foreach (RoomPort port in lefPorts) { port.connectedPorts = new List<ConnectedPort>(); }
+    }
     #endregion
 }
 
@@ -124,6 +131,7 @@ public class SORoom : ScriptableObject
 [Serializable]
 public class RoomPort
 {
+    public string flag;
     public int index;
     public PortDirection direction;
     public List<Vector2Int> ports = new List<Vector2Int>();
@@ -140,15 +148,14 @@ public class RoomPort
     {
         List<SORoom> scenes = new List<SORoom>();
 
-        foreach (ConnectedPort port in connectedPorts)
-            scenes.Add(port.room);
+ //       foreach (ConnectedPort port in connectedPorts)
+ //           scenes.Add(port.room);
 
         return scenes;
     }
 
     // 5 11인 관문이 있다고 했을 때, 8로 진입 시, 8 / 16, 0.5
     // 들어온 포지션, 0~최대의 합
-    [Button]
     public float GetPortPercentage(Vector3 position)
     {
         float percentage = 0.0f;
@@ -163,7 +170,6 @@ public class RoomPort
         return percentage;
     }
 
-    [Button]
     public Vector3 GetPortPosition(float percentage)
     { 
         Vector3 position = new Vector3();
@@ -174,7 +180,6 @@ public class RoomPort
         return new Vector3((ports[ports.Count - 1].x - ports[0].x) * percentage + ports[0].x, ports[0].y);
     }
 
-    [Button]
     public bool isHorizontal()
     {
         Vector2Int value = ports[0] - ports[1];
@@ -188,8 +193,26 @@ public class RoomPort
 [Serializable]
 public class ConnectedPort
 {
-    public SORoom room;
+    public string flag;
+    public int flagIndex;
+    public SceneField scene;
     public int index;
+
+    public ConnectedPort(SceneField scene, int index, string flagName, int flagIndex)
+    {
+        Debug.Log(flagName + " " + flagIndex);
+
+        this.scene = scene;
+        this.index = index;
+        this.flag = flagName;
+        this.flagIndex = flagIndex;
+    }
+
+    public ConnectedPort(SceneField scene, int index)
+    {
+        this.scene = scene;
+        this.index = index;
+    }
 }
 #endregion
 

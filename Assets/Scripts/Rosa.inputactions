@@ -765,6 +765,34 @@
             ]
         },
         {
+            "name": "ActionDisable",
+            "id": "bbab9a88-d515-405b-b860-586b397231bb",
+            "actions": [
+                {
+                    "name": "Aim",
+                    "type": "Value",
+                    "id": "8fdbed1e-958c-4825-99e1-5959e242fd34",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "cd4ba127-bbf8-4e3f-ab5d-90f703e7c381",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Aim",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
             "name": "=========== UI ===========",
             "id": "5e995706-df2f-43fd-89a2-dfbc1a90b430",
             "actions": [
