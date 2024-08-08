@@ -12581,8 +12581,11 @@ namespace AnyPortrait
 			else
 			{
 				// local up 고정 빌보드
-				_transform.rotation = Quaternion.LookRotation(_mainCamera.Forward, Vector3.up) * transform.parent.rotation;
-            }
+				if (transform.parent != null)
+					_transform.rotation = Quaternion.LookRotation(_mainCamera.Forward, Vector3.up) * transform.parent.rotation;
+				else
+					_transform.rotation = Quaternion.LookRotation(_mainCamera.Forward, Vector3.up);
+			}
 
 			
 			//카메라 좌표계에서의 Z값 (ZDepth)
