@@ -37,8 +37,8 @@ public class MonsterAOE : MonoBehaviour
     }
 
     public void ExecuteAttack()
-    {
-        Debug.Log("범위 공격 수행");
+     {
+        // Debug.Log("범위 공격 수행");
         collider.enabled = true;
         // TODO: 공격 활성화의 시각화를 제대로 된 공격 이펙트로 바꾸기
         renderer.color = activatedColor;
@@ -50,7 +50,7 @@ public class MonsterAOE : MonoBehaviour
 
     public void CancelAttack()
     {
-        Debug.Log("공격 취소");
+        // Debug.Log("공격 취소");
         if (destroyOnAttackEnd)
             Destroy(gameObject);
         else

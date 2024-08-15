@@ -256,7 +256,7 @@ public class MonsterDamageReceiver : DamageReceiver
             for (int i = 1; i <= step; i++)
             {
                 Color newColor = Color.Lerp(defaultColor, goalColor, i / (float)step);
-                Debug.Log("newColor: " + newColor);
+                // Debug.Log("newColor: " + newColor);
                 portrait.SetMeshColorAll(newColor);
                 yield return new WaitForSeconds(fadeTick);
             }
