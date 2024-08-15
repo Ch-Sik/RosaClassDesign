@@ -1,4 +1,5 @@
 using AnyPortrait;
+using Panda;
 using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ public class MonsterDamageReceiver : DamageReceiver
     [SerializeField] MonsterState monsterState;
     [SerializeField] new Rigidbody2D rigidbody;
     [SerializeField] apPortrait portrait; // 몬스터 피격 시 깜빡이는 연출에 필요
-
+    [SerializeField] PandaBehaviour pandaBT;
 
     [Title("슈퍼 아머 옵션")]
 
@@ -40,6 +41,9 @@ public class MonsterDamageReceiver : DamageReceiver
     [Title("사망 관련 옵션")]
 
     [SerializeField] private bool useRagdoll;       // 사망 시에 이리저리 굴러다니게 하는 효과 사용할 것인지?
+    [SerializeField] private bool addTorqueOnDie;   // 사망 시에 랜덤 회전 값 부여
+    [ShowIf("addTorqueOnDie")]
+    [SerializeField] private float maxTorqueOnDie;  // 부여할 랜덤 회전 값 최대치
 
 
     bool isAlive = true;
@@ -62,7 +66,8 @@ public class MonsterDamageReceiver : DamageReceiver
         }
 
         // 넉백계수가 0인 적은 넉백 적용을 위한 rigidbody 필요 없음
-        if (knockbackCoeff > float.Epsilon && rigidbody == null)
+        // but, 래그돌 효과 사용한다면 rigidbody 필요함
+        if ((knockbackCoeff > float.Epsilon || useRagdoll ) && rigidbody == null)
         {
             rigidbody = GetComponent<Rigidbody2D>();
             Debug.Assert(rigidbody != null, $"{gameObject.name}: Rigidbody2D를 찾을 수 없음!");
@@ -77,6 +82,17 @@ public class MonsterDamageReceiver : DamageReceiver
                 Debug.LogWarning("apPortrait를 찾을 수 없음!", gameObject);
             }
         }
+
+        if (pandaBT == null)
+        {
+            pandaBT = GetComponent<PandaBehaviour>();
+            Debug.Assert(pandaBT != null, $"{gameObject.name}: Panda Behaviour를 찾을 수 없음!");
+        }
+    }
+
+    protected virtual void InitFields()
+    {
+
     }
 
     public override void GetHitt(int damage, float attackAngle)
@@ -191,12 +207,25 @@ public class MonsterDamageReceiver : DamageReceiver
     private void OnDie()
     {
         isAlive = false;
+        if(pandaBT != null)
+            pandaBT.enabled = false;
         if (useRagdoll)
         {
             rigidbody.isKinematic = false;
             rigidbody.gravityScale = 1;
+            rigidbody.freezeRotation = false;
         }
+        if (addTorqueOnDie)
+            AddTorque();
         FadeEffect();
+    }
+
+    // 래그돌 효과 사용할 때 회전값 부여하기
+    private void AddTorque()
+    {
+        float randomTorque = Random.Range(-maxTorqueOnDie, maxTorqueOnDie);
+        rigidbody.AddTorque(randomTorque);
+        Debug.Log($"사망 시 랜덤 회전값 부여: {randomTorque}");
     }
 
     // 사망했을 때 스프라이트 색 어두워지기
