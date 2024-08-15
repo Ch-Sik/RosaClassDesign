@@ -17,25 +17,35 @@ public class Task_A_Base : Task_Base
     protected Blackboard blackboard = null;
     protected MonsterDamageReceiver dmgReceiver = null;
 
+    [FoldoutGroup("기본 설정")]
+    [Tooltip("블랙보드에 공격 상태 반영")]
+    [SerializeField] protected bool writeStateOnBlackboard = true;
 
     [FoldoutGroup("기본 설정")]
-    [SerializeField]
-    protected float startupDuration;
-    [FoldoutGroup("기본 설정"), SerializeField]
+    [Tooltip("패턴 ID 사용")]
+    [SerializeField] protected bool usePatternID;
+    [FoldoutGroup("기본 설정"), ShowIf("usePatternID")]
+    [Tooltip("몬스터가 복수의 패턴을 가지고 있을 때, 패턴간 구분용 ID\n" +
+        "-1은 현재 공격을 수행중이지 않은 것으로 예약")]
+    [SerializeField] protected int patternID;
+
+    [FoldoutGroup("기본 설정")]
+    [SerializeField] protected float startupDuration;
+    [FoldoutGroup("기본 설정")]
     [Tooltip("패턴이 StartupTime일 때 슈퍼아머 부여")]
-    protected bool superArmourOnStartup = true;
+    [SerializeField] protected bool superArmourOnStartup = true;
 
-    [FoldoutGroup("기본 설정"), SerializeField]
-    protected float activeDuration;
-    [FoldoutGroup("기본 설정"), SerializeField]
+    [FoldoutGroup("기본 설정")]
+    [SerializeField] protected float activeDuration;
+    [FoldoutGroup("기본 설정")]
     [Tooltip("패턴이 ActiveTime일 때 슈퍼아머 부여")]
-    protected bool superArmourOnActive = true;
+    [SerializeField] protected bool superArmourOnActive = true;
 
-    [FoldoutGroup("기본 설정"), SerializeField]
-    protected float recoveryDuration;
-    [FoldoutGroup("기본 설정"), SerializeField]
+    [FoldoutGroup("기본 설정")]
+    [SerializeField] protected float recoveryDuration;
+    [FoldoutGroup("기본 설정")]
     [Tooltip("패턴이 RecoveryTime일 때 슈퍼아머 부여")]
-    protected bool superArmourOnRecovery = true;
+    [SerializeField] protected bool superArmourOnRecovery = true;
 
     protected Timer startupTimer;
     protected Timer activeTimer;
@@ -47,7 +57,8 @@ public class Task_A_Base : Task_Base
         get { return currentState; }
         set {
             currentState = value;
-            blackboard.Set(BBK.AttackState, (int)currentState); 
+            if(writeStateOnBlackboard)
+                blackboard.Set(BBK.AttackState, (int)currentState); 
         } 
     }
     [SerializeField]
@@ -76,6 +87,8 @@ public class Task_A_Base : Task_Base
                 // 선딜레이 첫 프레임
                 // 필드 값 설정
                 attackState = MonsterAtttackState.Startup;
+                if(usePatternID)
+                    blackboard.Set(BBK.CurrentPattern, patternID);
                 startupTimer = Timer.StartTimer();
                 if (dmgReceiver == null) 
                     dmgReceiver = GetComponent<MonsterDamageReceiver>();
@@ -165,15 +178,7 @@ public class Task_A_Base : Task_Base
     protected virtual void Succeed()
     {
         ThisTask.Succeed();
-        attackState = MonsterAtttackState.Null;
-        startupTimer = null;
-        activeTimer = null;
-        recoveryTimer = null;
-        // 슈퍼아머 효과 적용했다면 해제
-        if (superArmourOnActive)
-        {
-            dmgReceiver.SetTempSuperArmour(false);
-        }
+        ClearOnTerminated();
     }
 
     /// <summary>
@@ -183,6 +188,16 @@ public class Task_A_Base : Task_Base
     protected virtual void Fail()
     {
         ThisTask.Fail();
+        ClearOnTerminated();
+    }
+
+    /// <summary>
+    /// Succeed/Fail 등 패턴이 끝났을 시의 필드/블랙보드 값 정리.
+    /// </summary>
+    protected virtual void ClearOnTerminated()
+    {
+        if(usePatternID)
+            blackboard.Set(BBK.CurrentPattern, -1);
         attackState = MonsterAtttackState.Null;
         startupTimer = null;
         activeTimer = null;

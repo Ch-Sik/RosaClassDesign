@@ -5,7 +5,9 @@ using UnityEngine;
 
 public enum AnimParameterType { BOOL, INT, FLOAT, TRIGGER }
 
-
+/// <summary>
+/// Animator를 사용하는 몬스터 애니메이션을 컨트롤하는 스크립트
+/// </summary>
 public class MonsterAnimationHandler : MonoBehaviour
 {
     [Serializable]

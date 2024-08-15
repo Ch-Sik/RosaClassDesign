@@ -11,7 +11,7 @@ using Sirenix.OdinInspector;
 public class MonsterState : MonoBehaviour
 {
     [SerializeField] private int maxHP = 5;
-    [SerializeField, ReadOnly] private int currentHP;
+    [SerializeField] private int currentHP;
     [SerializeField] private Blackboard blackboard;
     [HideInInspector] public G_MobCounter mobCounter;
 
