@@ -26,7 +26,7 @@ public class MonsterDamageInflictor : MonoBehaviour
     {
         if (go.CompareTag("Player"))
         {
-            Debug.Log("damaged");
+            // Debug.Log("damaged");
             if(!isUseIgnoreDuration)
             {
                 go.GetComponent<PlayerDamageReceiver>().GetDamage(gameObject, damage);

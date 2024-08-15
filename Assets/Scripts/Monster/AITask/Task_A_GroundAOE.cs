@@ -39,7 +39,7 @@ public class Task_A_GroundAOE : Task_A_Base
 
     protected override void OnStartupBegin()
     {
-        Debug.Log("공격 소환");
+        // Debug.Log("공격 소환");
         // 적(플레이어) 위치 파악
         GameObject enemy;
         if (!blackboard.TryGet(BBK.Enemy, out enemy) || enemy == null)
@@ -70,9 +70,21 @@ public class Task_A_GroundAOE : Task_A_Base
     protected override void Fail()
     {
         base.Fail();
-        Debug.Log($"Fail in Task_A_GroundAOE, curAttackState: {attackState}");
+        // Debug.Log($"Fail in Task_A_GroundAOE, curAttackState: {attackState}");
         // 선딜레이 상황인 경우, 소환된 미리보기 오브젝트를 삭제
         if(attackInstance != null && (attackState == MonsterAtttackState.Startup || attackState == MonsterAtttackState.Null))
             attackInstance.CancelAttack();
+    }
+
+    protected void OnDie()
+    {
+        // 범위 미리보기 상태에서는 다른 명령이 오기 전까지 대기하므로
+        // 수동으로 캔슬해줘야 몬스터가 사라졌는데도
+        // 공격 미리보기가 남아있는 상황을 피할 수 있음.
+        if (attackInstance != null && attackState == MonsterAtttackState.Startup)
+        {
+            // Debug.Log("AOE 오브젝트 수동 캔슬");
+            attackInstance.CancelAttack();
+        }
     }
 }
