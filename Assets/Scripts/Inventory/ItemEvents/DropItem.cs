@@ -7,8 +7,16 @@ using UnityEngine;
 /// </summary>
 public class DropItem : MonoBehaviour
 {
-    public bool isTrue = false;
+    [HideInInspector] public bool isTrue = false;
 
-    public ItemCode code;
+    public SO_Item item;
+    [HideInInspector] public ItemCode code;
     [Min(1)] public int quantity = 1;
+
+    public void AddItem()
+    {
+        ItemToastMessage.Instance.AddItem(item, quantity);
+
+        Destroy(gameObject);
+    }
 }
