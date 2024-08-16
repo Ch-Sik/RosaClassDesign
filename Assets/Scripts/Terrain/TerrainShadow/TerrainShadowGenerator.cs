@@ -2,6 +2,7 @@ using UnityEngine;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using System;
+using UnityEngine.SceneManagement;
 
 public class TerrainShadowGenerator : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public class TerrainShadowGenerator : MonoBehaviour
     public int blurRadius = 10;             // 블러 반경
     public int blurIterations = 10;         // 블러 반복 적용 횟수
     public string folderPath = "Assets/TilemapSprite";
+    public bool useCustomFilename = false;
+    [ShowIf("useCustomFilename")]
     public string fileName;  // 출력 파일명
 
     [HideInInspector] public string totalPath;
@@ -61,6 +64,10 @@ public class TerrainShadowGenerator : MonoBehaviour
             }
 
             // 결과 텍스처를 저장
+            if (!useCustomFilename)
+            {
+                fileName = SceneManager.GetActiveScene().name + "_shadow";
+            }
             totalPath = folderPath + "/" + fileName + ".png";
             SaveRenderTextureAsPNG(resultTexture, totalPath);
             Debug.Log($"수행 시간: {(DateTime.Now - startTime).TotalMilliseconds} ms");
