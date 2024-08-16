@@ -125,6 +125,9 @@ public class PlayerMagic : MonoBehaviour
     /// </summary>
     public void ExecuteMagic()
     {
+        if (!PlayerRef.Instance.Move.isGrounded)
+            return;
+
         if (magicPos == null)
         {
             Debug.Log("식물마법 시전 실패: 잘못된 위치 지정");
