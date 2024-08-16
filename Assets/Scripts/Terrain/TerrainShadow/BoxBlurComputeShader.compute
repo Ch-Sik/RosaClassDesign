@@ -1,0 +1,38 @@
+#pragma kernel ApplyBlur
+
+RWTexture2D<float4> ResultTexture; // 출력 텍스처
+Texture2D<float4> SourceTexture; // 입력 텍스처
+SamplerState samplerState;
+
+int2 textureSize;
+int blurRadius; // 블러 반경 (m 값)
+
+[numthreads(8, 8, 1)]
+void ApplyBlur(uint3 id : SV_DispatchThreadID)
+{
+    int2 pixelCoord = id.xy;
+
+    if (pixelCoord.x >= textureSize.x || pixelCoord.y >= textureSize.y)
+        return;
+
+    float4 accumulatedColor = float4(0, 0, 0, 0);
+    int sampleCount = 0;
+
+    // 블러를 위해 주변 픽셀 값을 평균화
+    for (int offsetY = -blurRadius; offsetY <= blurRadius; offsetY++)
+    {
+        for (int offsetX = -blurRadius; offsetX <= blurRadius; offsetX++)
+        {
+            int2 sampleCoord = pixelCoord + int2(offsetX, offsetY);
+            if (sampleCoord.x >= 0 && sampleCoord.x < textureSize.x && sampleCoord.y >= 0 && sampleCoord.y < textureSize.y)
+            {
+                accumulatedColor += SourceTexture.Load(int3(sampleCoord, 0));
+                sampleCount++;
+            }
+        }
+    }
+
+    // 평균 색상을 사용하여 부드럽게 만듦
+    accumulatedColor /= sampleCount;
+    ResultTexture[pixelCoord] = accumulatedColor;
+}

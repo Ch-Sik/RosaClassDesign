@@ -1,0 +1,139 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6564676909965421407
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 358696388012216571}
+  - component: {fileID: 5269281056053544148}
+  - component: {fileID: 6698363784504063394}
+  - component: {fileID: 7884635312000167083}
+  - component: {fileID: 9019206322769319883}
+  - component: {fileID: 5987371159354045605}
+  m_Layer: 0
+  m_Name: TilemapShadowGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &358696388012216571
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6564676909965421407}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 43.420273, y: -37.311268, z: -1.4765805}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5269281056053544148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6564676909965421407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b302ab9d0e53e54482658867225c8b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MEMO: "\uC0AC\uC6A9 \uBC29\uBC95\n1. \uC774 \uD504\uB9AC\uD339\uC744 \uC52C\uC5D0
+    \uC544\uBB34\uB370\uB098 \uBC30\uCE58\uD55C\uB2E4. \n2. Room Extractor\uC758
+    Tilemap\uACFC Timemap Manager \uD56D\uBAA9\uC744 \uC9C0\uC815\uD574\uC900\uB2E4.\n3.
+    Room Extractor\uC758 \uC800\uC7A5 \uACBD\uB85C\uB97C \uC9C0\uC815\uD574\uC900\uB2E4.\n4.
+    Terrain Shadow Generator\uC758 \uC800\uC7A5 \uACBD\uB85C\uB97C \uC9C0\uC815\uD574\uC900\uB2E4.\n5.
+    \uD544\uC694\uD558\uB2E4\uBA74 \uB098\uBA38\uC9C0 \uC635\uC158\uB3C4 \uC9C0\uC815\uD574\uC900\uB2E4.\n6.
+    \uC704\uC5D0\uC11C\uBD80\uD130 \uC21C\uC11C\uB300\uB85C \uBC84\uD2BC 3\uAC1C\uB97C
+    \uB204\uB978\uB2E4.\n7. (\uC635\uC158) \uCD5C\uC885 \uC774\uBBF8\uC9C0\uAC00
+    \uC644\uC131\uB418\uBA74 Room Extractor\uB85C \uC0DD\uC131\uB41C \uC774\uBBF8\uC9C0\uB294
+    \uC0AD\uC81C\uD574\uB3C4 \uB41C\uB2E4."
+--- !u!114 &6698363784504063394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6564676909965421407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b302ab9d0e53e54482658867225c8b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MEMO: "\uC8FC\uC758 \uC0AC\uD56D\n\uC5D4\uC9C4\uC758 \uD55C\uACC4\uB85C \uC778\uD574,
+    \uC0DD\uC131/\uC784\uD3EC\uD2B8\uD560 \uC218 \uC788\uB294 \uC774\uBBF8\uC9C0\uC758
+    \uD06C\uAE30\uC5D0\uB294 \uD55C\uACC4\uAC00 \uC788\uC74C. (16384\uD53D\uC140)\n(\uD0C0\uC77C\uB9F5\uC758
+    \uD06C\uAE30) x (Pixel Per Tile)\uC774 \uC704 \uAC12\uC744 \uB118\uC73C\uBA74
+    \uC548\uB428.\nPixel Per Tile = 16\uAE30\uC900, \uD0C0\uC77C\uB9F5\uC740 \uCD5C\uB300
+    1024\uCE78\uAE4C\uC9C0 \uC9C0\uC6D0."
+--- !u!114 &7884635312000167083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6564676909965421407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0999ca526f4d124bb2acf245e06b09d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tilemap: {fileID: 0}
+  tilemapManager: {fileID: 0}
+  pixelPerTile: 16
+  folderPath: Assets/TilemapShadow
+  fileName: tilemapToImg
+  completePath: Assets/TilemapShadow/tilemapToImg.png
+  bounds:
+    m_Position: {x: -4, y: -11, z: 0}
+    m_Size: {x: 164, y: 36, z: 1}
+--- !u!114 &9019206322769319883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6564676909965421407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc8a593cab817ce458dbe60879a14d7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  roomExtractor: {fileID: 7884635312000167083}
+  sourceTexture: {fileID: 2800000, guid: ed556920d8b83e44eba485d9967a667c, type: 3}
+  minFilterShader: {fileID: 7200000, guid: 34d1fc26f69a3e748a7953c4fff7fc1f, type: 3}
+  minFilterIterations: 15
+  blurShader: {fileID: 7200000, guid: 707dcbb78d56a694d879cd21827b8bf7, type: 3}
+  blurRadius: 10
+  blurIterations: 3
+  folderPath: Assets/TilemapShadow
+  fileName: GeneratedShadow
+  totalPath: Assets/TilemapShadow/GeneratedShadow.png
+--- !u!114 &5987371159354045605
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6564676909965421407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cd37d42578cd6e45b1283eb9b89d5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  roomExtractor: {fileID: 7884635312000167083}
+  shadowGenerator: {fileID: 9019206322769319883}
+  shadowColor: {r: 0.09019608, g: 0.0627451, b: 0.03529412, a: 1}
+  sortingLayerName: Middle
+  orderInLayer: 40
+  filePath: Assets/TilemapShadow/GeneratedShadow.png

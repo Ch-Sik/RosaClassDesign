@@ -1,0 +1,41 @@
+#pragma kernel MinimumFilter
+
+// 텍스처와 관련된 변수들
+RWTexture2D<float4> ResultTexture; // 출력 텍스처
+Texture2D<float4> SourceTexture; // 입력 텍스처
+SamplerState samplerState;
+
+// 텍스처 크기
+int2 textureSize;
+
+[numthreads(8, 8, 1)]
+void MinimumFilter(uint3 id : SV_DispatchThreadID)
+{
+    int2 pixelCoord = id.xy;
+
+    if (pixelCoord.x >= textureSize.x || pixelCoord.y >= textureSize.y)
+        return;
+
+    float4 minColor = SourceTexture.Load(int3(pixelCoord, 0));
+
+    // 3x3 주변 픽셀에서 최소값 계산
+    for (int offsetY = -1; offsetY <= 1; offsetY++)
+    {
+        for (int offsetX = -1; offsetX <= 1; offsetX++)
+        {
+            int2 neighborCoord = pixelCoord + int2(offsetX, offsetY);
+
+            if (neighborCoord.x >= 0 && neighborCoord.x < textureSize.x && neighborCoord.y >= 0 && neighborCoord.y < textureSize.y)
+            {
+                float4 neighborColor = SourceTexture.Load(int3(neighborCoord, 0));
+
+                if (neighborColor.a < minColor.a)
+                {
+                    minColor = neighborColor;
+                }
+            }
+        }
+    }
+
+    ResultTexture[pixelCoord] = minColor;
+}

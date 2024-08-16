@@ -317,6 +317,7 @@ public class Room : MonoBehaviour
     }
     #endregion
 
+
     private void OnDrawGizmos()
     {
         if (!showGizmos)
