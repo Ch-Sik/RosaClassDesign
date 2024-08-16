@@ -1,24 +1,40 @@
 using UnityEngine;
 using Sirenix.OdinInspector;
+using UnityEditor;
+using System;
 
 public class TerrainShadowGenerator : MonoBehaviour
 {
+    public RoomExtractor roomExtractor;
     public Texture2D sourceTexture; // 입력 타일맵 텍스처
-    public ComputeShader minFilterShader;
-    public int minFilterIterations = 10; // 필터 반복 적용 횟수
-    public ComputeShader blurShader;
-    public int blurRadius = 10;
-    public string outFileName;  // 출력 파일명
+    public ComputeShader minFilterShader;   // 축소 필터
+    public int minFilterIterations = 10;    // 축소 반복 적용 횟수
+    public ComputeShader blurShader;        // 블러 필터
+    public int blurRadius = 10;             // 블러 반경
+    public int blurIterations = 10;         // 블러 반복 적용 횟수
+    public string folderPath = "Assets/TilemapSprite";
+    public string fileName;  // 출력 파일명
 
+    [HideInInspector] public string totalPath;
     RenderTexture tempTexture;      // 중간 결과
+    RenderTexture resultTexture;
 
-    private RenderTexture resultTexture;
+    DateTime startTime;
 
-    [Button("그림자 이미지 생성")]
+#if UNITY_EDITOR
+    [Button("타일맵 이미지를 가공하여 그림자 이미지 생성")]
     void GenerateShadowImage()
     {
-        Debug.Assert(sourceTexture != null);
+        startTime = DateTime.Now;
+
         Debug.Assert(minFilterShader != null);
+        Debug.Assert(blurShader != null);
+
+        if(sourceTexture == null)
+        {
+            sourceTexture = (Texture2D)AssetDatabase.LoadAssetAtPath(roomExtractor.completePath, typeof(Texture2D));
+            Debug.Log($"텍스쳐 자동으로 가져옴: {roomExtractor.completePath}");
+        }
 
         if (sourceTexture != null && minFilterShader != null)
         {
@@ -26,9 +42,10 @@ public class TerrainShadowGenerator : MonoBehaviour
             resultTexture = new RenderTexture(sourceTexture.width, sourceTexture.height, 0, RenderTextureFormat.ARGB32);
             resultTexture.enableRandomWrite = true;
             resultTexture.Create();
+            Debug.Log($"resultTexture Size: {resultTexture.width} x {resultTexture.height}");
 
             // 임시 텍스쳐에 소스 텍스쳐 복사
-            tempTexture = new RenderTexture(sourceTexture.width, sourceTexture.height, 0);
+            tempTexture = new RenderTexture(sourceTexture.width, sourceTexture.height, 0, RenderTextureFormat.ARGB32);
             Graphics.Blit(sourceTexture, tempTexture);
 
             // 최소값 필터를 반복적으로 적용
@@ -37,11 +54,16 @@ public class TerrainShadowGenerator : MonoBehaviour
                 ApplyMinimumFilter();
             }
 
-            // 다음 블러 필터를 적용
-            ApplyBlurFilter();
+            // 그 다음 블러 필터를 적용
+            for (int i = 0; i < blurIterations; i++)
+            {
+                ApplyBlurFilter();
+            }
 
             // 결과 텍스처를 저장
-            SaveRenderTextureAsPNG(resultTexture, "./Assets/Scripts/Terrain/TerrainShadow/" + outFileName + ".png");
+            totalPath = folderPath + "/" + fileName + ".png";
+            SaveRenderTextureAsPNG(resultTexture, totalPath);
+            Debug.Log($"수행 시간: {(DateTime.Now - startTime).TotalMilliseconds} ms");
         }
     }
 
@@ -82,6 +104,50 @@ public class TerrainShadowGenerator : MonoBehaviour
         Graphics.Blit(resultTexture, tempTexture);
     }
 
+    //void ApplyGaussianBlur()
+    //{
+    //    int kernelHandleHorizontal = gaussianBlurShader.FindKernel("GaussianBlurHorizontal");
+    //    int kernelHandleVertical = gaussianBlurShader.FindKernel("GaussianBlurVertical");
+    //    intermediateTexture = new RenderTexture(tempTexture);
+    //    intermediateTexture.enableRandomWrite = true;
+    //    intermediateTexture.Create();
+
+    //    float[] weights = CalculateGaussianWeights(blurRadius);
+    //    gaussianBlurShader.SetFloats("weights", weights);
+    //    gaussianBlurShader.SetInt("blurRadius", blurRadius);
+    //    gaussianBlurShader.SetInts("textureSize", new int[] { sourceTexture.width, sourceTexture.height });
+
+    //    // Horizontal Blur
+    //    gaussianBlurShader.SetTexture(kernelHandleHorizontal, "SourceTexture", tempTexture);
+    //    gaussianBlurShader.SetTexture(kernelHandleHorizontal, "ResultTexture", intermediateTexture);
+    //    gaussianBlurShader.Dispatch(kernelHandleHorizontal, sourceTexture.width / 8, sourceTexture.height / 8, 1);
+
+    //    // Graphics.Blit(resultTexture, tempTexture);
+
+    //    // Vertical Blur
+    //    gaussianBlurShader.SetTexture(kernelHandleVertical, "SourceTexture", intermediateTexture);
+    //    gaussianBlurShader.SetTexture(kernelHandleVertical, "ResultTexture", resultTexture);
+    //    gaussianBlurShader.Dispatch(kernelHandleVertical, sourceTexture.width / 8, sourceTexture.height / 8, 1);
+    //}
+
+    //float[] CalculateGaussianWeights(int radius)
+    //{
+    //    float[] weights = new float[radius + 1];
+    //    float sigma = radius / 2.0f;
+    //    float sum = 0.0f;
+    //    for (int i = 0; i <= radius; i++)
+    //    {
+    //        weights[i] = Mathf.Exp(-0.5f * (i * i) / (sigma * sigma));
+    //        sum += weights[i] * (i == 0 ? 1 : 2);
+    //    }
+    //    for (int i = 0; i <= radius; i++)
+    //    {
+    //        weights[i] /= sum;
+    //    }
+    //    gaussianFilter = weights;
+    //    return weights;
+    //}
+
     void SaveRenderTextureAsPNG(RenderTexture rt, string path)
     {
         RenderTexture.active = rt;
@@ -92,6 +158,24 @@ public class TerrainShadowGenerator : MonoBehaviour
 
         byte[] bytes = tex.EncodeToPNG();
         System.IO.File.WriteAllBytes(path, bytes);
+        // AssetDatabase.Refresh();
+
+        // PPU 설정을 위해 Refresh로 자동 임포트 말고 수동 임포트 수행
+        AssetDatabase.ImportAsset(path);
+        AssetImporter tempImporter = AssetImporter.GetAtPath(path);
+        TextureImporter importer = (TextureImporter)tempImporter;
+        importer.isReadable = true;  // 필요에 따라 텍스처가 읽기 가능하도록 설정
+        // Pixel Per Unit 설정
+        importer.textureType = TextureImporterType.Sprite;
+        importer.spritePixelsPerUnit = roomExtractor.pixelPerTile;  // 원하는 Pixel Per Unit 값으로 설정
+        // 필터링 설정
+        importer.filterMode = FilterMode.Point;
+        // 최대 크기 설정
+        importer.maxTextureSize = 16384;
+        // 최종 임포트
+        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+
         Debug.Log($"Saved texture to {path}");
     }
+#endif
 }

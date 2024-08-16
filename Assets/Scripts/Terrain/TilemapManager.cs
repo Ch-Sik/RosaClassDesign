@@ -9,7 +9,7 @@ public class TilemapManager : SerializedMonoBehaviour
 
     public List<TileData> tileDatas;
     [SerializeField]
-    private Dictionary<TileBase, TileData> dataFromTiles;
+    private Dictionary<TileBase, TileData> dataFromTiles = null;
 
     [SerializeField]
     private TileData defaultTileData;
@@ -18,12 +18,16 @@ public class TilemapManager : SerializedMonoBehaviour
     void Awake()
     {
         Instance = this;
+        InitTileData();
+    }
 
+    void InitTileData()
+    {
         // 딕셔너리가 컴파일타임에 값 할당이 안되서 우선 리스트에 데이터를 담아두고 런타임에 이를 옮겨야 함.
-        dataFromTiles = new Dictionary<TileBase, TileData>();       
-        foreach(var tileData in tileDatas)
+        dataFromTiles = new Dictionary<TileBase, TileData>();
+        foreach (var tileData in tileDatas)
         {
-            foreach(var tile in tileData.tiles)
+            foreach (var tile in tileData.tiles)
             {
                 dataFromTiles.Add(tile, tileData);
             }
@@ -33,6 +37,11 @@ public class TilemapManager : SerializedMonoBehaviour
     public TileData GetTileData(TileBase tile)
     {
         TileData result;
+        if(dataFromTiles == null)
+        {
+            InitTileData();
+        }
+
         try
         {
             result = dataFromTiles[tile];
