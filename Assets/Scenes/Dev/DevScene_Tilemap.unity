@@ -123,6 +123,56 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &148203099
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 148203101}
+  - component: {fileID: 148203100}
+  m_Layer: 0
+  m_Name: TilemapShadowGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &148203100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148203099}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc8a593cab817ce458dbe60879a14d7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sourceTexture: {fileID: 2800000, guid: bf72a3260a5be264e9d6ddf373c24178, type: 3}
+  minFilterShader: {fileID: 7200000, guid: 34d1fc26f69a3e748a7953c4fff7fc1f, type: 3}
+  minFilterIterations: 30
+  blurShader: {fileID: 7200000, guid: 707dcbb78d56a694d879cd21827b8bf7, type: 3}
+  blurRadius: 10
+  outFileName: testResult
+--- !u!4 &148203101
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148203099}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 43.420273, y: -37.311268, z: -1.4765805}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &228334939
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -609,7 +659,7 @@ TilemapRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 0.0031446815, y: 0.0031446815, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -1173,7 +1223,7 @@ TilemapRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 0.0031446815, y: 0.0031446815, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -4271,10 +4321,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53f8e78a2fcaec24c848dff3c9e1f0e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useAutoCinematic: 1
+  type: 0
+  waitDelay: 0
+  showGizmos: 0
   points:
   - {fileID: 274284761563013357}
   - {fileID: 3827760516731490453}
   speed: 2
+  isArrive: 0
+  onWait: 0
+  isReverse: 0
+  curReverseState: 0
+  cinematicsSettings: []
 --- !u!1 &2995779681102020431
 GameObject:
   m_ObjectHideFlags: 0
@@ -4472,7 +4531,7 @@ TilemapRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 0.0031446815, y: 0.0031446815, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -4794,6 +4853,14 @@ PrefabInstance:
     - target: {fileID: 4520447404637267053, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599334112030463462, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
+      propertyPath: m_ChunkCullingBounds.x
+      value: 0.0031446815
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599334112030463462, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
+      propertyPath: m_ChunkCullingBounds.y
+      value: 0.0031446815
       objectReference: {fileID: 0}
     - target: {fileID: 7633424491403140428, guid: 8572d1cde80279c48ae0c2c62e16bf82, type: 3}
       propertyPath: m_Tiles.Array.size
@@ -5349,3 +5416,4 @@ SceneRoots:
   - {fileID: 7111732871606827665}
   - {fileID: 891419152}
   - {fileID: 1290841079}
+  - {fileID: 148203101}
