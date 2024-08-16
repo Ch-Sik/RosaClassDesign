@@ -2,8 +2,10 @@ using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 
 public class RoomExtractor : MonoBehaviour
@@ -15,6 +17,8 @@ public class RoomExtractor : MonoBehaviour
     //public float pixelsPerUnit = 16f;                                   //스프라이트의 Pixel Per Unit 값
     //public FilterMode filterMode = FilterMode.Point;                    //텍스처의 필터 모드
     public string folderPath = "Assets/TilemapSprite";
+    public bool useCustomFilename = false;
+    [ShowIf("useCustomFilename")]
     public string fileName;
 
     [HideInInspector] public string completePath;
@@ -28,9 +32,17 @@ public class RoomExtractor : MonoBehaviour
         startTime = DateTime.Now;
 
         Texture2D texture = GenerateTexture2DFromTilemap();
-
         Sprite sprite = ConvertTextureToSprite(texture);
-
+        
+        if(!useCustomFilename)
+        {
+            fileName = SceneManager.GetActiveScene().name + "_image";
+        }
+        // 저장 폴더 없으면 생성
+        if(!AssetDatabase.IsValidFolder(folderPath))
+        {
+            System.IO.Directory.CreateDirectory(folderPath);
+        }
         completePath = $"{folderPath}/{fileName}.png";
         SaveSprite(texture, completePath);
 

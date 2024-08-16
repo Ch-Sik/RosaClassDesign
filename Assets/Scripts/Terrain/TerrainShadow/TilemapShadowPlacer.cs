@@ -40,5 +40,7 @@ public class TilemapShadowPlacer : MonoBehaviour
         renderer.color = shadowColor;
         renderer.sortingLayerID = SortingLayer.NameToID(sortingLayerName);
         renderer.sortingOrder = orderInLayer;
+
+        Debug.Log($"타일맵 그림자를 씬에다가 배치: {go}");
     }
 }

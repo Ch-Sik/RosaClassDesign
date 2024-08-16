@@ -2,6 +2,7 @@ using UnityEngine;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using System;
+using UnityEngine.SceneManagement;
 
 public class TerrainShadowGenerator : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public class TerrainShadowGenerator : MonoBehaviour
     public int blurRadius = 10;             // 블러 반경
     public int blurIterations = 10;         // 블러 반복 적용 횟수
     public string folderPath = "Assets/TilemapSprite";
+    public bool useCustomFilename = false;
+    [ShowIf("useCustomFilename")]
     public string fileName;  // 출력 파일명
 
     [HideInInspector] public string totalPath;
@@ -42,7 +45,7 @@ public class TerrainShadowGenerator : MonoBehaviour
             resultTexture = new RenderTexture(sourceTexture.width, sourceTexture.height, 0, RenderTextureFormat.ARGB32);
             resultTexture.enableRandomWrite = true;
             resultTexture.Create();
-            Debug.Log($"resultTexture Size: {resultTexture.width} x {resultTexture.height}");
+            // Debug.Log($"resultTexture Size: {resultTexture.width} x {resultTexture.height}");
 
             // 임시 텍스쳐에 소스 텍스쳐 복사
             tempTexture = new RenderTexture(sourceTexture.width, sourceTexture.height, 0, RenderTextureFormat.ARGB32);
@@ -61,9 +64,13 @@ public class TerrainShadowGenerator : MonoBehaviour
             }
 
             // 결과 텍스처를 저장
+            if (!useCustomFilename)
+            {
+                fileName = SceneManager.GetActiveScene().name + "_shadow";
+            }
             totalPath = folderPath + "/" + fileName + ".png";
             SaveRenderTextureAsPNG(resultTexture, totalPath);
-            Debug.Log($"수행 시간: {(DateTime.Now - startTime).TotalMilliseconds} ms");
+            Debug.Log($"타일맵 그림자를 이미지로 저장: {totalPath}\n수행 시간: {(DateTime.Now - startTime).TotalMilliseconds} ms");
         }
     }
 
@@ -155,8 +162,13 @@ public class TerrainShadowGenerator : MonoBehaviour
         tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
         tex.Apply();
         RenderTexture.active = null;
-
         byte[] bytes = tex.EncodeToPNG();
+
+        // 저장 폴더 없으면 생성
+        if (!AssetDatabase.IsValidFolder(folderPath))
+        {
+            System.IO.Directory.CreateDirectory(folderPath);
+        }
         System.IO.File.WriteAllBytes(path, bytes);
         // AssetDatabase.Refresh();
 
@@ -174,8 +186,6 @@ public class TerrainShadowGenerator : MonoBehaviour
         importer.maxTextureSize = 16384;
         // 최종 임포트
         AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
-
-        Debug.Log($"Saved texture to {path}");
     }
 #endif
 }
