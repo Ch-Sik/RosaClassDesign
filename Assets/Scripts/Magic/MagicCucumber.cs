@@ -22,7 +22,7 @@ public class MagicCucumber : MonoBehaviour
         Sequence doRide = DOTween.Sequence()
             .Append(PlayerRef.Instance.transform.DOMove(transform.position + new Vector3(0, 0.8f, 0), 0.1f));
 
-        PlayerRef.Instance.Move.PrepareSuperDash();
+        PlayerRef.Instance.movement.PrepareSuperDash();
         trigger.enabled = false;
     }
 }

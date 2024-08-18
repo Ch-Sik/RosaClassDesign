@@ -33,7 +33,7 @@ public class InteractiveObject : MonoBehaviour
 
     public void RemoveEvent()
     {
-        PlayerRef.Instance.Controller.ResetInteraction();
+        PlayerRef.Instance.controller.ResetInteraction();
     }
 
     public void SetEvent()
@@ -41,8 +41,8 @@ public class InteractiveObject : MonoBehaviour
         if (!canUse)
             return;
 
-        PlayerRef.Instance.Controller.ResetInteraction();
-        PlayerRef.Instance.Controller.SetInteraction(() => function.Invoke());
+        PlayerRef.Instance.controller.ResetInteraction();
+        PlayerRef.Instance.controller.SetInteraction(() => function.Invoke());
     }
 
     private void OnActive() 

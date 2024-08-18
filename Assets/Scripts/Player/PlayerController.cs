@@ -46,9 +46,9 @@ public class PlayerController : MonoBehaviour
     {
         playerRef = PlayerRef.Instance;
         inputManager = InputManager.Instance;
-        playerMove = playerRef.Move;
+        playerMove = playerRef.movement;
         playerCombat = playerRef.combat;
-        playerAnim = playerRef.Animation;
+        playerAnim = playerRef.animation;
         rb = playerRef.rb;
     }
 
@@ -183,7 +183,7 @@ public class PlayerController : MonoBehaviour
     public void OnMeleeAttack(InputAction.CallbackContext context)
     {
         if (playerMove.isGrabCube)
-            PlayerRef.Instance.GrabCube.UnGrab();
+            PlayerRef.Instance.grabCube.UnGrab();
 
         if (currentMoveState != PlayerMoveState.CLIMBING)
         {
@@ -210,22 +210,22 @@ public class PlayerController : MonoBehaviour
 
     public void OnMagicSelect(InputAction.CallbackContext context)
     {
-        PlayerRef.Instance.Magic.SelectMagic();
+        PlayerRef.Instance.magic.SelectMagic();
     }
 
     public void OnMagicReady(InputAction.CallbackContext context)
     {
-        PlayerRef.Instance.Magic.ReadyMagic();
+        PlayerRef.Instance.magic.ReadyMagic();
     }
 
     public void OnMagicExecute(InputAction.CallbackContext context)
     {
-        PlayerRef.Instance.Magic.ExecuteMagic();
+        PlayerRef.Instance.magic.ExecuteMagic();
     }
 
     public void OnMagicCancel(InputAction.CallbackContext context)
     {
-        PlayerRef.Instance.Magic.CancelMagic();
+        PlayerRef.Instance.magic.CancelMagic();
     }
     #endregion
     #endregion

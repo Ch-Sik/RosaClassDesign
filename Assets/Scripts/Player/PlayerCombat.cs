@@ -76,7 +76,7 @@ public class PlayerCombat : MonoBehaviour
     {
         // 필드 초기화
         playerRef = PlayerRef.Instance;
-        playerControl = playerRef.Controller;
+        playerControl = playerRef.controller;
         aimInput = InputManager.Instance._inputAsset.FindActionMap("ActionDefault").FindAction("Aim");
 
         // 마스크 옵션 정상적인지 확인
@@ -218,9 +218,9 @@ public class PlayerCombat : MonoBehaviour
         currentAttackEffect.transform.rotation = Quaternion.Euler(0f, 0f, angle);
         currentAttackEffect.SetActive(true);
         // 플레이어 애니메이션 설정
-        playerRef.Animation.SetAttackAnimTrigger();
+        playerRef.animation.SetAttackAnimTrigger();
         // 공격 방향 바라보기
-        playerRef.Move.LookAt2DLocal(direction);
+        playerRef.movement.LookAt2DLocal(direction);
     }
 
     //공격 판정 시작 시

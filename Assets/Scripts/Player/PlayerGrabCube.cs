@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PlayerGrabCube : MonoBehaviour
 {
-    [ShowInInspector] private bool onGrab = false;          //그랩을 하는 중인가?
+    [ShowInInspector] private bool GrabbingCube = false;          //그랩을 하는 중인가?
     [ShowInInspector] private bool canGrab = true;          //그랩을 할 수 있는가?
 
     [SerializeField] private GameObject grabDisplay;
@@ -13,6 +13,8 @@ public class PlayerGrabCube : MonoBehaviour
 
     [SerializeField] private Transform curCube;
     [SerializeField] private BoxCollider2D virtualCol;
+
+    public bool isHoldingCube { get { return GrabbingCube; } }
 
     public void Grab()
     {
@@ -22,42 +24,42 @@ public class PlayerGrabCube : MonoBehaviour
 
         curCube.GetComponent<G_Cube>().Grab(transform);
 
-        onGrab = true;
+        GrabbingCube = true;
         ActiveUnGrabDisplay();
 
         curCube.SetParent(transform);
 
         virtualCol.gameObject.SetActive(true);
 
-        PlayerRef.Instance.Move.isGrabCube = true;
+        PlayerRef.Instance.movement.isGrabCube = true;
 
         SetUnGrabEvent();
     }
 
     public void UnGrab()
     {
-        if (!onGrab)
+        if (!GrabbingCube)
             return;
 
         curCube.GetComponent<G_Cube>().UnGrab();
 
         canGrab = true;
-        onGrab = false;
+        GrabbingCube = false;
 
-        PlayerRef.Instance.Move.isGrabCube = false;
+        PlayerRef.Instance.movement.isGrabCube = false;
         
         InactiveAllDisplay();
         curCube.SetParent(null);
 
         virtualCol.gameObject.SetActive(false);
 
-        PlayerRef.Instance.Controller.ResetInteraction();
+        PlayerRef.Instance.controller.ResetInteraction();
     }
 
     public bool CanGrab()
     {
-        PlayerMovement con1 = PlayerRef.Instance.Move;
-        PlayerController con2 = PlayerRef.Instance.Controller;
+        PlayerMovement con1 = PlayerRef.Instance.movement;
+        PlayerController con2 = PlayerRef.Instance.controller;
 
         if (con2.currentActionState != PlayerActionState.DEFAULT ||
             con2.currentMoveState != PlayerMoveState.DEFAULT)
@@ -86,7 +88,7 @@ public class PlayerGrabCube : MonoBehaviour
     {
         if (!collision.CompareTag("Cube"))
             return;
-        if (onGrab)
+        if (GrabbingCube)
             return;
         if (!canGrab)
             return;
@@ -106,10 +108,10 @@ public class PlayerGrabCube : MonoBehaviour
         if (!collision.CompareTag("Cube"))
             return;
 
-        if (onGrab)
+        if (GrabbingCube)
             return;
 
-        PlayerRef.Instance.Controller.ResetInteraction(true);
+        PlayerRef.Instance.controller.ResetInteraction(true);
         InactiveAllDisplay();
 
         curCube = null;
@@ -119,14 +121,14 @@ public class PlayerGrabCube : MonoBehaviour
     #region Interaction
     public void SetGrabEvent()
     {
-        PlayerRef.Instance.Controller.ResetInteraction(true);
-        PlayerRef.Instance.Controller.SetInteraction(Grab, true);
+        PlayerRef.Instance.controller.ResetInteraction(true);
+        PlayerRef.Instance.controller.SetInteraction(Grab, true);
     }
 
     public void SetUnGrabEvent()
     {
-        PlayerRef.Instance.Controller.ResetInteraction(true);
-        PlayerRef.Instance.Controller.SetInteraction(UnGrab, true);
+        PlayerRef.Instance.controller.ResetInteraction(true);
+        PlayerRef.Instance.controller.SetInteraction(UnGrab, true);
     }
     #endregion
 

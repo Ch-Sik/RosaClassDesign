@@ -17,7 +17,7 @@ public class PlayerGroundCheck : MonoBehaviour
     void GetComponents()
     {
         playerRef = PlayerRef.Instance;
-        playerMove = playerRef.Move;
+        playerMove = playerRef.movement;
         Debug.Assert(playerMove != null, $"{GetType().Name}: PlayerMove를 찾을 수 없음");
     }
 

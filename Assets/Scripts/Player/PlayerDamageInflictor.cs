@@ -78,7 +78,7 @@ public class PlayerDamageInflictor : MonoBehaviour
         if ((layer_attackable & 1 << collision.gameObject.layer) != 0)
         {
             DamageReceiver receiver = collision.GetComponent<DamageReceiver>();
-            receiver?.GetHitt(Mathf.RoundToInt(PlayerRef.Instance.State.AttackDmg * damagePercent), attackAngle);
+            receiver?.GetHitt(Mathf.RoundToInt(PlayerRef.Instance.state.AttackDmg * damagePercent), attackAngle);
             playerCombat.StopAttack();
         }
 

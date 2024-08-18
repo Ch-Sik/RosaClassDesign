@@ -184,7 +184,7 @@ public class PlayerMovement : MonoBehaviour
         playerRef = PlayerRef.Instance;
         rb = playerRef.rb;
         col = playerRef.col;
-        playerControl = playerRef.Controller;
+        playerControl = playerRef.controller;
     }
 
     void InitFields()
@@ -312,7 +312,7 @@ public class PlayerMovement : MonoBehaviour
     {
         //큐브를 옮기는 중이라면, 큐브를 놓아버림
         if (isGrabCube)
-            PlayerRef.Instance.GrabCube.UnGrab();
+            PlayerRef.Instance.grabCube.UnGrab();
 
         if (!isGrounded)
         {
@@ -514,9 +514,9 @@ public class PlayerMovement : MonoBehaviour
         // 액션 state를 no_action으로 변경: 공격 및 새로운 마법 시전 불가능
         playerControl.SetActionState(PlayerActionState.DISABLED);
         // 기존에 마법을 준비중이었으면 그것을 취소
-        if(playerRef.Magic.isMagicMode)
+        if(playerRef.magic.isMagicMode)
         {
-            playerRef.Magic.CancelMagic();
+            playerRef.magic.CancelMagic();
         }
         rb.gravityScale = 0;
         hangingIvy = ivy;
@@ -715,7 +715,7 @@ public class PlayerMovement : MonoBehaviour
         if (playerControl.currentMoveState == PlayerMoveState.DEFAULT)
         {
             // playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
-            playerRef.Animation.ResetTrigger("Grounded");
+            playerRef.animation.ResetTrigger("Grounded");
         }
     }
 
@@ -724,7 +724,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void OnLanded()
     {
-        playerRef.Animation.SetTrigger("Grounded");
+        playerRef.animation.SetTrigger("Grounded");
         if (isSlidingOnWall)
         {
             isSlidingOnWall = false;
@@ -799,8 +799,8 @@ public class PlayerMovement : MonoBehaviour
         {
             playerControl.SetMoveState(PlayerMoveState.NO_MOVE);
             LookAt2DLocal(-knockbackDirection);     // 넉백되는 방향의 반대편 바라보기
-            playerRef.Animation.SetTrigger("Hit");
-            playerRef.Animation.ResetTrigger("Grounded");
+            playerRef.animation.SetTrigger("Hit");
+            playerRef.animation.ResetTrigger("Grounded");
             isKnockbacked = true;
             float waitTime = 0.3f;
             bool isGrounded = false;

@@ -114,7 +114,7 @@ public class PlayerMagic : MonoBehaviour
     public void ReadyMagic()
     {
         // TODO: PlayerState와 연동하여 현재 선택된 마법이 유효한지 확인하기
-        PlayerRef.Instance.Controller.SetActionState(PlayerActionState.MAGIC_READY);
+        PlayerRef.Instance.controller.SetActionState(PlayerActionState.MAGIC_READY);
         Debug.Log("식물 마법 시전 준비");
 
         ShowPreview();
@@ -125,7 +125,7 @@ public class PlayerMagic : MonoBehaviour
     /// </summary>
     public void ExecuteMagic()
     {
-        if (!PlayerRef.Instance.Move.isGrounded)
+        if (!PlayerRef.Instance.movement.isGrounded)
             return;
 
         if (magicPos == null)
@@ -139,7 +139,7 @@ public class PlayerMagic : MonoBehaviour
         Debug.Log($"식물마법 시전\n 종류: {selectedMagic.name}\n 지형타입: {targetTerrainType}");
         HidePreview();
 
-        PlayerRef.Instance.Controller.SetActionState(PlayerActionState.DEFAULT);
+        PlayerRef.Instance.controller.SetActionState(PlayerActionState.DEFAULT);
     }
 
     private void DoMagic()
@@ -201,7 +201,7 @@ public class PlayerMagic : MonoBehaviour
     /// </summary>
     public void CancelMagic()
     {
-        PlayerRef.Instance.Controller.SetActionState(PlayerActionState.DEFAULT);
+        PlayerRef.Instance.controller.SetActionState(PlayerActionState.DEFAULT);
         Debug.LogWarning("식물마법 취소");
         HidePreview();
     }

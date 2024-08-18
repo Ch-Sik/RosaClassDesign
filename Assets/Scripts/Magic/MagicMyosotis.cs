@@ -22,6 +22,6 @@ public class MagicMyosotis : MonoBehaviour
         //Sequence doWarp = DOTween.Sequence()
         //    .Append(PlayerRef.Instance.transform.DOMove(transform.position, 0.05f));
         PlayerRef.Instance.transform.position = this.transform.position;
-        PlayerRef.Instance.Move.moveVector = Vector2.zero;
+        PlayerRef.Instance.movement.moveVector = Vector2.zero;
     }
 }

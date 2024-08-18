@@ -35,8 +35,8 @@ public class PlayerAnimation : MonoBehaviour
         playerRef = PlayerRef.Instance;
         rb = playerRef.rb;
         //anim = playerRef.anim;
-        playerControl = playerRef.Controller;
-        playerMove = playerRef.Move;
+        playerControl = playerRef.controller;
+        playerMove = playerRef.movement;
         if(portrait == null)
             portrait = GetComponentInChildren<apPortrait>();
     }
@@ -58,7 +58,7 @@ public class PlayerAnimation : MonoBehaviour
         anim.SetBool("isWalking", 
             playerControl.currentMoveState == PlayerMoveState.DEFAULT 
             && (!isDoingAttack || !playerMove.noMoveOnAttack)
-            && playerMove.moveVector.x != 0);
+            && Mathf.Abs(playerMove.moveVector.x) > 0.1f);
         anim.SetBool("isJumping", 
             playerControl.currentMoveState == PlayerMoveState.DEFAULT 
             && !playerMove.isGrounded 
@@ -73,7 +73,10 @@ public class PlayerAnimation : MonoBehaviour
         anim.SetBool("isMagicReady", 
             playerControl.currentActionState == PlayerActionState.MAGIC_READY);
         //anim.SetBool("isClimbOver", ((playerControl.currentMoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
+        anim.SetFloat("xVel", rb.velocity.x);
         anim.SetFloat("yVel", rb.velocity.y);
+        anim.SetFloat("spriteDir", transform.localScale.x);
+        anim.SetBool("isHoldingCube", playerRef.grabCube.isHoldingCube);
     }
 
     public void SetAttackAnimTrigger()

@@ -25,14 +25,14 @@ public class PlayerRef : MonoBehaviour
             return _instance;
         }
     }
-    public PlayerState State;
-    public PlayerController Controller;
-    public PlayerMovement Move;
-    public PlayerMagic Magic;
+    public PlayerState state;
+    public PlayerController controller;
+    public PlayerMovement movement;
+    public PlayerMagic magic;
     public PlayerCombat combat;
-    public PlayerGrabCube GrabCube;
+    public PlayerGrabCube grabCube;
     
-    public PlayerAnimation Animation;
+    public PlayerAnimation animation;
     public PlayerSound sound;
 
     public Rigidbody2D rb;
@@ -46,13 +46,13 @@ public class PlayerRef : MonoBehaviour
         {
             return;
         }
-        if (State == null) State = GetComponent<PlayerState>();
-        if(Controller == null) Controller = GetComponent<PlayerController>();
-        if(Move == null) Move = GetComponent<PlayerMovement>();
-        if(Magic == null) Magic = GetComponent<PlayerMagic>();
+        if (state == null) state = GetComponent<PlayerState>();
+        if(controller == null) controller = GetComponent<PlayerController>();
+        if(movement == null) movement = GetComponent<PlayerMovement>();
+        if(magic == null) magic = GetComponent<PlayerMagic>();
         if(combat == null) combat = GetComponent<PlayerCombat>();
-        if (GrabCube == null) GrabCube = GetComponentInChildren<PlayerGrabCube>();
-        if(Animation == null) Animation = GetComponent<PlayerAnimation>();
+        if (grabCube == null) grabCube = GetComponentInChildren<PlayerGrabCube>();
+        if(animation == null) animation = GetComponent<PlayerAnimation>();
         if(sound == null) sound = GetComponent<PlayerSound>();
 
         if(rb == null) rb = GetComponent<Rigidbody2D>();
