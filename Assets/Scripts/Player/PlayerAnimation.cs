@@ -37,7 +37,8 @@ public class PlayerAnimation : MonoBehaviour
         //anim = playerRef.anim;
         playerControl = playerRef.Controller;
         playerMove = playerRef.Move;
-        portrait = GetComponentInChildren<apPortrait>();
+        if(portrait == null)
+            portrait = GetComponentInChildren<apPortrait>();
     }
 
     private void FixedUpdate()
