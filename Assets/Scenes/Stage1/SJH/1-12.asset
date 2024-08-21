@@ -28,24 +28,20 @@ MonoBehaviour:
     index: 0
     direction: 2
     ports:
-    - {x: 65, y: 48}
     - {x: 65, y: 49}
     - {x: 65, y: 50}
     - {x: 65, y: 51}
     - {x: 65, y: 52}
-    - {x: 65, y: 53}
     connectedPorts: []
   lefPorts:
   - flag: 
     index: 0
     direction: 3
     ports:
-    - {x: 2, y: -4}
     - {x: 2, y: -3}
     - {x: 2, y: -2}
     - {x: 2, y: -1}
     - {x: 2, y: 0}
-    - {x: 2, y: 1}
     connectedPorts:
     - flag: 
       flagIndex: 0
@@ -57,10 +53,8 @@ MonoBehaviour:
     index: 1
     direction: 3
     ports:
-    - {x: 2, y: 36}
     - {x: 2, y: 37}
     - {x: 2, y: 38}
     - {x: 2, y: 39}
     - {x: 2, y: 40}
-    - {x: 2, y: 41}
     connectedPorts: []
