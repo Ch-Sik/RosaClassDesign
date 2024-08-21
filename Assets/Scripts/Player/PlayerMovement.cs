@@ -699,7 +699,10 @@ public class PlayerMovement : MonoBehaviour
     internal void Gliding()
     {
         if (isGrounded) return;
+        if (isWallJumping) return;
+        if (isJumpingUp) FinishJumpUp();
 
+        rb.velocity = new Vector2(rb.velocity.x, 0);
         isGliding = true;
         rb.gravityScale = glidingGravityScale;
     }
