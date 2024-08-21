@@ -89,6 +89,10 @@ public class PlayerMovement : MonoBehaviour
     [FoldoutGroup("공격 관련")]
     [SerializeField] float attackSpeedCoef = 0.5f;
 
+    [FoldoutGroup("활강 관련")]
+    float defaultGravityScale = 2.8f;
+    [FoldoutGroup("활강 관련")] [SerializeField] float glidingGravityScale = 0.1f;
+
     // 플래그
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isGrounded = false;
@@ -122,6 +126,8 @@ public class PlayerMovement : MonoBehaviour
     [ReadOnly] public bool isNotMoveable = false;   // 종합적으로 고려하여 플레이어가 움직일 수 있는지 없는지
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isGrabCube = false;          //큐브를 잡고 있는지
+    [FoldoutGroup("플래그")]
+    [ReadOnly] public bool isGliding = false;
 
     // 범위 지정
     [FoldoutGroup("벽 감지 범위")]
@@ -193,6 +199,7 @@ public class PlayerMovement : MonoBehaviour
         facingDirection = spriteDirection;
         groundLayer = LayerMask.NameToLayer("Ground");
         climbableLayer = LayerMask.NameToLayer("Climbable");
+        defaultGravityScale = rb.gravityScale;
     }
     #endregion
 
@@ -688,6 +695,25 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
 
+    #region 활강 관련
+    internal void Gliding()
+    {
+        if (isGrounded) return;
+        if (isWallJumping) return;
+        if (isJumpingUp) FinishJumpUp();
+
+        rb.velocity = new Vector2(rb.velocity.x, 0);
+        isGliding = true;
+        rb.gravityScale = glidingGravityScale;
+    }
+
+    internal void CancleGliding()
+    {
+        isGliding = false;
+        rb.gravityScale = defaultGravityScale;
+    }
+    #endregion
+
     #region 그라운드 체크. PlayerGroundCheck.cs에서 참조
     public void SetIsGrounded(GameObject belowObject)
     {
@@ -733,6 +759,10 @@ public class PlayerMovement : MonoBehaviour
         {
             JumpUp();
             Debug.Log("선입력으로 인한 점프");
+        }
+        if (isGliding)
+        {
+            CancleGliding();
         }
     }
     #endregion

@@ -40,6 +40,7 @@ public class InputManager : MonoBehaviour
     public InputActionMap AM_MoveClimb;
     public InputActionMap AM_MoveSuperDashReady;
     public InputActionMap AM_MoveSuperDash;
+    public InputActionMap AM_Gliding;
     // 액션 관련
     public InputActionMap AM_ActionDefault;
     public InputActionMap AM_ActionMagicReady;
@@ -112,8 +113,8 @@ public class InputManager : MonoBehaviour
                     AM_MoveSuperDash.Disable();
                     break;
                 case PlayerMoveState.NO_MOVE:
-                    // 아무것도 안함
                     break;
+                // 아무것도 안함
             }
         }
         switch(newMoveState)

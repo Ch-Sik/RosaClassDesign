@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     [ReadOnly, SerializeField] Rigidbody2D rb;
     [ReadOnly, SerializeField] PlayerAnimation playerAnim;
     private UnityEvent interactFunction = new UnityEvent();
-    
+
     // private 변수
     private Vector2 moveVector = Vector2.zero;      // 하향점프 판단을 위해 값 보관
 
@@ -62,6 +62,9 @@ public class PlayerController : MonoBehaviour
         inputManager.AM_MoveDefault.FindAction("Jump").performed += OnJump;
         inputManager.AM_MoveDefault.FindAction("Jump").canceled += OnCancelJump;
         inputManager.AM_MoveDefault.FindAction("Interact").performed += OnInteract;
+        inputManager.AM_MoveDefault.FindAction("Gliding").performed += OnGliding;
+        inputManager.AM_MoveDefault.FindAction("Gliding").canceled += OnCancleGliding;
+
 
         // Climb 액션맵 바인딩
         inputManager.AM_MoveClimb.FindAction("Move").performed += OnClimbMove;
@@ -85,7 +88,7 @@ public class PlayerController : MonoBehaviour
         inputManager.AM_ActionMagicReady.FindAction("MagicSelect").performed += OnMagicSelect;
         inputManager.AM_ActionMagicReady.FindAction("MagicExecute").performed += OnMagicExecute;
         inputManager.AM_ActionMagicReady.FindAction("MagicCancel").performed += OnMagicCancel;
-        
+
         // UI 관련 input action은 PlayerController에서 관리하지 않음.
     }
     #endregion
@@ -131,6 +134,16 @@ public class PlayerController : MonoBehaviour
         if (interactFunction == null)
             return;
         interactFunction.Invoke();
+    }
+
+    public void OnGliding(InputAction.CallbackContext context)
+    {
+        playerMove.Gliding();
+    }
+
+    public void OnCancleGliding(InputAction.CallbackContext context)
+    {
+        playerMove.CancleGliding();
     }
 
     public void OnClimbMove(InputAction.CallbackContext context)
