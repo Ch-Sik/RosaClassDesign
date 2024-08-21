@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
 using UnityEngine.Tilemaps;
+using DG.Tweening;
 
 
 /// <summary>
@@ -73,6 +74,11 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("벽오르기 root motion 대체")]
     public Vector3 ClimbEndOffset = new Vector3(0.85f, 0.744f);
 
+    [FoldoutGroup("벽이동 관련")]
+    [Tooltip("벽오르기 root motion 대체")]
+    public float ledgeClimbStartTime = 0.1f, ledgeClimbUpTime = 0.1f, 
+                    ledgeClimbForwardTime = 0.1f, ledgeClimbEndTime = 0.1f;
+
     // 슈퍼대시 관련
     [FoldoutGroup("슈퍼대쉬(오이) 관련")]
     [Tooltip("오이대쉬 속도")]
@@ -105,7 +111,9 @@ public class PlayerMovement : MonoBehaviour
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isWallJumpReady = false;      // 벽에 붙어서 이동중
     [FoldoutGroup("플래그")]
-    [ReadOnly] public bool isWallClimbingTop = false;      // 벽에 붙어서 이동중 정상도달
+    [ReadOnly] public bool isOnLedge = false;           // 벽에 붙어서 이동중 정상도달
+    [FoldoutGroup("플래그")]
+    [ReadOnly] public bool isDoingLedgeClimb = false;   // 벽 끝 오르기 수행중인지
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isWallJumping = false;       // 벽 점프 중인지
     [FoldoutGroup("플래그")]
@@ -184,7 +192,7 @@ public class PlayerMovement : MonoBehaviour
         InitFields();
     }
 
-    
+
     void GetComponents()
     {
         playerRef = PlayerRef.Instance;
@@ -218,33 +226,36 @@ public class PlayerMovement : MonoBehaviour
     void UpdateFlags()
     {
         isFacingWall = DetectWall();
-        if (isFacingWall) 
-        { 
-            if(playerControl.currentMoveState == PlayerMoveState.CLIMBING)
+
+        if (isFacingWall)
+        {
+            if (playerControl.currentMoveState == PlayerMoveState.CLIMBING)
             {
-                isWallClimbingTop = CheckWallEnd();
+                isOnLedge = CheckWallEnd();
             }
             else
             {
-                isWallClimbingTop = false;
+                isOnLedge = false;
             }
-            
+
             isSlidingOnWall = false;
-            if(isWallClimbingTop)
+            if (isOnLedge)
             {
-                rb.velocity = Vector2.zero;
+                OnStartLedgeClimb();
             }
         }
         else
         {
+            isOnLedge = false;
             if (playerControl.currentMoveState == PlayerMoveState.CLIMBING && !isWallJumpReady)
             {
-                UnstickFromWall();
+                if (!isDoingLedgeClimb)
+                    UnstickFromWall();
             }
-            isWallClimbingTop = false;
+            // isWallClimbingTop = false;
         }
         isDoingAttack = playerRef.combat.isDoingAttack;
-        isNotMoveable = isWallClimbingTop || isKnockbacked || isWallJumping;
+        isNotMoveable = isDoingLedgeClimb || isKnockbacked || isWallJumping;
     }
 
     /// <summary>
@@ -342,7 +353,7 @@ public class PlayerMovement : MonoBehaviour
 
     internal void JumpUp()
     {
-        if(isNotMoveable) return;
+        if (isNotMoveable) return;
 
         //playerAnim.SetTrigger("JumpTrigger");
         rb.velocity = new Vector2(rb.velocity.x, jumpPower);
@@ -360,7 +371,7 @@ public class PlayerMovement : MonoBehaviour
 
         isJumpingUp = false;
         // 최소 점프 시간에 도달했는지 체크
-        if (jumpTimer.duration > minJumpUpDuration) 
+        if (jumpTimer.duration > minJumpUpDuration)
         {
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y < 0 ? rb.velocity.y : 0);
         }
@@ -481,14 +492,12 @@ public class PlayerMovement : MonoBehaviour
                 //UnstickFromWall();
             }
         }
-
-
     }
 
     internal void StopClimb(Vector2 inputVector)
     {
         if (isNotMoveable) return;
-        if (moveVector.x != 0 && !isWallClimbingTop)
+        if (moveVector.x != 0 && !isOnLedge)
         {
             if (!DetectWall() && climbTimer != null)
             {
@@ -521,7 +530,7 @@ public class PlayerMovement : MonoBehaviour
         // 액션 state를 no_action으로 변경: 공격 및 새로운 마법 시전 불가능
         playerControl.SetActionState(PlayerActionState.DISABLED);
         // 기존에 마법을 준비중이었으면 그것을 취소
-        if(playerRef.magic.isMagicMode)
+        if (playerRef.magic.isMagicMode)
         {
             playerRef.magic.CancelMagic();
         }
@@ -544,25 +553,61 @@ public class PlayerMovement : MonoBehaviour
         transform.parent = null;
     }
 
-    public void ClimbEnd()
+    // 절벽 위에 도달했을 때 isOnLedge = true와 함께 호출됨.
+    public void OnStartLedgeClimb()
     {
-        Debug.Log("ClimbEnd");
+        if (isDoingLedgeClimb) return;
+
+        isDoingLedgeClimb = true;
+
+        rb.velocity = Vector2.zero;
+        rb.isKinematic = true;
+        col.enabled = false;
+    }
+
+    // 애니메이션 이벤트로 호출됨
+    // TODO: 이벤트 이름 바꾸기. 바로 위 함수랑 헷갈린다.
+    public void LedgeClimbStart()
+    {
+        Debug.Log("LedgeClimbStart");
         
-        if(facingDirection == LR.LEFT)
-        {
-            gameObject.transform.position += new Vector3(-ClimbEndOffset.x, ClimbEndOffset.y);
-        }
-        else
-        {
-            gameObject.transform.position += new Vector3(ClimbEndOffset.x, ClimbEndOffset.y);
-        }
+        isWallClimbing = false;
+
+        DOTween.Sequence().AppendInterval(ledgeClimbStartTime)
+            .Append(playerRef.rb.DOMoveY(transform.position.y + ClimbEndOffset.y, ledgeClimbUpTime))
+            .Append(playerRef.rb.DOMoveX(transform.position.x + ClimbEndOffset.x * (facingDirection.isLEFT() ? -1 : 1), ledgeClimbForwardTime))
+            .AppendInterval(ledgeClimbEndTime)
+            .AppendCallback(() => OnLedgeClimbEnd());
+    }
+
+    public void OnLedgeClimbEnd()
+    {
+        Debug.Log("LedgeClimbEnd");
 
         hangingIvy = null;
         transform.parent = null;
-        isWallClimbingTop = false;
+        isDoingLedgeClimb = false;
+
+        rb.gravityScale = this.gravityScale;
+        rb.isKinematic = false;
+        col.enabled = true;
+
         playerControl.SetMoveState(PlayerMoveState.DEFAULT);
         playerControl.SetActionState(PlayerActionState.DEFAULT);
-        rb.gravityScale = this.gravityScale;
+    }
+
+    // 애니메이션 이벤트로 호출됨.
+    // 근데 얘 더이상 필요 없을 것 같은데
+    public void LedgeClimbEnd()
+    {
+        //if(facingDirection == LR.LEFT)
+        //{
+        //    gameObject.transform.position += new Vector3(-ClimbEndOffset.x, ClimbEndOffset.y);
+        //}
+        //else
+        //{
+        //    gameObject.transform.position += new Vector3(ClimbEndOffset.x, ClimbEndOffset.y);
+        //}
     }
 
     /// <summary>

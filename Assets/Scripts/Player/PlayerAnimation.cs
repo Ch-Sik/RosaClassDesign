@@ -65,8 +65,8 @@ public class PlayerAnimation : MonoBehaviour
             && !playerMove.isDoingHooking);
         anim.SetBool("isClimbing", 
             playerControl.currentMoveState == PlayerMoveState.CLIMBING);
-        anim.SetBool("isClimbEnd", 
-            playerMove.isWallClimbingTop);
+        anim.SetBool("isClimbEnd",
+            playerMove.isOnLedge && playerMove.isDoingLedgeClimb);
         anim.SetBool("isInputClimbX", 
             playerControl.currentMoveState == PlayerMoveState.CLIMBING 
             && (playerMove.facingDirection.toVector2().x == -playerMove.moveVector.x));
