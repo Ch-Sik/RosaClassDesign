@@ -4480,7 +4480,7 @@ PrefabInstance:
     - target: {fileID: 5377027198806411859, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
       propertyPath: tilemap
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 334351127}
     - target: {fileID: 5377027198806411859, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
       propertyPath: roomData
       value: 
@@ -4530,6 +4530,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
+--- !u!1839735485 &334351127 stripped
+Tilemap:
+  m_CorrespondingSourceObject: {fileID: 3595058535895865111, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
+  m_PrefabInstance: {fileID: 334351126}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &351497959
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4540,11 +4545,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4889714717349398131, guid: 3fd5e9f8389190246a9304773330ac40, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 80.11
+      value: 80.92
       objectReference: {fileID: 0}
     - target: {fileID: 4889714717349398131, guid: 3fd5e9f8389190246a9304773330ac40, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -6.87
+      value: -6.55
       objectReference: {fileID: 0}
     - target: {fileID: 4889714717349398131, guid: 3fd5e9f8389190246a9304773330ac40, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9229,7 +9234,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3910672643810210410, guid: 05d051807c44b89489619fd9ff0c8c2e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.75
+      value: 0.82
       objectReference: {fileID: 0}
     - target: {fileID: 3910672643810210410, guid: 05d051807c44b89489619fd9ff0c8c2e, type: 3}
       propertyPath: m_LocalPosition.z
