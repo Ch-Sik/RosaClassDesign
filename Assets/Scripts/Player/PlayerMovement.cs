@@ -285,8 +285,9 @@ public class PlayerMovement : MonoBehaviour
         // DEFAULT 상태라면 좌우 이동
         else
         {
-            //큐브를 옮기는 동안은 이동속도를 조정
             float xVelocity = moveVector.x * moveSpeed;
+
+            // 큐브를 옮기는 동안은 이동속도를 조정
             if (isGrabCube)
             {
                 xVelocity *= grabSpeedCoef;
@@ -304,11 +305,15 @@ public class PlayerMovement : MonoBehaviour
             else
                 playerControl.currentCubeActionState = PlayerCubeActionState.DEFAULT;
 
+            // 공격 중에도 이동속도 조정
             if (isDoingAttack)
                 xVelocity *= attackSpeedCoef;
 
             rb.velocity = new Vector2(xVelocity, rb.velocity.y);
-            LookAt2DLocal(moveVector);
+
+            // 글라이딩 중에는 좌우 반전 수행하지 않음
+            if(!isGliding)
+                LookAt2DLocal(moveVector);
         }
     }
     #endregion
