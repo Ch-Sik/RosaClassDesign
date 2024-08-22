@@ -10815,8 +10815,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilemap: {fileID: 0}
-  tilePixelSize: 1
-  savePath: Assets/TilemapSprite
+  tilemapManager: {fileID: 0}
+  pixelPerTile: 16
+  folderPath: Assets/TilemapSprite
+  useCustomFilename: 0
+  fileName: 
+  completePath: 
+  bounds:
+    m_Position: {x: 0, y: 0, z: 0}
+    m_Size: {x: 0, y: 0, z: 0}
 --- !u!4 &2133449049
 Transform:
   m_ObjectHideFlags: 0
