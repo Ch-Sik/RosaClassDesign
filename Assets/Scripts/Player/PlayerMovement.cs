@@ -588,6 +588,7 @@ public class PlayerMovement : MonoBehaviour
         hangingIvy = null;
         transform.parent = null;
         isDoingLedgeClimb = false;
+        moveVector = Vector2.zero;
 
         rb.gravityScale = this.gravityScale;
         rb.isKinematic = false;
