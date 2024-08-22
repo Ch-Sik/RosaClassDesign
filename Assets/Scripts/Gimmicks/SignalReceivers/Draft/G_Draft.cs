@@ -15,7 +15,7 @@ public class G_Draft : GimmickSignalReceiver
         if (!collision.CompareTag("Player"))
             return;
 
-        PlayerRef.Instance.Move.Rising(risingPower);
+        PlayerRef.Instance.movement.Rising(risingPower);
     }
 
     private void OnTriggerExit2D(Collider2D collision)
@@ -25,7 +25,7 @@ public class G_Draft : GimmickSignalReceiver
         if (!collision.CompareTag("Player"))
             return;
 
-        PlayerRef.Instance.Move.CancleRising();
+        PlayerRef.Instance.movement.CancleRising();
     }
 
     public override void OnAct()
