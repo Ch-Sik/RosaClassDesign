@@ -712,6 +712,19 @@ public class PlayerMovement : MonoBehaviour
         isGliding = false;
         rb.gravityScale = defaultGravityScale;
     }
+
+    public void Rising(float risingPower)
+    {
+        if (isGliding)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, risingPower);
+        }
+    }
+
+    public void CancleRising()
+    {
+        rb.velocity = new Vector2(rb.velocity.x, 0);
+    }
     #endregion
 
     #region 그라운드 체크. PlayerGroundCheck.cs에서 참조
