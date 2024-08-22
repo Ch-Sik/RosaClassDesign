@@ -8,6 +8,8 @@ public class G_Cube : MonoBehaviour
     public bool onGrab = false;
     public bool canMove = true;
 
+    public float mushJumpMoveSpeed = 15f;
+    public float mushJumpPower = 15f;
     //float defaultMass;
     //float defaultGS;
 
@@ -36,5 +38,10 @@ public class G_Cube : MonoBehaviour
 
         rb.bodyType = RigidbodyType2D.Dynamic;
         rb.simulated = true;
+    }
+
+    public void MushJump(int dir)
+    {
+        rb.velocity = new Vector2(mushJumpMoveSpeed * dir, mushJumpPower);
     }
 }
