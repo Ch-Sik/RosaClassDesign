@@ -55379,13 +55379,14 @@ MonoBehaviour:
   maxClimbTime: 1
   ClimbEndOffset: {x: 0.755, y: 1.4, z: 0}
   ledgeClimbStartTime: 0.1
-  ledgeClimbUpTime: 0.15
+  ledgeClimbUpTime: 0.2
   ledgeClimbForwardTime: 0.15
   ledgeClimbEndTime: 0.05
   superDashSpeed: 3
   knockbackStrength: 0.001
   grabSpeedCoef: 0.5
   attackSpeedCoef: 0.5
+  glidingGravityScale: 0.1
   isGrounded: 0
   isJumpingUp: 0
   isFacingWall: 0
@@ -55403,6 +55404,7 @@ MonoBehaviour:
   isDoingSuperDash: 0
   isNotMoveable: 0
   isGrabCube: 0
+  isGliding: 0
   detectWallTop: {x: 0, y: 0.5}
   detectWallBot: {x: 0.6, y: 0.3}
   detectWallEndTop: {x: 0, y: 0.5}

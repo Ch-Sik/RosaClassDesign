@@ -110,10 +110,12 @@ public class PlayerMovement : MonoBehaviour
     [ReadOnly] public bool isWallClimbing = false;      // 벽에 붙어서 이동중
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isWallJumpReady = false;      // 벽에 붙어서 이동중
+    // NOTE: 벽오르기가 애니메이션 기반이라 연속 애니메이션 재생을 막기 위해
+    // '턱 도달'과 '턱오르기 진행중'의 개념을 분리함
     [FoldoutGroup("플래그")]
-    [ReadOnly] public bool isOnLedge = false;           // 벽에 붙어서 이동중 정상도달
+    [ReadOnly] public bool isOnLedge = false;           // 벽에 붙어서 이동중 '턱' 도달
     [FoldoutGroup("플래그")]
-    [ReadOnly] public bool isDoingLedgeClimb = false;   // 벽 끝 오르기 수행중인지
+    [ReadOnly] public bool isDoingLedgeClimb = false;   // '턱 오르기' 진행중
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isWallJumping = false;       // 벽 점프 중인지
     [FoldoutGroup("플래그")]
@@ -239,9 +241,9 @@ public class PlayerMovement : MonoBehaviour
             }
 
             isSlidingOnWall = false;
-            if (isOnLedge)
+            if (isOnLedge && !isDoingLedgeClimb)
             {
-                OnStartLedgeClimb();
+                StartLedgeClimb();
             }
         }
         else
@@ -470,6 +472,9 @@ public class PlayerMovement : MonoBehaviour
         //큐브를 옮기는 중엔 벽타기 불가능
         if (isGrabCube)
             return;
+        // 턱오르기 도중에 벽타기 애니메이션 나오는 경우 방지
+        if (isDoingLedgeClimb)
+            return;
 
         Debug.Log("Climbing");
 
@@ -554,24 +559,15 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // 절벽 위에 도달했을 때 isOnLedge = true와 함께 호출됨.
-    public void OnStartLedgeClimb()
+    public void StartLedgeClimb()
     {
-        if (isDoingLedgeClimb) return;
-
+        Debug.Log("LedgeClimbStart");
         isDoingLedgeClimb = true;
+        isWallClimbing = false;
 
         rb.velocity = Vector2.zero;
         rb.isKinematic = true;
         col.enabled = false;
-    }
-
-    // 애니메이션 이벤트로 호출됨
-    // TODO: 이벤트 이름 바꾸기. 바로 위 함수랑 헷갈린다.
-    public void LedgeClimbStart()
-    {
-        Debug.Log("LedgeClimbStart");
-        
-        isWallClimbing = false;
 
         DOTween.Sequence().AppendInterval(ledgeClimbStartTime)
             .Append(playerRef.rb.DOMoveY(transform.position.y + ClimbEndOffset.y, ledgeClimbUpTime))
@@ -594,20 +590,6 @@ public class PlayerMovement : MonoBehaviour
 
         playerControl.SetMoveState(PlayerMoveState.DEFAULT);
         playerControl.SetActionState(PlayerActionState.DEFAULT);
-    }
-
-    // 애니메이션 이벤트로 호출됨.
-    // 근데 얘 더이상 필요 없을 것 같은데
-    public void LedgeClimbEnd()
-    {
-        //if(facingDirection == LR.LEFT)
-        //{
-        //    gameObject.transform.position += new Vector3(-ClimbEndOffset.x, ClimbEndOffset.y);
-        //}
-        //else
-        //{
-        //    gameObject.transform.position += new Vector3(ClimbEndOffset.x, ClimbEndOffset.y);
-        //}
     }
 
     /// <summary>

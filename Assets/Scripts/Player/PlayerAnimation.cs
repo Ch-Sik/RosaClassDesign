@@ -66,7 +66,7 @@ public class PlayerAnimation : MonoBehaviour
         anim.SetBool("isClimbing", 
             playerControl.currentMoveState == PlayerMoveState.CLIMBING);
         anim.SetBool("isClimbEnd",
-            playerMove.isOnLedge && playerMove.isDoingLedgeClimb);
+            playerMove.isDoingLedgeClimb);
         anim.SetBool("isInputClimbX", 
             playerControl.currentMoveState == PlayerMoveState.CLIMBING 
             && (playerMove.facingDirection.toVector2().x == -playerMove.moveVector.x));
@@ -77,6 +77,7 @@ public class PlayerAnimation : MonoBehaviour
         anim.SetFloat("yVel", rb.velocity.y);
         anim.SetFloat("spriteDir", transform.localScale.x);
         anim.SetBool("isHoldingCube", playerRef.grabCube.isHoldingCube);
+        anim.SetBool("isGliding", playerMove.isGliding);
     }
 
     public void SetAttackAnimTrigger()
