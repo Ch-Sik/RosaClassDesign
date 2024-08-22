@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("플레이어 이동 속도")]
     [SerializeField] float moveSpeed = 1f;
 
+
     [FoldoutGroup("좌우 이동 관련")]
     [Tooltip("시작 시 플레이어 스프라이트의 방향")]
     [SerializeField] LR spriteDirection = LR.RIGHT;
@@ -40,6 +41,10 @@ public class PlayerMovement : MonoBehaviour
     [FoldoutGroup("점프 관련")]
     [Tooltip("하향 점프 플렛폼 적용 시간")]
     [SerializeField] float downJumpPlatformDuration = 0.1f;
+
+    
+
+
 
     // 벽이동 관련 파라미터
     [FoldoutGroup("벽이동 관련")]
@@ -78,6 +83,20 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("벽오르기 root motion 대체")]
     public float ledgeClimbStartTime = 0.1f, ledgeClimbUpTime = 0.1f, 
                     ledgeClimbForwardTime = 0.1f, ledgeClimbEndTime = 0.1f;
+
+    // 버섯점프 관련
+    [FoldoutGroup("버섯 점프 관련")]
+    [Tooltip("플레이어 버섯 점프 이동 속도")]
+    [SerializeField] float mushJumpMoveSpeed = 7f;
+
+    [FoldoutGroup("버섯 점프 관련")]
+    [Tooltip("플레이어 기존 이동 속도 저장")]
+    float defaultMoveSpeed;
+
+
+    [FoldoutGroup("버섯 점프 관련")]
+    [Tooltip("플레이어 버섯 점프 파워")]
+    [SerializeField] float mushJumpPower = 20f;
 
     // 슈퍼대시 관련
     [FoldoutGroup("슈퍼대쉬(오이) 관련")]
@@ -136,6 +155,8 @@ public class PlayerMovement : MonoBehaviour
     [ReadOnly] public bool isGrabCube = false;          //큐브를 잡고 있는지
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isGliding = false;
+    [FoldoutGroup("플래그")]
+    [ReadOnly] public bool isMushJumping = false;       // 버섯점프를 하고 있는지
 
     // 범위 지정
     [FoldoutGroup("벽 감지 범위")]
@@ -208,6 +229,7 @@ public class PlayerMovement : MonoBehaviour
         groundLayer = LayerMask.NameToLayer("Ground");
         climbableLayer = LayerMask.NameToLayer("Climbable");
         defaultGravityScale = rb.gravityScale;
+        defaultMoveSpeed = moveSpeed;
     }
     #endregion
 
@@ -456,6 +478,8 @@ public class PlayerMovement : MonoBehaviour
             isWallJumping = false;
         }
     }
+
+   
     #endregion
 
     #region 벽 오르기 관련
@@ -698,6 +722,24 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+    #region 버섯점프 관련
+
+    /// <summary>
+    /// 버섯에서의 점프. 버섯점프는 소점프/대점프를 구분하지 않음.
+    /// </summary>
+    public void MushJump()
+    {
+        //큐브를 옮기는 중이라면, 큐브를 놓아버림
+        if (isGrabCube)
+            PlayerRef.Instance.grabCube.UnGrab();
+
+        isJumpingUp = true;
+        isMushJumping = true;
+        moveSpeed = mushJumpMoveSpeed;
+        rb.velocity = new Vector2(rb.velocity.x, mushJumpPower);
+    }
+    #endregion
+
     #region 슈퍼대시 관련
     public void PrepareSuperDash()
     {
@@ -808,6 +850,12 @@ public class PlayerMovement : MonoBehaviour
         if (isGliding)
         {
             CancleGliding();
+        }
+        if(isMushJumping)
+        {
+            isMushJumping = false;
+            isJumpingUp = false;
+            moveSpeed = defaultMoveSpeed;
         }
     }
     #endregion

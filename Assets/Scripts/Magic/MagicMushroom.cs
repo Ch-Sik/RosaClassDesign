@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,7 +12,16 @@ public class MagicMushroom : MonoBehaviour
         if(collision.gameObject.CompareTag("Player"))
         {
             if (PlayerRef.Instance.movement.isGrounded)
-                collision.gameObject.GetComponent<Rigidbody2D>().velocity = (Vector2.up * jumpPower);
+                PlayerRef.Instance.movement.MushJump();
         }
+        
+        if(collision.gameObject.CompareTag("Cube"))
+        {
+            int dir;
+            if (gameObject.transform.position.x - collision.transform.position.x > 0) dir = -1;
+            else dir = 1;
+            collision.gameObject.GetComponent<G_Cube>().MushJump(dir);
+        }
+        
     }
 }
