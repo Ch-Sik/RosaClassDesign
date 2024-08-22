@@ -78,6 +78,7 @@ public class PlayerAnimation : MonoBehaviour
         anim.SetFloat("spriteDir", transform.localScale.x);
         anim.SetBool("isHoldingCube", playerRef.grabCube.isHoldingCube);
         anim.SetBool("isGliding", playerMove.isGliding);
+        anim.SetBool("isSuperDashing", playerMove.isDoingSuperDash);
     }
 
     public void SetAttackAnimTrigger()
