@@ -11,5 +11,9 @@ public class GimmickSignalSender : MonoBehaviour
     public void SetHandler(GimmickSignalConnector hander) { this.handler = hander; }
 
     //상태 변화 시 SendSignal을 통해 Signal 점검
-    public void SendSignal() { handler.Signal(); }
+    public void SendSignal()
+    {
+        if (handler != null)
+            handler.Signal();
+    }
 }

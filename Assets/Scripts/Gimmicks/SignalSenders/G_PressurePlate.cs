@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class G_PressurePlate : GimmickSignalSender
 {
+    public bool isCubeOnly = false;
     public Sprite active;
     public Sprite inactive;
     public int count = 0;
@@ -30,6 +31,14 @@ public class G_PressurePlate : GimmickSignalSender
 
     bool CheckTag(string tag)
     {
+        if (isCubeOnly)
+        {
+            if (tag == "Cube")
+                return true;
+            else
+                return false;
+        }
+
         if(tag == "Player" ||
            tag == "Cube" ||
            tag == "Monster")
