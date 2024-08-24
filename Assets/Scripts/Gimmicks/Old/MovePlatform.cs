@@ -167,6 +167,7 @@ public class MovePlatform : MonoBehaviour
 
         if (Vector3.Distance(transform.position, targetPoint.position) < 0.1f)
         {
+            transform.position = targetPoint.position;
             if (isReverse)
                 currentIndex = (currentIndex - 1) > -1 ? currentIndex - 1 : points.Count - 1;
             else
