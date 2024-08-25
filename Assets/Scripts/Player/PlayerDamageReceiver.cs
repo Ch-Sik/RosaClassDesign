@@ -17,10 +17,10 @@ public class PlayerDamageReceiver : MonoBehaviour
     public void GetDamage(GameObject target, int damage)
     {
         playerRef.animation.BlinkEffect();
+        playerRef.animation.SetTrigger("Hit");
 
-        playerRef.movement.OnKnockback(new Vector3(target.transform.position.x,
-                    target.transform.position.y - (target.transform.localScale.y / 2),
-                    target.transform.position.z));
+        playerRef.movement.Knockback(new Vector2(target.transform.position.x,
+                    target.transform.position.y - (target.transform.localScale.y / 2)));
         playerRef.state.TakeDamage(damage);
 
         int originalLayer = target.layer;
@@ -36,10 +36,10 @@ public class PlayerDamageReceiver : MonoBehaviour
     public void GetDamage(GameObject target, int damage, float ignoreDur)
     {
         playerRef.animation.BlinkEffect();
+        playerRef.animation.SetTrigger("Hit");
 
-        playerRef.movement.OnKnockback(new Vector3(target.transform.position.x,
-                    target.transform.position.y - (target.transform.localScale.y / 2),
-                    target.transform.position.z));
+        playerRef.movement.Knockback(new Vector2(target.transform.position.x,
+                    target.transform.position.y - (target.transform.localScale.y / 2)));
         playerRef.state.TakeDamage(damage);
 
         int originalLayer = target.layer;

@@ -903,9 +903,9 @@ public class PlayerMovement : MonoBehaviour
         //aimLine.transform.localScale = theScale;
     }
 
-    public void OnKnockback(Vector3 knockbackPos)
+    public void Knockback(Vector2 knockbackPos)
     {
-        Vector2 knockbackDirection = transform.position - knockbackPos;
+        Vector2 knockbackDirection = (Vector2)transform.position - knockbackPos;
         knockbackDirection.Normalize();
 
         Debug.Log(knockbackDirection);
@@ -923,7 +923,9 @@ public class PlayerMovement : MonoBehaviour
         {
             playerControl.SetMoveState(PlayerMoveState.NO_MOVE);
             LookAt2DLocal(-knockbackDirection);     // 넉백되는 방향의 반대편 바라보기
-            playerRef.animation.SetTrigger("Hit");
+            // 피격 애니메이션 관련은 PlayerDamageReceiver.GetDamage()로 옮김
+            // 보스 패턴 등에서 '밀쳐내기'를 하면서도 데미지는 없는 경우가 있기 때문.
+            // playerRef.animation.SetTrigger("Hit");
             playerRef.animation.ResetTrigger("Grounded");
             isKnockbacked = true;
             float waitTime = 0.3f;
