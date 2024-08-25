@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
+using DG.Tweening;
 
 public class G_Laser : GimmickSignalReceiver
 {
@@ -19,11 +20,20 @@ public class G_Laser : GimmickSignalReceiver
     public bool lasing = false;
     public float length = 0.00f;
 
+    public Transform show1;
+    public Transform show2;
+    private SpriteRenderer sr1;
+    private SpriteRenderer sr2;
+
     RaycastHit hit;
     Coroutine cor;
+    Sequence seq;
 
     private void Start()
     {
+        sr1 = show1.GetComponent<SpriteRenderer>();
+        sr2 = show2.GetComponent<SpriteRenderer>();
+
         Invoke("ActivateLaser", startDelay);
     }
 
@@ -36,7 +46,11 @@ public class G_Laser : GimmickSignalReceiver
         }
         sp.enabled = true;
 
-        sp.size = new Vector2(sp.size.x, length);
+        Vector2 size = new Vector2(sp.size.x, length);
+
+        sp.size = size;
+        sr1.size = size;
+        sr2.size = size;
 
         Detect();
     }
@@ -56,12 +70,35 @@ public class G_Laser : GimmickSignalReceiver
         isActivate = false;
         lasing = false;
         StopCoroutine(cor);
+        seq.Kill();
     }
 
     IEnumerator Laser()
     {
         lasing = true;
         yield return new WaitForSeconds(onTime);
+
+        seq = DOTween.Sequence()
+        .AppendCallback(() =>
+        {
+            show1.localPosition = new Vector3(0.5f, 0, 0);
+            show2.localPosition = new Vector3(-0.5f, 0, 0);
+        })
+        .Append(show1.DOLocalMoveX(0, offTime).SetEase(Ease.Linear))
+        .Join(show2.DOLocalMoveX(0, offTime).SetEase(Ease.Linear))
+        .Join(sr1.DOFade(100f / 255f, offTime))
+        .Join(sr2.DOFade(100f / 255f, offTime))
+        .AppendCallback(() =>
+        {
+            sr1.DOFade(0, 0);
+            sr2.DOFade(0, 0);
+        })
+        .OnKill(() =>
+        {
+            sr1.DOFade(0, 0);
+            sr2.DOFade(0, 0);
+        });
+
         lasing = false;
         yield return new WaitForSeconds(offTime);
 

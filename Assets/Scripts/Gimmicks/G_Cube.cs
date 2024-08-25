@@ -14,6 +14,7 @@ public class G_Cube : MonoBehaviour
     //float defaultGS;
 
     Rigidbody2D rb;
+    public Collider2D boxCol;
 
     private void Start()
     {
