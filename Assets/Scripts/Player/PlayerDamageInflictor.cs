@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ public class PlayerDamageInflictor : MonoBehaviour
 {
     Collider2D col;                                 //오브젝트의 충돌 컴포넌트
     PlayerCombat playerCombat;                      //PlayerCombat과 이벤트 전달을 위해 직접 연결
-
+    [SerializeField] ObjectPool attackEffects;                       // 공격 적중시의 이펙트 풀
 
     float damagePercent;                            //콤보 당 데미지 비중을 가지기 위한 비중 값
     float attackAngle;
@@ -20,6 +21,8 @@ public class PlayerDamageInflictor : MonoBehaviour
     LayerMask layer_wall;
     LayerMask layer_attackable;                    //attackable한 objects의 layermask
     LayerMask layer_butterfly;                      //butterfly인식을 위한 layermask
+
+    [SerializeField] float hitEffectDuration;
 
 
 
@@ -39,6 +42,9 @@ public class PlayerDamageInflictor : MonoBehaviour
         col = GetComponent<Collider2D>();
         col.enabled = false;
         col.isTrigger = true;
+
+        // 이펙트가 플레이어 움직임에 영향받지 않도록 Root를 부모로 삼도록 한다
+        attackEffects.transform.SetParent(null);
     }
 
     // 공격 판정 활성화 or 비활성화
@@ -77,8 +83,17 @@ public class PlayerDamageInflictor : MonoBehaviour
         // 몬스터 등등과 충돌한다면,
         if ((layer_attackable & 1 << collision.gameObject.layer) != 0)
         {
+            // 적에게 데미지 가하기
             DamageReceiver receiver = collision.GetComponent<DamageReceiver>();
             receiver?.GetHitt(Mathf.RoundToInt(PlayerRef.Instance.state.AttackDmg * damagePercent), attackAngle);
+            GameObject attackEffect = attackEffects.GetNextFromPool();
+            // 공격 이펙트 소환
+            attackEffect.transform.position = transform.position;
+            attackEffect.SetActive(true);
+            DOTween.Sequence().AppendInterval(hitEffectDuration)
+                .AppendCallback(() => attackEffect.SetActive(false));
+
+            // 범위 공격이 아니라 단일 공격이므로 이후 공격은 중단
             playerCombat.StopAttack();
         }
 
