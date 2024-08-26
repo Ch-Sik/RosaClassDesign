@@ -17,8 +17,8 @@ public class PlayerCombat : MonoBehaviour
     [System.Serializable]
     public class ComboAttack
     {
-        public GameObject attackEntity;             // 공격 오브젝트
-        public PlayerDamageInflictor attackHandler; // 공격 핸들러
+        public GameObject attackEffect;             // 공격 오브젝트
+        // public PlayerDamageInflictor attackHandler; // 공격 핸들러
 
         [Header("Combat Properties")]
         public float attackStartupTime;               // 공격 선딜레이
@@ -26,15 +26,12 @@ public class PlayerCombat : MonoBehaviour
         public float attackRecoveryTime;            // 공격 후딜레이
         public float attackDistance;                // 공격 사거리
         public float attackDamagePercent;           // 공격 데미지 비중
-        public void SetAttackHandler(GameObject entity)
-        {
-            attackHandler = entity.GetComponentInChildren<PlayerDamageInflictor>();
-        }
     }
 
     [Title("컴포넌트 레퍼런스")]
     [ReadOnly, SerializeField] PlayerController playerControl;
     [ReadOnly, SerializeField] PlayerRef playerRef;
+    [SerializeField] PlayerDamageInflictor attackHandler;
 
     [Title("플래그")]
     public bool isDoingAttack = false;              //공격중이라면 true, 아니라면 false;
@@ -64,7 +61,6 @@ public class PlayerCombat : MonoBehaviour
     // 콤보 관련 변수
     private ComboAttack currentCombo;
     private GameObject currentAttackEffect;
-    private PlayerDamageInflictor currentAttackHandler;
 
     public void SetAttackTrigger(bool value)
     {
@@ -87,21 +83,20 @@ public class PlayerCombat : MonoBehaviour
         // 공격 오브젝트가 flip에 영향받지 않도록 하기 위해 게임이 시작되면 공격을 플레이어의 자식이 아니도록 설정
         for (int i = 0; i < comboAttacks.Count; i++)
         {
-            if (comboAttacks[i].attackEntity == null)
+            if (comboAttacks[i].attackEffect == null)
             {
                 Debug.LogError($"Combo attack entity at index {i} is not set.");
                 continue;
             }
-            comboAttacks[i].attackEntity.transform.SetParent(null);
-            comboAttacks[i].attackEntity.SetActive(false);
+            comboAttacks[i].attackEffect.transform.SetParent(null);
+            comboAttacks[i].attackEffect.SetActive(false);
 
-            comboAttacks[i].SetAttackHandler(comboAttacks[i].attackEntity);
-            if (comboAttacks[i].attackHandler == null)
-            {
-                Debug.LogError($"PlayerDamageInflictor not found in attack entity at index {i}.");
-                continue;
-            }
-            comboAttacks[i].attackHandler.Init(this, comboAttacks[i].attackDamagePercent, mask_wall, mask_attackable, mask_butterfly);
+            //if (comboAttacks[i].attackHandler == null)
+            //{
+            //    Debug.LogError($"PlayerDamageInflictor not found in attack entity at index {i}.");
+            //    continue;
+            //}
+            attackHandler.Init(this, comboAttacks[i].attackDamagePercent, mask_wall, mask_attackable, mask_butterfly);
         }
     }
 
@@ -134,32 +129,33 @@ public class PlayerCombat : MonoBehaviour
         // 그 외 비주얼 이펙트 등은 OnXXXAttack 이벤트 핸들러에서 관리
         Sequence attack = DOTween.Sequence()
         // 선딜레이 타임
-        .AppendCallback(() => {
-            OnStartupAttack(); 
+        .AppendCallback(() =>
+        {
+            OnStartupAttack();
         })
         .AppendInterval(currentCombo.attackStartupTime)
         // 공격 활성화 타임
-        .AppendCallback(() => {
-            currentAttackHandler.transform.localPosition = Vector3.zero;    // 공격판정 초기화
-            currentAttackHandler.SetAttackActive(angle);
-            OnActivateAttack(); 
+        .AppendCallback(() =>
+        {
+            attackHandler.transform.localPosition = Vector3.zero;    // 공격판정 초기화
+            attackHandler.SetAttackActive(angle);
+            OnActivateAttack();
         })
-        .Append(currentAttackHandler.transform.DOMove(                      // 공격 판정 발사
+        .Append(attackHandler.transform.DOMove(                      // 공격 판정 발사
             currentCombo.attackDistance * direction,
             currentCombo.attackActiveTime).SetRelative(true)
         )
         // 공격 활성화 종료
-        .AppendCallback(() => {
-            currentAttackHandler.transform.position = transform.position;   // 공격판정 회수
-            currentAttackHandler.SetAttackInactive();
-            OnDeactiveAttack(); 
+        .AppendCallback(() =>
+        {
+            OnDeactiveAttack();                     // 공격 이펙트는 남겨놓고 판정만 회수
         })
         // 후딜레이 타임
         .AppendInterval(currentCombo.attackRecoveryTime)
         .OnComplete(() =>
         {
             // 이번 공격 종료
-            OnEndAttack();
+            OnEndAttack();                          // 공격 이펙트까지 회수
         });
     }
 
@@ -186,8 +182,9 @@ public class PlayerCombat : MonoBehaviour
             comboStep = (comboStep + 1) % comboAttacks.Count;
         }
         currentCombo = comboAttacks[comboStep];
-        currentAttackEffect = currentCombo.attackEntity;
-        currentAttackHandler = currentCombo.attackHandler;
+        currentAttackEffect = currentCombo.attackEffect;
+        // attackHandler = currentCombo.attackHandler;
+
         // 콤보 타이머 관리는 OnEndAttack으로 이동
         // 사유: 공격 한번의 길이에 따라 다음 공격이 콤보로 인정되는 시간이 들쭉날쭉하거나 아예 다음 콤보로 이어지지 않는 문제
     }
@@ -201,10 +198,11 @@ public class PlayerCombat : MonoBehaviour
         // attackEntity.transform.localPosition = Vector2.zero;
 
         // 공격 판정 off
-        foreach (var combo in comboAttacks)
-        {
-            combo.attackHandler.SetAttackInactive();
-        }
+        //foreach (var combo in comboAttacks)
+        //{
+        //    combo.attackHandler.SetAttackInactive();
+        //}
+        attackHandler.SetAttackInactive();
 
         // 적에게 공격이 닿았다고 공격 이펙트/후딜레이가 없어지면 안됨.
         // OnEndAttack();
@@ -226,25 +224,30 @@ public class PlayerCombat : MonoBehaviour
     //공격 판정 시작 시
     private void OnActivateAttack()
     {
-
+        attackHandler.gameObject.SetActive(true);
     }
 
     private void OnDeactiveAttack()
     {
-        // 공격 이펙트 종료
-        currentAttackEffect.SetActive(false);
+        // 공격 판정 종료
+        attackHandler.transform.position = transform.position;   // 공격판정 회수
+        attackHandler.SetAttackInactive();
+        attackHandler.gameObject.SetActive(false);
     }
 
     //공격 판정 종료시
     private void OnEndAttack()
     {
+        // 이번 공격의 이펙트 & 공격 판정 오브젝트 비활성화
+        currentAttackEffect.SetActive(false);
+
+        // 다음 콤보 관련 처리
         // 콤보 이어지는지 판단하기 위한 타이머 리셋
         if (lastAttackTimer == null)
             lastAttackTimer = Timer.StartTimer();
         else
             lastAttackTimer.Reset();
-        // 이펙트 & 공격 판정 오브젝트 비활성화
-        if(attackTrigger)
+        if (attackTrigger)
         {
             // 공격 종료 시에도 공격 버튼이 눌려져있다면 다음 공격 시전
             Attack();
