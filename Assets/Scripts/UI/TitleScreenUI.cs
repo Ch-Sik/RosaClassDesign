@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 타이틀 화면 UI 담당
@@ -17,5 +18,10 @@ public class TitleScreenUI : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void OnClickStartButton(string sceneName)
+    {
+        SceneManager.LoadScene(sceneName);
     }
 }
