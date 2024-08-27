@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class TilemapShadowPlacer : MonoBehaviour
 {
+#if UNITY_EDITOR
     public RoomExtractor roomExtractor;
     public TerrainShadowGenerator shadowGenerator;
     public Color shadowColor;
@@ -43,4 +44,5 @@ public class TilemapShadowPlacer : MonoBehaviour
 
         Debug.Log($"타일맵 그림자를 씬에다가 배치: {go}");
     }
+#endif
 }
