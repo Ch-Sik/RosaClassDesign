@@ -829,7 +829,7 @@ public class PlayerMovement : MonoBehaviour
         if (playerControl.currentMoveState == PlayerMoveState.DEFAULT)
         {
             // playerControl.ChangeMoveState(PlayerMoveState.MIDAIR);
-            playerRef.animation.ResetTrigger("Grounded");
+            // playerRef.animation.ResetTrigger("Grounded");
         }
     }
 
@@ -838,7 +838,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void OnLanded()
     {
-        playerRef.animation.SetTrigger("Grounded");
+        // playerRef.animation.SetTrigger("Grounded");
         if (isSlidingOnWall)
         {
             isSlidingOnWall = false;

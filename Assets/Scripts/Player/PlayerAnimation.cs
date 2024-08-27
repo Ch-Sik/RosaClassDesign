@@ -55,6 +55,7 @@ public class PlayerAnimation : MonoBehaviour
 
     void UpdateAnimParameters()
     {
+        anim.SetBool("isGrounded", playerMove.isGrounded);
         anim.SetBool("isWalking", 
             playerControl.currentMoveState == PlayerMoveState.DEFAULT 
             && (!isDoingAttack || !playerMove.noMoveOnAttack)
