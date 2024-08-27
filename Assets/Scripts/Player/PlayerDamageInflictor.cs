@@ -13,7 +13,7 @@ public class PlayerDamageInflictor : MonoBehaviour
 {
     Collider2D col;                                 //오브젝트의 충돌 컴포넌트
     PlayerCombat playerCombat;                      //PlayerCombat과 이벤트 전달을 위해 직접 연결
-    [SerializeField] ObjectPool attackEffects;                       // 공격 적중시의 이펙트 풀
+    [SerializeField] ObjectPool hitEffects;                       // 공격 적중시의 이펙트 풀
 
     float damagePercent;                            //콤보 당 데미지 비중을 가지기 위한 비중 값
     float attackAngle;
@@ -44,7 +44,7 @@ public class PlayerDamageInflictor : MonoBehaviour
         col.isTrigger = true;
 
         // 이펙트가 플레이어 움직임에 영향받지 않도록 Root를 부모로 삼도록 한다
-        attackEffects.transform.SetParent(null);
+        hitEffects.transform.SetParent(null);
     }
 
     // 공격 판정 활성화 or 비활성화
@@ -86,7 +86,7 @@ public class PlayerDamageInflictor : MonoBehaviour
             // 적에게 데미지 가하기
             DamageReceiver receiver = collision.GetComponent<DamageReceiver>();
             receiver?.GetHitt(Mathf.RoundToInt(PlayerRef.Instance.state.AttackDmg * damagePercent), attackAngle);
-            GameObject attackEffect = attackEffects.GetNextFromPool();
+            GameObject attackEffect = hitEffects.GetNextFromPool();
             // 공격 이펙트 소환
             attackEffect.transform.position = transform.position;
             attackEffect.SetActive(true);

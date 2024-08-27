@@ -33,7 +33,7 @@ public class MonsterProjectile : MonoBehaviour
 
         // 기본 속도 설정
         rigidbody.velocity = direction * speedScale;
-        Debug.Log($"투사체 속도:{direction * speedScale}");
+        // Debug.Log($"투사체 속도:{direction * speedScale}");
     }
 
     private void OnTriggerEnter2D(Collider2D collider)
@@ -42,7 +42,7 @@ public class MonsterProjectile : MonoBehaviour
         if (collider.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
             // TODO: 투사체 사라지는 연출 넣기
-            Debug.Log("몬스터 투사체 지형과 접촉");
+            // Debug.Log("몬스터 투사체 지형과 접촉");
             rigidbody.velocity = Vector2.zero;
             this.collider.enabled = false;
             DoDestroy(1f);
