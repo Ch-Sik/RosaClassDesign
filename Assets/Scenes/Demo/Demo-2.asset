@@ -33,7 +33,13 @@ MonoBehaviour:
     - {x: 51, y: -5}
     - {x: 52, y: -5}
     - {x: 53, y: -5}
-    connectedPorts: []
+    connectedPorts:
+    - flag: 
+      flagIndex: 0
+      scene:
+        m_SceneAsset: {fileID: 102900000, guid: 6bd3c36a8a852f5459b191d912a2d8f4, type: 3}
+        m_SceneName: Demo-3
+      index: 0
   rigPorts: []
   lefPorts:
   - flag: 
@@ -44,4 +50,10 @@ MonoBehaviour:
     - {x: 0, y: -2}
     - {x: 0, y: -1}
     - {x: 0, y: 0}
-    connectedPorts: []
+    connectedPorts:
+    - flag: 
+      flagIndex: 0
+      scene:
+        m_SceneAsset: {fileID: 102900000, guid: 8f394bd04a80c514cbd41d210bad99fd, type: 3}
+        m_SceneName: Demo-1
+      index: 0
