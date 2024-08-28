@@ -31,6 +31,16 @@ public class RoomPortObject : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
+            if (MapManager.Instance == null)
+            {
+                Debug.LogError("MapManager 인스턴스를 찾을 수 없음");
+                return;
+            }
+            if(connects.Count == 0)
+            {
+                Debug.LogWarning("해당 포트가 다른 맵과 연결되지 않았습니다.");
+                return;
+            }
             MapManager.Instance?.Enter(reverseDirection, connects);
         }
     }
