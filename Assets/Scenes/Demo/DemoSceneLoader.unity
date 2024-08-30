@@ -267,6 +267,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 3424554189190895944, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: playerStateUI
+      value: 
+      objectReference: {fileID: 1583585822}
+    - target: {fileID: 3424554189190895944, guid: dff6c20f5540f3843828c629df070725, type: 3}
       propertyPath: magicList.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -1442,6 +1446,17 @@ PrefabInstance:
       addedObject: {fileID: 1047433010}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 52ee2da59a809f741b08a43d17e46b20, type: 3}
+--- !u!114 &1583585822 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4634819330131258546, guid: 52ee2da59a809f741b08a43d17e46b20, type: 3}
+  m_PrefabInstance: {fileID: 1583585821}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d44a580d2f4e87439f547f96a0f7db9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1625799283 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6606165383981438929, guid: dff6c20f5540f3843828c629df070725, type: 3}
