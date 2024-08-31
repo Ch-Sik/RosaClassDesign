@@ -44,7 +44,6 @@ public class BGMPlayer : MonoBehaviour
 
     public void PlayBGM(AudioClip newClip)
     {
-        // TODO: 맵 데이터에 BGM 저장하여 그거 읽어오도록 구현하면 좋을 것 같은데
         if (audioSourceA.isPlaying)
         {
             if (audioSourceA.clip != newClip)
@@ -89,5 +88,12 @@ public class BGMPlayer : MonoBehaviour
                 audioSourceA = audioSourceB;
                 audioSourceB = temp;
             });
+    }
+
+    // 전투 등이 종료되었을 때 현재 상황에 맞는 기본 브금으로 돌아가기
+    public void PlayDefaultBGM()
+    {
+        // TODO: 맵 데이터에 BGM 저장하여 그거 읽어오도록 구현하면 좋을 것 같은데
+        PlayBGM(startBGMclip);      // 일단 임시로 시작 브금 재생하도록 함.
     }
 }

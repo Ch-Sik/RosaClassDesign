@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,6 +32,9 @@ public class BossRoomManager : MonoBehaviour
             case BBK.CurrentPhase:
                 OnBossPhaseChanged((int)value);
                 break;
+            case BBK.isDead:
+                OnBossDead();
+                break;
             default: 
                 // 아무것도 안함
                 break;
@@ -52,5 +56,16 @@ public class BossRoomManager : MonoBehaviour
         {
             bgmPlayer.PlayBGM(bgmClip[phase]);
         }
+    }
+
+    void OnBossDead()
+    {
+        bgmPlayer.PlayDefaultBGM();
+    }
+
+    [Button("테스트: 보스 즉시 사망")]
+    void Test_KillBossImmediatly()
+    {
+        bossBlackboard.gameObject.GetComponent<MonsterDamageReceiver>().GetHitt(999, 0);
     }
 }
