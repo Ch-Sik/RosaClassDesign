@@ -237,6 +237,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7827242243072037476, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
+      propertyPath: playAutomatically
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 3584452616051174464, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
     - {fileID: 8015320046028753853, guid: d38759011fc1fb04b9e846a299946b4a, type: 3}
@@ -1100,6 +1104,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1018947825}
+  - component: {fileID: 1018947826}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -1124,6 +1129,19 @@ Transform:
   - {fileID: 1806561811}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1018947826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1018947824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a5d4f50e9b9a5f45b718985a777a35b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _volumes: []
 --- !u!1 &1047433009
 GameObject:
   m_ObjectHideFlags: 0

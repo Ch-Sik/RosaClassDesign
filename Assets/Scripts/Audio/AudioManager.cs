@@ -35,6 +35,7 @@ public class AudioManager : MonoBehaviour
     void SetSoundVolume(AudioType audioType, float value)
     {
         _volumes[(int)audioType] = value;
-        OnAudioVolumeChanged(audioType, value);
+        if(OnAudioVolumeChanged != null)
+            OnAudioVolumeChanged(audioType, value);
     }
 }
