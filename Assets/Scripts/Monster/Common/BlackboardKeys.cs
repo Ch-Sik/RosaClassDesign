@@ -13,5 +13,6 @@ public static class BBK // blackboard key
     public const string StuckAtWall = "StuckAtWall";
     public const string StuckAtCliff = "StuckAtCliff";
     public const string AttackState = "AttackState";
+    public const string CurrentPhase = "CurrentPhase";
     public const string CurrentPattern = "CurrentPattern";
 }

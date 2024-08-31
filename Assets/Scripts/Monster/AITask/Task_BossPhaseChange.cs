@@ -7,11 +7,13 @@ using Panda;
 public class Task_BossPhaseChange : Task_Base
 {
     [SerializeField]
+    Blackboard blackboard;
+    [SerializeField]
     private MonsterState bossState;
     [SerializeField]
     private int[] phaseMinHP = null;
 
-    public int currentPhase = 0;    // 디버깅용
+    [ReadOnly] public int currentPhase = 0;     // 페이즈 숫자는 0부터 시작함
 
     private void Start()
     {
@@ -20,7 +22,14 @@ public class Task_BossPhaseChange : Task_Base
             bossState = GetComponent<MonsterState>();
             Debug.Assert(bossState != null, $"{gameObject.name}: BossState를 찾을 수 없음!");
         }
+        if(blackboard == null)
+        {
+            blackboard = GetComponent<Blackboard>();
+            Debug.Assert(blackboard != null);
+        }
         Debug.Assert(phaseMinHP != null, "보스의 페이즈 별 HP를 설정해야 함!");
+
+        blackboard.Set(BBK.CurrentPhase, currentPhase);
     }
 
     [Task]
@@ -33,6 +42,7 @@ public class Task_BossPhaseChange : Task_Base
         else
         {
             currentPhase = phaseNum + 1;
+            blackboard.Set(BBK.CurrentPhase, currentPhase);
             return false;
         }
     }

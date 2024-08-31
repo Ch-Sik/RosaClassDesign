@@ -14659,6 +14659,54 @@ Material:
     m_Colors:
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_BuildTextureStacks: []
+--- !u!1 &1123932976
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1123932977}
+  - component: {fileID: 1123932978}
+  m_Layer: 0
+  m_Name: BossRoomManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1123932977
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1123932976}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 13.89876, y: -34.28971, z: -0.02029502}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1123932978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1123932976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c66e9b3ee709d3b47b46360970a15ba7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bossBlackboard: {fileID: 1152961465}
+  bgmClip:
+  - {fileID: 8300000, guid: 803b2206d578cd9478602d190a79aa00, type: 3}
+  - {fileID: 8300000, guid: 2eef0d024c253b0449386e687f904fde, type: 3}
 --- !u!43 &1130047812
 Mesh:
   m_ObjectHideFlags: 0
@@ -15253,6 +15301,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1b452d61714e6264481613fe05da3eb0, type: 3}
+--- !u!114 &1152961465 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7408543541413976975, guid: 1b452d61714e6264481613fe05da3eb0, type: 3}
+  m_PrefabInstance: {fileID: 1152961464}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06b3ad9f2e397194baf2d5658d9bd26f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!43 &1165997658
 Mesh:
   m_ObjectHideFlags: 0
@@ -19950,3 +20009,4 @@ SceneRoots:
   - {fileID: 1705941463}
   - {fileID: 1152961464}
   - {fileID: 908985186}
+  - {fileID: 1123932977}

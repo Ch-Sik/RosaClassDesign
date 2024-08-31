@@ -47,7 +47,10 @@ public class BGMPlayer : MonoBehaviour
         // TODO: 맵 데이터에 BGM 저장하여 그거 읽어오도록 구현하면 좋을 것 같은데
         if (audioSourceA.isPlaying)
         {
-            SwitchBGM(newClip);
+            if (audioSourceA.clip != newClip)
+                SwitchBGM(newClip);
+            else
+                Debug.LogWarning("이미 재생중인 BGM임!");
         }
         else
         {
@@ -59,6 +62,8 @@ public class BGMPlayer : MonoBehaviour
     [Button("브금 전환 테스트")]
     private void SwitchBGM(AudioClip newClip)
     {
+        Debug.Log($"브금 전환: {audioSourceA.clip.name} → {newClip}");
+
         if(!readyToFade)
         {
             Debug.LogError("이미 BGM 전환 수행중임! 기다렸다가 다시 시도하세요");
