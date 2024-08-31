@@ -20,13 +20,17 @@ public class BGMPlayer : MonoBehaviour
     AudioManager audioManager;
     Sequence fadeSeq = null;
     bool readyToFade = true;
+    float bgmVolume = 1;
+
+    private void Awake()
+    {
+        audioManager = AudioManager.Instance;
+        audioManager.OnAudioVolumeChanged += OnVolumeChanged;
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        audioManager = AudioManager.Instance;
-        audioManager.OnAudioVolumeChanged += OnVolumeChanged;
-
         Debug.Assert(audioSourceA != null);
         Debug.Assert(audioSourceB != null);
 
@@ -38,10 +42,12 @@ public class BGMPlayer : MonoBehaviour
 
     void OnVolumeChanged(AudioType type, float value)
     {
-        if (type != AudioType.SFX) return;
-        audioSourceA.volume = value;
+        if (type != AudioType.BGM) return;
+        bgmVolume = value;
+        audioSourceA.volume = bgmVolume;
     }
 
+    [Button("브금 전환 테스트")]
     public void PlayBGM(AudioClip newClip)
     {
         if (audioSourceA.isPlaying)
@@ -58,7 +64,6 @@ public class BGMPlayer : MonoBehaviour
         }
     }
 
-    [Button("브금 전환 테스트")]
     private void SwitchBGM(AudioClip newClip)
     {
         Debug.Log($"브금 전환: {audioSourceA.clip.name} → {newClip}");
@@ -70,9 +75,12 @@ public class BGMPlayer : MonoBehaviour
         }
         readyToFade = false;
 
+        // audioSourceB 미리 준비시키기
         audioSourceB.clip = newClip;
+        audioSourceB.volume = 0;
         audioSourceB.loop = true;
 
+        // 페이드 수행
         fadeSeq = DOTween.Sequence()
             .Append(audioSourceA.DOFade(0, fadeDuration))
             .AppendCallback(() =>
@@ -80,8 +88,9 @@ public class BGMPlayer : MonoBehaviour
                 audioSourceA.Stop();
                 audioSourceB.Play();
             })
-            .Append(audioSourceB.DOFade(1, fadeDuration))
+            .Append(audioSourceB.DOFade(bgmVolume, fadeDuration))
             .OnComplete(() => {
+                // 다음 페이드 수행가능하다고 표시
                 readyToFade = true;
                 // 두 AudioSource의 참조를 교환
                 AudioSource temp = audioSourceA;
