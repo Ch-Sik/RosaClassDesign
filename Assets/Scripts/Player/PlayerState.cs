@@ -49,14 +49,17 @@ public class PlayerState : MonoBehaviour
     }
     public void TakeDamage(int amount) 
     {
-        Debug.Log("피해 입힘 : " + amount);
+        Debug.Log("피해 입음 : " + amount);
         stateUI.TakeDamage(amount);
         while (amount > 0)
         {
             if (currentHP <= 1)
             {
                 currentHP--;
-                RespawnManager.Instance.Respawn();
+                if (RespawnManager.Instance != null)
+                    RespawnManager.Instance.Respawn();
+                else
+                    Debug.LogWarning("RespawnManager가 씬에 존재하지 않음");
                 return;
             }
             currentHP--;

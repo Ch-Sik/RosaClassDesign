@@ -157,6 +157,7 @@ public class Task_GA_Tackle : Task_A_Base
         {
             if(showErrorMsg)
                 Debug.LogError($"{gameObject.name}: 블랙보드에서 적을 찾을 수 없음!");
+            Fail();
             return;
         }
         tackleDir = (enemy.transform.position.x - transform.position.x) < 0 ? Vector2.left : Vector2.right;

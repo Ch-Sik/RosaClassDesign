@@ -559,6 +559,9 @@ public class PlayerMovement : MonoBehaviour
         //큐브를 옮기는 중엔 벽에 붙기 불가능
         if (isGrabCube)
             return;
+        // 넉백 중에도 벽에 붙기 불가능
+        if (isKnockbacked)
+            return;
         Debug.Assert(ivy != null);
 
         isWallClimbing = true;
@@ -912,11 +915,13 @@ public class PlayerMovement : MonoBehaviour
         Vector2 knockbackDirection = (Vector2)transform.position - knockbackPos;
         knockbackDirection.Normalize();
 
-        Debug.Log(knockbackDirection);
-        
+        // 만약 담쟁이에 매달린 상태라면
         if(playerControl.currentMoveState == PlayerMoveState.CLIMBING)
         {
+            // 벽에서 떨어짐
             UnstickFromWall();
+            // 넉백 방향 강제 수정
+            knockbackDirection = facingDirection.isRIGHT() ? Vector2.left : Vector2.right;
         }
         rb.velocity = Vector2.zero;
         rb.AddForce(knockbackDirection * knockbackStrength, ForceMode2D.Impulse);
@@ -930,21 +935,10 @@ public class PlayerMovement : MonoBehaviour
             // 피격 애니메이션 관련은 PlayerDamageReceiver.GetDamage()로 옮김
             // 보스 패턴 등에서 '밀쳐내기'를 하면서도 데미지는 없는 경우가 있기 때문.
             // playerRef.animation.SetTrigger("Hit");
-            playerRef.animation.ResetTrigger("Grounded");
             isKnockbacked = true;
-            float waitTime = 0.3f;
-            bool isGrounded = false;
-            while (waitTime > 0)
-            {
-                if(playerControl.currentMoveState == PlayerMoveState.DEFAULT)
-                {
-                    isGrounded = true;
-                    break;
-                }
-                waitTime -= Time.deltaTime;
-                yield return null;
-            }
-            if(!isGrounded) playerControl.SetMoveState(PlayerMoveState.DEFAULT);
+            yield return new WaitForSeconds(0.3f);
+
+            playerControl.SetMoveState(PlayerMoveState.DEFAULT);
             isKnockbacked = false;
         }
     }
