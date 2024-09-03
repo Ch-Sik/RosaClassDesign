@@ -56,6 +56,8 @@ public class Room : MonoBehaviour
         SetTriggers(roomData.botPorts);
         SetTriggers(roomData.rigPorts);
         SetTriggers(roomData.lefPorts);
+
+        tempTilemap.GetComponent<TilemapRenderer>().enabled = false;
     }
 
     public void ClearTriggers()

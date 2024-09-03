@@ -60,6 +60,8 @@ public class MapManager : MonoBehaviour
     private void Init(SORoom startRoom)
     {
         Enter(startRoom);
+
+        startPoint.GetComponent<SpriteRenderer>().enabled = false;
     }
 
     private SORoom FindStartRoom()
