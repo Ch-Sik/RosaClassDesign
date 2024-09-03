@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 9097754830414402148}
   - component: {fileID: 6229201684226529526}
   - component: {fileID: 7285279123731025654}
-  - component: {fileID: 5886653947053353915}
+  - component: {fileID: 7150127164084639811}
   m_Layer: 23
   m_Name: main body
   m_TagString: Monster
@@ -100,9 +100,9 @@ MonoBehaviour:
   isInvincible: 0
   knockbackCoeff: 0
   ignoreKnockbackOnSuperArmour: 0
-  useRagdoll: 0
-  addTorqueOnDie: 0
-  maxTorqueOnDie: 0
+  useRagdoll: 1
+  addTorqueOnDie: 1
+  maxTorqueOnDie: 20
 --- !u!114 &2931743151944359072
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -204,7 +204,7 @@ Rigidbody2D:
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0.5
   m_GravityScale: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -217,8 +217,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &5886653947053353915
-BoxCollider2D:
+--- !u!58 &7150127164084639811
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -249,19 +249,9 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0.35}
-  m_SpriteTilingProperty:
-    border: {x: 0.15625, y: 0.15625, z: 0.15625, w: 0.15625}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
+  m_Offset: {x: 0, y: 0.39}
   serializedVersion: 2
-  m_Size: {x: 0.8, y: 0.6}
-  m_EdgeRadius: 0
+  m_Radius: 0.36
 --- !u!1 &2074256147541548441
 GameObject:
   m_ObjectHideFlags: 0
@@ -809,8 +799,39 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2790143652564751349, guid: 6b99177a61f476245b70c6b9530fc842, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 612466149048727954}
   m_SourcePrefab: {fileID: 100100000, guid: 6b99177a61f476245b70c6b9530fc842, type: 3}
+--- !u!95 &1762527819925413854 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5378942865655182614, guid: 6b99177a61f476245b70c6b9530fc842, type: 3}
+  m_PrefabInstance: {fileID: 5967297815789595336}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8388109757226203453 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2790143652564751349, guid: 6b99177a61f476245b70c6b9530fc842, type: 3}
+  m_PrefabInstance: {fileID: 5967297815789595336}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &612466149048727954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8388109757226203453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5003a7cc453e2074b9be73e6afe923e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blackboard: {fileID: 9097754830414402148}
+  animator: {fileID: 1762527819925413854}
+  parameters:
+  - blackboardKey: isDead
+    parameterType: 3
+    animParameter: isDead
 --- !u!4 &8427320684338561249 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2748253762280172073, guid: 6b99177a61f476245b70c6b9530fc842, type: 3}
