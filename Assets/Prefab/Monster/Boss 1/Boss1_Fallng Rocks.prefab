@@ -62,6 +62,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  attackEnabled: 1
+  isUseIgnoreDuration: 0
   ignoreDuration: 2
 --- !u!212 &417483946708344317
 SpriteRenderer:
@@ -103,7 +105,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 101
   m_Sprite: {fileID: -90128068, guid: 6bfbabaf876c33d4588eb6a7ef716c68, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
