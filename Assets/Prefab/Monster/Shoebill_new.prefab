@@ -124,6 +124,7 @@ MonoBehaviour:
   maxHP: 5
   currentHP: 0
   blackboard: {fileID: 6045232312697986700}
+  mobCounter: {fileID: 0}
 --- !u!114 &5127163541421839600
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -191,11 +192,15 @@ MonoBehaviour:
   monsterState: {fileID: 0}
   rigidbody: {fileID: 0}
   portrait: {fileID: 0}
+  pandaBT: {fileID: 0}
   isSuperArmour: 0
   tempSuperArmour: 0
   isInvincible: 0
-  useRagdoll: 0
   knockbackCoeff: 5
+  ignoreKnockbackOnSuperArmour: 0
+  useRagdoll: 0
+  addTorqueOnDie: 0
+  maxTorqueOnDie: 0
 --- !u!114 &8609246327272919297
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,6 +267,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackboard: {fileID: 6045232312697986700}
+  writeStateOnBlackboard: 1
+  usePatternID: 0
+  patternID: 0
   startupDuration: 0.8
   superArmourOnStartup: 1
   activeDuration: 0.8
