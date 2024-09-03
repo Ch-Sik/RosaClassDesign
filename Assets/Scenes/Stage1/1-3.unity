@@ -29532,6 +29532,10 @@ PrefabInstance:
       value: 0.5000005
       objectReference: {fileID: 0}
     - target: {fileID: 5377027198806411859, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
+      propertyPath: tilemap
+      value: 
+      objectReference: {fileID: 204481090}
+    - target: {fileID: 5377027198806411859, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
       propertyPath: roomData
       value: 
       objectReference: {fileID: 11400000, guid: c4b6479a81a69b3468b4848dfceb63a2, type: 2}
@@ -32090,7 +32094,10 @@ PrefabInstance:
     - {fileID: 7643325095533634377, guid: c5c52c75013b59b4194c5d530aeab4cb, type: 3}
     - {fileID: 5600307884833475436, guid: c5c52c75013b59b4194c5d530aeab4cb, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7056085630406292176, guid: c5c52c75013b59b4194c5d530aeab4cb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: c5c52c75013b59b4194c5d530aeab4cb, type: 3}
 --- !u!4 &1332315618 stripped
 Transform:
@@ -33105,7 +33112,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8816401838858550196, guid: 8d87259be2613594c985c49218eaea0c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 8d87259be2613594c985c49218eaea0c, type: 3}
 --- !u!4 &1439866570 stripped
 Transform:
