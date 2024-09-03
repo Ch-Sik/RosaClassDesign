@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
 using DG.Tweening;
+using System.Threading;
 
 public class G_Laser : GimmickSignalReceiver
 {
@@ -39,13 +40,6 @@ public class G_Laser : GimmickSignalReceiver
 
     private void Update()
     {
-        if (!lasing)
-        {
-            sp.enabled = false;
-            return;
-        }
-        sp.enabled = true;
-
         Vector2 size = new Vector2(sp.size.x, length);
 
         sp.size = size;
@@ -53,6 +47,13 @@ public class G_Laser : GimmickSignalReceiver
         sr2.size = size;
 
         Detect();
+
+        if (!lasing)
+        {
+            sp.enabled = false;
+            return;
+        }
+        sp.enabled = true;
     }
 
     [Button]
@@ -112,14 +113,17 @@ public class G_Laser : GimmickSignalReceiver
         RaycastHit2D hit = Physics2D.Raycast(point.position, point.up, laserMaxLength, obstaclesLayerMask);
         if (hit.collider != null && (obstaclesLayerMask & (1 << hit.collider.gameObject.layer)) != 0)
         {
-            // 레이캐스트가 어떤 콜라이더와 충돌했을 때
-            if (hit.collider.CompareTag("Player"))
+            if (lasing)
             {
-                RespawnManager.Instance?.Respawn();
-            }
-            if (hit.collider.CompareTag("Ground"))
-            {
-                //Debug.Log("벽과 충돌");
+                // 레이캐스트가 어떤 콜라이더와 충돌했을 때
+                if (hit.collider.CompareTag("Player"))
+                {
+                    RespawnManager.Instance?.Respawn();
+                }
+                if (hit.collider.CompareTag("Ground") || hit.collider.CompareTag("Cube"))
+                {
+                    //Debug.Log("벽과 충돌");
+                }
             }
         }
 

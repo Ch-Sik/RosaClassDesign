@@ -1,4 +1,5 @@
 using Sirenix.OdinInspector;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,6 +11,7 @@ public class RespawnManager : MonoBehaviour
 
     public static RespawnManager Instance { get { return _instance; } }
 
+    public bool showGizmos = false;
     [SerializeField] Vector2Int respawnPoint;
     [SerializeField] GameObject player;
 
@@ -24,8 +26,8 @@ public class RespawnManager : MonoBehaviour
         if (MapManager.Instance.room == null)
             return;
 
-        Vector2Int curPosition = new Vector2Int((int)player.transform.position.x,
-                                                (int)player.transform.position.y - 1);
+        Vector2Int curPosition = new Vector2Int((int)(player.transform.position.x + 0.5f),
+                                                (int)(player.transform.position.y - 0.76f));
 
         if (!MapManager.Instance.room.safePositions.Contains(curPosition))
             return;
@@ -41,7 +43,19 @@ public class RespawnManager : MonoBehaviour
     [Button]
     public void Respawn()
     {
-        player.transform.position = new Vector3(respawnPoint.x, respawnPoint.y, player.transform.position.z);
+        player.transform.position = new Vector3(respawnPoint.x + 0.5f, respawnPoint.y + 0.5f, player.transform.position.z);
         //PlayerRef.Instance.State.Heal(healAmount);
+
+        if (PlayerRef.Instance.movement.isGrabCube)
+            PlayerRef.Instance.grabCube.UnGrab(true);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (!showGizmos)
+            return;
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(new Vector2(respawnPoint.x, respawnPoint.y), 2f);
     }
 }

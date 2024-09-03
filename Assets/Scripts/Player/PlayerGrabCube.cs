@@ -47,6 +47,26 @@ public class PlayerGrabCube : MonoBehaviour
         GrabbingCube = false;
 
         PlayerRef.Instance.movement.isGrabCube = false;
+
+        InactiveAllDisplay();
+        curCube.SetParent(null);
+
+        virtualCol.gameObject.SetActive(false);
+
+        PlayerRef.Instance.controller.ResetInteraction();
+    }
+
+    public void UnGrab(bool isRespawn = false)
+    {
+        if (!GrabbingCube)
+            return;
+
+        curCube.GetComponent<G_Cube>().UnGrab(isRespawn);
+
+        canGrab = true;
+        GrabbingCube = false;
+
+        PlayerRef.Instance.movement.isGrabCube = false;
         
         InactiveAllDisplay();
         curCube.SetParent(null);

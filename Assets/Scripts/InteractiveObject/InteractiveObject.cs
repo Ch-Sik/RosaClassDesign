@@ -11,11 +11,11 @@ public class InteractiveObject : MonoBehaviour
 
     Collider2D col;
     public UnityEvent function;
-    public SpriteRenderer interactiveKeySprite;
+    public GameObject interactiveKey;
 
     private void Start()
     {
-        interactiveKeySprite.enabled = false;
+        interactiveKey.SetActive(false);
 
         col = GetComponent<Collider2D>();
         col.isTrigger = true;
@@ -47,12 +47,12 @@ public class InteractiveObject : MonoBehaviour
 
     private void OnActive() 
     {
-        interactiveKeySprite.enabled = true;
+        interactiveKey.SetActive(true);
     }
 
     private void OnInactive()
     {
-        interactiveKeySprite.enabled = false;
+        interactiveKey.SetActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

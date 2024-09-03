@@ -16,6 +16,8 @@ public class PlayerDamageReceiver : MonoBehaviour
 
     public void GetDamage(GameObject target, int damage)
     {
+        Debug.Log(target.name);
+
         playerRef.animation.BlinkEffect();
         playerRef.animation.SetTrigger("Hit");
 
@@ -35,6 +37,8 @@ public class PlayerDamageReceiver : MonoBehaviour
 
     public void GetDamage(GameObject target, int damage, float ignoreDur)
     {
+        Debug.Log(target.name);
+
         playerRef.animation.BlinkEffect();
         playerRef.animation.SetTrigger("Hit");
 

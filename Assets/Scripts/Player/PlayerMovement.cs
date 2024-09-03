@@ -49,7 +49,7 @@ public class PlayerMovement : MonoBehaviour
     // 벽이동 관련 파라미터
     [FoldoutGroup("벽이동 관련")]
     [Tooltip("벽 기어오르기 활성화")]
-    [SerializeField] bool wallClimbEnabled;
+    [SerializeField] public bool wallClimbEnabled = true;
 
     [FoldoutGroup("벽이동 관련")]
     [Tooltip("기어오르기 속도")]
@@ -503,6 +503,8 @@ public class PlayerMovement : MonoBehaviour
             return;
         // 턱오르기 도중에 벽타기 애니메이션 나오는 경우 방지
         if (isDoingLedgeClimb)
+            return;
+        if (!wallClimbEnabled)
             return;
 
         Debug.Log("Climbing");

@@ -16,10 +16,19 @@ public class G_Cube : MonoBehaviour
     Rigidbody2D rb;
     public Collider2D boxCol;
 
+    public Vector2 startPos;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         //defaultMass = rb.mass;
+
+        startPos = transform.position;
+    }
+
+    public void ResetPosition()
+    {
+        transform.position = startPos;
     }
 
     public void Grab(Transform grabPosition)
@@ -33,12 +42,15 @@ public class G_Cube : MonoBehaviour
         rb.simulated = false;
     }
 
-    public void UnGrab()
+    public void UnGrab(bool isReset = false)
     {
         onGrab = false;
 
         rb.bodyType = RigidbodyType2D.Dynamic;
         rb.simulated = true;
+
+        if (isReset)
+            ResetPosition();
     }
 
     public void MushJump(int dir)

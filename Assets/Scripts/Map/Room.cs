@@ -40,7 +40,8 @@ public class Room : MonoBehaviour
 
     private void Start()
     {
-        Invoke("Init", 0.5f);
+        //Invoke("Init", 0.5f);
+        Init();
 
         if (MapManager.Instance != null)
             MapManager.Instance.room = this;

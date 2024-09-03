@@ -283,6 +283,21 @@ public class MapManager : MonoBehaviour
         SceneField scene = room.scene;
         if (!SceneManager.GetSceneByName(scene.SceneName).isLoaded)
         {
+            bool isClimbing = false;    
+
+            if (PlayerRef.Instance.movement.isWallClimbing)
+            {
+                Debug.Log("매달린 상태 해제");
+                PlayerRef.Instance.movement.wallClimbEnabled = false;
+                PlayerRef.Instance.movement.UnstickFromWall();
+
+                isClimbing = true;
+            }
+            player.SetParent(transform);
+            player.SetParent(null);
+            player.position = playerPosition;
+            cam.MoveCameraInstantlyToPosition(player.position);
+
             //비동기 로드
             AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(scene.SceneName, LoadSceneMode.Additive);
 
@@ -292,9 +307,8 @@ public class MapManager : MonoBehaviour
                 yield return null;
             }
 
-            player.SetParent(null);
-            player.position = playerPosition;
-            cam.MoveCameraInstantlyToPosition(player.position);
+            if (isClimbing)
+                PlayerRef.Instance.movement.wallClimbEnabled = true;
 
             chapter.text = room.scene.SceneName;
         }
