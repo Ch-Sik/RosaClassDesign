@@ -600,9 +600,11 @@ public class PlayerMovement : MonoBehaviour
         rb.isKinematic = true;
         col.enabled = false;
 
+        // TODO: 카메라가 fixedUpdate에 따라 움직이므로 해당 부분 fixedUpdate에 맞게 움직이도록 해야 버벅거리지 않음.
         DOTween.Sequence().AppendInterval(ledgeClimbStartTime)
-            .Append(playerRef.rb.DOMoveY(transform.position.y + ClimbEndOffset.y, ledgeClimbUpTime))
-            .Append(playerRef.rb.DOMoveX(transform.position.x + ClimbEndOffset.x * (facingDirection.isLEFT() ? -1 : 1), ledgeClimbForwardTime))
+            .Append(transform.DOLocalMoveY(transform.localPosition.y + ClimbEndOffset.y, ledgeClimbUpTime))
+            .Append(transform.DOLocalMoveX(transform.localPosition.x + ClimbEndOffset.x, ledgeClimbForwardTime))    
+                    // 담쟁이가 좌우반전되어있어서 ClimbOffset.x는 좌우 방향 신경쓸 필요 없음
             .AppendInterval(ledgeClimbEndTime)
             .AppendCallback(() => OnLedgeClimbEnd());
     }
