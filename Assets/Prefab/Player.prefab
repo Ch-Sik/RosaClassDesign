@@ -919,6 +919,7 @@ MonoBehaviour:
   moveSpeed: 4
   spriteDirection: 1
   noMoveOnAttack: 1
+  attackSpeedCoef: 0.2
   jumpPower: 11.5
   jumpDownPower: 1
   minJumpUpDuration: 0.17
@@ -940,7 +941,6 @@ MonoBehaviour:
   superDashSpeed: 3
   knockbackStrength: 0.001
   grabSpeedCoef: 0.5
-  attackSpeedCoef: 0.5
   glidingGravityScale: 0.1
   isGrounded: 0
   isJumpingUp: 0

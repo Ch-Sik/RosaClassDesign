@@ -58,7 +58,7 @@ public class PlayerAnimation : MonoBehaviour
         anim.SetBool("isGrounded", playerMove.isGrounded);
         anim.SetBool("isWalking", 
             playerControl.currentMoveState == PlayerMoveState.DEFAULT 
-            && (!isDoingAttack || !playerMove.noMoveOnAttack)
+            && !(isDoingAttack && playerMove.noMoveOnAttack)
             && Mathf.Abs(playerMove.moveVector.x) > 0.1f);
         anim.SetBool("isJumping", 
             playerControl.currentMoveState == PlayerMoveState.DEFAULT 
