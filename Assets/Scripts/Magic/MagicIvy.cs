@@ -50,12 +50,12 @@ public class MagicIvy : MonoBehaviour
         if (originCellData != null && originCellData.isSubstance)
         {
             wallDirection = LR.LEFT;
-            Debug.Log("왼쪽 보는 벽에 담쟁이 설치");
+            // Debug.Log("왼쪽 보는 벽에 담쟁이 설치");
         }
         else
         {
             wallDirection = LR.RIGHT;
-            Debug.Log("오른쪽 보는 벽에 담쟁이 설치");
+            // Debug.Log("오른쪽 보는 벽에 담쟁이 설치");
         }
 
         // y축 방향 위치 보정

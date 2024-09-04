@@ -370,7 +370,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if (pressedDown && (platformBelow?.CompareTag("Platform") == true))
             {
-                Debug.Log(platformBelow?.tag);
+                // Debug.Log(platformBelow?.tag);
                 JumpDown();      // 하향 점프
             }
             else
@@ -511,7 +511,7 @@ public class PlayerMovement : MonoBehaviour
         if (!wallClimbEnabled)
             return;
 
-        Debug.Log("Climbing");
+        // Debug.Log("Climbing");
 
         moveVector = inputVector;       // 벽 점프 등을 위해 x축 방향 필터링하지 않음.
         if (moveVector.x != 0)
@@ -599,7 +599,7 @@ public class PlayerMovement : MonoBehaviour
     // 절벽 위에 도달했을 때 isOnLedge = true와 함께 호출됨.
     public void StartLedgeClimb()
     {
-        Debug.Log("LedgeClimbStart");
+        // Debug.Log("LedgeClimbStart");
         isDoingLedgeClimb = true;
         isWallClimbing = false;
 
@@ -618,7 +618,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void OnLedgeClimbEnd()
     {
-        Debug.Log("LedgeClimbEnd");
+        // Debug.Log("LedgeClimbEnd");
 
         hangingIvy = null;
         transform.parent = null;

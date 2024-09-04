@@ -175,7 +175,7 @@ public class PlayerCombat : MonoBehaviour
         if (lastAttackTimer == null || lastAttackTimer.duration > comboResetTime)
         {
             comboStep = 0;
-            Debug.Log($"{lastAttackTimer?.duration}");
+            // Debug.Log($"{lastAttackTimer?.duration}");
         }
         else
         {
