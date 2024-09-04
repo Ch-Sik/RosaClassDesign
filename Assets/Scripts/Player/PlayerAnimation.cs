@@ -60,10 +60,11 @@ public class PlayerAnimation : MonoBehaviour
             playerControl.currentMoveState == PlayerMoveState.DEFAULT 
             && !(isDoingAttack && playerMove.noMoveOnAttack)
             && Mathf.Abs(playerMove.moveVector.x) > 0.1f);
-        anim.SetBool("isJumping", 
-            playerControl.currentMoveState == PlayerMoveState.DEFAULT 
-            && !playerMove.isGrounded 
-            && !playerMove.isDoingHooking);
+        //anim.SetBool("isJumping", 
+        //    playerControl.currentMoveState == PlayerMoveState.DEFAULT 
+        //    && !playerMove.isGrounded 
+        //    && !playerMove.isDoingHooking);
+
         anim.SetBool("isClimbing", 
             playerControl.currentMoveState == PlayerMoveState.CLIMBING);
         anim.SetBool("isClimbEnd",
@@ -147,6 +148,11 @@ public class PlayerAnimation : MonoBehaviour
             }
             blinkCoroutine = null;
         }
+    }
+
+    public void SetJumpTrigger()
+    {
+        anim.SetTrigger("isJumping");
     }
 
     public void SetTrigger(string name)

@@ -385,9 +385,9 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isNotMoveable) return;
 
-        //playerAnim.SetTrigger("JumpTrigger");
         rb.velocity = new Vector2(rb.velocity.x, jumpPower);
         jumpTimer = Timer.StartTimer();
+        playerRef.animation.SetJumpTrigger();
     }
 
     /// <summary>
@@ -475,6 +475,9 @@ public class PlayerMovement : MonoBehaviour
             float xDirection = facingDirection.isRIGHT() ? 1 : -1;  // 보고 있는 방향으로 점프
             rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
         }
+
+        // 애니메이션 트리거 발동
+        playerRef.animation.SetJumpTrigger();
 
 
         StartCoroutine(ReserveFinishWallJump());
@@ -733,6 +736,7 @@ public class PlayerMovement : MonoBehaviour
         isMushJumping = true;
         moveSpeed = mushJumpMoveSpeed;
         rb.velocity = new Vector2(rb.velocity.x, mushJumpPower);
+        playerRef.animation.SetJumpTrigger();
     }
     #endregion
 
