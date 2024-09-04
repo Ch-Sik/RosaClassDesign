@@ -27,8 +27,9 @@ public class HiddenWall : MonoBehaviour
         Collider2D col = GetComponent<Collider2D>();
 
         // 타일맵 범위 계산
-        Vector3Int boundsMin = Vector3Int.FloorToInt(col.bounds.min);
-        Vector3Int boundsMax = Vector3Int.CeilToInt(col.bounds.max + new Vector3(0, 0, 1));
+        // 장식 타일을 위해 bound에 여유 1칸 정도 추가
+        Vector3Int boundsMin = Vector3Int.FloorToInt(col.bounds.min + new Vector3(-1, -1, 0));
+        Vector3Int boundsMax = Vector3Int.CeilToInt(col.bounds.max + new Vector3(1, 1, 1));
         // ↑↑ (boundsMax-boundsMin)의 xyz중 하나이상이 0이면 allPositionsWithin이 동작하지 않음. 
         hiddenWallArea = new BoundsInt(boundsMin, boundsMax - boundsMin);
 
