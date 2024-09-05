@@ -119,6 +119,7 @@ public class G_Laser : GimmickSignalReceiver
                 if (hit.collider.CompareTag("Player"))
                 {
                     Debug.Log("플레이어 충돌");
+                    hit.collider.GetComponent<PlayerDamageReceiver>().GetDamage(gameObject, 1);
                     RespawnManager.Instance?.Respawn();
                 }
                 if (hit.collider.CompareTag("Ground") || hit.collider.CompareTag("Cube"))
