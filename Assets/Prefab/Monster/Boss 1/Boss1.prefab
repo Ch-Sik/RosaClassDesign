@@ -1826,6 +1826,7 @@ GameObject:
   - component: {fileID: 2341313398772648804}
   - component: {fileID: 8544246837178488126}
   - component: {fileID: 1785131484344043299}
+  - component: {fileID: 2709628206235430532}
   - component: {fileID: 3664178182846235650}
   - component: {fileID: 7987952409137193667}
   - component: {fileID: 1157301829717382591}
@@ -1929,6 +1930,26 @@ ParentConstraint:
   m_IsLocked: 0
   m_Sources:
   - sourceTransform: {fileID: 6333732659107213988}
+    weight: 1
+--- !u!1818360610 &2709628206235430532
+ScaleConstraint:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4374207385648862138}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Weight: 1
+  m_ScaleAtRest: {x: -6.2000003, y: 6.2000003, z: 6.2000003}
+  m_ScaleOffset: {x: 1, y: 1, z: 1}
+  m_AffectScalingX: 1
+  m_AffectScalingY: 1
+  m_AffectScalingZ: 1
+  m_Active: 1
+  m_IsLocked: 0
+  m_Sources:
+  - sourceTransform: {fileID: 3282804146814745559}
     weight: 1
 --- !u!50 &3664178182846235650
 Rigidbody2D:
