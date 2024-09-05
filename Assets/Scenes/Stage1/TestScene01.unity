@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 21dfc7b1bfc095042be235abf507f275, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.23944432, g: 0.28491014, b: 0.33044663, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1516,7 +1516,7 @@ MonoBehaviour:
   cam: {fileID: 210034125}
   room: {fileID: 0}
   startPoint: {fileID: 2061483551}
-  startRoom: {fileID: 11400000, guid: adc5f3c5d72442447ba3abfe5f720144, type: 2}
+  startRoom: {fileID: 11400000, guid: 28d649e14869878478e8c6848df24614, type: 2}
   currentRoom: {fileID: 0}
   oldRooms: []
   chapter: {fileID: 1838996231}
@@ -1883,7 +1883,7 @@ Transform:
   m_GameObject: {fileID: 2061483550}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -26.78, y: -33.02, z: 0}
+  m_LocalPosition: {x: -15, y: -6.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
