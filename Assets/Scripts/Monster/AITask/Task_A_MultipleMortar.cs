@@ -150,8 +150,10 @@ public class Task_A_MultipleMortar : Task_A_Base
     {
         if(Application.isPlaying)
         {
-            for (int i = 0; i < projectileCount; i++)
+            for (int i = 0; i < targetLocations.Length; i++)
+            {
                 Gizmos.DrawSphere(targetLocations[i], 0.5f);
+            }
         }
     }
 }

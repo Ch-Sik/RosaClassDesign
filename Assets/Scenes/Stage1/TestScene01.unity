@@ -808,6 +808,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1018947825}
   - component: {fileID: 1018947826}
+  - component: {fileID: 1018947827}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -828,7 +829,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1693723321}
+  - {fileID: 2061483551}
   - {fileID: 1806561811}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -847,6 +848,28 @@ MonoBehaviour:
   _volumes:
   - 0.7
   - 1
+--- !u!114 &1018947827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1018947824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5ad71239beaf0247ad8af28e14a4867, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  map: {fileID: 11400000, guid: 5b04adb3897b80946b4b67a819695b8c, type: 2}
+  player: {fileID: 5262888440015344438}
+  cam: {fileID: 210034125}
+  room: {fileID: 0}
+  startPoint: {fileID: 2061483551}
+  startRoom: {fileID: 11400000, guid: 28d649e14869878478e8c6848df24614, type: 2}
+  currentRoom: {fileID: 0}
+  oldRooms: []
+  chapter: {fileID: 1838996231}
+  position: {fileID: 805628655}
 --- !u!1 &1047433009
 GameObject:
   m_ObjectHideFlags: 0
@@ -1574,61 +1597,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 6606165383981438929, guid: dff6c20f5540f3843828c629df070725, type: 3}
   m_PrefabInstance: {fileID: 390781060}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1693723319
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1693723321}
-  - component: {fileID: 1693723320}
-  m_Layer: 0
-  m_Name: MapManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1693723320
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1693723319}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c5ad71239beaf0247ad8af28e14a4867, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  map: {fileID: 11400000, guid: 5b04adb3897b80946b4b67a819695b8c, type: 2}
-  player: {fileID: 5262888440015344438}
-  cam: {fileID: 210034125}
-  room: {fileID: 0}
-  startPoint: {fileID: 2061483551}
-  startRoom: {fileID: 11400000, guid: 8a42244a2d2c80f4fa9ee79fa8318dac, type: 2}
-  currentRoom: {fileID: 0}
-  oldRooms: []
-  chapter: {fileID: 1838996231}
-  position: {fileID: 805628655}
---- !u!4 &1693723321
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1693723319}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -14.045204, y: -3.3377295, z: 0.7183542}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2061483551}
-  m_Father: {fileID: 1018947825}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1806561810
 GameObject:
   m_ObjectHideFlags: 0
@@ -1974,12 +1942,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2061483550}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -17.01, y: -5.99, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -31.055204, y: -9.327729, z: 0.7183542}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1693723321}
+  m_Father: {fileID: 1018947825}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &2061483552
 SpriteRenderer:
