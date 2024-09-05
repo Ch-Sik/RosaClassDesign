@@ -23,6 +23,12 @@ public class MonsterAOE : MonoBehaviour
     [SerializeField]
     private Color activatedColor = Color.white;
 
+    // 위 것들은 에러 방지용으로 남겨뒀음. 240906 시연회 끝나면 아래만 남기고 위는 삭제할 것.
+    [SerializeField]
+    private GameObject startupSprite;
+    [SerializeField]
+    private GameObject activatedSprite;
+
     public void Init()
     {
         gameObject.SetActive(true);
@@ -34,6 +40,10 @@ public class MonsterAOE : MonoBehaviour
         collider.enabled = false;
         // TODO: 공격 활성화의 시각화를 제대로 된 공격 이펙트로 바꾸기
         renderer.color = startupColor;
+        if(startupSprite != null)
+            startupSprite.SetActive(true);
+        if(activatedSprite != null)
+            activatedSprite.SetActive(false);
     }
 
     public void ExecuteAttack()
@@ -42,6 +52,11 @@ public class MonsterAOE : MonoBehaviour
         collider.enabled = true;
         // TODO: 공격 활성화의 시각화를 제대로 된 공격 이펙트로 바꾸기
         renderer.color = activatedColor;
+        if (startupSprite != null)
+            startupSprite.SetActive(false);
+        if (activatedSprite != null)
+            activatedSprite.SetActive(true);
+
         if (destroyOnAttackEnd)
             Destroy(gameObject, 1f);
         else

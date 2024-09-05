@@ -7,9 +7,12 @@ public class MonsterProjectile : MonoBehaviour
 {
     [SerializeField, Tooltip("중력 영향 여부")]
     private bool useGravity = false;
-
     [SerializeField, Tooltip("속도 계수. 중력 사용하지 않을 때에만 사용할 것")]
     private float speedScale = 1f;
+    [SerializeField, Tooltip("투사체 랜덤 회전 여부")]
+    private bool useRandomRotation = false;
+    [SerializeField, Tooltip("랜덤 회전 최대치")]
+    private float randomRotationRange = 30f;
 
     [SerializeField]
     private new Rigidbody2D rigidbody;
@@ -34,6 +37,12 @@ public class MonsterProjectile : MonoBehaviour
         // 기본 속도 설정
         rigidbody.velocity = direction * speedScale;
         // Debug.Log($"투사체 속도:{direction * speedScale}");
+
+        // 회전값 설정
+        if(useRandomRotation)
+        {
+            rigidbody.angularVelocity = Random.Range(-randomRotationRange, randomRotationRange);
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collider)
