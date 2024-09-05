@@ -11,7 +11,7 @@ public class MagicMushroom : MonoBehaviour
     {
         if(collision.gameObject.CompareTag("Player"))
         {
-            if (PlayerRef.Instance.movement.isGrounded)
+            // if (PlayerRef.Instance.movement.isGrounded)
                 PlayerRef.Instance.movement.MushJump();
         }
         

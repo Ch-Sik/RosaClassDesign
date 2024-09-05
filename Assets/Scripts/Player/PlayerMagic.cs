@@ -202,7 +202,7 @@ public class PlayerMagic : MonoBehaviour
     public void CancelMagic()
     {
         PlayerRef.Instance.controller.SetActionState(PlayerActionState.DEFAULT);
-        Debug.LogWarning("식물마법 취소");
+        Debug.Log("식물마법 취소");
         HidePreview();
     }
 
@@ -265,7 +265,7 @@ public class PlayerMagic : MonoBehaviour
             //previewObject.SetActive(true);
             //previewObject.transform.position = (Vector3)magicPos;
             CursorFairy.Instance.SetMagicPreview(true, (Vector3)magicPos);
-            Debug.Log($"{((TerrainCastHit)terrainHit).cellPos}");
+            // Debug.Log($"{((TerrainCastHit)terrainHit).cellPos}");
         }
         // 아니면 시전 불가능하다고 표시하기
         else

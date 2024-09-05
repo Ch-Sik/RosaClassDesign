@@ -166,12 +166,12 @@ public class MonsterDamageReceiver : DamageReceiver
             // Debug.LogWarning(-11 / 2);
             // 넉백 방향을 4방향으로 고정?
             attackAngle =  (((int)(attackAngle + 180 + 45)) / 90 - 2)  * 90f;
-            Debug.LogWarning(attackAngle);
+            // Debug.Log(attackAngle);
 
             attackAngle *= Mathf.Deg2Rad;
             // attackDir는 PlayerCombat에서 Normalize되어서 Unit Vector임이 보장됨
             Vector2 knockbackVector = new Vector2(Mathf.Cos(attackAngle), Mathf.Sin(attackAngle)) * knockbackCoeff;
-            // Debug.LogWarning(knockbackVector);
+            // Debug.Log(knockbackVector);
             rigidbody.velocity = knockbackVector;
         }
     }

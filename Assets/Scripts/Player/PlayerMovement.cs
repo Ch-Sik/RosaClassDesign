@@ -16,7 +16,6 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("플레이어 이동 속도")]
     [SerializeField] float moveSpeed = 1f;
 
-
     [FoldoutGroup("좌우 이동 관련")]
     [Tooltip("시작 시 플레이어 스프라이트의 방향")]
     [SerializeField] LR spriteDirection = LR.RIGHT;
@@ -24,6 +23,10 @@ public class PlayerMovement : MonoBehaviour
     [FoldoutGroup("좌우 이동 관련")]
     [Tooltip("공격 중에 좌우 이동 불가능하게 설정")]
     public bool noMoveOnAttack;
+
+    [FoldoutGroup("좌우 이동 관련")]
+    [Tooltip("공격과 동시에 이동이 가능할 경우, 그 때의 이동 속도 조정")]
+    [SerializeField] float attackSpeedCoef = 0.5f;
 
     // 점프 관련 파라미터
     [FoldoutGroup("점프 관련")]
@@ -111,8 +114,6 @@ public class PlayerMovement : MonoBehaviour
     [FoldoutGroup("큐브 관련")]
     [SerializeField] float grabSpeedCoef = 0.5f;
 
-    [FoldoutGroup("공격 관련")]
-    [SerializeField] float attackSpeedCoef = 0.5f;
 
     [FoldoutGroup("활강 관련")]
     float defaultGravityScale = 2.8f;
@@ -333,8 +334,8 @@ public class PlayerMovement : MonoBehaviour
 
             rb.velocity = new Vector2(xVelocity, rb.velocity.y);
 
-            // 글라이딩 중에는 좌우 반전 수행하지 않음
-            if(!isGliding)
+            // 글라이딩 중 또는 공격중에는 좌우 반전 수행하지 않음
+            if(!isGliding && !isDoingAttack)
                 LookAt2DLocal(moveVector);
         }
     }
@@ -369,7 +370,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if (pressedDown && (platformBelow?.CompareTag("Platform") == true))
             {
-                Debug.Log(platformBelow?.tag);
+                // Debug.Log(platformBelow?.tag);
                 JumpDown();      // 하향 점프
             }
             else
@@ -384,9 +385,9 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isNotMoveable) return;
 
-        //playerAnim.SetTrigger("JumpTrigger");
         rb.velocity = new Vector2(rb.velocity.x, jumpPower);
         jumpTimer = Timer.StartTimer();
+        playerRef.animation.SetJumpTrigger();
     }
 
     /// <summary>
@@ -475,6 +476,9 @@ public class PlayerMovement : MonoBehaviour
             rb.velocity = new Vector2(wallJumpPower.x * xDirection, wallJumpPower.y);
         }
 
+        // 애니메이션 트리거 발동
+        playerRef.animation.SetJumpTrigger();
+
 
         StartCoroutine(ReserveFinishWallJump());
 
@@ -507,7 +511,7 @@ public class PlayerMovement : MonoBehaviour
         if (!wallClimbEnabled)
             return;
 
-        Debug.Log("Climbing");
+        // Debug.Log("Climbing");
 
         moveVector = inputVector;       // 벽 점프 등을 위해 x축 방향 필터링하지 않음.
         if (moveVector.x != 0)
@@ -595,7 +599,7 @@ public class PlayerMovement : MonoBehaviour
     // 절벽 위에 도달했을 때 isOnLedge = true와 함께 호출됨.
     public void StartLedgeClimb()
     {
-        Debug.Log("LedgeClimbStart");
+        // Debug.Log("LedgeClimbStart");
         isDoingLedgeClimb = true;
         isWallClimbing = false;
 
@@ -614,7 +618,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void OnLedgeClimbEnd()
     {
-        Debug.Log("LedgeClimbEnd");
+        // Debug.Log("LedgeClimbEnd");
 
         hangingIvy = null;
         transform.parent = null;
@@ -732,6 +736,7 @@ public class PlayerMovement : MonoBehaviour
         isMushJumping = true;
         moveSpeed = mushJumpMoveSpeed;
         rb.velocity = new Vector2(rb.velocity.x, mushJumpPower);
+        playerRef.animation.SetJumpTrigger();
     }
     #endregion
 
