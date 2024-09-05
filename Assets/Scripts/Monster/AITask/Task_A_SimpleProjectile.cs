@@ -83,6 +83,7 @@ public class Task_A_SimpleProjectile : Task_A_Base
             {
                 Debug.Log($"{gameObject.name}: Blackboard에서 적을 찾을 수 없음. 공격 취소");
                 Fail();
+                return;
             }
             enemyPosition = enemy.transform.position;
         }
