@@ -31,7 +31,9 @@ public class TilemapShadowPlacer : MonoBehaviour
         // 새 오브젝트를 생성하고 위치 조정
         GameObject go = new GameObject();
         go.name = "tileShadow";
-        go.transform.position = roomExtractor.bounds.center;
+        Vector3 shadowPosition = roomExtractor.bounds.center;
+        shadowPosition.z = 0;
+        go.transform.position = shadowPosition;
 
         // 렌더러 부착하고 스프라이트 설정
         SpriteRenderer renderer = go.AddComponent<SpriteRenderer>();
