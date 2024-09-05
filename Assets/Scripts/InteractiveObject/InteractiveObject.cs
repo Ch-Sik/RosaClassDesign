@@ -50,7 +50,7 @@ public class InteractiveObject : MonoBehaviour
         interactiveKey.SetActive(true);
     }
 
-    private void OnInactive()
+    public void OnInactive()
     {
         interactiveKey.SetActive(false);
     }

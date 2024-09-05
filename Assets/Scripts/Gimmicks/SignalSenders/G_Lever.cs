@@ -9,6 +9,7 @@ public class G_Lever : GimmickSignalSender
     [SerializeField] Transform leverHandle;
 
     public bool onAct = false;
+    [SerializeField] private InteractiveObject interactiveObject;
 
     private IEnumerator ActivateLever()
     {
@@ -38,24 +39,19 @@ public class G_Lever : GimmickSignalSender
 
     public void LeverAction()
     {
-        // Debug.Log("11");
 
         if (onAct)
             return;
 
-        // Debug.Log("22");
 
         if (isActive)
         {
-            // Debug.Log("33");
             if (isOnce)
                 return;
-            // Debug.Log("44");
             InActiveLever();
         }
         else
         {
-            // Debug.Log("55");
             ActiveLever();
         }
     }
@@ -64,13 +60,17 @@ public class G_Lever : GimmickSignalSender
     {
         isActive = true;
         StartCoroutine(ActivateLever());
-        Debug.Log("66");
+
+        if (isOnce)
+        {
+            interactiveObject.canUse = false;
+            interactiveObject.OnInactive();
+        }
     }
 
     public void InActiveLever()
     {
         isActive = false;
         StartCoroutine(InActivateLever());
-        Debug.Log("77");
     }
 }
