@@ -41,6 +41,13 @@ public class CursorFairy : MonoBehaviour
         noActionAim.performed += GetMousePosition;
     }
 
+    ~CursorFairy()
+    {
+        defaultAim.performed -= GetMousePosition;
+        magicAim.performed -= GetMousePosition;
+        noActionAim.performed -= GetMousePosition;
+    }
+
     void GetMousePosition(InputAction.CallbackContext context)
     {
         mouseScreenPosition = context.ReadValue<Vector2>();

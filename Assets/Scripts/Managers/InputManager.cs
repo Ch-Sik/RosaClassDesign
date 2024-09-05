@@ -82,7 +82,7 @@ public class InputManager : MonoBehaviour
         {
             AM_UiInGame = _inputAsset.FindActionMap("InGame");
             AM_UiDialogue = _inputAsset.FindActionMap("Dialogue");
-            AM_UiMenu = _inputAsset.FindActionMap("UI");
+            AM_UiMenu = _inputAsset.FindActionMap("Menu");
         }
 
         // TODO: 타이틀 화면 추가하면 기본적으로 활성화된 액션맵을 바꾸기
