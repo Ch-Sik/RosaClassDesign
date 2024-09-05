@@ -31,11 +31,13 @@ public class PlayerState : MonoBehaviour
         // HP, 공격력 등의 값 초기화하기
         stateUI = PlayerStateUI.Instance;
         currentHP = maxHP;
-        for(int i = 0; i < maxHP; i++)
+        for (int i = 0; i < maxHP; i++)
         {
             stateUI.AddHPUI();
         }
     }
+
+    public int GetHP() { return currentHP; }
 
     public void Heal(int amount) 
     {

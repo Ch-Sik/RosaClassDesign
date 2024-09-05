@@ -39,7 +39,9 @@ public class MonsterProjectile : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collider)
     {
         // 벽에 닿거나 플레이어에게 닿으면 사라지기
-        if (collider.gameObject.layer == LayerMask.NameToLayer("Ground"))
+        if (collider.gameObject.layer == LayerMask.NameToLayer("Ground") ||
+            collider.gameObject.layer == LayerMask.NameToLayer("Cube") ||
+            collider.gameObject.layer == LayerMask.NameToLayer("PlayerGrab"))
         {
             // TODO: 투사체 사라지는 연출 넣기
             // Debug.Log("몬스터 투사체 지형과 접촉");

@@ -17,7 +17,7 @@ public class RespawnManager : MonoBehaviour
 
     Vector2Int curPosition;
 
-    public int healAmount = 2;
+    public int healAmount = 3;
     private void Awake()
     {
         _instance = this; 
@@ -45,11 +45,16 @@ public class RespawnManager : MonoBehaviour
     [Button]
     public void Respawn()
     {
-        player.transform.position = new Vector3(respawnPoint.x + 0.5f, respawnPoint.y + 0.5f, player.transform.position.z);
-        //PlayerRef.Instance.State.Heal(healAmount);
+        if (PlayerRef.Instance.state.GetHP() <= 0)
+            PlayerRef.Instance.state.Heal(healAmount);
 
         if (PlayerRef.Instance.movement.isGrabCube)
             PlayerRef.Instance.grabCube.UnGrab(true);
+
+        if (PlayerRef.Instance.movement.isWallClimbing)
+            PlayerRef.Instance.movement.UnstickFromWall();
+
+        player.transform.position = new Vector3(respawnPoint.x + 0.5f, respawnPoint.y + 0.5f, player.transform.position.z);
     }
 
     private void OnDrawGizmos()
