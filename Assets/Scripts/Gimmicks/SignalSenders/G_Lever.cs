@@ -38,24 +38,24 @@ public class G_Lever : GimmickSignalSender
 
     public void LeverAction()
     {
-        Debug.Log("11");
+        // Debug.Log("11");
 
         if (onAct)
             return;
 
-        Debug.Log("22");
+        // Debug.Log("22");
 
         if (isActive)
         {
-            Debug.Log("33");
+            // Debug.Log("33");
             if (isOnce)
                 return;
-            Debug.Log("44");
+            // Debug.Log("44");
             InActiveLever();
         }
         else
         {
-            Debug.Log("55");
+            // Debug.Log("55");
             ActiveLever();
         }
     }

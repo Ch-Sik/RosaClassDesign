@@ -38,7 +38,7 @@ public class Task_HittReaction : Task_Base
         }
         if (hitResult == true)
         {
-            Debug.Log("피격 당함");
+            // Debug.Log("피격 당함");
             ThisTask.Succeed();
         }
         else
