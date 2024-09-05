@@ -19,19 +19,21 @@ MonoBehaviour:
   flagIndex: 0
   title: Demo-3
   subTitle: 
-  size: {x: 170, y: 61}
-  offset: {x: -3, y: -27}
+  size: {x: 172, y: 53}
+  offset: {x: -6, y: -29}
   topPorts:
   - flag: 
     index: 0
     direction: 0
     ports:
-    - {x: -3, y: 6}
-    - {x: -2, y: 6}
-    - {x: -1, y: 6}
-    - {x: 0, y: 6}
-    - {x: 1, y: 6}
-    - {x: 2, y: 6}
+    - {x: -4, y: 23}
+    - {x: -3, y: 23}
+    - {x: -2, y: 23}
+    - {x: -1, y: 23}
+    - {x: 0, y: 23}
+    - {x: 1, y: 23}
+    - {x: 2, y: 23}
+    - {x: 3, y: 23}
     connectedPorts:
     - flag: 
       flagIndex: 0
@@ -45,11 +47,13 @@ MonoBehaviour:
     index: 0
     direction: 2
     ports:
-    - {x: 166, y: 16}
-    - {x: 166, y: 17}
-    - {x: 166, y: 18}
-    - {x: 166, y: 19}
-    - {x: 166, y: 20}
-    - {x: 166, y: 21}
+    - {x: 165, y: 15}
+    - {x: 165, y: 16}
+    - {x: 165, y: 17}
+    - {x: 165, y: 18}
+    - {x: 165, y: 19}
+    - {x: 165, y: 20}
+    - {x: 165, y: 21}
+    - {x: 165, y: 22}
     connectedPorts: []
   lefPorts: []

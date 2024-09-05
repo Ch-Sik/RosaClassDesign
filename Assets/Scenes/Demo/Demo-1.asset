@@ -19,8 +19,8 @@ MonoBehaviour:
   flagIndex: 0
   title: Demo-1
   subTitle: 
-  size: {x: 54, y: 33}
-  offset: {x: 88, y: -12}
+  size: {x: 111, y: 33}
+  offset: {x: 31, y: -12}
   topPorts: []
   botPorts: []
   rigPorts:
@@ -28,10 +28,12 @@ MonoBehaviour:
     index: 0
     direction: 2
     ports:
+    - {x: 141, y: 6}
     - {x: 141, y: 7}
     - {x: 141, y: 8}
     - {x: 141, y: 9}
     - {x: 141, y: 10}
+    - {x: 141, y: 11}
     connectedPorts:
     - flag: 
       flagIndex: 0
