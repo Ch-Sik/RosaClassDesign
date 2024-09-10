@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 
 public class CursorFairy : MonoBehaviour
 {
+    /*
     public static CursorFairy Instance;
 
     [SerializeField] private ParticleSystem particle;
@@ -107,4 +108,5 @@ public class CursorFairy : MonoBehaviour
             transform.position = ScreenToWorldPosition(magicAim.ReadValue<Vector2>());
         }
     }
+    */
 }

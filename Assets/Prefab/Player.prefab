@@ -807,8 +807,6 @@ GameObject:
   - component: {fileID: 1684912345544643784}
   - component: {fileID: 7834158099626650541}
   - component: {fileID: 1210515925474742746}
-  - component: {fileID: 7893349561445416240}
-  - component: {fileID: 3424554189190895944}
   - component: {fileID: 7376123347842105714}
   - component: {fileID: 4348864029274202990}
   - component: {fileID: 454193726804920390}
@@ -862,7 +860,6 @@ MonoBehaviour:
   state: {fileID: 0}
   controller: {fileID: 0}
   movement: {fileID: 0}
-  magic: {fileID: 0}
   combat: {fileID: 0}
   grabCube: {fileID: 0}
   animation: {fileID: 0}
@@ -936,9 +933,15 @@ MonoBehaviour:
   ledgeClimbUpTime: 0.2
   ledgeClimbForwardTime: 0.15
   ledgeClimbEndTime: 0.05
+  dashSpeed: 8
+  dashDuration: 0.3
+  dashCooldown: 1.2
+  dashLeftCooldown: 0
+  mushroomOffset: 1.2
+  mushroomPrefab: {fileID: 6109709220787195709, guid: 5fb41baaf55674c43a26f0d80ee47061, type: 3}
+  mushroomInstance: {fileID: 0}
   mushJumpMoveSpeed: 7
   mushJumpPower: 20
-  superDashSpeed: 3
   knockbackStrength: 0.001
   grabSpeedCoef: 0.5
   glidingGravityScale: 0.1
@@ -961,6 +964,7 @@ MonoBehaviour:
   isGrabCube: 0
   isGliding: 0
   isMushJumping: 0
+  isDashing: 0
   detectWallTop: {x: 0, y: 0.5}
   detectWallBot: {x: 0.6, y: 0.3}
   detectWallEndTop: {x: 0, y: 0.5}
@@ -973,88 +977,6 @@ MonoBehaviour:
   hangingIvy: {fileID: 0}
   moveVector: {x: 0, y: 0}
   facingDirection: 0
---- !u!114 &7893349561445416240
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6606165383981438929}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3df0b0966bb517b44b09881a99e790aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  showGizmo: 1
-  playerControl: {fileID: 0}
-  playerRef: {fileID: 0}
-  attackHandler: {fileID: 8198766193797023085}
-  isDoingAttack: 0
-  isRidingButterfly: 0
-  canInteraction: 1
-  mask_wall:
-    serializedVersion: 2
-    m_Bits: 1024
-  mask_attackable:
-    serializedVersion: 2
-    m_Bits: 25427968
-  mask_butterfly:
-    serializedVersion: 2
-    m_Bits: 4194304
-  comboAttacks:
-  - attackEffect: {fileID: 363549792255431048}
-    attackStartupTime: 0.1
-    attackActiveTime: 0.15
-    attackRecoveryTime: 0.3
-    attackDistance: 4
-    attackDamagePercent: 0.3
-  - attackEffect: {fileID: 3021290361188649621}
-    attackStartupTime: 0.05
-    attackActiveTime: 0.15
-    attackRecoveryTime: 0.25
-    attackDistance: 5
-    attackDamagePercent: 0.3
-  - attackEffect: {fileID: 5488358225660545852}
-    attackStartupTime: 0.05
-    attackActiveTime: 0.25
-    attackRecoveryTime: 0.7
-    attackDistance: 6
-    attackDamagePercent: 0.4
-  comboResetTime: 0.1
-  comboStep: 0
-  attackTrigger: 0
---- !u!114 &3424554189190895944
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6606165383981438929}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e161333bce389cc439b8cb062e081f90, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  magicList:
-  - {fileID: 11400000, guid: fba58eb9aab3a584e944576a9121b4d4, type: 2}
-  - {fileID: 11400000, guid: bd67ad2d8bd22224ea213f171716cb5f, type: 2}
-  - {fileID: 11400000, guid: a5c8c43a9040b7444b668a6131a48ad4, type: 2}
-  castDist: 1.5
-  playerStateUI: {fileID: 0}
-  selectedMagic: {fileID: 0}
-  isMagicMode: 0
-  targetTerrainType: 0
-  wallLR: 0
-  spawnedObject:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  targetTileGroup: {fileID: 0}
 --- !u!114 &7376123347842105714
 MonoBehaviour:
   m_ObjectHideFlags: 0

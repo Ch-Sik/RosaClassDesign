@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class MagicCucumber : MonoBehaviour
 {
+    /*
     public Collider2D trigger;
 
     private const string _playerTag = "Player";
@@ -25,4 +26,5 @@ public class MagicCucumber : MonoBehaviour
         PlayerRef.Instance.movement.PrepareSuperDash();
         trigger.enabled = false;
     }
+    */
 }

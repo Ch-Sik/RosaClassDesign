@@ -64,6 +64,8 @@ public class PlayerController : MonoBehaviour
         inputManager.AM_MoveDefault.FindAction("Interact").performed += OnInteract;
         inputManager.AM_MoveDefault.FindAction("Gliding").performed += OnGliding;
         inputManager.AM_MoveDefault.FindAction("Gliding").canceled += OnCancleGliding;
+        inputManager.AM_MoveDefault.FindAction("Dash").performed += OnDash;
+        inputManager.AM_MoveDefault.FindAction("Mushroom").performed += OnMushroom;
 
 
         // Climb 액션맵 바인딩
@@ -72,6 +74,7 @@ public class PlayerController : MonoBehaviour
         inputManager.AM_MoveClimb.FindAction("Jump").performed += OnClimbJump;
         inputManager.AM_MoveClimb.FindAction("Jump").canceled += OnCancelJump;
 
+        /*
         // SuperDash 관련 액션맵 바인딩
         inputManager.AM_MoveSuperDashReady.FindAction("Launch").performed += OnSuperDashLaunch;
         inputManager.AM_MoveSuperDashReady.FindAction("Cancel").performed += OnSuperDashCancelBeforeLaunch;
@@ -88,6 +91,7 @@ public class PlayerController : MonoBehaviour
         inputManager.AM_ActionMagicReady.FindAction("MagicSelect").performed += OnMagicSelect;
         inputManager.AM_ActionMagicReady.FindAction("MagicExecute").performed += OnMagicExecute;
         inputManager.AM_ActionMagicReady.FindAction("MagicCancel").performed += OnMagicCancel;
+        */
 
         // UI 관련 input action은 PlayerController에서 관리하지 않음.
     }
@@ -100,10 +104,12 @@ public class PlayerController : MonoBehaviour
         inputManager.SetMoveInputState(newMoveState);
     }
 
+    /*
     public void SetActionState(PlayerActionState newActionState)
     {
         inputManager.SetActionInputState(newActionState);
     }
+    */
 
     #region InputAction 이벤트 핸들러
     #region PlayerMove ActionMap 핸들러
@@ -146,6 +152,18 @@ public class PlayerController : MonoBehaviour
         playerMove.CancleGliding();
     }
 
+    public void OnDash(InputAction.CallbackContext context)
+    {
+        // Debug.Log("Dash");
+        playerMove.Dash();
+    }
+
+    public void OnMushroom(InputAction.CallbackContext context)
+    {
+        // Debug.Log("Mushroom");
+        playerMove.MakeMushroom();
+    }
+
     public void OnClimbMove(InputAction.CallbackContext context)
     {
         moveVector = context.ReadValue<Vector2>();
@@ -176,6 +194,7 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    /*
     public void OnSuperDashLaunch(InputAction.CallbackContext context)
     {
         playerMove.LaunchSuperDash(context.ReadValue<float>() < 0 ? LR.LEFT : LR.RIGHT);
@@ -191,8 +210,11 @@ public class PlayerController : MonoBehaviour
     {
         playerMove.OnMoveDuringSuperDash(context.ReadValue<Vector2>().toLR());
     }
+    */
+
     #endregion
     #region PlayerAction ActionMap 핸들러
+    /*
     public void OnMeleeAttack(InputAction.CallbackContext context)
     {
         if (playerMove.isGrabCube)
@@ -203,17 +225,6 @@ public class PlayerController : MonoBehaviour
             //if(!playerCombat.isAttack) playerAnim.SetTrigger("Attack");
             playerCombat.SetAttackTrigger(true);
         }
-        
-        /*
-        if (context.performed)
-        {
-            if (currentMoveState != PlayerMoveState.CLIMBING)
-            {
-                PlayerRef.Instance.combat.Attack();
-                playerAnim.SetTrigger("Attack");
-            }
-        }
-        */
     }
 
     public void OnCancelMeleeAttack(InputAction.CallbackContext context)
@@ -240,6 +251,7 @@ public class PlayerController : MonoBehaviour
     {
         PlayerRef.Instance.magic.CancelMagic();
     }
+    */
     #endregion
     #endregion
 

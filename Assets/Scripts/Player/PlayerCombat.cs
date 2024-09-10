@@ -100,6 +100,7 @@ public class PlayerCombat : MonoBehaviour
         }
     }
 
+    /*
     private void FixedUpdate()
     {
         // 공격 시전 가능한지 체크
@@ -109,6 +110,7 @@ public class PlayerCombat : MonoBehaviour
             Attack();
         }
     }
+    */
 
     private bool CheckAttackable()
     {

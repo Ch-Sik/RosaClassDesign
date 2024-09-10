@@ -50,7 +50,7 @@ public class PlayerAnimation : MonoBehaviour
 
     private void UpdateVariables()
     {
-        isDoingAttack = playerRef.combat.isDoingAttack;
+        // isDoingAttack = playerRef.combat.isDoingAttack;
     }
 
     void UpdateAnimParameters()
@@ -72,8 +72,8 @@ public class PlayerAnimation : MonoBehaviour
         anim.SetBool("isInputClimbX", 
             playerControl.currentMoveState == PlayerMoveState.CLIMBING 
             && (playerMove.facingDirection.toVector2().x == -playerMove.moveVector.x));
-        anim.SetBool("isMagicReady", 
-            playerControl.currentActionState == PlayerActionState.MAGIC_READY);
+        //anim.SetBool("isMagicReady", 
+        //    playerControl.currentActionState == PlayerActionState.MAGIC_READY);
         //anim.SetBool("isClimbOver", ((playerControl.currentMoveState == PlayerMoveState.CLIMBING && playerMove.isWallClimbingTop) ? true : false));
         anim.SetFloat("xVel", rb.velocity.x);
         anim.SetFloat("yVel", rb.velocity.y);

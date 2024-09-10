@@ -19,6 +19,7 @@ public struct TerrainCastHit
 /// </summary>
 public class PlayerMagic : MonoBehaviour
 {
+    /*
     [Header("사용 가능한 마법 목록")]
     [SerializeField]
     private SO_Magic[] magicList;
@@ -369,4 +370,5 @@ public class PlayerMagic : MonoBehaviour
         else
             return null;
     }
+    */
 }

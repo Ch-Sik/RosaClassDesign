@@ -41,10 +41,12 @@ public class InputManager : MonoBehaviour
     public InputActionMap AM_MoveSuperDashReady;
     public InputActionMap AM_MoveSuperDash;
     public InputActionMap AM_Gliding;
+    /*
     // 액션 관련
     public InputActionMap AM_ActionDefault;
     public InputActionMap AM_ActionMagicReady;
     public InputActionMap AM_ActionDisabled;
+    */
     // UI 조작 관련
     public InputActionMap AM_UiInGame;
     public InputActionMap AM_UiDialogue;
@@ -73,11 +75,11 @@ public class InputManager : MonoBehaviour
             AM_MoveSuperDash = _inputAsset.FindActionMap("SuperDash");
         }
         // 공격, 마법 등 액션 관련 Action Map
-        {
-            AM_ActionDefault = _inputAsset.FindActionMap("ActionDefault");
-            AM_ActionMagicReady = _inputAsset.FindActionMap("MagicReady");
-            AM_ActionDisabled = _inputAsset.FindActionMap("ActionDisable");
-        }
+        //{
+        //    AM_ActionDefault = _inputAsset.FindActionMap("ActionDefault");
+        //    AM_ActionMagicReady = _inputAsset.FindActionMap("MagicReady");
+        //    AM_ActionDisabled = _inputAsset.FindActionMap("ActionDisable");
+        //}
         // 일시정지, 메뉴, 상점 등 UI 관련 Action Map
         {
             AM_UiInGame = _inputAsset.FindActionMap("InGame");
@@ -89,7 +91,7 @@ public class InputManager : MonoBehaviour
         // 모두 비활성화하고 Grounded, DefaultAction, InGame만 활성화
         _inputAsset.Disable();
         AM_MoveDefault.Enable();
-        AM_ActionDefault.Enable();
+        //AM_ActionDefault.Enable();
         AM_UiInGame.Enable();
     }
 
@@ -141,6 +143,7 @@ public class InputManager : MonoBehaviour
         _moveState = newMoveState;
     }
 
+    /*
     public void SetActionInputState(PlayerActionState newActionState)
     {
         if(newActionState != _actionState)
@@ -175,6 +178,7 @@ public class InputManager : MonoBehaviour
         }
         _actionState = newActionState;
     }
+    */
 
     public void SetUiInputState(UiState newUiState)
     {

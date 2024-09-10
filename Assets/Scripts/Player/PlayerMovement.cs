@@ -87,7 +87,34 @@ public class PlayerMovement : MonoBehaviour
     public float ledgeClimbStartTime = 0.1f, ledgeClimbUpTime = 0.1f, 
                     ledgeClimbForwardTime = 0.1f, ledgeClimbEndTime = 0.1f;
 
+    // 대시 관련
+    [FoldoutGroup("대시 관련")]
+    [Tooltip("대시 속도")]
+    [SerializeField] float dashSpeed = 5f;
+
+    [FoldoutGroup("대시 관련")]
+    [Tooltip("대시 유지 시간")]
+    [SerializeField] float dashDuration = 0.3f;
+
+    [FoldoutGroup("대시 관련")]
+    [Tooltip("대시 쿨타임")]
+    [SerializeField] float dashCooldown = 1.2f;
+
+    [FoldoutGroup("대시 관련")]
+    [Tooltip("디버그용: 대시 쿨타임 남은 시간")]
+    [SerializeField, ReadOnly] float dashLeftCooldown;
+
     // 버섯점프 관련
+    [FoldoutGroup("버섯 점프 관련")]
+    [Tooltip("버섯을 설치할 때 플레이어 앞으로 얼마나 떨어지게 설치할건지")]
+    [SerializeField] float mushroomOffset = 1.0f;
+
+    [FoldoutGroup("버섯 점프 관련")]
+    [SerializeField] GameObject mushroomPrefab;
+
+    [FoldoutGroup("버섯 점프 관련")]
+    [SerializeField, ReadOnly] GameObject mushroomInstance = null;
+
     [FoldoutGroup("버섯 점프 관련")]
     [Tooltip("플레이어 버섯 점프 이동 속도")]
     [SerializeField] float mushJumpMoveSpeed = 7f;
@@ -96,15 +123,15 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("플레이어 기존 이동 속도 저장")]
     float defaultMoveSpeed;
 
-
     [FoldoutGroup("버섯 점프 관련")]
     [Tooltip("플레이어 버섯 점프 파워")]
     [SerializeField] float mushJumpPower = 20f;
 
+
     // 슈퍼대시 관련
-    [FoldoutGroup("슈퍼대쉬(오이) 관련")]
-    [Tooltip("오이대쉬 속도")]
-    [SerializeField] float superDashSpeed = 3f;
+    //[FoldoutGroup("슈퍼대쉬(오이) 관련")]
+    //[Tooltip("오이대쉬 속도")]
+    //[SerializeField] float superDashSpeed = 3f;
 
     // 넉백 관련
     [FoldoutGroup("넉백 관련")]
@@ -160,6 +187,8 @@ public class PlayerMovement : MonoBehaviour
     [ReadOnly] public bool isGliding = false;
     [FoldoutGroup("플래그")]
     [ReadOnly] public bool isMushJumping = false;       // 버섯점프를 하고 있는지
+    [FoldoutGroup("플래그")]
+    [ReadOnly] public bool isDashing = false;       // 대시 중인지
 
     // 범위 지정
     [FoldoutGroup("벽 감지 범위")]
@@ -203,6 +232,10 @@ public class PlayerMovement : MonoBehaviour
     private Timer jumpTimer;                 // 최소 점프 시간을 위한 타이머
     private Timer jumpBufferTimer;           // 점프 선입력 타이머
     private Timer climbTimer;                // 반대방향 입력후 벽에 메달림 유지 타이머
+    private Timer dashCooldownTimer;
+
+    // 기타 변수
+    float originGravityScale;               // 대시 할 때 잠깐 중력 적용받지 않도록 하면서 원본 중력값 보관
 
     // 상수
     LayerMask groundLayer;      // NameToLayer가 constructor에서 호출 불가능하여 InitFields에서 초기화
@@ -279,8 +312,8 @@ public class PlayerMovement : MonoBehaviour
             }
             // isWallClimbingTop = false;
         }
-        isDoingAttack = playerRef.combat.isDoingAttack;
-        isNotMoveable = isDoingLedgeClimb || isKnockbacked || isWallJumping;
+        // isDoingAttack = playerRef.combat.isDoingAttack;
+        isNotMoveable = isDoingLedgeClimb || isKnockbacked || isWallJumping || isDashing;
     }
 
     /// <summary>
@@ -571,12 +604,12 @@ public class PlayerMovement : MonoBehaviour
         isWallClimbing = true;
         playerControl.SetMoveState(PlayerMoveState.CLIMBING);
         // 액션 state를 no_action으로 변경: 공격 및 새로운 마법 시전 불가능
-        playerControl.SetActionState(PlayerActionState.DISABLED);
+        // playerControl.SetActionState(PlayerActionState.DISABLED);
         // 기존에 마법을 준비중이었으면 그것을 취소
-        if (playerRef.magic.isMagicMode)
-        {
-            playerRef.magic.CancelMagic();
-        }
+        //if (playerRef.magic.isMagicMode)
+        //{
+        //    playerRef.magic.CancelMagic();
+        //}
         rb.gravityScale = 0;
         hangingIvy = ivy;
         transform.parent = ivy.transform;
@@ -589,7 +622,7 @@ public class PlayerMovement : MonoBehaviour
     {
         isWallClimbing = false;
         playerControl.SetMoveState(PlayerMoveState.DEFAULT);
-        playerControl.SetActionState(PlayerActionState.DEFAULT);
+        // playerControl.SetActionState(PlayerActionState.DEFAULT);
         rb.gravityScale = this.gravityScale;
 
         hangingIvy = null;
@@ -630,7 +663,7 @@ public class PlayerMovement : MonoBehaviour
         col.enabled = true;
 
         playerControl.SetMoveState(PlayerMoveState.DEFAULT);
-        playerControl.SetActionState(PlayerActionState.DEFAULT);
+        // playerControl.SetActionState(PlayerActionState.DEFAULT);
     }
 
     /// <summary>
@@ -651,15 +684,21 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="collision"></param>
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if(isDashing)
+        {
+            Debug.Log("충돌로 일한 대시 취소");
+            EndDash();
+        }
+
         // Debug.Log($"{collision.gameObject}:{LayerMask.LayerToName(collision.gameObject.layer)}");
 
-        if (isDoingSuperDash)
-        {
-            isDoingSuperDash = false;
-            CancelSuperDashAfterLaunch();
-        }
-        else
-        {
+        //if (isDoingSuperDash)
+        //{
+        //    isDoingSuperDash = false;
+        //    CancelSuperDashAfterLaunch();
+        //}
+        //else
+        //{
             // 벽에 설치된 덩굴에 충돌하였을 경우
             if (collision.gameObject.layer.Equals(climbableLayer))
             {
@@ -669,7 +708,7 @@ public class PlayerMovement : MonoBehaviour
                     //playerAnim.SetTrigger("ClimbTrigger");
                 }
             }
-        }
+        //}
     }
 
     private void OnCollisionStay2D(Collision2D collision)
@@ -740,6 +779,7 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
 
+    /*
     #region 슈퍼대시 관련
     public void PrepareSuperDash()
     {
@@ -781,6 +821,7 @@ public class PlayerMovement : MonoBehaviour
         CancelSuperDashAfterLaunch();
     }
     #endregion
+    */
 
     #region 활강 관련
     internal void Gliding()
@@ -812,6 +853,79 @@ public class PlayerMovement : MonoBehaviour
     {
         rb.velocity = new Vector2(rb.velocity.x, 0);
     }
+    #endregion
+
+    #region 대시 관련
+
+
+    public void Dash()
+    {
+
+        if(isDashing || (dashCooldownTimer != null && dashCooldownTimer.duration < dashCooldown))
+        {
+            Debug.Log("대시 쿨타임 중");
+            return;
+        }
+        DOTween.Sequence().OnStart(() =>
+        {
+            dashCooldownTimer = Timer.StartTimer();
+            isDashing = true;
+            originGravityScale = rb.gravityScale;
+
+            Debug.Log("Dash");
+
+            rb.gravityScale = 0;
+            rb.velocity = Vector2.right * (facingDirection.isLEFT() ? -1 : 1) * dashSpeed;
+        }).AppendInterval(dashDuration)
+        .AppendCallback(() =>
+        {
+            EndDash();
+        });
+    }
+
+    private void EndDash()
+    {
+        isDashing = false;
+
+        rb.gravityScale = originGravityScale;
+        rb.velocity = Vector2.zero;
+    }
+
+    #endregion
+
+    #region 버섯 설치 관련
+
+    public void MakeMushroom()
+    {
+        Debug.Log("버섯 설치 시도...");
+        // 플레이어 정면 방향으로 offset만큼 이동한 포인트.
+        Vector2 frontPosition = (Vector2)(transform.position) + facingDirection.toVector2() * mushroomOffset;
+        Collider2D overlapTest = Physics2D.OverlapCircle(frontPosition, 0.1f, LayerMask.GetMask("Ground"));
+        if(overlapTest != null)
+        {
+            Debug.Log("전방이 지형으로 막혀있음. 버섯 설치 실패");
+            return;
+        }
+        RaycastHit2D rayhit 
+            = Physics2D.Raycast(frontPosition, Vector2.down, 1.0f, LayerMask.GetMask("Ground"));
+        if(rayhit.collider == null)
+        {
+            Debug.Log("전방에 바닥이 감지되지 않음. 버섯 설치 실패");
+            return;
+        }
+        
+        // 기존에 설치된 녀석이 있다면 삭제
+        if(mushroomInstance != null)
+        {
+            // TODO: 삭제 연출 넣기
+            Destroy(mushroomInstance);
+        }
+
+        // 설치 수행
+        mushroomInstance = Instantiate(mushroomPrefab, rayhit.point, Quaternion.identity);
+        Debug.Log("버섯 설치 성공");
+    }
+
     #endregion
 
     #region 그라운드 체크. PlayerGroundCheck.cs에서 참조

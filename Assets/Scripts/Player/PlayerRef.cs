@@ -28,7 +28,7 @@ public class PlayerRef : MonoBehaviour
     public PlayerState state;
     public PlayerController controller;
     public PlayerMovement movement;
-    public PlayerMagic magic;
+    // public PlayerMagic magic;
     public PlayerCombat combat;
     public PlayerGrabCube grabCube;
     
@@ -49,7 +49,7 @@ public class PlayerRef : MonoBehaviour
         if (state == null) state = GetComponent<PlayerState>();
         if(controller == null) controller = GetComponent<PlayerController>();
         if(movement == null) movement = GetComponent<PlayerMovement>();
-        if(magic == null) magic = GetComponent<PlayerMagic>();
+        // if(magic == null) magic = GetComponent<PlayerMagic>();
         if(combat == null) combat = GetComponent<PlayerCombat>();
         if (grabCube == null) grabCube = GetComponentInChildren<PlayerGrabCube>();
         if(animation == null) animation = GetComponent<PlayerAnimation>();
