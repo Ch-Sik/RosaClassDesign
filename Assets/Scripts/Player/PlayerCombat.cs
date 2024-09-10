@@ -96,7 +96,7 @@ public class PlayerCombat : MonoBehaviour
             //    Debug.LogError($"PlayerDamageInflictor not found in attack entity at index {i}.");
             //    continue;
             //}
-            attackHandler.Init(this, comboAttacks[i].attackDamagePercent, mask_wall, mask_attackable, mask_butterfly);
+            // attackHandler.Init(this, comboAttacks[i].attackDamagePercent, mask_wall, mask_attackable, mask_butterfly);
         }
     }
 
@@ -118,48 +118,48 @@ public class PlayerCombat : MonoBehaviour
     }
 
     //공격 함수
-    public void Attack()
-    {
-        // 플래그 설정
-        isDoingAttack = true;
+    //public void Attack()
+    //{
+    //    // 플래그 설정
+    //    isDoingAttack = true;
 
-        CalculateAttackDirection();     // 마우스 위치 계산
-        CalculateCombo();               // 콤보 관련 계산
+    //    CalculateAttackDirection();     // 마우스 위치 계산
+    //    CalculateCombo();               // 콤보 관련 계산
 
-        // 공격 시퀀스
-        // 실질적인 공격 판정인 AttackHandler는 여기서 관리하고
-        // 그 외 비주얼 이펙트 등은 OnXXXAttack 이벤트 핸들러에서 관리
-        Sequence attack = DOTween.Sequence()
-        // 선딜레이 타임
-        .AppendCallback(() =>
-        {
-            OnStartupAttack();
-        })
-        .AppendInterval(currentCombo.attackStartupTime)
-        // 공격 활성화 타임
-        .AppendCallback(() =>
-        {
-            attackHandler.transform.localPosition = Vector3.zero;    // 공격판정 초기화
-            attackHandler.SetAttackActive(angle);
-            OnActivateAttack();
-        })
-        .Append(attackHandler.transform.DOMove(                      // 공격 판정 발사
-            currentCombo.attackDistance * direction,
-            currentCombo.attackActiveTime).SetRelative(true)
-        )
-        // 공격 활성화 종료
-        .AppendCallback(() =>
-        {
-            OnDeactiveAttack();                     // 공격 이펙트는 남겨놓고 판정만 회수
-        })
-        // 후딜레이 타임
-        .AppendInterval(currentCombo.attackRecoveryTime)
-        .OnComplete(() =>
-        {
-            // 이번 공격 종료
-            OnEndAttack();                          // 공격 이펙트까지 회수
-        });
-    }
+    //    // 공격 시퀀스
+    //    // 실질적인 공격 판정인 AttackHandler는 여기서 관리하고
+    //    // 그 외 비주얼 이펙트 등은 OnXXXAttack 이벤트 핸들러에서 관리
+    //    Sequence attack = DOTween.Sequence()
+    //    // 선딜레이 타임
+    //    .AppendCallback(() =>
+    //    {
+    //        OnStartupAttack();
+    //    })
+    //    .AppendInterval(currentCombo.attackStartupTime)
+    //    // 공격 활성화 타임
+    //    .AppendCallback(() =>
+    //    {
+    //        attackHandler.transform.localPosition = Vector3.zero;    // 공격판정 초기화
+    //        attackHandler.SetAttackActive(angle);
+    //        OnActivateAttack();
+    //    })
+    //    .Append(attackHandler.transform.DOMove(                      // 공격 판정 발사
+    //        currentCombo.attackDistance * direction,
+    //        currentCombo.attackActiveTime).SetRelative(true)
+    //    )
+    //    // 공격 활성화 종료
+    //    .AppendCallback(() =>
+    //    {
+    //        OnDeactiveAttack();                     // 공격 이펙트는 남겨놓고 판정만 회수
+    //    })
+    //    // 후딜레이 타임
+    //    .AppendInterval(currentCombo.attackRecoveryTime)
+    //    .OnComplete(() =>
+    //    {
+    //        // 이번 공격 종료
+    //        OnEndAttack();                          // 공격 이펙트까지 회수
+    //    });
+    //}
 
     //SetData는 호출되면, 현재의 마우스 위치를 토대로 각도와 방향벡터 Data를 Set해준다.
     void CalculateAttackDirection()
@@ -191,24 +191,24 @@ public class PlayerCombat : MonoBehaviour
         // 사유: 공격 한번의 길이에 따라 다음 공격이 콤보로 인정되는 시간이 들쭉날쭉하거나 아예 다음 콤보로 이어지지 않는 문제
     }
 
-    [Button]
-    //공격을 취소하기 위해 만듦. 공격판정체가 나비에 닿거나 임의로 공격을 중단시킬 경우 사용한다.
-    public void StopAttack()
-    {
-        // 공격 판정이 어차피 비활성화된 상태면 계속 움직여도 딱히 상관 없음.
-        // attack.Pause();
-        // attackEntity.transform.localPosition = Vector2.zero;
+    //[Button]
+    ////공격을 취소하기 위해 만듦. 공격판정체가 나비에 닿거나 임의로 공격을 중단시킬 경우 사용한다.
+    //public void StopAttack()
+    //{
+    //    // 공격 판정이 어차피 비활성화된 상태면 계속 움직여도 딱히 상관 없음.
+    //    // attack.Pause();
+    //    // attackEntity.transform.localPosition = Vector2.zero;
 
-        // 공격 판정 off
-        //foreach (var combo in comboAttacks)
-        //{
-        //    combo.attackHandler.SetAttackInactive();
-        //}
-        attackHandler.SetAttackInactive();
+    //    // 공격 판정 off
+    //    //foreach (var combo in comboAttacks)
+    //    //{
+    //    //    combo.attackHandler.SetAttackInactive();
+    //    //}
+    //    attackHandler.SetAttackInactive();
 
-        // 적에게 공격이 닿았다고 공격 이펙트/후딜레이가 없어지면 안됨.
-        // OnEndAttack();
-    }
+    //    // 적에게 공격이 닿았다고 공격 이펙트/후딜레이가 없어지면 안됨.
+    //    // OnEndAttack();
+    //}
 
     // 선딜레이 시작 시
     private void OnStartupAttack()
@@ -229,38 +229,38 @@ public class PlayerCombat : MonoBehaviour
         attackHandler.gameObject.SetActive(true);
     }
 
-    private void OnDeactiveAttack()
-    {
-        // 공격 판정 종료
-        attackHandler.transform.position = transform.position;   // 공격판정 회수
-        attackHandler.SetAttackInactive();
-        attackHandler.gameObject.SetActive(false);
-    }
+    //private void OnDeactiveAttack()
+    //{
+    //    // 공격 판정 종료
+    //    attackHandler.transform.position = transform.position;   // 공격판정 회수
+    //    attackHandler.SetAttackInactive();
+    //    attackHandler.gameObject.SetActive(false);
+    //}
 
     //공격 판정 종료시
-    private void OnEndAttack()
-    {
-        // 이번 공격의 이펙트 & 공격 판정 오브젝트 비활성화
-        currentAttackEffect.SetActive(false);
+    //private void OnEndAttack()
+    //{
+    //    // 이번 공격의 이펙트 & 공격 판정 오브젝트 비활성화
+    //    currentAttackEffect.SetActive(false);
 
-        // 다음 콤보 관련 처리
-        // 콤보 이어지는지 판단하기 위한 타이머 리셋
-        if (lastAttackTimer == null)
-            lastAttackTimer = Timer.StartTimer();
-        else
-            lastAttackTimer.Reset();
-        if (attackTrigger)
-        {
-            // 공격 종료 시에도 공격 버튼이 눌려져있다면 다음 공격 시전
-            Attack();
-        }
-        else
-        {
-            // 공격 버튼 안눌려있다면 공격 해제
-            isDoingAttack = false;
-            canInteraction = true;
-        }
-    }
+    //    // 다음 콤보 관련 처리
+    //    // 콤보 이어지는지 판단하기 위한 타이머 리셋
+    //    if (lastAttackTimer == null)
+    //        lastAttackTimer = Timer.StartTimer();
+    //    else
+    //        lastAttackTimer.Reset();
+    //    if (attackTrigger)
+    //    {
+    //        // 공격 종료 시에도 공격 버튼이 눌려져있다면 다음 공격 시전
+    //        Attack();
+    //    }
+    //    else
+    //    {
+    //        // 공격 버튼 안눌려있다면 공격 해제
+    //        isDoingAttack = false;
+    //        canInteraction = true;
+    //    }
+    //}
 
 
 

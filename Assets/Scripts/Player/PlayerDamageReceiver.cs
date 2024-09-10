@@ -16,6 +16,12 @@ public class PlayerDamageReceiver : MonoBehaviour
 
     public void GetDamage(GameObject target, int damage)
     {
+        if(target.transform.position.y < transform.position.y - 0.73f)
+        {
+            Debug.Log("몬스터가 플레이어보다 아래에 있음 = 플레이어가 밟은 상황, 데미지 무시");
+            return;
+        }
+
         Debug.Log(target.name);
 
         playerRef.animation.BlinkEffect();

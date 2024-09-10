@@ -92,7 +92,7 @@ public class Butterfly : MonoBehaviour
         if (PlayerRef.Instance.combat.isRidingButterfly)
             return;
 
-        PlayerRef.Instance.combat.StopAttack();
+        // PlayerRef.Instance.combat.StopAttack();
         ButterFlyAct(PlayerRef.Instance.transform);
     }
 
