@@ -13,7 +13,10 @@ public class MonsterState : MonoBehaviour
     [SerializeField] private int maxHP = 5;
     [SerializeField] private int currentHP;
     [SerializeField] private Blackboard blackboard;
-    [HideInInspector] public G_MobCounter mobCounter;
+
+    // 몬스터 사망했을 때 이벤트 발생시키기. 몬스터 리스폰 등에서 사용
+    public delegate void MonsterEvent(GameObject go);
+    public MonsterEvent OnDead;
 
     public int HP { get { return currentHP; } }
 
@@ -61,8 +64,10 @@ public class MonsterState : MonoBehaviour
             frameTime = Time.deltaTime;
             yield return new WaitForSeconds(3.0f - frameTime);
 
+            // 사망 시의 이벤트 처리
+            OnDead?.Invoke(gameObject);
+
             // AI Sensor들과 Empty Parent로 묶여있는 것 고려, 부모 삭제
-            mobCounter?.DieSignal();
             Destroy(gameObject.transform.parent.gameObject);
         }
     }
