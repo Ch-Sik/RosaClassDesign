@@ -19,6 +19,7 @@ public class MovePlatform : MonoBehaviour
     [ShowIf("ShowCinematicOption")]bool useAutoCinematic = true;
     [FoldoutGroup("선택"), SerializeField] MovePlatformType type;
     public float waitDelay = 0.0f;          //웨이포인트에서 대기할 것인지? 
+    public float startDelay = 0.0f;         //시작 딜레이 시간
 
     [Space]
     public bool showGizmos = false;
@@ -119,7 +120,13 @@ public class MovePlatform : MonoBehaviour
             type == MovePlatformType.EndPoint)
             canMove = false;
         else
+        {
+            if (waitCor != null)
+                StopCoroutine(waitCor);
+            waitCor = StartCoroutine(Wait(startDelay));
             canMove = true;
+        }
+            
 
         if (type == MovePlatformType.EndPoint)
             isReverse = true;
@@ -207,6 +214,13 @@ public class MovePlatform : MonoBehaviour
         yield return new WaitForSeconds(waitDelay);
         onWait = false;
     }  
+
+    IEnumerator Wait(float delay)
+    {
+        onWait = true;
+        yield return new WaitForSeconds(delay);
+        onWait = false;
+    }
 
     public void HandleChildTriggerEnter(Transform other)
     {
