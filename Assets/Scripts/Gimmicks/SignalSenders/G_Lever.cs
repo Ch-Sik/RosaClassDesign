@@ -1,4 +1,5 @@
 using DG.Tweening;
+using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,6 +38,7 @@ public class G_Lever : GimmickSignalSender
         yield return 0;
     }
 
+    [Button]
     public void LeverAction()
     {
 
@@ -55,7 +57,7 @@ public class G_Lever : GimmickSignalSender
             ActiveLever();
         }
     }
-
+    
     public void ActiveLever()
     {
         isActive = true;

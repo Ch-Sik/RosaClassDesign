@@ -15,12 +15,12 @@ public class G_MobCounter : GimmickSignalSender
     public void Start()
     {
         foreach (var mob in mobs)
-            mob.mobCounter = this;
+            mob.OnDead += DieSignal;
 
         fullCount = mobs.Count;
     }
 
-    public void DieSignal()
+    public void DieSignal(GameObject monster)
     {
         deadMobCount++;
 

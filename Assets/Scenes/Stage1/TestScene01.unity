@@ -330,6 +330,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 7610741375092814335, guid: dff6c20f5540f3843828c629df070725, type: 3}
+      propertyPath: m_TranslationOffsets.Array.data[0].y
+      value: -0.75
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -865,7 +869,7 @@ MonoBehaviour:
   cam: {fileID: 210034125}
   room: {fileID: 0}
   startPoint: {fileID: 2061483551}
-  startRoom: {fileID: 11400000, guid: 28d649e14869878478e8c6848df24614, type: 2}
+  startRoom: {fileID: 11400000, guid: f17000b0766d00f4a865d86adc4b5fff, type: 2}
   currentRoom: {fileID: 0}
   oldRooms: []
   chapter: {fileID: 1838996231}

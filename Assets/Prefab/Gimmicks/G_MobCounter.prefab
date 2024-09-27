@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3989763304663629013}
   - component: {fileID: 4482765735014028775}
-  - component: {fileID: 3076994715005064307}
+  - component: {fileID: 7597343835358277233}
   m_Layer: 0
   m_Name: G_MobCounter
   m_TagString: Untagged
@@ -51,7 +51,7 @@ MonoBehaviour:
   fullCount: 0
   deadMobCount: 0
   mobs: []
---- !u!114 &3076994715005064307
+--- !u!114 &7597343835358277233
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -60,12 +60,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 459113350755051935}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1af173c1c68e8cd4186d15e5dc8b2972, type: 3}
+  m_Script: {fileID: 11500000, guid: be2b8cedd89ae7b40a8bf93fd065cf15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   gimmicks:
-  - {fileID: 7616333767434871739}
   - {fileID: 3292723682684031499}
+  - {fileID: 7616333767434871739}
   signals:
   - {fileID: 4482765735014028775}
   isActive: 0
