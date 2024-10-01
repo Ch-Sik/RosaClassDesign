@@ -19,7 +19,7 @@ MonoBehaviour:
   flagIndex: 0
   title: 3-8
   subTitle: 
-  size: {x: 127, y: 45}
+  size: {x: 143, y: 98}
   offset: {x: -6, y: -15}
   topPorts: []
   botPorts: []
@@ -28,10 +28,10 @@ MonoBehaviour:
     index: 0
     direction: 2
     ports:
-    - {x: 120, y: 13}
-    - {x: 120, y: 14}
-    - {x: 120, y: 15}
-    - {x: 120, y: 16}
+    - {x: 136, y: 45}
+    - {x: 136, y: 46}
+    - {x: 136, y: 47}
+    - {x: 136, y: 48}
     connectedPorts: []
   lefPorts:
   - flag: 
@@ -42,10 +42,4 @@ MonoBehaviour:
     - {x: -6, y: -2}
     - {x: -6, y: -1}
     - {x: -6, y: 0}
-    connectedPorts:
-    - flag: 
-      flagIndex: 0
-      scene:
-        m_SceneAsset: {fileID: 102900000, guid: 57d3e59e0bda0914588fa2b42538f8d9, type: 3}
-        m_SceneName: 3-5
-      index: 0
+    connectedPorts: []

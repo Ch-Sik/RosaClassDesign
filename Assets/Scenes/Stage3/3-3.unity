@@ -748,14 +748,6 @@ CompositeCollider2D:
         Y: 50000000
       - X: 370000000
         Y: 50000000
-    - - X: 0
-        Y: 10000000
-      - X: -20000000
-        Y: 10000000
-      - X: -20000000
-        Y: -10000000
-      - X: 0
-        Y: -10000000
   m_CompositePaths:
     m_Paths:
     - - {x: 30.999971, y: 5}
@@ -846,10 +838,6 @@ CompositeCollider2D:
       - {x: 36.999973, y: 8}
       - {x: 35, y: 7.9999704}
       - {x: 35.00003, y: 5}
-    - - {x: -0.000029300001, y: -1}
-      - {x: -0.000029300001, y: 1}
-      - {x: -2, y: 0.99997073}
-      - {x: -1.9999708, y: -1}
   m_VertexDistance: 0.0005
   m_OffsetDistance: 0.00005
   m_UseDelaunayMesh: 0
@@ -3600,6 +3588,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1086905673}
     m_Modifications:
+    - target: {fileID: 632952547106196702, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
+      propertyPath: recoveryDuration
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2185860184002461802, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
       propertyPath: m_LocalPosition.x
       value: 72.5
@@ -3663,6 +3655,10 @@ PrefabInstance:
     - target: {fileID: 5749492349044558549, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
       propertyPath: m_LocalPosition.x
       value: -16.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 7631519432274652501, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
+      propertyPath: wakeupDuration
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -24809,26 +24805,6 @@ Tilemap:
       m_TileObjectToInstantiateIndex: 65535
       dummyAlignment: 0
       m_AllTileFlags: 2147483649
-  - first: {x: -2, y: -1, z: 0}
-    second:
-      serializedVersion: 2
-      m_TileIndex: 7
-      m_TileSpriteIndex: 7
-      m_TileMatrixIndex: 0
-      m_TileColorIndex: 0
-      m_TileObjectToInstantiateIndex: 65535
-      dummyAlignment: 0
-      m_AllTileFlags: 2147483649
-  - first: {x: -1, y: -1, z: 0}
-    second:
-      serializedVersion: 2
-      m_TileIndex: 7
-      m_TileSpriteIndex: 7
-      m_TileMatrixIndex: 0
-      m_TileColorIndex: 0
-      m_TileObjectToInstantiateIndex: 65535
-      dummyAlignment: 0
-      m_AllTileFlags: 2147483649
   - first: {x: 41, y: -1, z: 0}
     second:
       serializedVersion: 2
@@ -25860,26 +25836,6 @@ Tilemap:
       dummyAlignment: 0
       m_AllTileFlags: 2147483649
   - first: {x: 144, y: -1, z: 0}
-    second:
-      serializedVersion: 2
-      m_TileIndex: 7
-      m_TileSpriteIndex: 7
-      m_TileMatrixIndex: 0
-      m_TileColorIndex: 0
-      m_TileObjectToInstantiateIndex: 65535
-      dummyAlignment: 0
-      m_AllTileFlags: 2147483649
-  - first: {x: -2, y: 0, z: 0}
-    second:
-      serializedVersion: 2
-      m_TileIndex: 7
-      m_TileSpriteIndex: 7
-      m_TileMatrixIndex: 0
-      m_TileColorIndex: 0
-      m_TileObjectToInstantiateIndex: 65535
-      dummyAlignment: 0
-      m_AllTileFlags: 2147483649
-  - first: {x: -1, y: 0, z: 0}
     second:
       serializedVersion: 2
       m_TileIndex: 7
@@ -67675,7 +67631,7 @@ Tilemap:
     m_Data: {fileID: 11400000, guid: 0537746bb4c0acf4d9c63a0a5002e7ec, type: 2}
   - m_RefCount: 66
     m_Data: {fileID: 11400000, guid: 098ae9b035efefd4cbf1a26b59465d84, type: 2}
-  - m_RefCount: 5728
+  - m_RefCount: 5724
     m_Data: {fileID: 11400000, guid: 6a28e1640e8e0b44f95a5bab452cb0cd, type: 2}
   - m_RefCount: 137
     m_Data: {fileID: 11400000, guid: cd79b4f0a459e0548ba9a54089129aa2, type: 2}
@@ -67696,14 +67652,14 @@ Tilemap:
     m_Data: {fileID: 322830765, guid: a4c50e5fe8045cf4782ad24cd3656a19, type: 3}
   - m_RefCount: 66
     m_Data: {fileID: 1165637248, guid: a4c50e5fe8045cf4782ad24cd3656a19, type: 3}
-  - m_RefCount: 5728
+  - m_RefCount: 5724
     m_Data: {fileID: 995243480, guid: a4c50e5fe8045cf4782ad24cd3656a19, type: 3}
   - m_RefCount: 137
     m_Data: {fileID: -1370201736, guid: feafd2cd1bece8d4ab8f1076362adde3, type: 3}
   - m_RefCount: 55
     m_Data: {fileID: 232384497, guid: a4c50e5fe8045cf4782ad24cd3656a19, type: 3}
   m_TileMatrixArray:
-  - m_RefCount: 6230
+  - m_RefCount: 6226
     m_Data:
       e00: 1
       e01: 0
@@ -67722,7 +67678,7 @@ Tilemap:
       e32: 0
       e33: 1
   m_TileColorArray:
-  - m_RefCount: 6230
+  - m_RefCount: 6226
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
@@ -68588,6 +68544,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1086905673}
     m_Modifications:
+    - target: {fileID: 632952547106196702, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
+      propertyPath: recoveryDuration
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2185860184002461802, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
       propertyPath: m_LocalPosition.x
       value: 72.5
@@ -68651,6 +68611,10 @@ PrefabInstance:
     - target: {fileID: 5749492349044558549, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
       propertyPath: m_LocalPosition.x
       value: -16.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 7631519432274652501, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
+      propertyPath: wakeupDuration
+      value: 1.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -68969,6 +68933,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1086905673}
     m_Modifications:
+    - target: {fileID: 632952547106196702, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
+      propertyPath: recoveryDuration
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2185860184002461802, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
       propertyPath: m_LocalPosition.x
       value: 72.5
@@ -69032,6 +69000,10 @@ PrefabInstance:
     - target: {fileID: 5749492349044558549, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
       propertyPath: m_LocalPosition.x
       value: -16.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 7631519432274652501, guid: 62bc22c102da3b94aa0922b74d329a75, type: 3}
+      propertyPath: wakeupDuration
+      value: 4.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
