@@ -4,9 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class G_Lotate : GimmickSignalReceiver
+public class G_Rotation : GimmickSignalReceiver
 {
-    enum LotateType
+    enum RotateType
     {
         OnOff,
         Once,
@@ -15,43 +15,43 @@ public class G_Lotate : GimmickSignalReceiver
 
     [FoldoutGroup("선택"), SerializeField, Tooltip("Cinematic은 OnOff와 Reverse에서만 동작함")]
     [ShowIf("ShowCinematicOption")] bool useAutoCinematic = true;
-    [FoldoutGroup("선택"), SerializeField] LotateType type;
+    [FoldoutGroup("선택"), SerializeField] RotateType type;
 
-    public bool isLotate = true;
-    public float lotationTime = 4f;
-    public float lotationAmount = 360f;
-    public int lotationDir = 1; // 정방향 1, 역방향 -1
-    public bool isReverse = false;
-    private bool canMove = false;
+    public float rotationTime = 4f; // 1회 회전하는 데 걸리는 시간
+    public float rotationAmount = 360f; // 0 ~ 360 도 단위
+    public int rotationDir = 1; // 반시계방향 1, 시계방향 -1
+    private bool canRotate = false;
     public bool isArrive = false;
 
     GameObject cam;
     ProCamera2DCinematics cinematics;
     public List<cinematicsSetting> cinematicsSettings = new List<cinematicsSetting>();
 
-    // Update is called once per frame
-    void Update()
+    bool ShowCinematicOption()
     {
-        /*
-        if(isLotate)
+        switch (type)
         {
-            
+            case RotateType.OnOff:
+            case RotateType.Reverse:
+                return true;
+            case RotateType.Once:
+                return false;
         }
-        */
-        
+
+        return false;
     }
 
     public override void OffAct()
     {
         switch (type)
         {
-            case LotateType.OnOff:
-                canMove = false;
+            case RotateType.OnOff:
+                canRotate = false;
                 break;
-            case LotateType.Once:
-                canMove = true;
+            case RotateType.Once:
+                canRotate = true;
                 break;
-            case LotateType.Reverse:
+            case RotateType.Reverse:
                 Reverse();
                 break;
         }
@@ -61,15 +61,16 @@ public class G_Lotate : GimmickSignalReceiver
     {
         switch (type)
         {
-            case LotateType.OnOff:
-                canMove = true;
+            case RotateType.OnOff:
+                canRotate = true;
                 if (useAutoCinematic)
                     Cinematic();
                 break;
-            case LotateType.Once:
-                canMove = true;
+            case RotateType.Once:
+                canRotate = true;
+                StartCoroutine(Stop());
                 break;
-            case LotateType.Reverse:
+            case RotateType.Reverse:
                 Reverse();
                 if (useAutoCinematic)
                     Cinematic();
@@ -97,7 +98,7 @@ public class G_Lotate : GimmickSignalReceiver
     }
     public void Reverse()
     {
-        lotationDir *= -1;
+        rotationDir *= -1;
 
     }
 
@@ -106,24 +107,30 @@ public class G_Lotate : GimmickSignalReceiver
         cam = Camera.main.gameObject;
         cinematics = cam.GetComponent<ProCamera2DCinematics>();
 
-        if (type == LotateType.OnOff ||
-            type == LotateType.Once )
-            canMove = false;
+        if (type == RotateType.OnOff ||
+            type == RotateType.Once)
+            canRotate = false;
         else
         {
-            canMove = true;
+            canRotate = true;
         }
     }
 
     private void FixedUpdate()
     {
-        if (!canMove) return;
-        if (type == LotateType.Once && isArrive) return;
-        if (canMove)
+        if (!canRotate) return;
+        if (type == RotateType.Once && isArrive) return;
+        if (canRotate)
         {
-            float rotationSpeed = 360f / lotationTime;
+            float rotationSpeed = rotationAmount / rotationTime;
 
-            transform.Rotate(0, 0, rotationSpeed * Time.deltaTime);
+            transform.Rotate(0, 0, rotationSpeed * Time.deltaTime * rotationDir);
         }
+    }
+
+    IEnumerator Stop()
+    {
+        yield return new WaitForSeconds(rotationTime);
+        isArrive = true;
     }
 }
