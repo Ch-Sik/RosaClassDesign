@@ -33,6 +33,11 @@ public class MonsterProjectile : MonoBehaviour
             rigidbody.isKinematic = false;
         else
             rigidbody.isKinematic = true;
+        if(collider == null)
+        {
+            collider = GetComponent<Collider2D>();
+            Debug.Assert(collider != null);
+        }
 
         // 기본 속도 설정
         rigidbody.velocity = direction * speedScale;

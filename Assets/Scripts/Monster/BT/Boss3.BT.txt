@@ -32,8 +32,15 @@ tree("Phase0")
                     tree("MeleeAttack")
                     AddCount("ThrowRock")
                 sequence
+                    CheckCountGEQ("Feather",3)            // 씬에 깃털 갯수 3개 이상?
+                    // 깃털 회수 패턴 사용
+                    RetrieveFeather()
+                    ResetCount("Feather")
+                    AddCount("ThrowRock")
+                sequence
                     // 깃털 발사 패턴
-                    FeatherAttack()        // 추후 바꾸기
+                    FeatherAttack()
+                    AddCount("Feather")
                     AddCount("ThrowRock")
 
 // 페이즈 전환 시
@@ -45,7 +52,7 @@ tree("PhaseChange")
 // 2페이즈
 tree("Phase1")
   repeat                                // 마지막 Phase에서는 HP 체크할 필요 없음.
-    mute                                // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지   
+    mute                                // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지
         fallback                    // 여기서부터 실제 패턴 등장
             // '주작' 서브트리
             sequence
@@ -64,11 +71,12 @@ tree("Phase1")
             sequence
                 CheckCountGEQ("Feather",3)            // 씬에 깃털 갯수 3개 이상?
                 // 깃털 회수 패턴 사용
+                RetrieveFeather()
                 ResetCount("Feather")
                 AddCount("ThrowRock")
             sequence
                 // 아니라면 깃털 발사 패턴 사용
-                FeatherAttack()        // 추후 바꾸기
+                FeatherAttack()
                 AddCount("Feather")
                 AddCount("ThrowRock")
 

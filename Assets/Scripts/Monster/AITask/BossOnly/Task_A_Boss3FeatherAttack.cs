@@ -10,13 +10,15 @@ public class Task_A_Boss3FeatherAttack : Task_A_Base
     private GameObject projectilePrefab;
     [SerializeField, Tooltip("투사체 진행 속도")]
     private float projectileSpeed = 4.0f;
+    [SerializeField, Tooltip("투사체 조준 보정. 플레이어보다 얼마나 뒤 지면을 조준할지")]
+    private float aimOffset = 2.0f;
     [SerializeField, Tooltip("투사체 생성될 위치")]
     private Transform muzzle;
 
     [ReadOnly]
-    public List<GameObject> instances;
+    public List<GameObject> featherInstances;
 
-    Vector2 enemyPosition = Vector2.zero;
+    Vector2 aimPosition = Vector2.zero;
 
     // Start is called before the first frame update
     void Start()
@@ -46,17 +48,28 @@ public class Task_A_Boss3FeatherAttack : Task_A_Base
             Fail();
             return;
         }
-        enemyPosition = enemy.transform.position;
+        aimPosition = enemy.transform.position;
+        // 에임 보정 추가
+        RaycastHit2D rayhit = Physics2D.Raycast(aimPosition, Vector2.down, 100f, LayerMask.GetMask("Ground"));
+        Debug.Assert(rayhit.collider != null);
+        aimPosition.y = rayhit.point.y;
+        aimPosition.x += GetCurrentDir().toVector2().x * aimOffset;
     }
 
     protected override void OnActiveBegin()
     {
-        Vector2 attackDir = (enemyPosition - (Vector2)muzzle.position).normalized;
+        Vector2 attackDir = (aimPosition - (Vector2)muzzle.position).normalized;
 
         GameObject projectile = Instantiate(projectilePrefab, muzzle.position, Quaternion.identity);
         projectile.GetComponent<Boss3Projectile>().InitProjectile(attackDir * projectileSpeed);
 
         // 생성된 인스턴스 public list에 보관
-        instances.Add(projectile);
+        featherInstances.Add(projectile);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(aimPosition, 0.2f);
     }
 }
