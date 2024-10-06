@@ -36674,7 +36674,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scripts:
-  - {fileID: 4900000, guid: 013c54c2b93e13b4fa1f902ca5f8f678, type: 3}
+  - {fileID: 4900000, guid: 3b5bb107da6b4874db13bd9628101f84, type: 3}
   autoReset: 1
   tickOn: 0
   sourceInfos:
@@ -39321,17 +39321,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cabb47a96429ae74bb648e085b51464f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blackboard: {fileID: 0}
+  blackboard: {fileID: 7558066365162074088}
   writeStateOnBlackboard: 1
   usePatternID: 0
   patternID: 0
-  startupDuration: 1
+  startupDuration: 4
   superArmourOnStartup: 1
   activeDuration: 1
   superArmourOnActive: 1
   recoveryDuration: 1
   superArmourOnRecovery: 1
   currentState: 0
+  previewObject: {fileID: 0}
 --- !u!114 &8504939457327283302
 MonoBehaviour:
   m_ObjectHideFlags: 0
