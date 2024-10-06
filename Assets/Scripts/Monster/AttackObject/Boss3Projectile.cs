@@ -20,6 +20,12 @@ public class Boss3Projectile : MonsterProjectile
             collider.enabled = false;
             collider.excludeLayers = LayerMask.GetMask("Ground");     // 깃털 회수 중에 지형과 부딪혀 공격 판정 해제되는 것 방지
         }
+
+        if(canDestroyMushroom && (other.tag == "Mushroom"))
+        {
+            Debug.Log("버섯 파괴 시전");
+            other.GetComponent<MagicMushroom>().DoDestroy();
+        }
     }
 
     // 투사체 회수 기믹

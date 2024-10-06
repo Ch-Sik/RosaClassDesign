@@ -52,6 +52,10 @@ MonoBehaviour:
   speedScale: 1
   useRandomRotation: 0
   randomRotationRange: 30
+  blockingLayers:
+    serializedVersion: 2
+    m_Bits: 656384
+  canDestroyMushroom: 1
   rigidbody: {fileID: 4235773989891266188}
   collider: {fileID: 7275079935186561576}
   animator: {fileID: 0}
@@ -84,7 +88,7 @@ CircleCollider2D:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0

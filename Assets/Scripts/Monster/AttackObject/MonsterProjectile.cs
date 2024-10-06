@@ -14,6 +14,11 @@ public class MonsterProjectile : MonoBehaviour
     [SerializeField, Tooltip("랜덤 회전 최대치")]
     private float randomRotationRange = 30f;
 
+    [SerializeField, Tooltip("투사체와 충돌하여 가로막힐 레이어")]
+    private LayerMask blockingLayers = 656384;          // 기본값: "Ground", "Cube", "PlayerGrab"
+    [SerializeField, Tooltip("버섯 파괴 가능?")]
+    protected bool canDestroyMushroom = false;
+
     [SerializeField]
     protected new Rigidbody2D rigidbody;
     [SerializeField]
@@ -53,9 +58,7 @@ public class MonsterProjectile : MonoBehaviour
     protected virtual void OnTriggerEnter2D(Collider2D collider)
     {
         // 벽에 닿거나 플레이어에게 닿으면 사라지기
-        if (collider.gameObject.layer == LayerMask.NameToLayer("Ground") ||
-            collider.gameObject.layer == LayerMask.NameToLayer("Cube") ||
-            collider.gameObject.layer == LayerMask.NameToLayer("PlayerGrab"))
+        if ((1 << collider.gameObject.layer & blockingLayers) != 0)
         {
             // TODO: 투사체 사라지는 연출 넣기
             // Debug.Log("몬스터 투사체 지형과 접촉");
@@ -71,9 +74,15 @@ public class MonsterProjectile : MonoBehaviour
             this.collider.enabled = false;
             DoDestroy(1f);
         }
+
+        if(canDestroyMushroom && (collider.tag == "Mushroom"))
+        {
+            Debug.Log("버섯 파괴 시전");
+            collider.GetComponent<MagicMushroom>().DoDestroy();
+        }
     }
 
-    private void DoDestroy(float delay)
+    protected void DoDestroy(float delay)
     {
         if(animator != null)
         {
