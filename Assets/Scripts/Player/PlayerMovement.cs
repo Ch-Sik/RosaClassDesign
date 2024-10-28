@@ -385,7 +385,6 @@ public class PlayerMovement : MonoBehaviour
     {
         moveVector = new Vector2(inputVector.x, 0);
     }
-
     #endregion
 
     #region 점프 관련
@@ -986,6 +985,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
     #endregion
+
 
     public void LookAt2D(Vector2 worldPoint)
     {

@@ -6,7 +6,6 @@ using UnityEngine.UI;
 using DG.Tweening;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 
 /// <summary>
 /// CommunicationManager의 출력을 담당하는 UIControll 스크립트
@@ -47,7 +46,7 @@ public class CommunicationUI : MonoBehaviour
             charName.text = "";
             Dialogue.text = "";
         })
-        .Append(backBoard.DOFade((100f / 255f), tweenTime))
+        .Append(backBoard.DOFade((200f / 255f), tweenTime))
         .Join(DialoguePanel.DOFade(1, tweenTime))
         .Join(charName.DOFade(1, tweenTime))
         .Join(Dialogue.DOFade(1, tweenTime));
