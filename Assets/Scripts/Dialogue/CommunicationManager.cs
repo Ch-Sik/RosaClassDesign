@@ -203,16 +203,16 @@ public class CommunicationManager : MonoBehaviour
         //커뮤니케이션 타입에 따른 함수에 파라미터 전달
         switch (data[i].type)
         {
-            case CommunicationType.Show: Show(target, data[i].location); return;
-            case CommunicationType.Hide: Hide(target); return;
-            case CommunicationType.SetEmotion: SetEmotion(target, data[i].emotion); return;
-            case CommunicationType.TargetText: TargetText(target, data[i].text); return;
-            case CommunicationType.PlayerText: TargetText(CommunicationTarget.Player, data[i].text); return;
-            case CommunicationType.MoveToPosition: MoveToPosition(data[i].position); return;
-            case CommunicationType.ReturnToPosition: ReturnToPosition(); return;
-            case CommunicationType.Function: Function(data[i].function); return;
-            case CommunicationType.Delay: Delay(data[i].delay); return;
-            case CommunicationType.Sfx: Sfx(data[i].sfx); return;
+            case CommunicationType.Show:                Show(target, data[i].location); return;
+            case CommunicationType.Hide:                Hide(target); return;
+            case CommunicationType.SetEmotion:          SetEmotion(target, data[i].emotion); return;
+            case CommunicationType.TargetText:          TargetText(target, data[i].text); return;
+            case CommunicationType.PlayerText:          TargetText(CommunicationTarget.Player, data[i].text); return;
+            case CommunicationType.MoveToPosition:      MoveToPosition(data[i].position); return;
+            case CommunicationType.ReturnToPosition:    ReturnToPosition(); return;
+            case CommunicationType.Function:            Function(data[i].function); return;
+            case CommunicationType.Delay:               Delay(data[i].delay); return;
+            case CommunicationType.Sfx:                 Sfx(data[i].sfx); return;
         }
     }
 
