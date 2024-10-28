@@ -34,6 +34,11 @@ public static class EnumExtensions
         return dir == LR.LEFT ? Vector2.left : Vector2.right;
     }
 
+    public static float toFloat(this LR dir)
+    {
+        return dir == LR.LEFT ? -1f : 1f;
+    }
+
     public static LR toLR(this Vector3 v)
     {
         return v.x < 0 ? LR.LEFT : LR.RIGHT;
