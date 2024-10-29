@@ -14,9 +14,9 @@ public class PlayerDamageReceiver : MonoBehaviour
     }
 
 
-    public void GetDamage(GameObject target, int damage)
+    public void GetDamage(GameObject target, int damage, bool isDamageFromMonsterBody = false)
     {
-        if(target.transform.position.y < transform.position.y - 0.73f)
+        if(isDamageFromMonsterBody && target.transform.position.y < transform.position.y - 0.73f)
         {
             Debug.Log("몬스터가 플레이어보다 아래에 있음 = 플레이어가 밟은 상황, 데미지 무시");
             return;
@@ -41,8 +41,14 @@ public class PlayerDamageReceiver : MonoBehaviour
         StartCoroutine(RestoreCollision(originalLayer, collisionLayer, defaultNoDmgTime));
     }
 
-    public void GetDamage(GameObject target, int damage, float ignoreDur)
+    public void GetDamage(GameObject target, int damage, float ignoreDur, bool isDamageFromMonsterBody = false)
     {
+        if(isDamageFromMonsterBody && target.transform.position.y < transform.position.y - 0.73f)
+        {
+            Debug.Log("몬스터가 플레이어보다 아래에 있음 = 플레이어가 밟은 상황, 데미지 무시");
+            return;
+        }
+
         Debug.Log($"다음으로부터 피격: {target.name}");
 
         playerRef.animation.BlinkEffect();

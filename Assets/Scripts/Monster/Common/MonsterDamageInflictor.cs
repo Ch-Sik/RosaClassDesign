@@ -26,14 +26,16 @@ public class MonsterDamageInflictor : MonoBehaviour
     {
         if (go.CompareTag("Player"))
         {
+            bool isMonsterBody = gameObject.layer.Equals(LayerMask.NameToLayer("Monster"));
+
             // Debug.Log("damaged");
             if(!isUseIgnoreDuration)
             {
-                go.GetComponent<PlayerDamageReceiver>().GetDamage(gameObject, damage);
+                go.GetComponent<PlayerDamageReceiver>().GetDamage(gameObject, damage, isMonsterBody);
             }
             else
             {
-                go.GetComponent<PlayerDamageReceiver>().GetDamage(gameObject, damage,ignoreDuration);
+                go.GetComponent<PlayerDamageReceiver>().GetDamage(gameObject, damage,ignoreDuration, isMonsterBody);
             }
            
         }
