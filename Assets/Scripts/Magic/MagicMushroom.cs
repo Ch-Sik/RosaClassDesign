@@ -24,4 +24,11 @@ public class MagicMushroom : MonoBehaviour
         }
         
     }
+
+    public void DoDestroy()
+    {
+        // TODO: 파괴 연출 추가
+        GetComponent<Collider2D>().enabled = false;
+        Destroy(transform.parent.gameObject, 1f);
+    }
 }

@@ -95,6 +95,9 @@ public class MonsterDamageReceiver : DamageReceiver
 
     }
 
+    /// <summary>
+    /// 데미지 입기 함수. 주로 DamageInflictor에서 호출됨
+    /// </summary>
     public override void GetHitt(int damage, float attackAngle)
     {
         // 이미 죽어있을 경우 피격 무시
