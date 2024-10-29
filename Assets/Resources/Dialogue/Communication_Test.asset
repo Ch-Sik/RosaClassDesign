@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54c58b93f86daa14eb4b55c9445fa728, type: 3}
   m_Name: Communication_Test
   m_EditorClassIdentifier: 
+  ID: 0
   textFileName: Test
   data:
   - type: 1
@@ -82,6 +83,17 @@ MonoBehaviour:
     sfx: {fileID: 0}
   - type: 2
     target: 2
+    emotion: 0
+    text: 
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+  - type: 0
+    target: 0
     emotion: 0
     text: 
     location: 0
