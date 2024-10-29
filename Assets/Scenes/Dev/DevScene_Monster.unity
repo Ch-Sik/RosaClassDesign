@@ -24321,6 +24321,7 @@ GameObject:
   - component: {fileID: 1628694219}
   - component: {fileID: 1628694218}
   - component: {fileID: 1628694228}
+  - component: {fileID: 1628694229}
   m_Layer: 0
   m_Name: Boss4 body
   m_TagString: Untagged
@@ -24765,6 +24766,38 @@ MonoBehaviour:
   recoveryDuration: 0
   superArmourOnRecovery: 1
   currentState: 0
+--- !u!114 &1628694229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1628694209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f87943b4b9c32384aa78f73371c8e408, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blackboard: {fileID: 0}
+  writeStateOnBlackboard: 1
+  usePatternID: 0
+  patternID: 0
+  startupDuration: 0
+  superArmourOnStartup: 1
+  activeDuration: 0
+  superArmourOnActive: 1
+  recoveryDuration: 0
+  superArmourOnRecovery: 1
+  currentState: 0
+  moveCount: 0
+  travelTime: 0
+  upperLaneOffset: 0
+  bossroomLeftend: {fileID: 0}
+  bossroomRightend: {fileID: 0}
+  goWind: {fileID: 0}
+  blinkVFX: {fileID: 0}
+  bodyVisual: {fileID: 0}
+  collider: {fileID: 0}
 --- !u!43 &1629558649
 Mesh:
   m_ObjectHideFlags: 0
