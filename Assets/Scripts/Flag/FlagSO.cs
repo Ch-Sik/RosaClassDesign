@@ -13,11 +13,11 @@ public class FlagSO : ScriptableObject
 public class Flag
 {
     public string flag;
-    public int defaultFlagValue = 0;
+    public int value = 0;
 
     public Flag(string flag, int flagValue)
     {
         this.flag = flag;
-        this.defaultFlagValue = flagValue;
+        this.value = flagValue;
     }
 }

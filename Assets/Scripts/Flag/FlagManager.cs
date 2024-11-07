@@ -46,10 +46,15 @@ public class FlagManager : MonoBehaviour
         Load();
 
         foreach (Flag eachFlag in flagSO.flags)
-            flags.Add(eachFlag.flag, eachFlag.defaultFlagValue);
+            flags.Add(eachFlag.flag, eachFlag.value);
     }
 
     #region Utiles
+    public void SetFlag(Flag flag)
+    {
+        SetFlag(flag.flag, flag.value);
+    }
+
     public void SetFlag(string flag, int value)
     {
         if (!flags.ContainsKey(flag))

@@ -2,6 +2,7 @@ using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class NPCCommunicationInteraction : MonoBehaviour
@@ -79,6 +80,14 @@ public class CommunicationDecision
             return initialID;
         }
 
+        foreach (var flagID in flagedID)
+        {
+            int id = flagID.IsAvailable();
+
+            if (id != -1)
+                return id;
+        }
+
         //반복 대화
         return iterativeID;
     }
@@ -87,24 +96,24 @@ public class CommunicationDecision
 [Serializable]
 public class CommunicationDecisionNode
 {
-    public bool IsAvailable()
+    public int IsAvailable()
     {
-        for (int i = 0; i < flagBooleans.Count; i++)
+        //일회용 대화이고, 이미 소진되었다면,
+        if (isOnce && isUsed)
+            return -1;
+
+        for (int i = 0; i < flags.Count; i++)
         {
-            //
-            //만약 조건이 하나라도 거짓이라면 false
+            if (FlagManager.Instance.GetFlag(flags[i].flag) != flags[i].value)
+                return -1;
         }
 
-        return true;
+        isUsed = true;
+        return ID;
     }
 
-    public List<FlagBoolean> flagBooleans = new List<FlagBoolean>();
+    public bool isOnce = true;
+    bool isUsed = false;
+    public List<Flag> flags = new List<Flag>();
     public int ID;
-}
-
-[Serializable]
-public class FlagBoolean
-{
-    string flag;
-    bool value;
 }

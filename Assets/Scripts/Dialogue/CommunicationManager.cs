@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.U2D.Aseprite;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -232,6 +233,7 @@ public class CommunicationManager : MonoBehaviour
             case CommunicationType.Function:            Function(data[i].function); return;
             case CommunicationType.Delay:               Delay(data[i].delay); return;
             case CommunicationType.Sfx:                 Sfx(data[i].sfx); return;
+            case CommunicationType.Flag:                SetFlag(data[i].flag); return;
         }
     }
 
@@ -325,6 +327,11 @@ public class CommunicationManager : MonoBehaviour
     public void Sfx(AudioClip clip)
     { 
 
+    }
+
+    public void SetFlag(Flag flag)
+    {
+        FlagManager.Instance.SetFlag(flag);
     }
 
     //다음 커뮤니케이션 실행
@@ -434,6 +441,8 @@ public class CommunicationData
     public float delay;
     [ShowIf("@type == CommunicationType.Sfx")]
     public AudioClip sfx;
+    [ShowIf("@type == CommunicationType.Flag")]
+    public Flag flag;
 }
 
 public enum CommunicationType
@@ -448,7 +457,8 @@ public enum CommunicationType
     ReturnToPosition,           //카메라를 원위치 시킨다.
     Function,                   //특정 함수를 작동시킨다.
     Delay,                      //커뮤니케이션에 딜레이를 준다.
-    Sfx                         //특정 소리를 발생시킨다.
+    Sfx,                        //특정 소리를 발생시킨다.
+    Flag,                       //플래그를 변경한다.
 }
 
 public enum CommunicationTarget
