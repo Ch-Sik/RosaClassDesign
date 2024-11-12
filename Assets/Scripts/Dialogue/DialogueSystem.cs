@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -9,7 +8,6 @@ using UnityEngine;
 
 public class DialogueSystem : MonoBehaviour
 {
-
 }
 
 public class DialogueData

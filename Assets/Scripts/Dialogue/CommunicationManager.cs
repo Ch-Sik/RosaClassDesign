@@ -3,6 +3,8 @@ using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.U2D.Aseprite;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -48,8 +50,10 @@ public class CommunicationManager : MonoBehaviour
     public List<CharacterEmotion> characterDatas = new List<CharacterEmotion>();
     //캐릭터 스프라이트 매치 그룹
     [ShowInInspector] public Dictionary<CommunicationTarget, CharacterEmotion> characters = new Dictionary<CommunicationTarget, CharacterEmotion>();
+    [ShowInInspector] public Dictionary<int, CommunicationSO> communicationDatas = new Dictionary<int, CommunicationSO>();
 
     public string folderName = "Dialogue";                          //폴더이름 수식
+    public float endDelay = 1.5f;                                   //종료 딜레이
     public CommunicationUI UI;                                      //UI관리
     public TestLanguage language;                                   //게임 언어 수식
     public int i = 0;                                               //전역으로 사용할 반복자
@@ -66,9 +70,11 @@ public class CommunicationManager : MonoBehaviour
     public List<string> textData = new List<string>();                     //CSV 파싱 후 텍스트 데이터만 받음
     int textCount;                                                  //text의 Count 파악
 
+
     private void Start()
     {
         //시작과 동시에 Dictionary에 데이터 정리
+        LoadCommunicationAsDict();
         GetCharacterSpriteDatas();
     }
 
@@ -133,10 +139,21 @@ public class CommunicationManager : MonoBehaviour
         textCount = 0;
     }
 
+    private void ResetPlayerState()
+    {
+        InputManager.Instance.SetMoveInputState(PlayerMoveState.DEFAULT);
+        InputManager.Instance.SetUiInputState(UiState.IN_GAME);
+    }
+
     [Button]
     //Communication 시작 전 작업
-    public void SetDatas(CommunicationSO data)
+    public bool StartCommunication(int ID)
     {
+        if (!communicationDatas.ContainsKey(ID))
+            return false;
+
+        CommunicationSO data = communicationDatas[ID];
+
         //데이터 리셋
         ResetDatas();
 
@@ -153,7 +170,7 @@ public class CommunicationManager : MonoBehaviour
 
         //유효성 테스트에 false가 나오면 커뮤니케이션은 실행되지 않는다.
         if (!Validation())
-            return;
+            return false;
 
         //조작중단
         //기본 UI의 제거
@@ -162,10 +179,12 @@ public class CommunicationManager : MonoBehaviour
 
         //시작
         Invoke("StartCommunication", time);
+
+        return true;
     }
 
     //커뮤니케이션을 실행시킨다.
-    public void StartCommunication()
+    private void StartCommunication()
     {
         isCommunicating = true;
         Communication();
@@ -178,6 +197,7 @@ public class CommunicationManager : MonoBehaviour
         UI.EndAnimation();
         //기존 UI의 생성
         //조작시작
+        ResetPlayerState();
     }
 
     //계속해서 무한 while하는 커뮤니케이션 함수
@@ -203,16 +223,17 @@ public class CommunicationManager : MonoBehaviour
         //커뮤니케이션 타입에 따른 함수에 파라미터 전달
         switch (data[i].type)
         {
-            case CommunicationType.Show: Show(target, data[i].location); return;
-            case CommunicationType.Hide: Hide(target); return;
-            case CommunicationType.SetEmotion: SetEmotion(target, data[i].emotion); return;
-            case CommunicationType.TargetText: TargetText(target, data[i].text); return;
-            case CommunicationType.PlayerText: TargetText(CommunicationTarget.Player, data[i].text); return;
-            case CommunicationType.MoveToPosition: MoveToPosition(data[i].position); return;
-            case CommunicationType.ReturnToPosition: ReturnToPosition(); return;
-            case CommunicationType.Function: Function(data[i].function); return;
-            case CommunicationType.Delay: Delay(data[i].delay); return;
-            case CommunicationType.Sfx: Sfx(data[i].sfx); return;
+            case CommunicationType.Show:                Show(target, data[i].location); return;
+            case CommunicationType.Hide:                Hide(target); return;
+            case CommunicationType.SetEmotion:          SetEmotion(target, data[i].emotion); return;
+            case CommunicationType.TargetText:          TargetText(target, data[i].text); return;
+            case CommunicationType.PlayerText:          TargetText(CommunicationTarget.Player, data[i].text); return;
+            case CommunicationType.MoveToPosition:      MoveToPosition(data[i].position); return;
+            case CommunicationType.ReturnToPosition:    ReturnToPosition(); return;
+            case CommunicationType.Function:            Function(data[i].function); return;
+            case CommunicationType.Delay:               Delay(data[i].delay); return;
+            case CommunicationType.Sfx:                 Sfx(data[i].sfx); return;
+            case CommunicationType.Flag:                SetFlag(data[i].flag); return;
         }
     }
 
@@ -308,6 +329,11 @@ public class CommunicationManager : MonoBehaviour
 
     }
 
+    public void SetFlag(Flag flag)
+    {
+        FlagManager.Instance.SetFlag(flag);
+    }
+
     //다음 커뮤니케이션 실행
     public void Next()
     {
@@ -317,7 +343,22 @@ public class CommunicationManager : MonoBehaviour
     #endregion
 
     #region DataControl
-    //List 형태로 관리되고 있는 데이터를 Dictionary형태로 전환함.
+    public bool HaveCommunicationID(int ID)
+    {
+        return communicationDatas.ContainsKey(ID);
+    }
+
+    //Load Data
+    public void LoadCommunicationAsDict()
+    {
+        communicationDatas = new Dictionary<int, CommunicationSO>();
+        CommunicationSO[] arr = Resources.LoadAll<CommunicationSO>(folderName).ToArray();
+
+        for (int i = 0; i < arr.Length; i++)
+            communicationDatas.Add(arr[i].ID, arr[i]);
+    }
+
+    //List 형태로 관리되고 있는 데이터를 Dictionary형태로 전환함
     public void GetCharacterSpriteDatas()
     {
         for (int i = 0; i < characterDatas.Count; i++)
@@ -400,6 +441,8 @@ public class CommunicationData
     public float delay;
     [ShowIf("@type == CommunicationType.Sfx")]
     public AudioClip sfx;
+    [ShowIf("@type == CommunicationType.Flag")]
+    public Flag flag;
 }
 
 public enum CommunicationType
@@ -414,7 +457,8 @@ public enum CommunicationType
     ReturnToPosition,           //카메라를 원위치 시킨다.
     Function,                   //특정 함수를 작동시킨다.
     Delay,                      //커뮤니케이션에 딜레이를 준다.
-    Sfx                         //특정 소리를 발생시킨다.
+    Sfx,                        //특정 소리를 발생시킨다.
+    Flag,                       //플래그를 변경한다.
 }
 
 public enum CommunicationTarget

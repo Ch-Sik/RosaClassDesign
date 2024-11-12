@@ -1,0 +1,98 @@
+tree("Root")
+    sequence
+        tree("Idle")
+        tree("Phase0")
+        tree("PhaseChange")
+        tree("Phase1")
+
+// 플레이어가 보스방에 들어가기 전 보스 대기 상태
+tree("Idle")
+  not
+    repeat
+      not
+        isEnemyCloserThan(999.9)  // 플레이어가 인식 범위에 들어오면 Idle 종료
+
+// 1페이즈
+tree("Phase0") 
+  not                          // Phase 종료 조건 달성했을 때 Fail 대신 Succeed 반환하도록 not 게이트 사용
+    repeat 
+      sequence
+        isHpOverPhaseLimit(0)           // HP 체크하고 만약 HP가 기준 아래(=fail)일 경우 Phase2로 이행
+        mute                            // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지
+            fallback                    // 여기서부터 실제 패턴 등장
+                sequence
+                    not isEnemyAtFront()                     // 적이 등 뒤에 있다면
+                    tree("TurningAttack")                   // '뒤돌기' 사용
+                sequence
+                    CheckCooldown("OrbAttack",20.0)         // 쿨타임 돌았다면
+                    tree("OrbAttack")                       // 약필살기 '구슬 동시 공격' 사용
+                // 이하 평타 패턴
+                sequence
+                    isEnemyCloserThan(5.0)                  // 적이 가까울 경우 근접 공격
+                    random(0.5, 0.5)                        // 근접 공격은 랜덤으로 두가지 중에 선택
+                        tree("MeleeSingleAttack")
+                        tree("MeleeCombo")
+                sequence
+                    random(0.5, 0.5)                        // 아니면 원거리 공격
+                        tree("BlinkAttack")                 // 원거리도 역시 랜덤으로 두가지 중에 선택
+                        tree("ProjectileAttack")
+
+// 페이즈 전환 시
+tree("PhaseChange")
+    sequence
+        RoarAttack()
+        AddCount("SpecialAttack")   // 2페이즈 시작하자마자 필살기 쓰라고 카운트 증가
+        AddCount("SpecialAttack")
+        AddCount("SpecialAttack")
+
+// 2페이즈
+tree("Phase1")
+  repeat                            // 마지막 Phase에서는 HP 체크할 필요 없음.
+    mute                            // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지
+        fallback                    // 여기서부터 실제 패턴 등장
+            sequence
+                CheckCountGEQ("SpecialAttack", 3)       // 필살기 조건 만족했다면
+                tree("SpecialAttack")                   // 필살기 사용
+                ResetCount("SpecialAttack")
+            sequence
+                not isEnemyAtFront()                    // 적이 등 뒤에 있다면
+                tree("TurningAttack")                   // '뒤돌기' 사용
+            sequence
+                CheckCooldown("OrbAttack",20.0)         // 쿨타임 돌았다면
+                tree("OrbAttack")                       // 약필살기 '구슬 동시 공격' 사용
+            // 이하 평타 패턴
+            sequence
+                isEnemyCloserThan(5.0)                  // 적이 가까울 경우 근접 공격
+                random(0.5, 0.5)                        // 근접 공격은 랜덤으로 두가지 중에 선택
+                    tree("MeleeSingleAttack")
+                    tree("MeleeCombo")
+            sequence
+                random(0.5, 0.5)                        // 아니면 원거리 공격
+                    tree("BlinkAttack")                 // 원거리도 역시 랜덤으로 두가지 중에 선택
+                    tree("ProjectileAttack")
+
+
+// 여기서부터는 각각의 공격패턴만 따로 구현한 서브트리들
+tree("TurningAttack")
+    TurningAttack()
+
+tree("MeleeSingleAttack")
+    MeleeAttack()
+
+tree("MeleeCombo")
+    MeleeCombo()
+
+tree("BlinkAttack")
+    BlinkAttack()
+
+tree("ProjectileAttack")
+    sequence
+        SimpleProjectileAttack()
+        SimpleProjectileAttack()
+        SimpleProjectileAttack()
+
+tree("OrbAttack")
+    OrbAttack()
+
+tree("SpecialAttack")
+    SpecialAttack()
