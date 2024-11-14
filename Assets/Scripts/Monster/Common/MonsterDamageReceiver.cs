@@ -28,6 +28,8 @@ public class MonsterDamageReceiver : DamageReceiver
 
     [Tooltip("슈퍼아머 여부와 별개로 데미지를 입지 않음 옵션")]
     [SerializeField] private bool isInvincible;
+    [Tooltip("플레이어 공격에 피격된 후 잠시 플레이어와의 충돌 무시하는 시간 길이")]
+    [SerializeField] private float ignoreDur = 0;
 
 
     [Title("넉백 관련 옵션")]
@@ -137,6 +139,18 @@ public class MonsterDamageReceiver : DamageReceiver
                 yield return 0;     // 다음프레임까지 대기
                 blackboard.Set(BBK.isHitt, false);
             }
+
+            // 잠시 플레이어와 충돌 무시
+            // Debug.Log("플레이어와 충돌 무시 수행");
+            ToggleCollisionWithPlayer(false);
+            StartCoroutine(RestoreCollisionWithPlayer());
+
+            IEnumerator RestoreCollisionWithPlayer()
+            {
+                yield return new WaitForSeconds(ignoreDur);
+                // Debug.Log("플레이어와 충돌 복구됨");
+                ToggleCollisionWithPlayer(true);
+            }
         }
         // 슈퍼아머일 경우
         else
@@ -146,6 +160,21 @@ public class MonsterDamageReceiver : DamageReceiver
             {
                 KnockBack(attackAngle);
             }
+        }
+    }
+
+    private void ToggleCollisionWithPlayer(bool value)
+    {
+        int playerLayerMask = LayerMask.GetMask("Player", "GroundCheck");
+
+        Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
+        // Debug.Log($"col {colliders.Length}개에 대해 플레이어 레이어마스크 예외 {value}로 설정");
+        foreach(var col in colliders)
+        {
+            if(value == true)
+                col.excludeLayers &= ~playerLayerMask;
+            else
+                col.excludeLayers |= playerLayerMask;
         }
     }
 
