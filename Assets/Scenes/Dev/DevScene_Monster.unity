@@ -25492,10 +25492,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 7610741375092814335, guid: dff6c20f5540f3843828c629df070725, type: 3}
-      propertyPath: m_TranslationOffsets.Array.data[0].y
-      value: -0.75
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -30607,6 +30603,17 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!114 &1489139045 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6180352387989304572, guid: 2ed1e06aee428c2459cc7da87ea305cb, type: 3}
+  m_PrefabInstance: {fileID: 4629490986486249838}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7e361b8e5ec339439677f0f6e371dba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!21 &1508004465
 Material:
   serializedVersion: 8
@@ -50346,10 +50353,11 @@ MonoBehaviour:
   rigidbody: {fileID: 0}
   portrait: {fileID: 0}
   pandaBT: {fileID: 0}
+  monsterAttackComponent: {fileID: 0}
   isSuperArmour: 1
   tempSuperArmour: 0
   isInvincible: 0
-  ignoreDur: 0
+  ignoreDuration: 0.1
   knockbackCoeff: 0
   ignoreKnockbackOnSuperArmour: 0
   useRagdoll: 0
@@ -50591,6 +50599,14 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 286087835}
+    - target: {fileID: 9134073767175717656, guid: 2ed1e06aee428c2459cc7da87ea305cb, type: 3}
+      propertyPath: ignoreDuration
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9134073767175717656, guid: 2ed1e06aee428c2459cc7da87ea305cb, type: 3}
+      propertyPath: monsterAttackComponent
+      value: 
+      objectReference: {fileID: 1489139045}
     - target: {fileID: 9170755042332476544, guid: 2ed1e06aee428c2459cc7da87ea305cb, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 

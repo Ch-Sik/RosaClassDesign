@@ -11,7 +11,7 @@ using UnityEngine.Animations;
 
 public class PlayerDamageInflictor : MonoBehaviour
 {
-    Collider2D col;                                 //오브젝트의 충돌 컴포넌트
+    public Rigidbody2D rb;                          // 플레이어 몸체의 rigidbody. 플레이어가 아래로 내려가는 중일 때에만 적을 밟을 수 있게 하기 위해 사용.
     PlayerCombat playerCombat;                      //PlayerCombat과 이벤트 전달을 위해 직접 연결
     [SerializeField] ObjectPool hitEffects;                       // 공격 적중시의 이펙트 풀
 
@@ -81,7 +81,7 @@ public class PlayerDamageInflictor : MonoBehaviour
         Debug.Log($"Groundcheck collision enter: {collision.gameObject.name}");
 
         // 몬스터 등등과 충돌한다면,
-        if ((layer_attackable & 1 << collision.gameObject.layer) != 0)
+        if (rb.velocity.y < 0 && (layer_attackable & 1 << collision.gameObject.layer) != 0)
         {
             // 몬스터보다 충분히 높은지 판단
             if(PlayerRef.Instance.transform.position.y - 0.73f < collision.transform.position.y)

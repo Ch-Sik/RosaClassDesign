@@ -52,7 +52,12 @@ public class PlayerState : MonoBehaviour
     public void TakeDamage(int amount) 
     {
         Debug.Log("피해 입음 : " + amount);
-        stateUI.TakeDamage(amount);
+        if(stateUI == null)
+        {
+            Debug.LogError("체력 UI 레퍼런스가 할당되지 않음!");
+            return;
+        }
+
         while (amount > 0)
         {
             if (currentHP <= 1)

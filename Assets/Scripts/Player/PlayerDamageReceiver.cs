@@ -7,6 +7,7 @@ public class PlayerDamageReceiver : MonoBehaviour
     [SerializeField] float defaultNoDmgTime = 2f;
 
     PlayerRef playerRef;
+    bool isJustEndedIgnoreTime = false; // 해당 트리거 켜져있는 동안 플레이어는 '밟기' 수행할 수 없음.
 
     public void Start()
     {
@@ -16,11 +17,11 @@ public class PlayerDamageReceiver : MonoBehaviour
 
     public void GetDamage(GameObject target, int damage, bool isDamageFromMonsterBody = false)
     {
-        if(isDamageFromMonsterBody && target.transform.position.y < transform.position.y - 0.73f)
-        {
-            Debug.Log("몬스터가 플레이어보다 아래에 있음 = 플레이어가 밟은 상황, 데미지 무시");
-            return;
-        }
+        // if(!isJustEndedIgnoreTime && isDamageFromMonsterBody && target.transform.position.y < transform.position.y - 0.73f)
+        // {
+        //     Debug.Log("몬스터가 플레이어보다 아래에 있음 = 플레이어가 밟은 상황, 데미지 무시");
+        //     return;
+        // }
 
         Debug.Log(target.name);
 
@@ -35,6 +36,7 @@ public class PlayerDamageReceiver : MonoBehaviour
         int collisionLayer = gameObject.layer;
 
         // 현재 게임 오브젝트와 충돌한 오브젝트의 충돌을 무시
+        Debug.Log("플레이어 무적 시작");
         Physics2D.IgnoreLayerCollision(originalLayer, collisionLayer, true);
 
         // 일정 시간 후 충돌 무시 해제
@@ -73,6 +75,12 @@ public class PlayerDamageReceiver : MonoBehaviour
         yield return new WaitForSeconds(delay);
 
         // 충돌 무시 해제
+        Debug.Log("플레이어 무적 종료");
         Physics2D.IgnoreLayerCollision(originalLayer, collisionLayer, false);
+
+        // 트리거 설정
+        isJustEndedIgnoreTime = true;
+        yield return new WaitForFixedUpdate();  // 확실하게 FixedUpdate 한번이 끝날 떄까지 기다림
+        isJustEndedIgnoreTime = false;
     }
 }
