@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 // TODO: 투사체 회전 옵션 만들기
@@ -18,6 +19,8 @@ public class MonsterProjectile : MonoBehaviour
     private LayerMask blockingLayers = 656384;          // 기본값: "Ground", "Cube", "PlayerGrab"
     [SerializeField, Tooltip("버섯 파괴 가능?")]
     protected bool canDestroyMushroom = false;
+    [SerializeField, Tooltip("투사체가 벽에 닿았을 때 행동 설정")]
+    protected ProjectileWallHitOption onWallHit = ProjectileWallHitOption.Destroy;
 
     [SerializeField]
     protected new Rigidbody2D rigidbody;
@@ -57,14 +60,43 @@ public class MonsterProjectile : MonoBehaviour
 
     protected virtual void OnTriggerEnter2D(Collider2D collider)
     {
-        // 벽에 닿거나 플레이어에게 닿으면 사라지기
-        if ((1 << collider.gameObject.layer & blockingLayers) != 0)
+        // 벽에 닿았다면
+        if((1 << collider.gameObject.layer & blockingLayers) != 0)
         {
-            // TODO: 투사체 사라지는 연출 넣기
-            // Debug.Log("몬스터 투사체 지형과 접촉");
-            rigidbody.velocity = Vector2.zero;
-            this.collider.enabled = false;
-            DoDestroy(1f);
+            switch(onWallHit)
+            {
+                case ProjectileWallHitOption.Disable:
+                    rigidbody.velocity = Vector2.zero;
+                    this.collider.enabled = false;
+                    StartCoroutine(DisableWithDelay());
+                    IEnumerator DisableWithDelay()
+                    {
+                        yield return new WaitForSeconds(1f);
+                        gameObject.SetActive(false);
+                    }
+                    break;
+                case ProjectileWallHitOption.Destroy:
+                    rigidbody.velocity = Vector2.zero;
+                    this.collider.enabled = false;
+                    DoDestroy(1f);
+                    break;
+                case ProjectileWallHitOption.Stop:
+                    rigidbody.velocity = Vector2.zero;
+                    break;
+                case ProjectileWallHitOption.Reflect:
+                    RaycastHit2D hit = Physics2D.Raycast(transform.position, rigidbody.velocity, 10f, blockingLayers);
+                    if (hit.collider != null)
+                    {
+                        // 벽에 부딪혔을 때 반사 수행
+                        Vector2 normal = hit.normal;
+                        Vector2 reflected = Vector2.Reflect(rigidbody.velocity, normal);
+                        rigidbody.velocity = reflected;
+                    }
+                    break;
+                default:
+                    Debug.LogError("잘못된 ProjectileWallHitOption!");
+                    break;
+            }
         }
 
         if(collider.gameObject.CompareTag("Player"))

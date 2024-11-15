@@ -7,10 +7,13 @@ using Panda;
 public class Task_A_Boss4OrbAttack : Task_A_Base
 {
     [Tooltip("발사할 투사체 3개")]
-    GameObject[] Orbs;
+    public GameObject[] Orbs;
 
     [Tooltip("투사체가 초기에 위치할 곳")]
-    Transform[] muzzles;
+    public Transform[] muzzles;
+
+    [Tooltip("투사체 속도")]
+    public float projectileSpeed = 3f;
 
     [Task]
     void OrbAttack()
@@ -47,7 +50,17 @@ public class Task_A_Boss4OrbAttack : Task_A_Base
         {
             // 각 구체 별로 발사 벡터 계산 후 발사
             Vector2 launchDir = (enemyPosition - (Vector2)orb.transform.position).normalized;
-            orb.GetComponent<MonsterProjectile>().InitProjectile(launchDir);
+            orb.GetComponent<MonsterProjectile>().InitProjectile(launchDir * projectileSpeed);
+        }
+    }
+
+    protected override void OnRecoveryBegin()
+    {
+        // 발사된 투사체들 비활성화
+        foreach(var orb in Orbs)
+        {
+            orb.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            orb.SetActive(false);
         }
     }
 }
