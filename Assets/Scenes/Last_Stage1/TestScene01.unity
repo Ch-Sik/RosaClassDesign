@@ -964,6 +964,7 @@ GameObject:
   - component: {fileID: 1018947826}
   - component: {fileID: 1018947827}
   - component: {fileID: 1018947828}
+  - component: {fileID: 1018947829}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -1038,6 +1039,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   flagSO: {fileID: 11400000, guid: 68973b75cd843464e9ab5da8ee745626, type: 2}
+--- !u!114 &1018947829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1018947824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ddcd4b0f6ef3034a9ce3d77a4617460, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  useSaveLoad: 1
+  useLocalSave: 1
+  pathName: SaveFile
+  flagPathName: Flag
+  mapPathame: Maps
+  playerPathName: Player
 --- !u!1 &1047433009
 GameObject:
   m_ObjectHideFlags: 0

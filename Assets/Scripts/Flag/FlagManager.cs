@@ -43,8 +43,6 @@ public class FlagManager : MonoBehaviour
     //세이브 있을 시 Param으로 save 받기
     private void Init()
     {
-        Load();
-
         foreach (Flag eachFlag in flagSO.flags)
             flags.Add(eachFlag.flag, eachFlag.value);
     }
@@ -87,16 +85,19 @@ public class FlagManager : MonoBehaviour
 
         return flags[flag];
     }
-    #endregion
 
-    #region SaveLoad
-    private void Save()
+    public (List<string>, List<int>) GetFlagsData()
     {
-    }
+        List<string> fs = new List<string>();
+        List<int> vs = new List<int>();
 
-    private void Load()
-    {
-        
+        foreach (KeyValuePair<string, int> flag in flags)
+        {
+            fs.Add(flag.Key);
+            vs.Add(flag.Value);
+        }
+
+        return (fs, vs);
     }
     #endregion
 }
