@@ -107,7 +107,7 @@ GameObject:
   - component: {fileID: 3102127482724528107}
   - component: {fileID: 5435259585042950026}
   - component: {fileID: 5801081003827647356}
-  m_Layer: 23
+  m_Layer: 25
   m_Name: Head Collider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -171,7 +171,7 @@ CircleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1024
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -206,7 +206,7 @@ CircleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1024
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -241,7 +241,7 @@ BoxCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1024
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -1008,6 +1008,7 @@ MonoBehaviour:
   rigidbody: {fileID: 0}
   portrait: {fileID: 0}
   pandaBT: {fileID: 0}
+  monsterAttackComponent: {fileID: 0}
   isSuperArmour: 0
   tempSuperArmour: 0
   isInvincible: 1
@@ -1108,7 +1109,7 @@ MonoBehaviour:
   writeStateOnBlackboard: 1
   usePatternID: 0
   patternID: 0
-  startupDuration: 0.3
+  startupDuration: 0.2
   superArmourOnStartup: 1
   activeDuration: 3
   superArmourOnActive: 1
