@@ -8,7 +8,7 @@ public class Task_A_Melee : Task_A_Base
     // MonsterAOE랑 melee attack이랑 역할이 겹치는 것 같은데... 애초에 두 공격 방식을 하나로 통합해봐도 좋을 듯?
     [SerializeField, Tooltip("공격 범위를 나타내는 자식오브젝트 컴포넌트")]
     [Header("공격 관련")]
-    private MonsterAOE attackInstance = null;
+    protected MonsterAOE attackInstance = null;
 
     protected virtual void Start()
     {

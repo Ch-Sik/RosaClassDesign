@@ -37,13 +37,13 @@ public class Task_A_Boss4BlinkAttack : Task_A_Base
             .AppendCallback(()=>
             {
                 // 이펙트 남겨두고 비주얼은 사라지기, 충돌판정 끄기
-                blinkVFX.SetActive(true);
-                bodyVisual.SetActive(true);
+                blinkVFX?.SetActive(true);
+                bodyVisual?.SetActive(false);
                 bodyCollider.enabled = false;
             })
             .AppendInterval(1f)
             .AppendCallback(()=>{
-                blinkVFX.SetActive(false);      // 약 1초 후에 점멸 이펙트 끄기.
+                blinkVFX?.SetActive(false);      // 약 1초 후에 점멸 이펙트 끄기.
             });
     }
 
@@ -55,13 +55,15 @@ public class Task_A_Boss4BlinkAttack : Task_A_Base
         Vector3 newPosition = enemy.transform.position + Vector3.up * jumpHeight;
         transform.position = newPosition;
 
-        // 공격 판정 켜기
+        // 공격 & 몸통 충돌 판정 켜기
         attackColliderAndVFX.SetActive(true);
+        bodyCollider.enabled = true;
         DOTween.Sequence()
             .AppendInterval(0.1f)       // 공격 판정 켜고 잠시 기다려서 '벽에 충돌하여 튕겨나오는 모습' 보이지 않도록 함.
             .AppendCallback(()=>
             {
-                blinkVFX.SetActive(true);           // 점멸 이펙트 켜기
+                blinkVFX?.SetActive(true);           // 점멸 이펙트 켜기
+                bodyVisual?.SetActive(true);
             });
         
         // 떨어지는 건 중력 영향으로 자연스럽게 될 것 같으니 일단 따로 내려오는 코드는 빼고 테스트해보도록 하자.
@@ -70,6 +72,6 @@ public class Task_A_Boss4BlinkAttack : Task_A_Base
     protected override void OnRecoveryBegin()
     {
         attackColliderAndVFX.SetActive(false);
-        blinkVFX.SetActive(false);
+        blinkVFX?.SetActive(false);
     }
 }

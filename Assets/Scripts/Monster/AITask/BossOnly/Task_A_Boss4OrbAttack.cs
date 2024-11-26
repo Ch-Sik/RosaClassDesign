@@ -6,14 +6,17 @@ using Panda;
 
 public class Task_A_Boss4OrbAttack : Task_A_Base
 {
-    [Tooltip("발사할 투사체 3개")]
-    public GameObject[] Orbs;
+    [Tooltip("투사체 프리팹")]
+    public GameObject orbPrefab;
 
     [Tooltip("투사체가 초기에 위치할 곳")]
     public Transform[] muzzles;
 
     [Tooltip("투사체 속도")]
     public float projectileSpeed = 3f;
+
+    [Tooltip("발사할 투사체 3개")]
+    GameObject[] Orbs;
 
     [Task]
     void OrbAttack()
@@ -23,12 +26,14 @@ public class Task_A_Boss4OrbAttack : Task_A_Base
 
     protected override void OnStartupBegin()
     {
+        Orbs = new GameObject[3];
         // 투사체는 풀링된다고 가정. 초기화 필요
-        foreach(var orb in Orbs)
+        for(int i=0; i<3; i++)
         {
-            orb.transform.position = transform.position;
-            orb.SetActive(true);
-            orb.GetComponent<Rigidbody2D>().velocity = Vector3.zero;
+            Orbs[i] = Instantiate(orbPrefab);
+            Orbs[i].transform.position = transform.position;
+            Orbs[i].SetActive(true);
+            Orbs[i].GetComponent<Rigidbody2D>().velocity = Vector3.zero;
         }
 
         // 투사체 3개를 제 위치로 이동시키기
@@ -56,11 +61,11 @@ public class Task_A_Boss4OrbAttack : Task_A_Base
 
     protected override void OnRecoveryBegin()
     {
-        // 발사된 투사체들 비활성화
-        foreach(var orb in Orbs)
-        {
-            orb.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            orb.SetActive(false);
-        }
+        // // 발사된 투사체들 비활성화
+        // foreach(var orb in Orbs)
+        // {
+        //     orb.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+        //     orb.SetActive(false);
+        // }
     }
 }
