@@ -9,6 +9,10 @@ public class Task_CountCheck : MonoBehaviour
 
     private void Start()
     {
+        if(blackboard == null)
+        {
+            blackboard = GetComponent<Blackboard>();
+        }
         Debug.Assert(blackboard != null);
     }
 
