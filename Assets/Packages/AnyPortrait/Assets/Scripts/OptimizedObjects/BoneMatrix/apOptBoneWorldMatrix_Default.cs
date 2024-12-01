@@ -246,6 +246,7 @@ namespace AnyPortrait
 		public override void SetTRSAsResult(	bool isMove, Vector2 pos, 
 												bool isRotate, float angle, 
 												bool isScale, Vector2 scale,
+												bool isLookAt, Vector2 lookTargetPos, float lookAtWeight, //추가 v1.5.0
 												bool isIKAngle, float IKAngle_World, float IKAngle_Delta, float IKWeight)
 		{
 			if (isMove)
@@ -255,6 +256,8 @@ namespace AnyPortrait
 			}
 			
 			
+			//TODO : 이렇게 짜버리면 외부 입력 (초기에 isRotate로 들어온 angle)이 IK에 의해서 덮어씌워진다.
+			//우선 순위를 바꿔야 한다.
 			if(isIKAngle && IKWeight > 0.0f)
 			{
 				//IK에 의한 선형 보간을 한다.
@@ -271,6 +274,14 @@ namespace AnyPortrait
 			{
 				_mtx_Def._scale.x = scale.x;
 				_mtx_Def._scale.y = scale.y;
+			}
+
+			//추가 v1.5.0 : Look At 요청 계산을 지금 한다.
+			if(isLookAt)
+			{
+				float lookAtAngle = apUtil.AngleTo180(Mathf.Atan2(lookTargetPos.y - _mtx_Def._pos.y, lookTargetPos.x - _mtx_Def._pos.x) * Mathf.Rad2Deg - 90.0f);
+				float nextAngle = apUtil.AngleSlerp(_mtx_Def._angleDeg, lookAtAngle, lookAtWeight);
+				_mtx_Def._angleDeg = nextAngle;
 			}
 			
 			_mtx_Def.MakeMatrix();

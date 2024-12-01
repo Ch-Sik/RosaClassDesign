@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -878,6 +878,29 @@ namespace AnyPortrait
 		RootMotionPerAxis = 850,
 		RootMotionXOption = 851,
 		RootMotionYOption = 852,
+		FPSScaleOption = 853,
+		IKMethodOfGizmo = 854,
+		IKMethod = 855,
+		FindAssingMissingShaders = 856,
+		DLG_MatLibFindMissingShader_Title = 857,
+		DLG_MatLibFindMissingShader_Body = 858,
+		Setting_ControlParamBlendedKey = 859,
+		Setting_CheckCameras = 860,
+		Setting_InvisibleMeshes = 861,
+		SaveCPAsSnapshot = 862,
+		RemoveCPSnapshot = 863,
+		DLG_CPSnapshotFailed_Title = 864,
+		DLG_CPSnapshotFailed_NoName_Body = 865,
+		DLG_CPSnapshotFailed_NoCP_Body = 866,
+		DLG_CPSnapshotRemove_Title = 867,
+		DLG_CPSnapshotRemove_Body = 868,
+		DLG_ParentRotation = 869,
+		AddPropertyFromList = 870,
+		SelectPropertiesToAdd = 871,
+		Properties = 872,
+		ReferenceMaterial = 873,
+		ExportImportSettings = 874,
+		Setting_ClippingProcess = 875,
 	}
 
 
@@ -1373,6 +1396,14 @@ namespace AnyPortrait
 		PixelPerfect = 483,
 		RootMotionEnabled = 484,
 		RootMotionDisabled = 485,
+		IK_Depth = 486,
+		IK_SoftLimit = 487,
+		IK_InitialPose = 488,
+		LightProbes = 489,
+		ReflectionProbes = 490,
+		Auto = 491,
+		Stretch = 492,
+		Snapshot = 493,
 	}
 
 

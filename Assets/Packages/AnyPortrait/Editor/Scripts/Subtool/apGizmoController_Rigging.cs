@@ -818,7 +818,8 @@ namespace AnyPortrait
 
 			if (Editor.Select.MeshGroup == null
 				|| Editor.Select.Bone == null
-				|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				//|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render//이전
+				|| Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None//변경 v1.5.0
 				|| Editor.Select.Modifier == null //<<Modifier가 null이면 안된다.
 				)
 			{
@@ -855,7 +856,7 @@ namespace AnyPortrait
 				//IKSpace로 이동해야하나.
 				Vector2 bonePosW = bone._worldMatrix.Pos + deltaMoveW;
 				
-				bool successIK = bone.RequestIK(bonePosW, weight, true);//이전 (World 좌표계)
+				bool successIK = bone.RequestIK(bonePosW, weight, true, Editor._option_IKMethod);//이전 (World 좌표계)
 				//bool successIK = bone.RequestIK(bone._worldMatrix.ConvertForIK(bonePosW), weight, true);//변경 20.9.4 (IK 좌표계)
 
 				if (!successIK)
@@ -988,7 +989,8 @@ namespace AnyPortrait
 
 			if (Editor.Select.MeshGroup == null
 				|| Editor.Select.Bone == null
-				|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				//|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				|| Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None//변경 v1.5.0
 				|| Editor.Select.Modifier == null //<<Modifier가 null이면 안된다.
 				|| !Editor.Select.IsRigEditTestPosing
 				|| Editor.Gizmos.IsBrushMode 
@@ -1039,7 +1041,8 @@ namespace AnyPortrait
 
 			if (Editor.Select.MeshGroup == null
 				|| Editor.Select.Bone == null
-				|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				//|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				|| Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None//변경 v1.5.0
 				|| Editor.Select.Modifier == null //<<Modifier가 null이면 안된다.
 				|| !Editor.Select.IsRigEditTestPosing
 				|| Editor.Gizmos.IsBrushMode 
@@ -1206,7 +1209,8 @@ namespace AnyPortrait
 		{
 			if (Editor.Select.MeshGroup == null
 				|| Editor.Select.Bone == null
-				|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				//|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				|| Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None//변경 v1.5.0
 				|| Editor.Select.Modifier == null //<<Modifier가 null이면 안된다.
 				|| !Editor.Controller.IsMouseInGUI(curMouseGL)
 				|| deltaMoveW.sqrMagnitude == 0.0f
@@ -1260,7 +1264,7 @@ namespace AnyPortrait
 				_prevSelected_MousePosW += deltaMoveW;
 				Vector2 bonePosW = _prevSelected_MousePosW;//DeltaPos + 절대 위치 절충
 
-				bool successIK = bone.RequestIK(bonePosW, weight, true);//이전 (World 좌표계)
+				bool successIK = bone.RequestIK(bonePosW, weight, true, Editor._option_IKMethod);//이전 (World 좌표계)
 				//bool successIK = bone.RequestIK(bone._worldMatrix.ConvertForIK(bonePosW), weight, true);//변경 20.9.4 (IK 좌표계)
 
 				if (!successIK)
@@ -1410,7 +1414,8 @@ namespace AnyPortrait
 
 			if (Editor.Select.MeshGroup == null
 				|| Editor.Select.Bone == null
-				|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				//|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				|| Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None//변경 v1.5.0
 				|| Editor.Select.Modifier == null //<<Modifier가 null이면 안된다.
 				|| deltaAngleW == 0.0f
 				)
@@ -1506,7 +1511,8 @@ namespace AnyPortrait
 		{
 			if (Editor.Select.MeshGroup == null
 				|| Editor.Select.Bone == null
-				|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				//|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				|| Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None//변경 v1.5.0
 				|| Editor.Select.Modifier == null //<<Modifier가 null이면 안된다.
 				|| deltaScaleW.sqrMagnitude == 0.0f
 				)
@@ -1560,7 +1566,8 @@ namespace AnyPortrait
 		{
 			if (Editor.Select.MeshGroup == null
 				|| Editor.Select.Bone == null
-				|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				//|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				|| Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None//변경 v1.5.0
 				|| Editor.Select.Modifier == null //<<Modifier가 null이면 안된다.
 				)
 			{
@@ -1611,7 +1618,8 @@ namespace AnyPortrait
 		{
 			if (Editor.Select.MeshGroup == null
 				|| Editor.Select.Bone == null
-				|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				//|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				|| Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None//변경 v1.5.0
 				|| Editor.Select.Modifier == null //<<Modifier가 null이면 안된다.
 				)
 			{
@@ -1677,7 +1685,8 @@ namespace AnyPortrait
 		{
 			if (Editor.Select.MeshGroup == null
 				|| Editor.Select.Bone == null
-				|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				//|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				|| Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None//변경 v1.5.0
 				|| Editor.Select.Modifier == null //<<Modifier가 null이면 안된다.
 				)
 			{
@@ -1727,7 +1736,8 @@ namespace AnyPortrait
 		{
 			if (Editor.Select.MeshGroup == null
 				|| Editor.Select.Bone == null
-				|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				//|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render
+				|| Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None//변경 v1.5.0
 				|| Editor.Select.Modifier == null
 				)
 			{

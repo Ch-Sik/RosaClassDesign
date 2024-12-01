@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -610,7 +610,7 @@ namespace AnyPortrait
 			//CheckRemovableUnits<apRootUnit>(deletedUnits, CATEGORY.Overall_Item, rootUnits);
 
 			//변경
-			CheckRemovableUnits<apRootUnit>(deletedUnits, CATEGORY.Overall_Item, Editor._portrait._rootUnits);
+			//CheckRemovableUnits<apRootUnit>(deletedUnits, CATEGORY.Overall_Item, Editor._portrait._rootUnits);
 
 
 			//1. 이미지 파일들을 검색하자 -> 있는건 없애고, 없는건 만들자
@@ -638,7 +638,7 @@ namespace AnyPortrait
 			//CheckRemovableUnits<apTextureData>(deletedUnits, CATEGORY.Images_Item, textures);
 
 			//변경
-			CheckRemovableUnits<apTextureData>(deletedUnits, CATEGORY.Images_Item, Editor._portrait._textureData);
+			//CheckRemovableUnits<apTextureData>(deletedUnits, CATEGORY.Images_Item, Editor._portrait._textureData);
 
 
 
@@ -667,7 +667,7 @@ namespace AnyPortrait
 			//CheckRemovableUnits<apMesh>(deletedUnits, CATEGORY.Mesh_Item, meshes);
 			
 			//변경
-			CheckRemovableUnits<apMesh>(deletedUnits, CATEGORY.Mesh_Item, Editor._portrait._meshes);
+			//CheckRemovableUnits<apMesh>(deletedUnits, CATEGORY.Mesh_Item, Editor._portrait._meshes);
 
 
 			//3. Mesh Group들을 검색하자
@@ -689,7 +689,7 @@ namespace AnyPortrait
 			//CheckRemovableUnits<apMeshGroup>(deletedUnits, CATEGORY.MeshGroup_Item, meshGroups);
 
 			//변경
-			CheckRemovableUnits<apMeshGroup>(deletedUnits, CATEGORY.MeshGroup_Item, Editor._portrait._meshGroups);
+			//CheckRemovableUnits<apMeshGroup>(deletedUnits, CATEGORY.MeshGroup_Item, Editor._portrait._meshGroups);
 
 
 			//7. 파라미터들을 검색하자
@@ -717,7 +717,7 @@ namespace AnyPortrait
 			//CheckRemovableUnits<apControlParam>(deletedUnits, CATEGORY.Param_Item, cParams);
 			
 			//변경
-			CheckRemovableUnits<apControlParam>(deletedUnits, CATEGORY.Param_Item, Editor.ParamControl._controlParams);
+			//CheckRemovableUnits<apControlParam>(deletedUnits, CATEGORY.Param_Item, Editor.ParamControl._controlParams);
 
 
 			//8. 애니메이션을 넣자
@@ -743,7 +743,18 @@ namespace AnyPortrait
 			//CheckRemovableUnits<apAnimClip>(deletedUnits, CATEGORY.Animation_Item, animClips);
 			
 			//변경
-			CheckRemovableUnits<apAnimClip>(deletedUnits, CATEGORY.Animation_Item, Editor._portrait._animClips);
+			//CheckRemovableUnits<apAnimClip>(deletedUnits, CATEGORY.Animation_Item, Editor._portrait._animClips);
+
+			//변경 v1.5.0
+			//삭제할 유닛을 일괄 적용 + GC 발생 방지
+			CheckRemovableUnits_PerTypes(	deletedUnits, 
+											Editor._portrait._rootUnits,
+											Editor._portrait._textureData,
+											Editor._portrait._meshes,
+											Editor._portrait._meshGroups,
+											Editor.ParamControl._controlParams,
+											Editor._portrait._animClips);
+
 
 			//삭제할 유닛을 체크하고 계산하자
 			for (int i = 0; i < deletedUnits.Count; i++)
@@ -819,17 +830,24 @@ namespace AnyPortrait
 													RIGHTCLICK_MENU rightClickMenu,
 													ORDER_CHANGABLE orderChangable = ORDER_CHANGABLE.Changable)
 		{
-			apEditorHierarchyUnit unit = _units_All.Find(delegate (apEditorHierarchyUnit a)
-			{
-				if (obj != null)
-				{
-					return (CATEGORY)a._savedKey == category && a._savedObj == obj;
-				}
-				else
-				{
-					return (CATEGORY)a._savedKey == category;
-				}
-			});
+			//이전 (GC 발생)
+			//apEditorHierarchyUnit unit = _units_All.Find(delegate (apEditorHierarchyUnit a)
+			//{
+			//	if (obj != null)
+			//	{
+			//		return (CATEGORY)a._savedKey == category && a._savedObj == obj;
+			//	}
+			//	else
+			//	{
+			//		return (CATEGORY)a._savedKey == category;
+			//	}
+			//});
+
+			//변경 v1.5.0
+			s_FindTargetUnit_Obj = obj;
+			s_FindTargetUnit_Category = category;
+			apEditorHierarchyUnit unit = _units_All.Find(s_FindTargetUnit_Func);
+
 
 			if (objName == null)
 			{
@@ -873,31 +891,262 @@ namespace AnyPortrait
 			return unit;
 		}
 
-		private void CheckRemovableUnits<T>(List<apEditorHierarchyUnit> deletedUnits, CATEGORY category, List<T> objList)
+		private static object s_FindTargetUnit_Obj = null;
+		private static CATEGORY s_FindTargetUnit_Category = CATEGORY.Overall_Name;
+		private static Predicate<apEditorHierarchyUnit> s_FindTargetUnit_Func = FUNC_FindTargetUnit;
+		private static bool FUNC_FindTargetUnit(apEditorHierarchyUnit a)
 		{
-			List<apEditorHierarchyUnit> deletedUnits_Sub = _units_All.FindAll(delegate (apEditorHierarchyUnit a)
+			if (s_FindTargetUnit_Obj != null)
 			{
-				if ((CATEGORY)a._savedKey == category)
-				{
-					if (a._savedObj == null || !(a._savedObj is T))
-					{
-						return true;
-					}
-
-					T savedData = (T)a._savedObj;
-					if (!objList.Contains(savedData))
-					{
-					//리스트에 없는 경우 (무효한 경우)
-					return true;
-					}
-				}
-				return false;
-			});
-			for (int i = 0; i < deletedUnits_Sub.Count; i++)
+				return (CATEGORY)a._savedKey == s_FindTargetUnit_Category && a._savedObj == s_FindTargetUnit_Obj;
+			}
+			else
 			{
-				deletedUnits.Add(deletedUnits_Sub[i]);
+				return (CATEGORY)a._savedKey == s_FindTargetUnit_Category;
 			}
 		}
+
+		//이전 (GC 발생)
+		//private void CheckRemovableUnits<T>(List<apEditorHierarchyUnit> deletedUnits, CATEGORY category, List<T> objList)
+		//{
+		//	List<apEditorHierarchyUnit> deletedUnits_Sub = _units_All.FindAll(delegate (apEditorHierarchyUnit a)
+		//	{
+		//		if ((CATEGORY)a._savedKey == category)
+		//		{
+		//			if (a._savedObj == null || !(a._savedObj is T))
+		//			{
+		//				return true;
+		//			}
+
+		//			T savedData = (T)a._savedObj;
+		//			if (!objList.Contains(savedData))
+		//			{
+		//				//리스트에 없는 경우 (무효한 경우)
+		//				return true;
+		//			}
+		//		}
+		//		return false;
+		//	});
+		//	for (int i = 0; i < deletedUnits_Sub.Count; i++)
+		//	{
+		//		deletedUnits.Add(deletedUnits_Sub[i]);
+		//	}
+		//}
+
+		private void CheckRemovableUnits_PerTypes(	List<apEditorHierarchyUnit> deletedUnits, 
+													List<apRootUnit> rootUnitList,
+													List<apTextureData> textureDataList,
+													List<apMesh> meshList,
+													List<apMeshGroup> meshGroupList,
+													List<apControlParam> controlParamList,
+													List<apAnimClip> animClipList)
+		{
+			List<apEditorHierarchyUnit> deletedUnits_Sub = null;
+			int nUnits = _units_All != null ? _units_All.Count : 0;
+			if(nUnits == 0)
+			{
+				return;
+			}
+			//GC 사용 안하는 방식으로 변경
+			apEditorHierarchyUnit unit = null;
+			for (int i = 0; i < nUnits; i++)
+			{
+				unit = _units_All[i];
+
+				bool isRemovable = false;
+				switch ((CATEGORY)unit._savedKey)
+				{
+					case CATEGORY.Overall_Item:
+						{
+							if(unit._savedObj == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							apRootUnit rootUnit = unit._savedObj as apRootUnit;
+							if(rootUnit == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							if (rootUnitList != null)
+							{
+								if (!rootUnitList.Contains(rootUnit))
+								{
+									isRemovable = true;
+								}
+							}
+							else
+							{
+								isRemovable = true;
+							}
+							
+						}
+						break;
+
+					case CATEGORY.Images_Item:
+						{
+							if(unit._savedObj == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							apTextureData textureData = unit._savedObj as apTextureData;
+							if(textureData == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							if (textureDataList != null)
+							{
+								if (!textureDataList.Contains(textureData))
+								{
+									isRemovable = true;
+								}
+							}
+							else
+							{
+								isRemovable = true;
+							}
+							
+						}
+						break;
+
+					case CATEGORY.Mesh_Item:
+						{
+							if(unit._savedObj == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							apMesh mesh = unit._savedObj as apMesh;
+							if(mesh == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							if (meshList != null)
+							{
+								if (!meshList.Contains(mesh))
+								{
+									isRemovable = true;
+								}
+							}
+							else
+							{
+								isRemovable = true;
+							}
+						}
+						break;
+
+					case CATEGORY.MeshGroup_Item:
+						{
+							if(unit._savedObj == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							apMeshGroup meshGroup = unit._savedObj as apMeshGroup;
+							if(meshGroup == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							if (meshGroupList != null)
+							{
+								if (!meshGroupList.Contains(meshGroup))
+								{
+									isRemovable = true;
+								}
+							}
+							else
+							{
+								isRemovable = true;
+							}
+						}
+						break;
+
+					case CATEGORY.Param_Item:
+						{
+							if(unit._savedObj == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							apControlParam controlParam = unit._savedObj as apControlParam;
+							if(controlParam == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							if (controlParamList != null)
+							{
+								if (!controlParamList.Contains(controlParam))
+								{
+									isRemovable = true;
+								}
+							}
+							else
+							{
+								isRemovable = true;
+							}
+						}
+						break;
+
+					case CATEGORY.Animation_Item:
+						{
+							if(unit._savedObj == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							apAnimClip animClip = unit._savedObj as apAnimClip;
+							if(animClip == null)
+							{
+								isRemovable = true;
+								break;
+							}
+							if (animClipList != null)
+							{
+								if (!animClipList.Contains(animClip))
+								{
+									isRemovable = true;
+								}
+							}
+							else
+							{
+								isRemovable = true;
+							}
+						}
+						break;
+				}
+
+				if(isRemovable)
+				{
+					if(deletedUnits_Sub == null)
+					{
+						deletedUnits_Sub = new List<apEditorHierarchyUnit>();
+					}
+					deletedUnits_Sub.Add(unit);
+				}
+			}
+			
+			int nDelete = deletedUnits_Sub != null ? deletedUnits_Sub.Count : 0;
+			if (nDelete > 0)
+			{
+				for (int i = 0; i < nDelete; i++)
+				{
+					deletedUnits.Add(deletedUnits_Sub[i]);
+				}
+			}
+			
+		}
+
+
+
+
+
+
 
 
 		private void SortUnit_Recv(apEditorHierarchyUnit unit)
@@ -1359,7 +1608,7 @@ namespace AnyPortrait
 
 			if(isChanged)
 			{
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 				Editor.RefreshControllerAndHierarchy(false);
 			}
 		}
@@ -2128,7 +2377,7 @@ namespace AnyPortrait
 			}
 
 			//메뉴를 선택하면 변경이 될 것이므로 Dirty
-			apEditorUtil.SetEditorDirty();
+			apEditorUtil.SetDirty(_editor);
 			Editor.RefreshControllerAndHierarchy(false);
 
 			//추가된 AnimClip이 있다면 Refresh 후에 자동으로 스크롤을 이동시키자
@@ -2775,18 +3024,36 @@ namespace AnyPortrait
 			}
 
 			//해당 오브젝트를 가진 Unit을 리턴한다.
-			result = _units_All.Find(delegate(apEditorHierarchyUnit a)
+			//이전 (GC 발생)
+			//result = _units_All.Find(delegate(apEditorHierarchyUnit a)
+			//{
+			//	if(a._savedObj != null
+			//	&& a._savedObj == targetObj)
+			//	{
+			//		return true;
+			//	}
+			//	return false;
+			//});
+			
+			//변경 v1.5.0
+			apEditorHierarchyUnit curUnit = null;
+			for (int i = 0; i < nUnits; i++)
 			{
-				if(a._savedObj != null
-				&& a._savedObj == targetObj)
+				curUnit = _units_All[i];
+				if(curUnit._savedObj != null
+					&& curUnit._savedObj == targetObj)
 				{
-					return true;
+					return curUnit;
 				}
-				return false;
-			});
+			}
 
-			return result;
+			//return result;//이전
+			return null;//변경 v1.5.0
 		}
+
+		
+
+
 
 		/// <summary>
 		/// 입력된 Unit의 PosY 위치를 계산한다. Hierarchy 렌더링과 같은 방식으로 동작한다.

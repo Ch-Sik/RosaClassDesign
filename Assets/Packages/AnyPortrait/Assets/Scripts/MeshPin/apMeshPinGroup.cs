@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -1408,10 +1408,22 @@ namespace AnyPortrait
 
 		public apMeshPin GetPin(int uniqueID)
 		{
-			return _pins_All.Find(delegate(apMeshPin a)
-			{
-				return a._uniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _pins_All.Find(delegate(apMeshPin a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 (v1.5.0)
+			s_GetPin_ID = uniqueID;
+			return _pins_All.Find(s_GetPinByID_Func);
+		}
+
+		private static int s_GetPin_ID = -1;
+		private static Predicate<apMeshPin> s_GetPinByID_Func = FUNC_GetPinByID;
+		private static bool FUNC_GetPinByID(apMeshPin a)
+		{
+			return a._uniqueID == s_GetPin_ID;
 		}
 
 	}

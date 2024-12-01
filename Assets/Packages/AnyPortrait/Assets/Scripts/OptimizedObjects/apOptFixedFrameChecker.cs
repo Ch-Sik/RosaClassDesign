@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -108,6 +108,11 @@ namespace AnyPortrait
 		//-------------------------------------------------------------------------
 		private apOptFixedFrameChecker()
 		{
+			Init();
+		}
+
+		public void Init()
+		{
 			//카운터 배열을 FPS만큼 만들자
 			_fpsCounters = new FPSCounter[MAX_FPS];
 			for (int i = 0; i < MAX_FPS; i++)
@@ -115,6 +120,20 @@ namespace AnyPortrait
 				_fpsCounters[i] = new FPSCounter(i + 1);//FPS는 (인덱스 + 1)이다. (0~29 > 1 ~ 30)
 			}
 		}
+
+#if UNITY_2020_1_OR_NEWER
+		//[v1.5.0] Reload Domain 옵션 비활성화시 static 필드 초기화가 안되는데, 이 기능에 영향을 줘버린다.
+		//Reload Domain 비활성화 + 게임 시작시 강제로 초기화를 호출해야한다.
+		// 참조 : https://docs.unity3d.com/kr/2022.3/Manual/DomainReloading.html
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		private static void InitDomain()
+		{	
+			if(s_instance != null)
+			{
+				s_instance.Init();//초기화 다시
+			}
+		}
+#endif
 
 		/// <summary>
 		/// FPS를 계산하도록 요청하자. 이 함수는 Update에서 호출되며, LateUpdate에서 업데이트 가능 여부를 받자

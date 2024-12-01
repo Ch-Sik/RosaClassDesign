@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -626,6 +626,8 @@ namespace AnyPortrait
 								bool isAlways2Side,
 								apPortrait.SHADOW_CASTING_MODE shadowCastMode,
 								bool isReceiveShadow,
+								apPortrait.LIGHT_PROBE_USAGE lightProbeUsage,
+								apPortrait.REFLECTION_PROBE_USAGE reflectionProbeUsage,
 								bool isUseSRP
 								)
 		{
@@ -897,7 +899,57 @@ namespace AnyPortrait
 
 
 			_meshRenderer.enabled = _isVisibleDefault;
-			_meshRenderer.lightProbeUsage = LightProbeUsage.Off;
+
+			//기존 : 무조건 끄기
+			//_meshRenderer.lightProbeUsage = LightProbeUsage.Off;
+
+			//변경 : v1.5.0 라이트 프로브 옵션
+			switch (lightProbeUsage)
+			{
+				case apPortrait.LIGHT_PROBE_USAGE.Off:
+					_meshRenderer.lightProbeUsage = LightProbeUsage.Off;
+					break;
+
+				case apPortrait.LIGHT_PROBE_USAGE.BlendProbes:
+					_meshRenderer.lightProbeUsage = LightProbeUsage.BlendProbes;
+					break;
+
+				case apPortrait.LIGHT_PROBE_USAGE.UseProxyVolume:
+					_meshRenderer.lightProbeUsage = LightProbeUsage.UseProxyVolume;
+					break;
+
+				case apPortrait.LIGHT_PROBE_USAGE.CustomProvided:
+#if UNITY_2018_1_OR_NEWER
+					_meshRenderer.lightProbeUsage = LightProbeUsage.CustomProvided;
+					
+#else
+					//이전 버전에서는 CustomProvided가 없다.
+					_meshRenderer.lightProbeUsage = LightProbeUsage.Off;
+#endif
+					break;
+			}
+
+			switch (reflectionProbeUsage)
+			{
+				case apPortrait.REFLECTION_PROBE_USAGE.Off:
+					_meshRenderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+					break;
+
+				case apPortrait.REFLECTION_PROBE_USAGE.BlendProbes:
+					_meshRenderer.reflectionProbeUsage = ReflectionProbeUsage.BlendProbes;
+					break;
+
+				case apPortrait.REFLECTION_PROBE_USAGE.BlendProbesAndSkybox:
+					_meshRenderer.reflectionProbeUsage = ReflectionProbeUsage.BlendProbesAndSkybox;
+					break;
+
+				case apPortrait.REFLECTION_PROBE_USAGE.Simple:
+					_meshRenderer.reflectionProbeUsage = ReflectionProbeUsage.Simple;
+					break;
+			}
+			
+
+
 
 
 			//추가 19.8.5
@@ -982,10 +1034,10 @@ namespace AnyPortrait
 #endif
 
 
-			//-----------------------------------------------------------------------
+					//-----------------------------------------------------------------------
 #if UNITY_EDITOR
-		//Bake를 위해서 이전에 완성된 Material을 삭제하자.
-		public void ClearMaterialForBake()
+					//Bake를 위해서 이전에 완성된 Material을 삭제하자.
+					public void ClearMaterialForBake()
 		{
 			if(Application.isPlaying)
 			{
@@ -1193,6 +1245,7 @@ namespace AnyPortrait
 				{
 					apOptMaterialInfo matInfo = MaterialInfo;
 					_material_Instanced = new Material(matInfo._shader);
+					_material_Instanced.name = "Instanced-" + _material_Instanced.name;
 
 					_material_Instanced.SetColor("_Color", _parentTransform._meshColor2X_Default);
 					_material_Instanced.SetTexture("_MainTex", matInfo._mainTex);
@@ -1211,6 +1264,9 @@ namespace AnyPortrait
 					{
 						_material_Instanced = new Material(_shaderNormal);
 					}
+
+					_material_Instanced.name = "Instanced-" + _material_Instanced.name;
+					
 					_material_Instanced.SetColor("_Color", _parentTransform._meshColor2X_Default);
 					_material_Instanced.SetTexture("_MainTex", _texture);
 				}
@@ -1409,12 +1465,6 @@ namespace AnyPortrait
 
 		// 외부 업데이트
 		//------------------------------------------------
-		//삭제 21.5.23 : 미사용 함수
-		//public void ReadyToUpdate()
-		//{
-		//	//?
-		//}
-
 		/// <summary>
 		/// [Please do not use it]
 		/// Update Visibility of Mesh
@@ -1460,32 +1510,8 @@ namespace AnyPortrait
 										bool isVertexWorld,
 										bool isOrthoCorrection)
 		{
-			
-			//이 코드들은 UpdateVisibility() 함수로 이동한다.
 			//Visiblity를 별도로 계산한다.
-			//_cal_isVisibleRequest = _isVisible;
-			
-			//if (!_isHide_External)
-			//{
-			//	_cal_isVisibleRequest = isVisible;
-			//}
-			//else
-			//{
-			//	//강제로 Hide하는 요청이 있었다면?
-			//	_cal_isVisibleRequest = false;
-			//}
-
-			//_cal_isVisibleRequest_Masked = _cal_isVisibleRequest;
-
-			////추가
-			////Mask 메시가 있다면 Visibile 속성이 Parent를 따른다.
-			//if(_isMaskChild)
-			//{
-			//	if(_parentOptMesh != null)
-			//	{
-			//		_cal_isVisibleRequest_Masked = _parentOptMesh._isVisible;
-			//	}
-			//}
+			//> 해당 코드들은 UpdateVisibility() 함수로 이동한다.
 
 			//둘다 True일때 Show, 하나만 False여도 Hide
 			//상태가 바뀔때에만 Show/Hide 토글
@@ -1506,12 +1532,18 @@ namespace AnyPortrait
 				}
 			}
 
-
 			//안보이는건 업데이트하지 말자
 			//변경 20.4.2 : 렌더링을 하지 않는다면 아예 리턴하는 것으로 변경
 			if (!_isVisible)
 			{
-				return;
+				//v1.5.0 : 옵션 적용
+				// 보이지 않는 경우 업데이트를 할지 말지에 대한 옵션
+				if(_portrait._invisibleMeshUpdate == apPortrait.INVISIBLE_MESH_UPDATE.NotUpdate)
+				{
+					//안보인다면 업데이트하지 않는다 > 갱신
+					return;
+				}
+				
 			}
 			
 			//추가 2.25 : Flipped 관련 코드가 업데이트 초기에 등장한다.
@@ -1525,52 +1557,27 @@ namespace AnyPortrait
 			//추가 : World 좌표계의 Flip을 별도로 계산한다.
 			_cal_isRootFlipped_X = _parentTransform._rootUnit.IsFlippedX;
 			_cal_isRootFlipped_Y = _parentTransform._rootUnit.IsFlippedY;
-			//_cal_isRootFlipped_X = _transform.lossyScale.x < 0.0f;
-			//_cal_isRootFlipped_Y = _transform.lossyScale.y < 0.0f;
 			_cal_isRootFlipped = (_cal_isRootFlipped_X && !_cal_isRootFlipped_Y)
 								|| (!_cal_isRootFlipped_X && _cal_isRootFlipped_Y);
-
 			
-			//이전
-			//float flipWeight_X = 1;
-			//float flipWeight_Y = 1;
-
-			//변경 21.5.23
 			_cal_flipWeight_X = 1.0f;
 			_cal_flipWeight_Y = 1.0f;
 
 			if(_cal_isRootFlipped)
 			{
-				//이전
-				//flipWeight_X = _cal_isRootFlipped_X ? -1 : 1;
-				//flipWeight_Y = _cal_isRootFlipped_Y ? -1 : 1;
-
-				//변경
 				_cal_flipWeight_X = _cal_isRootFlipped_X ? -1 : 1;
 				_cal_flipWeight_Y = _cal_isRootFlipped_Y ? -1 : 1;
-			}
-				
+			}	
 
 			_cal_Matrix_TFResult_World = _parentTransform._matrix_TFResult_World.MtrxToSpace;
 
-			//apOptRenderVertex rVert = null;//삭제
 			_cal_rVert = null;//변경 21.5.23
-
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.BeginSample("Opt Mesh - 1. Calculate Render Vertices");
-//#endif
-
-
-			//삭제
-			//apOptCalculatedResultStack calculateStack = _parentTransform.CalculatedStack;
 
 			//변경 21.5.23
 			if(_cal_parentCalculateStack == null)
 			{
 				_cal_parentCalculateStack = _parentTransform.CalculatedStack;
 			}
-			
-
 
 			#region [미사용 코드] 원칙에 충실한 이전 방식
 			//for (int i = 0; i < _nRenderVerts; i++)
@@ -1633,27 +1640,17 @@ namespace AnyPortrait
 			//} 
 			#endregion
 
-
 			//변경 21.5.23 : RenderVertex에서 계산하던 것을 외부로 뺐다.
 			//조건에 따라 Calculated가 모두 다르다.
 			if (isVertexLocal)
 			{
-//#if UNITY_EDITOR
-//				UnityEngine.Profiling.Profiler.BeginSample("<Local Pos>");
-//#endif
-				//Array.Clear(_renderVertCal_VertexLocalPos, 0, _renderVerts.Length);//다시 삭제
-				_cal_parentCalculateStack.SetDeferredLocalPos(/*_renderVertCal_VertexLocalPos, _nRenderVerts*/);
-
-//#if UNITY_EDITOR
-//				UnityEngine.Profiling.Profiler.EndSample();
-//#endif
+				_cal_parentCalculateStack.SetDeferredLocalPos();
 			}
 
 			if(isRigging)
 			{	
 				_cal_parentCalculateStack.SetDeferredRiggingMatrix_WithLUT();
 			}
-
 
 			if (isVertexLocal)
 			{
@@ -1761,15 +1758,7 @@ namespace AnyPortrait
 						else
 						{
 							// Rigging
-//#if UNITY_EDITOR
-//							UnityEngine.Profiling.Profiler.BeginSample("Calculate Rigging");
-//#endif
 							CalculateRenderVertices_Rigging();
-
-//#if UNITY_EDITOR
-//							UnityEngine.Profiling.Profiler.EndSample();
-//#endif
-
 						}
 					}
 					else
@@ -1788,22 +1777,9 @@ namespace AnyPortrait
 				}
 			}
 
-
-
-
-
-
 			//추가 19.7.3 : 양면인 경우에는, 뒤쪽면도 업데이트를 해야한다.
 			if(_isAlways2Side)
 			{
-				//이전 : 직접 할당
-				//for (int i = 0; i < _nRenderVerts; i++)
-				//{
-				//	rVert = _renderVerts[i];
-				//	_vertPositions_Updated[i + _nRenderVerts] = rVert._vertPos3_LocalUpdated;
-				//	_vertPositions_World[i + _nRenderVerts] = rVert._vertPos_World;
-				//}
-
 				//변경 21.5.23 : 앞 절반을 뒤 절반에 복사
 				Array.Copy(_vertPositions_Updated, 0, _vertPositions_Updated, _nRenderVerts, _nRenderVerts);
 			}
@@ -1814,14 +1790,6 @@ namespace AnyPortrait
 				_isUseRiggingCache = true;
 			}
 
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.EndSample();
-//#endif
-
-
-			//_material.SetColor("_Color", _multiplyColor * _parentTransform._meshColor2X);
-
-
 			//색상을 제어할 때
 			//만약 Color 기본값인 경우 Batch를 위해 Shared로 교체해야한다.
 			//색상 지정은 Instance일때만 가능하다
@@ -1829,38 +1797,21 @@ namespace AnyPortrait
 			//if ((_isAnyMeshColorRequest || _parentTransform._isAnyColorCalculated || !_isDefaultColorGray) && _instanceMaterial != null)//이전
 			if (_isAnyMeshColorRequest || _parentTransform._isAnyColorCalculated || !_isDefaultColorGray)
 			{
-				//이전 코드
-				//if(_isUseSharedMaterial && !_isMaskChild)
-				//{
-				//	//Shared를 쓰는 중이라면 교체해야함
-				//	AutoSelectMaterial();
-				//}
-
 				//일단 색상을 먼저 계산한다. (값이 바뀌었다고 하니까..)
 				_cal_MeshColor.r = _multiplyColor.r * _parentTransform._meshColor2X.r * 2;
 				_cal_MeshColor.g = _multiplyColor.g * _parentTransform._meshColor2X.g * 2;
 				_cal_MeshColor.b = _multiplyColor.b * _parentTransform._meshColor2X.b * 2;
 				_cal_MeshColor.a = _multiplyColor.a * _parentTransform._meshColor2X.a;//Alpha는 2X가 아니다.
 				
-				//_instanceMaterial.SetColor(_shaderID_Color, _cal_MeshColor);
 				_material_Instanced.SetColor(_shaderID_Color, _cal_MeshColor);
 
 				//바로 호출하기 전에
 				//만약 결과 값이 Gray(0.5, 0.5, 0.5, 1.0)이라면
 				//Shared를 써야한다.
-
 				AutoSelectMaterial(true);//일단 호출해보는 것으로..
 			}
 			else
 			{
-				//이전
-				//if(!_isUseSharedMaterial && !_isMaskChild)
-				//{
-				//	//반대로 색상 선택이 없는데 Instance Material을 사용중이라면 Batch를 해야하는 건 아닌지 확인해보자
-				//	AutoSelectMaterial();
-				//}
-
-				//변경
 				if(_materialType == MATERIAL_TYPE.Instanced && !_isMaskChild)
 				{
 					//반대로 색상 선택이 없는데 Instance Material을 사용중이라면 Shared나 Batch를 써야할 것이다.
@@ -1873,56 +1824,7 @@ namespace AnyPortrait
 				&& _clippingFuncCallType == CLIPPING_FUNC_CALL_TYPE.Child_Calculate)
 			{
 				UpdateMaskChild_Basic();
-
-				#region [미사용 코드] 이전 : 단일 카메라만 지원
-				//Parent의 Mask를 받아서 넣자
-				//if (_parentOptMesh != null)
-				//{
-				//	_curParentRenderTexture = _parentOptMesh.MaskRenderTexture;
-				//}
-				//else
-				//{
-				//	_curParentRenderTexture = null;
-				//	Debug.LogError("Null Parent");
-				//}
-
-				//if(_curParentRenderTexture != _prevParentRenderTexture)
-				//{
-				//	//_material.SetTexture(_shaderID_MaskTexture, _curParentRenderTexture);//이전
-				//	_material_Instanced.SetTexture(_shaderID_MaskTexture, _curParentRenderTexture);
-
-				//	_prevParentRenderTexture = _curParentRenderTexture;
-				//}
-				////_material.SetVector(_shaderID_MaskScreenSpaceOffset, _parentOptMesh._maskScreenSpaceOffset);//이전
-				//_material_Instanced.SetVector(_shaderID_MaskScreenSpaceOffset, _parentOptMesh._maskScreenSpaceOffset); 
-				#endregion
-
-				//변경 19.9.24 : 멀티 카메라 지원. 이 코드는 그 중에서 "싱글"일 때 동작
-				//if (_renderCamera != null
-				//		&& _renderCamera.IsValid
-				//		&& !_renderCamera.IsVRSupported()
-				//		&& _parentOptMesh != null)
-				//{
-				//	//싱글 카메라일 때는 여기서 처리한다.
-				//	//그 외에는 카메라 이벤트에서 처리
-				//	apOptMeshRenderCamera.CameraRenderData parentMainCamData = _parentOptMesh.MainCameraData;
-				//	if (parentMainCamData != null)
-				//	{
-				//		_curParentRenderTexture = parentMainCamData._renderTexture;
-
-				//		if (_curParentRenderTexture != _prevParentRenderTexture)
-				//		{
-				//			_material_Instanced.SetTexture(_shaderID_MaskTexture, _curParentRenderTexture);
-				//			_prevParentRenderTexture = _curParentRenderTexture;
-				//		}
-				//		_material_Instanced.SetVector(_shaderID_MaskScreenSpaceOffset, parentMainCamData._maskScreenSpaceOffset);
-				//	}
-				//}
 			}
-
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.BeginSample("Opt Mesh - 2. Refresh Mesh");
-//#endif
 
 			RefreshMesh();
 
@@ -1931,20 +1833,8 @@ namespace AnyPortrait
 				&& _funcUpdateCommandBuffer != null)
 			{
 				//MaskParent면 CommandBuffer를 갱신한다. > Mask 렌더링
-				
-				//UpdateCommandBuffer();//이전
 				_funcUpdateCommandBuffer();//변경
 			}
-
-			//TODO 21.5.22 : 이건 옵션으로
-			//if (_mesh != null)
-			//{
-			//	_mesh.RecalculateNormals();
-			//}
-
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.EndSample();
-//#endif
 		}
 
 
@@ -2282,27 +2172,8 @@ namespace AnyPortrait
 		/// </summary>
 		public void RefreshMesh()
 		{
-			//테스트 코드
-			////불연속 낮은 FPS 테스트
-			//testTime += Time.deltaTime;
-			//if(testTime < 1.0f / 12.0f)
-			//{
-			//	//12 FPS보다 작으면
-			//	//Mesh 갱신 안함
-			//	return;
-			//}
-			//else
-			//{
-			//	testTime -= 1.0f / 12.0f;
-			//}
-
-			//if(_isMaskChild || _isMaskParent)
-			//{
-			//	return;
-			//}
 
 			//Flipped 계산
-
 			//Root의 Scale의 방향이 바뀌었으면 Flipped을 해야한다.
 			if (_cal_isRootFlipped)
 			{
@@ -2333,8 +2204,6 @@ namespace AnyPortrait
 			//_cal_isUpdateFlipped = (_cal_isUpdateFlipped_X != _cal_isUpdateFlipped_Y);
 
 			//변경 20.8.11 : 리깅에도 적용되는 플립 조건
-			
-
 			if(_parentTransform._isIgnoreParentModWorldMatrixByRigging)
 			{
 				//리깅이 적용된 경우
@@ -2361,12 +2230,10 @@ namespace AnyPortrait
 
 				//Left < Right
 				//Bottom < Top
-
 				_vertRange_XMin = float.MaxValue;//Max -> Min
 				_vertRange_XMax = float.MinValue;//Min -> Max
 				_vertRange_YMin = float.MaxValue;//Max -> Min
 				_vertRange_YMax = float.MinValue;//Min -> Max
-
 				
 				//_vertPositions_Local를 삭제했다.
 				//Array.Copy(_vertPositions_Updated, _vertPositions_Local, _nVertPos);//추가 21.5.22
@@ -2400,27 +2267,10 @@ namespace AnyPortrait
 				_vertPosCenter.y = (_vertRange_YMin + _vertRange_YMax) * 0.5f;
 				//_vertRangeMax = Mathf.Max(_vertRange_XMax - _vertRange_XMin, _vertRange_YMax - _vertRange_YMin);
 			}
-			else
-			{
-				//이전
-				//for (int i = 0; i < _nVertPos; i++)
-				//{
-				//	//_vertPositions_Local[i] = _transform.InverseTransformPoint(_vertPositions_Updated[i]);
-				//	_vertPositions_Local[i] = _vertPositions_Updated[i];
-				//}
 
-				//변경 21.5.22 > 삭제 21.5.23 : Local 사용하지 않음
-				//Array.Copy(_vertPositions_Updated, _vertPositions_Local, _nVertPos);
-			}
-			
-
-			//이전
-			//_mesh.vertices = _vertPositions_Local;
 			//변경 21.5.23 : Update 배열 바로 사용하면 된다.
 			_mesh.vertices = _vertPositions_Updated;
 
-
-			//_mesh.uv = _vertUVs;//삭제 21.5.22
 			//추가3.22 : Flip 여부에 따라서 다른 Vertex 배열을 사용한다.
 			if (_isAlways2Side)
 			{
@@ -2448,7 +2298,6 @@ namespace AnyPortrait
 			}
 			
 			_mesh.RecalculateBounds();
-
 		}
 
 
@@ -2492,7 +2341,7 @@ namespace AnyPortrait
 
 
 		public void ClearCameraData()
-		{
+		{	
 			if (_isMaskParent)
 			{
 				if (_renderCamera != null)
@@ -2501,7 +2350,10 @@ namespace AnyPortrait
 				}
 
 #if UNITY_2019_1_OR_NEWER
-				RenderPipelineManager.beginCameraRendering -= ProcessSRP_MaskParent;
+				if(_isUseSRP)//v1.5.1 : SRP 체크 코드 추가
+				{
+					RenderPipelineManager.beginCameraRendering -= ProcessSRP_MaskParent;
+				}
 #endif
 				//_isRenderTextureCreated = false;
 			}
@@ -2514,9 +2366,11 @@ namespace AnyPortrait
 				}
 
 #if UNITY_2019_1_OR_NEWER
-				RenderPipelineManager.beginCameraRendering -= ProcessSRP_MaskChild;
+				if(_isUseSRP)//v1.5.1 : SRP 체크 코드 추가
+				{
+					RenderPipelineManager.beginCameraRendering -= ProcessSRP_MaskChild;
+				}
 #endif
-				//_isRenderMaskEventRegistered = false;
 				
 			}
 
@@ -2601,91 +2455,8 @@ namespace AnyPortrait
 				return;
 			}
 
-			#region [미사용 코드] 이전 : 단일 카메라만 지원
-			//			Camera[] cameras = Camera.allCameras;
-			//			if(cameras == null || cameras.Length == 0)
-			//			{
-			//				//Debug.LogError("NoCamera");
-			//				return;
-			//			}
-
-			//			Camera targetCam = null;
-			//			Camera cam = null;
-			//			int layer = gameObject.layer;
-			//			//이걸 바라보는 카메라가 하나 있으면 이걸로 설정.
-			//			for (int i = 0; i < cameras.Length; i++)
-			//			{
-			//				cam = cameras[i];
-
-			//				if(cam.cullingMask == (cam.cullingMask | (1 << gameObject.layer)) && cam.enabled)
-			//				{
-			//					//이 카메라는 이 객체를 바라본다.
-			//					targetCam = cam;
-			//					break;
-			//				}
-			//			}
-
-			//			if(targetCam == null)
-			//			{
-			//				//잉?
-			//				//유효한 카메라가 없네요.
-			//				//Clean하고 초기화
-			//				//Debug.LogError("NoCamera To Render");
-			//				CleanUpMaskParent();
-			//				return;
-			//			}
-
-			//			_targetCamera = targetCam;
-			//			cameraTransform = _targetCamera.transform;
-
-
-			//			if(_maskRenderTexture == null)
-			//			{
-			//				_maskRenderTexture = RenderTexture.GetTemporary(_clippingRenderTextureSize, _clippingRenderTextureSize, 24, RenderTextureFormat.Default);
-			//				_maskRenderTargetID = new RenderTargetIdentifier(_maskRenderTexture);
-			//			}
-
-			//			//_materialAlphaMask.SetTexture(_shaderID_MainTex, _material.mainTexture);
-			//			//_materialAlphaMask.SetColor(_shaderID_Color, _material.color);
-
-			//			_materialAlphaMask.SetTexture(_shaderID_MainTex, _material_Cur.mainTexture);
-			//			_materialAlphaMask.SetColor(_shaderID_Color, _material_Cur.color);
-
-			//			_commandBuffer = new CommandBuffer();
-			//			_commandBuffer.name = "AP Clipping Mask [" + name + "]";
-			//			_commandBuffer.SetRenderTarget(_maskRenderTargetID, 0);
-			//			_commandBuffer.ClearRenderTarget(true, true, Color.clear);
-
-			//			//일단은 기본값
-			//			_vertPosCenter = Vector2.zero;
-			//			//_vertRangeMax = -1.0f;
-
-			//			_maskScreenSpaceOffset.x = 0;
-			//			_maskScreenSpaceOffset.y = 0;
-			//			_maskScreenSpaceOffset.z = 1;
-			//			_maskScreenSpaceOffset.w = 1;
-
-
-
-			//			_commandBuffer.DrawMesh(_mesh, transform.localToWorldMatrix, _materialAlphaMask);
-
-
-			//#if UNITY_2019_1_OR_NEWER
-			//			if(_isUseSRP)
-			//			{
-			//				RenderPipelineManager.beginCameraRendering += ProcessSRP;
-			//			}
-			//			else
-			//			{
-			//				_targetCamera.AddCommandBuffer(CameraEvent.BeforeForwardOpaque, _commandBuffer);
-			//			}
-			//#else
-			//			_targetCamera.AddCommandBuffer(CameraEvent.BeforeForwardOpaque, _commandBuffer);
-			//#endif 
-			#endregion
 			
-			
-			_renderCamera.Refresh(true, _isUseSRP, _portrait.GetMainCamera());
+			_renderCamera.Refresh(true, _portrait.GetMainCamera());
 			
 			//변경된 코드
 			if (!_renderCamera.IsValid)
@@ -2753,6 +2524,7 @@ namespace AnyPortrait
 #if UNITY_2019_1_OR_NEWER
 			if (_isUseSRP)
 			{
+				RenderPipelineManager.beginCameraRendering -= ProcessSRP_MaskParent;//[v1.5.1] 기존의 이벤트가 있다면 삭제 후 추가
 				RenderPipelineManager.beginCameraRendering += ProcessSRP_MaskParent;
 			}
 			else
@@ -2810,7 +2582,7 @@ namespace AnyPortrait
 				return;
 			}
 			
-			_renderCamera.Refresh(true, _isUseSRP, _portrait.GetMainCamera());
+			_renderCamera.Refresh(true, _portrait.GetMainCamera());
 
 			if (!_renderCamera.IsValid)
 			{
@@ -2866,6 +2638,7 @@ namespace AnyPortrait
 #if UNITY_2019_1_OR_NEWER
 				if (_isUseSRP)
 				{
+					RenderPipelineManager.beginCameraRendering -= ProcessSRP_MaskChild;//[v1.5.1] 이벤트 추가 전에 삭제를 한번 한다.
 					RenderPipelineManager.beginCameraRendering += ProcessSRP_MaskChild;
 				}
 				else
@@ -2904,7 +2677,7 @@ namespace AnyPortrait
 			}
 
 			//Render Camera를 Refresh 한다. (강제 아님)
-			_renderCamera.Refresh(false, _isUseSRP, _portrait.GetMainCamera());
+			_renderCamera.Refresh(false, _portrait.GetMainCamera());
 
 			//현재 Mesh의 화면상의 위치를 체크하여 적절히 "예쁘게 찍히도록" 만든다.
 			//크기 비율
@@ -3172,148 +2945,6 @@ namespace AnyPortrait
 
 		private void UpdateCommandBuffer_MultipleCameraVR()
 		{
-#region [미사용 코드] 이전 : 단일 카메라만 지원
-			//			if (!_isVisible
-			//				|| !_isMaskParent
-			//				|| !_isRenderTextureCreated
-			//				|| _commandBuffer == null
-			//				|| _targetCamera == null)
-			//			{
-			//				return;
-			//			}
-
-			//			//현재 Mesh의 화면상의 위치를 체크하여 적절히 "예쁘게 찍히도록" 만든다.
-			//			//크기 비율
-			//			//여백을 조금 추가한다.
-			//			if (_targetCamera.orthographic)
-			//			{
-			//				_vertPosCenter.z = 0;
-			//			}
-
-			//			_cal_localPos_LT = new Vector3(_vertRange_XMin, _vertRange_YMax, 0);
-			//			_cal_localPos_RB = new Vector3(_vertRange_XMax, _vertRange_YMin, 0);
-
-
-			//			_cal_vertWorldPos_Center = transform.TransformPoint(_vertPosCenter);
-
-			//			_cal_vertWorldPos_LT = transform.TransformPoint(_cal_localPos_LT);
-			//			_cal_vertWorldPos_RB = transform.TransformPoint(_cal_localPos_RB);
-
-			//			_cal_screenPos_Center = _targetCamera.WorldToScreenPoint(_cal_vertWorldPos_Center);
-			//			_cal_screenPos_LT = _targetCamera.WorldToScreenPoint(_cal_vertWorldPos_LT);
-			//			_cal_screenPos_RB = _targetCamera.WorldToScreenPoint(_cal_vertWorldPos_RB);
-
-			//			if (!_targetCamera.orthographic)
-			//			{
-			//				Vector3 centerSceenPos = _cal_screenPos_LT * 0.5f + _cal_screenPos_RB * 0.5f;
-			//				float distLT2RB_Half = 0.5f * Mathf.Sqrt(
-			//					(_cal_screenPos_LT.x - _cal_screenPos_RB.x) * (_cal_screenPos_LT.x - _cal_screenPos_RB.x) 
-			//					+ (_cal_screenPos_LT.y - _cal_screenPos_RB.y) * (_cal_screenPos_LT.y - _cal_screenPos_RB.y));
-			//				distLT2RB_Half *= 1.6f;
-
-			//				_cal_screenPos_LT.x = centerSceenPos.x - distLT2RB_Half;
-			//				_cal_screenPos_LT.y = centerSceenPos.y - distLT2RB_Half;
-
-			//				_cal_screenPos_RB.x = centerSceenPos.x + distLT2RB_Half;
-			//				_cal_screenPos_RB.y = centerSceenPos.y + distLT2RB_Half;
-
-			//				//_cal_screenPos_LT = (_cal_screenPos_LT - centerSceenPos) * 1.6f + centerSceenPos;
-			//				//_cal_screenPos_RB = (_cal_screenPos_RB - centerSceenPos) * 1.6f + centerSceenPos;
-			//			}
-
-
-			//			//모든 버텍스가 화면안에 들어온다면 Sceen 좌표계 Scale이 0~1의 값을 가진다.
-			//			_cal_prevSizeWidth = Mathf.Abs(_cal_screenPos_LT.x - _cal_screenPos_RB.x) / (float)Screen.width;
-			//			_cal_prevSizeHeight = Mathf.Abs(_cal_screenPos_LT.y - _cal_screenPos_RB.y) / (float)Screen.height;
-
-			//			if (_cal_prevSizeWidth < 0.001f) { _cal_prevSizeWidth = 0.001f; }
-			//			if (_cal_prevSizeHeight < 0.001f) { _cal_prevSizeHeight = 0.001f; }
-
-
-			//			//화면에 가득 찰 수 있도록 확대하는 비율은 W, H 중에서 "덜 확대하는 비율"로 진행한다.
-			//			_cal_zoomScale = Mathf.Min(1.0f / _cal_prevSizeWidth, 1.0f / _cal_prevSizeHeight);
-
-			//			//메시 자체를 평행이동하여 화면 중앙에 위치시켜야 한다.
-
-			//			//<<이거 속도 빠르게 하자
-			//			//_materialAlphaMask.SetTexture(_shaderID_MainTex, _material.mainTexture);
-			//			//_materialAlphaMask.SetColor(_shaderID_Color, _material.color);
-
-			//			_materialAlphaMask.SetTexture(_shaderID_MainTex, _material_Cur.mainTexture);
-			//			_materialAlphaMask.SetColor(_shaderID_Color, _material_Cur.color);
-
-
-			//			_cal_aspectRatio = (float)Screen.width / (float)Screen.height;
-			//			if (_targetCamera.orthographic)
-			//			{
-			//				_cal_newOrthoSize = _targetCamera.orthographicSize / _cal_zoomScale;
-			//				//Debug.Log("Ortho Scaled Size : " + _cal_newOrthoSize + "( Center : "+ _cal_screenPos_Center + " )");
-			//			}
-			//			else
-			//			{
-			//				//_cal_newOrthoSize = _targetCamera.nearClipPlane * Mathf.Tan(_targetCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) / _cal_zoomScale;
-			//				float zDepth = Mathf.Abs(_targetCamera.worldToCameraMatrix.MultiplyPoint3x4(_cal_vertWorldPos_Center).z);
-
-			//				_cal_newOrthoSize = zDepth * Mathf.Tan(_targetCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) / _cal_zoomScale;
-			//				//Debug.Log("Ortho Scaled Size (Pers) : " + _cal_newOrthoSize + "( Center : " + _cal_screenPos_Center + " ) " + gameObject.name);
-
-			//			}
-
-
-			//			_cal_centerMoveOffset = new Vector2(_cal_screenPos_Center.x - (Screen.width / 2), _cal_screenPos_Center.y - (Screen.height / 2));
-			//			_cal_centerMoveOffset.x /= (float)Screen.width;
-			//			_cal_centerMoveOffset.y /= (float)Screen.height;
-
-			//			_cal_centerMoveOffset.x *= _cal_aspectRatio * _cal_newOrthoSize;
-			//			_cal_centerMoveOffset.y *= _cal_newOrthoSize;
-
-			//			//다음 카메라 위치는
-			//			//카메라가 바라보는 Ray를 역으로 쐈을때 Center -> Ray*Dist 만큼의 위치
-			//			_cal_distCenterToCamera = Vector3.Distance(_cal_vertWorldPos_Center, _targetCamera.transform.position);
-			//			_cal_nextCameraPos = _cal_vertWorldPos_Center + _targetCamera.transform.forward * (-_cal_distCenterToCamera);
-			//			//_cal_camOffset = _cal_vertWorldPos_Center - _targetCamera.transform.position;
-
-			//			_cal_customWorldToCamera = Matrix4x4.TRS(_cal_nextCameraPos, cameraTransform.rotation, Vector3.one).inverse;
-			//			_cal_customWorldToCamera.m20 *= -1f;
-			//			_cal_customWorldToCamera.m21 *= -1f;
-			//			_cal_customWorldToCamera.m22 *= -1f;
-			//			_cal_customWorldToCamera.m23 *= -1f;
-
-			//			// CullingMatrix = Projection * WorldToCamera
-			//			_cal_customCullingMatrix = Matrix4x4.Ortho(	-_cal_aspectRatio * _cal_newOrthoSize,    //Left
-			//													_cal_aspectRatio * _cal_newOrthoSize,     //Right
-			//													-_cal_newOrthoSize,                  //Bottom
-			//													_cal_newOrthoSize,                   //Top
-			//													//_targetCamera.nearClipPlane, _targetCamera.farClipPlane
-			//													_cal_distCenterToCamera - 10,        //Near
-			//													_cal_distCenterToCamera + 50         //Far
-			//													)
-			//								* _cal_customWorldToCamera;
-
-
-			//			_cal_newLocalToProjMatrix = _cal_customCullingMatrix * transform.localToWorldMatrix;
-			//			_cal_newWorldMatrix = _targetCamera.cullingMatrix.inverse * _cal_newLocalToProjMatrix;
-
-			//			_commandBuffer.Clear();
-			//			_commandBuffer.SetRenderTarget(_maskRenderTargetID, 0);
-			//			_commandBuffer.ClearRenderTarget(true, true, Color.clear);
-
-			//#if UNITY_2019_1_OR_NEWER
-			//			_commandBuffer.SetViewMatrix(_targetCamera.worldToCameraMatrix);
-			//			_commandBuffer.SetProjectionMatrix(_targetCamera.projectionMatrix);
-			//#endif
-
-			//			_commandBuffer.DrawMesh(_mesh, _cal_newWorldMatrix, _materialAlphaMask);
-
-			//			//ScreenSpace가 얼마나 바뀌었는가
-			//			_cal_screenPosOffset = new Vector3(Screen.width / 2, Screen.height / 2, 0) - _cal_screenPos_Center;
-
-			//			_maskScreenSpaceOffset.x = (_cal_screenPosOffset.x / (float)Screen.width);
-			//			_maskScreenSpaceOffset.y = (_cal_screenPosOffset.y / (float)Screen.height);
-			//			_maskScreenSpaceOffset.z = _cal_zoomScale;
-			//			_maskScreenSpaceOffset.w = _cal_zoomScale; 
-#endregion
-
 			//변경 19.9.24 : 
 			if (!_isVisible
 				|| !_isMaskParent
@@ -3331,7 +2962,7 @@ namespace AnyPortrait
 			}
 
 			//Render Camera를 Refresh 한다. (강제 아님)
-			_renderCamera.Refresh(false, _isUseSRP, _portrait.GetMainCamera());
+			_renderCamera.Refresh(false, _portrait.GetMainCamera());
 
 			//현재 Mesh의 화면상의 위치를 체크하여 적절히 "예쁘게 찍히도록" 만든다.
 			//크기 비율
@@ -3341,8 +2972,6 @@ namespace AnyPortrait
 				//렌더 카메라가 제대로 설정되지 않았다.
 				return;
 			}
-
-			
 
 			//변경 : 최적화된 RenderMask 방식과 그렇지 않은 방식을 모두 고려해야한다.
 			//단일 카메라일 때
@@ -3607,7 +3236,7 @@ namespace AnyPortrait
 			}
 
 			//Render Camera를 Refresh 한다. (강제 아님)
-			_renderCamera.Refresh(false, _isUseSRP, _portrait.GetMainCamera());
+			_renderCamera.Refresh(false, _portrait.GetMainCamera());
 
 			//현재 Mesh의 화면상의 위치를 체크하여 적절히 "예쁘게 찍히도록" 만든다.
 			//크기 비율
@@ -4315,9 +3944,12 @@ namespace AnyPortrait
 		{
 			//값에 상관없이 이 함수가 호출되면 True
 			_isAnyCustomPropertyRequest = true;
-			//_instanceMaterial.SetInt(propertyName, intValue);//이전
+			
+#if UNITY_2021_1_OR_NEWER
+			_material_Instanced.SetInteger(propertyName, intValue);
+#else
 			_material_Instanced.SetInt(propertyName, intValue);
-
+#endif
 			AutoSelectMaterial();
 		}
 
@@ -4330,7 +3962,11 @@ namespace AnyPortrait
 		{
 			//값에 상관없이 이 함수가 호출되면 True
 			_isAnyCustomPropertyRequest = true;
+#if UNITY_2021_1_OR_NEWER
+			_material_Instanced.SetInteger(propertyNameID, intValue);
+#else
 			_material_Instanced.SetInt(propertyNameID, intValue);
+#endif
 
 			AutoSelectMaterial();
 		}
@@ -4748,7 +4384,12 @@ namespace AnyPortrait
 
 		public void SyncMaterialPropertyByBatch_CustomInt(int intValue, string propertyName)
 		{
+#if UNITY_2021_1_OR_NEWER
+			_material_Instanced.SetInteger(propertyName, intValue);
+#else
 			_material_Instanced.SetInt(propertyName, intValue);
+#endif
+
 			_isForceBatch2Shared = false;//Batch를 막는 플래그를 끄자
 
 			AutoSelectMaterial();
@@ -4756,7 +4397,12 @@ namespace AnyPortrait
 
 		public void SyncMaterialPropertyByBatch_CustomInt(int intValue, int propertyNameID)//ID를 사용한 버전 [v1.4.3]
 		{
+
+#if UNITY_2021_1_OR_NEWER
+			_material_Instanced.SetInteger(propertyNameID, intValue);
+#else
 			_material_Instanced.SetInt(propertyNameID, intValue);
+#endif
 			_isForceBatch2Shared = false;//Batch를 막는 플래그를 끄자
 
 			AutoSelectMaterial();
@@ -4978,7 +4624,11 @@ namespace AnyPortrait
 			{
 				return;
 			}
+#if UNITY_2021_1_OR_NEWER
+			_material_Instanced.SetInteger(propertyName, intValue);
+#else
 			_material_Instanced.SetInt(propertyName, intValue);
+#endif
 		}
 
 		//ID를 사용한 버전 [v1.4.3]
@@ -4988,7 +4638,11 @@ namespace AnyPortrait
 			{
 				return;
 			}
+#if UNITY_2021_1_OR_NEWER
+			_material_Instanced.SetInteger(propertyNameID, intValue);
+#else
 			_material_Instanced.SetInt(propertyNameID, intValue);
+#endif
 		}
 
 		public void SetClippedMaterialPropertyByBatch_CustomVector4(Vector4 vecValue, string propertyName)
@@ -5175,6 +4829,14 @@ namespace AnyPortrait
 
 			AutoSelectMaterial();
 		}
+
+
+		//추가 v1.5.0 : Extra 적용 여부
+		public bool IsExtraAdapted()
+		{
+			return _textureMode == TEXTURE_MODE.Extra;
+		}
+
 
 
 		//추가 21.12.25 : Merged 재질
@@ -5369,14 +5031,21 @@ namespace AnyPortrait
 		{
 			//Instanced의 값을 동기화하며 Merged는 유지하도록 한다. (설명은 위족에)
 			//_isAnyCustomPropertyRequest = false;
-
+#if UNITY_2021_1_OR_NEWER
+			_material_Instanced.SetInteger(propertyName, intValue);
+#else
 			_material_Instanced.SetInt(propertyName, intValue);
+#endif
 		}
 
 		//ID를 사용한 버전 [v1.4.3]
 		public void SyncMergedMaterial_CustomInt(int intValue, int propertyNameID)
 		{
+#if UNITY_2021_1_OR_NEWER
+			_material_Instanced.SetInteger(propertyNameID, intValue);
+#else
 			_material_Instanced.SetInt(propertyNameID, intValue);
+#endif
 		}
 
 		public void SyncMergedMaterial_CustomVector4(ref Vector4 vec4Value, ref string propertyName)

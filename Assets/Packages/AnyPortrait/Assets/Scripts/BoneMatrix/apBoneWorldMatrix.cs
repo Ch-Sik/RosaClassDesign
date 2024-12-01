@@ -385,9 +385,9 @@ namespace AnyPortrait
 
 				//_mtx_Skew.RotateAsPostResult(nextIKAngle - _mtx_Skew._angleDeg);
 			}
-
 		}
 
+		
 
 
 		

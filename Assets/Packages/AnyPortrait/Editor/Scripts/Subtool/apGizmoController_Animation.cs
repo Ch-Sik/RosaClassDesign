@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -1051,7 +1051,7 @@ namespace AnyPortrait
 			//	prevSelectedObjs.Add(Editor.Select.Bone_Mod_Gizmo);
 			//}
 
-			List<apTransform_MeshGroup> selectedMeshGroupTFs = Editor.Select.GetSubSeletedMeshGroupTFs(false);
+			List<apTransform_MeshGroup> selectedMeshGroupTFs = Editor.Select.GetSubSelectedMeshGroupTFs(false);
 			int nSelectedMeshGroupTFs = selectedMeshGroupTFs != null ? selectedMeshGroupTFs.Count : 0;
 			if(nSelectedMeshGroupTFs > 0)
 			{
@@ -1061,7 +1061,7 @@ namespace AnyPortrait
 				}
 			}
 
-			List<apTransform_Mesh> selectedMeshTFs = Editor.Select.GetSubSeletedMeshTFs(false);
+			List<apTransform_Mesh> selectedMeshTFs = Editor.Select.GetSubSelectedMeshTFs(false);
 			int nSelectedMeshTFs = selectedMeshTFs != null ? selectedMeshTFs.Count : 0;
 			if(nSelectedMeshTFs > 0)
 			{
@@ -1073,7 +1073,7 @@ namespace AnyPortrait
 
 			if(isBoneSelectable)
 			{
-				List<apBone> selectedBones = Editor.Select.GetSubSeletedBones(false);
+				List<apBone> selectedBones = Editor.Select.GetSubSelectedBones(false);
 				int nSelectedBones = selectedBones != null ? selectedBones.Count : 0;
 				if(nSelectedBones > 0)
 				{
@@ -1834,6 +1834,7 @@ namespace AnyPortrait
 						{
 							_prevSelected_TransformBone = selectedTransform;
 							_prevSelected_MousePosW = curMousePosW;
+							//Debug.Log("마우스/기즈모 위치 갱신" + _prevSelected_MousePosW);
 						}
 					}
 
@@ -1928,6 +1929,16 @@ namespace AnyPortrait
 
 							_prevSelected_MousePosW += deltaMoveW;
 							bonePosW = _prevSelected_MousePosW;//DeltaPos + 절대 위치 절충
+
+							//float distRelativeToAbsolute = Vector2.Distance(curMousePosW, _prevSelected_MousePosW);
+							//if(distRelativeToAbsolute > 50.0f)
+							//{
+							//	Debug.LogError("기즈모 IK에서 마우스 상대 좌표와 절대 좌표 차이가 너무 크다. : " + distRelativeToAbsolute + " / 절대 : " + curMousePosW + ", 상대 : " + _prevSelected_MousePosW);
+							//}
+
+							//bonePosW = curMousePosW;//테스트
+
+							
 						}
 						else
 						{
@@ -1935,7 +1946,8 @@ namespace AnyPortrait
 							bonePosW = bone._worldMatrix.Pos + deltaMoveW;
 						}
 						
-						apBone limitedHeadBone = bone.RequestIK_Limited(bonePosW, weight, true, Editor.Select.ModRegistableBones);
+						apBone limitedHeadBone = bone.RequestIK_Limited(bonePosW, weight, true, Editor._option_IKMethod, Editor.Select.ModRegistableBones);
+						
 
 						if (limitedHeadBone == null)
 						{
@@ -1952,19 +1964,42 @@ namespace AnyPortrait
 						//Chain에 해당하는 Bone이 현재 Keyframe이 없는 경우 (Layer는 있으나 현재 프레임에 해당하는 Keyframe이 없음)
 						//자동으로 생성해줘야 한다.
 
-						
+
+						//기존 > Child (Tail) > Parent (Limited Head) 순으로 적용을 했다.
+						//부호에서 부모 체크 부분이 있으므로, 부모 부터 해야하는게 맞을 듯
+						List<apBone> targetBoneList = new List<apBone>();
 
 						while (true)
 						{
+							targetBoneList.Add(curIKBone);
+							if (curIKBone == limitedHeadBone)
+							{
+								break;
+							}
+							if (curIKBone._parentBone == null)
+							{
+								break;
+							}
+							curIKBone = curIKBone._parentBone;
+						}
+
+						//순서를 바꾼다.
+						targetBoneList.Reverse();
+
+						//변경 : Parent > Child
+						for (int iTarget = 0; iTarget < targetBoneList.Count; iTarget++)
+						{
+							curIKBone = targetBoneList[iTarget];
+
 							float deltaAngle = curIKBone._IKRequestAngleResult;
 
-
+							
 							//추가 20.10.9 : 부모 본이 있거나 부모 렌더 유닛의 크기가 한축만 뒤집혔다면 deltaAngle을 반전하자
 							if(curIKBone.IsNeedInvertIKDeltaAngle_Gizmo())
 							{
 								deltaAngle = -deltaAngle;
-							}
-							
+							}							
+
 
 							apAnimTimelineLayer targetLayer = animTimeline._layers.Find(delegate (apAnimTimelineLayer a)
 							{
@@ -1997,22 +2032,21 @@ namespace AnyPortrait
 								//curBone._defaultMatrix.SetRotate(nextAngle);
 
 								//ModBone을 수정하자
-								targetModBone._transformMatrix.SetRotate(nextAngle, true);
+								//targetModBone._transformMatrix.SetRotate(nextAngle, true);
+								targetModBone._transformMatrix.SetRotate(nextAngle, false);
+
+								
 							}
 
 							curIKBone._isIKCalculated = false;
 							curIKBone._IKRequestAngleResult = 0.0f;
-
-							if (curIKBone == limitedHeadBone)
-							{
-								break;
-							}
-							if (curIKBone._parentBone == null)
-							{
-								break;
-							}
-							curIKBone = curIKBone._parentBone;
 						}
+
+						//Head부터 World Matrix 다시 계산
+						limitedHeadBone.MakeWorldMatrix(true);
+						limitedHeadBone.MakeWorldMatrixForIK_WithJiggle(true, true, false, 0.0f);
+
+						//IK 입력에 따른 World Matrix 업데이트 완료
 					}
 					else if (bone._parentBone == null
 						|| (bone._parentBone._IKNextChainedBone != bone))
@@ -5382,7 +5416,11 @@ namespace AnyPortrait
 						
 						//변경 20ㅣ.6.29 : 상대 좌표로만 계산
 						Vector2 bonePosW = bone._worldMatrix.Pos + deltaMoveW;
-						apBone limitedHeadBone = bone.RequestIK_Limited(bonePosW, weight, true, Editor.Select.ModRegistableBones);
+						apBone limitedHeadBone = bone.RequestIK_Limited(	bonePosW,
+																			weight,
+																			true,
+																			Editor._option_IKMethod,
+																			Editor.Select.ModRegistableBones);
 
 						if (limitedHeadBone == null)
 						{

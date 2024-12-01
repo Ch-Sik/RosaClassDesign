@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -609,6 +609,12 @@ namespace AnyPortrait
 			{
 				_projectSettingData.Load();
 				_projectSettingData.Save();
+			}
+
+			//v1.5.0
+			if(_memUtil == null)
+			{
+				_memUtil = new apEditorMemUtil();
 			}
 
 
@@ -1312,6 +1318,7 @@ namespace AnyPortrait
 		//-----------------------------------------------------------------------
 		// Hierarchy / Controller / Timeline 갱신 함수들
 		//-----------------------------------------------------------------------
+		
 
 		/// <summary>Hierarchy 완전히 리셋하기</summary>
 		public void ResetHierarchyAll()
@@ -1362,7 +1369,7 @@ namespace AnyPortrait
 			{
 				_portrait._objectOrders = new apObjectOrders();
 			}
-			_portrait._objectOrders.Sync(_portrait);
+			_portrait._objectOrders.Sync(_portrait);//오브젝트 위치 동기화
 			switch (_hierarchySortMode)
 			{
 				case HIERARCHY_SORT_MODE.RegOrder: _portrait._objectOrders.SortByRegOrder(); break;
@@ -1430,6 +1437,12 @@ namespace AnyPortrait
 				Select.RefreshCommonAnimKeyframes();
 				return;
 			}
+
+			if(_timelineInfoList == null)
+			{
+				_timelineInfoList = new List<apTimelineLayerInfo>();
+			}
+
 			if (curAnimClip != _prevAnimClipForTimeline)
 			{
 				//강제로 리셋한다.
@@ -1464,219 +1477,289 @@ namespace AnyPortrait
 				//AnimClip에 맞게 리스트를 다시 만든다.
 
 				List<apAnimTimeline> timelines = curAnimClip._timelines;
-				for (int iTimeline = 0; iTimeline < timelines.Count; iTimeline++)
+				int nTimelines = timelines != null ? timelines.Count : 0;
+				if (nTimelines > 0)
 				{
-					apAnimTimeline timeline = timelines[iTimeline];
-					apTimelineLayerInfo timelineInfo = new apTimelineLayerInfo(timeline);
-					_timelineInfoList.Add(timelineInfo);
-
-
-					List<apTimelineLayerInfo> subLayers = new List<apTimelineLayerInfo>();
-					for (int iLayer = 0; iLayer < timeline._layers.Count; iLayer++)
+					apAnimTimeline timeline = null;
+					apTimelineLayerInfo timelineInfo = null;
+					for (int iTimeline = 0; iTimeline < nTimelines; iTimeline++)
 					{
-						apAnimTimelineLayer animLayer = timeline._layers[iLayer];
-						subLayers.Add(new apTimelineLayerInfo(animLayer, timeline, timelineInfo));
-					}
+						timeline = timelines[iTimeline];
+						timelineInfo = new apTimelineLayerInfo(timeline);
+						_timelineInfoList.Add(timelineInfo);
 
-					//정렬을 여기서 한다.
-					switch (_timelineInfoSortType)
-					{
-						case TIMELINE_INFO_SORT.Registered:
-							//정렬을 안한다.
-							break;
+						List<apTimelineLayerInfo> subLayers = new List<apTimelineLayerInfo>();
+						for (int iLayer = 0; iLayer < timeline._layers.Count; iLayer++)
+						{
+							apAnimTimelineLayer animLayer = timeline._layers[iLayer];
+							subLayers.Add(new apTimelineLayerInfo(animLayer, timeline, timelineInfo));
+						}
 
-						case TIMELINE_INFO_SORT.Depth:
-							if (timeline._linkType == apAnimClip.LINK_TYPE.AnimatedModifier)
-							{
-								//Modifier가 Transform을 지원하는 경우
-								//Bone이 위쪽에 속한다.
+						//정렬을 여기서 한다.
+						switch (_timelineInfoSortType)
+						{
+							case TIMELINE_INFO_SORT.Registered:
+								//정렬을 안한다.
+								break;
 
-								if (curAnimClip._targetMeshGroup == null)
+							case TIMELINE_INFO_SORT.Depth:
+								if (timeline._linkType == apAnimClip.LINK_TYPE.AnimatedModifier)
 								{
-									//기존 방식
-									subLayers.Sort(delegate (apTimelineLayerInfo a, apTimelineLayerInfo b)
+									//Modifier가 Transform을 지원하는 경우
+									//Bone이 위쪽에 속한다.
+
+									if (curAnimClip._targetMeshGroup == null)
 									{
-										if (a._layerType == b._layerType)
+										//기존 방식
+										subLayers.Sort(delegate (apTimelineLayerInfo a, apTimelineLayerInfo b)
 										{
-											if (a._layerType == apTimelineLayerInfo.LAYER_TYPE.Transform)
+											if (a._layerType == b._layerType)
 											{
-												return b.Depth - a.Depth;
+												if (a._layerType == apTimelineLayerInfo.LAYER_TYPE.Transform)
+												{
+													return b.Depth - a.Depth;
+												}
+												else
+												{
+													return a.Depth - b.Depth;
+												}
+
 											}
 											else
 											{
-												return a.Depth - b.Depth;
+												return (int)a._layerType - (int)b._layerType;
 											}
-
-										}
-										else
-										{
-											return (int)a._layerType - (int)b._layerType;
-										}
-									});
-								}
-								else
-								{
-									List<object> sortedObjects = Controller.GetSortedSubObjectsAsHierarchy(curAnimClip._targetMeshGroup, true, true);
-									subLayers.Sort(delegate (apTimelineLayerInfo a, apTimelineLayerInfo b)
+										});
+									}
+									else
 									{
-										if (a._layerType == b._layerType)
+										List<object> sortedObjects = Controller.GetSortedSubObjectsAsHierarchy(curAnimClip._targetMeshGroup, true, true);
+										subLayers.Sort(delegate (apTimelineLayerInfo a, apTimelineLayerInfo b)
 										{
-											//변경 sortedObject의 값을 이용하자
-											object objA = null;
-											object objB = null;
-											if(a._layer._linkedMeshTransform != null)
+											if (a._layerType == b._layerType)
 											{
-												objA = a._layer._linkedMeshTransform;
-											}
-											else if(a._layer._linkedMeshGroupTransform != null)
-											{
-												objA = a._layer._linkedMeshGroupTransform;
-											}
-											else if(a._layer._linkedBone != null)
-											{
-												objA = a._layer._linkedBone;
-											}
+												//변경 sortedObject의 값을 이용하자
+												object objA = null;
+												object objB = null;
+												if (a._layer._linkedMeshTransform != null)
+												{
+													objA = a._layer._linkedMeshTransform;
+												}
+												else if (a._layer._linkedMeshGroupTransform != null)
+												{
+													objA = a._layer._linkedMeshGroupTransform;
+												}
+												else if (a._layer._linkedBone != null)
+												{
+													objA = a._layer._linkedBone;
+												}
 
-											if(b._layer._linkedMeshTransform != null)
-											{
-												objB = b._layer._linkedMeshTransform;
-											}
-											else if(b._layer._linkedMeshGroupTransform != null)
-											{
-												objB = b._layer._linkedMeshGroupTransform;
-											}
-											else if(b._layer._linkedBone != null)
-											{
-												objB = b._layer._linkedBone;
-											}
+												if (b._layer._linkedMeshTransform != null)
+												{
+													objB = b._layer._linkedMeshTransform;
+												}
+												else if (b._layer._linkedMeshGroupTransform != null)
+												{
+													objB = b._layer._linkedMeshGroupTransform;
+												}
+												else if (b._layer._linkedBone != null)
+												{
+													objB = b._layer._linkedBone;
+												}
 
-											return sortedObjects.IndexOf(objA) - sortedObjects.IndexOf(objB);
+												return sortedObjects.IndexOf(objA) - sortedObjects.IndexOf(objB);
+											}
+											else
+											{
+												return (int)a._layerType - (int)b._layerType;
+											}
+										});
+									}
 
-											//if (a._layerType == apTimelineLayerInfo.LAYER_TYPE.Transform)
-											//{
-											//	return b.Depth - a.Depth;
-											//}
-											//else
-											//{
-											//	return a.Depth - b.Depth;
-											//}
 
-										}
-										else
-										{
-											return (int)a._layerType - (int)b._layerType;
-										}
-									});
+
 								}
-								
+								break;
 
-								
-							}
-							break;
+							case TIMELINE_INFO_SORT.ABC:
+								subLayers.Sort(delegate (apTimelineLayerInfo a, apTimelineLayerInfo b)
+								{
+									return string.Compare(a.DisplayName, b.DisplayName);
+								});
+								break;
+						}
 
-						case TIMELINE_INFO_SORT.ABC:
-							subLayers.Sort(delegate (apTimelineLayerInfo a, apTimelineLayerInfo b)
-							{
-								return string.Compare(a.DisplayName, b.DisplayName);
-							});
-							break;
+						//정렬 된 걸 넣어주자
+						for (int iSub = 0; iSub < subLayers.Count; iSub++)
+						{
+							_timelineInfoList.Add(subLayers[iSub]);
+						}
+
 					}
-
-					//정렬 된 걸 넣어주자
-					for (int iSub = 0; iSub < subLayers.Count; iSub++)
-					{
-						_timelineInfoList.Add(subLayers[iSub]);
-					}
-
 				}
+				
 			}
 
 			//조건문 추가 19.5.21
 			//키프레임-모디파이어 연동도 해주자
 			if (isRequest_LinkKeyframeAndModifier)
 			{
-				//if (targetTimelineLayer == null)
+				List<apAnimTimeline> timelines = null;
+
 				if(!isTargetTimelineLayer_Single && !isTargetTimelineLayer_Multiple)//변경 20.6.19 : 타겟 레이어가 없는 경우
 				{
-					//전체 링크
-					for (int iTimeline = 0; iTimeline < curAnimClip._timelines.Count; iTimeline++)
-					{
-						apAnimTimeline timeline = curAnimClip._timelines[iTimeline];
-						if (timeline._linkType == apAnimClip.LINK_TYPE.AnimatedModifier &&
-							timeline._linkedModifier != null)
-						{
-							for (int iLayer = 0; iLayer < timeline._layers.Count; iLayer++)
-							{
-								apAnimTimelineLayer layer = timeline._layers[iLayer];
-
-								apModifierParamSetGroup paramSetGroup = timeline._linkedModifier._paramSetGroup_controller.Find(delegate (apModifierParamSetGroup a)
-								{
-									return a._keyAnimTimelineLayer == layer;
-								});
-
-								if (paramSetGroup != null)
-								{
-									for (int iKey = 0; iKey < layer._keyframes.Count; iKey++)
-									{
-										apAnimKeyframe keyframe = layer._keyframes[iKey];
-										apModifierParamSet paramSet = paramSetGroup._paramSetList.Find(delegate (apModifierParamSet a)
-										{
-											return a.SyncKeyframe == keyframe;
-										});
-
-										if (paramSet != null && paramSet._meshData.Count > 0)
-										{
-											keyframe.LinkModMesh_Editor(paramSet, paramSet._meshData[0]);
-										}
-										else if (paramSet != null && paramSet._boneData.Count > 0)//<<추가 : boneData => ModBone
-										{
-											keyframe.LinkModBone_Editor(paramSet, paramSet._boneData[0]);
-										}
-										else
-										{
-											keyframe.LinkModMesh_Editor(null, null);//<<null, null을 넣으면 ModBone도 Null이 된다.
-										}
-									}
-								}
-							}
-
-						}
-					}
+					// [ 전체 링크 ]
+					timelines = curAnimClip._timelines;
 				}
 				else if(isTargetTimelineLayer_Single)
 				{
-					//[단일]
+					// [ 단일 ]
 					//특정 TimelineLayer만 링크
-					apAnimTimeline parentTimeline = targetTimelineLayer._parentTimeline;
+					timelines = new List<apAnimTimeline>();
 
-					if (parentTimeline != null &&
-						parentTimeline._linkType == apAnimClip.LINK_TYPE.AnimatedModifier &&
-							parentTimeline._linkedModifier != null)
+					apAnimTimeline parentTimeline = targetTimelineLayer._parentTimeline;					
+					if(parentTimeline != null)
 					{
-						apModifierParamSetGroup paramSetGroup = parentTimeline._linkedModifier._paramSetGroup_controller.Find(delegate (apModifierParamSetGroup a)
-						{
-							return a._keyAnimTimelineLayer == targetTimelineLayer;
-						});
+						timelines.Add(parentTimeline);
+					}
+				}
+				else if(isTargetTimelineLayer_Multiple)
+				{
+					//[다중] 20.6.19
+					//리스트의 타임라인 레이어만 링크
+					timelines = new List<apAnimTimeline>();
 
-						if (paramSetGroup != null)
+					int nTargetLayers = targetTimelineLayers != null ? targetTimelineLayers.Count : 0;
+					if(nTargetLayers > 0)
+					{
+						apAnimTimelineLayer curLayer = null;
+						apAnimTimeline curParentTimeline = null;
+
+						for (int iLayer = 0; iLayer < nTargetLayers; iLayer++)
 						{
-							for (int iKey = 0; iKey < targetTimelineLayer._keyframes.Count; iKey++)
+							curLayer = targetTimelineLayers[iLayer];
+							if (curLayer == null)
 							{
-								apAnimKeyframe keyframe = targetTimelineLayer._keyframes[iKey];
-								apModifierParamSet paramSet = paramSetGroup._paramSetList.Find(delegate (apModifierParamSet a)
-								{
-									return a.SyncKeyframe == keyframe;
-								});
+								continue;
+							}
+							curParentTimeline = curLayer._parentTimeline;
 
-								if (paramSet != null && paramSet._meshData.Count > 0)
+							if (curParentTimeline == null)
+							{
+								continue;
+							}
+
+							timelines.Add(curParentTimeline);
+						}
+					}
+				}
+
+				//이제 대상인 Timeline들을 돌면서 체크를 한다.
+				int nTimelines = timelines != null ? timelines.Count : 0;
+				if(nTimelines > 0)
+				{
+					apAnimTimeline timeline = null;
+					apAnimTimelineLayer layer = null;
+					apAnimKeyframe keyframe = null;
+
+					for (int iTimeline = 0; iTimeline < nTimelines; iTimeline++)
+					{
+						timeline = timelines[iTimeline];
+
+						if (timeline == null)
+						{
+							continue;
+						}
+
+						if (timeline._linkType != apAnimClip.LINK_TYPE.AnimatedModifier
+							|| timeline._linkedModifier == null)
+						{
+							continue;
+						}
+
+						int nLayers = timeline._layers != null ? timeline._layers.Count : 0;
+						if (nLayers == 0)
+						{
+							continue;
+						}
+
+						for (int iLayer = 0; iLayer < nLayers; iLayer++)
+						{
+							layer = timeline._layers[iLayer];
+
+							if (layer == null)
+							{
+								continue;
+							}
+
+							int nKeys = layer._keyframes != null ? layer._keyframes.Count : 0;
+							if (nKeys == 0)
+							{
+								continue;
+							}
+
+							int nPSGs = timeline._linkedModifier._paramSetGroup_controller != null ? timeline._linkedModifier._paramSetGroup_controller.Count : 0;
+							if (nPSGs == 0)
+							{
+								continue;
+							}
+
+							//이전 (GC 발생)
+							//apModifierParamSetGroup paramSetGroup = timeline._linkedModifier._paramSetGroup_controller.Find(delegate (apModifierParamSetGroup a)
+							//{
+							//	return a._keyAnimTimelineLayer == layer;
+							//});
+
+							//변경 v1.5.0
+							s_FindModPSG_TimelineLayer = layer;
+							apModifierParamSetGroup paramSetGroup = timeline._linkedModifier._paramSetGroup_controller.Find(s_FindModPSGByTimelineLayer_Func);
+
+							if (paramSetGroup == null)
+							{
+								continue;
+							}
+							
+							int nParamSets = paramSetGroup._paramSetList != null ? paramSetGroup._paramSetList.Count : 0;
+
+							for (int iKey = 0; iKey < nKeys; iKey++)
+							{
+								keyframe = layer._keyframes[iKey];
+
+								apModifierParamSet paramSet = null;
+								if (nParamSets > 0)
 								{
-									keyframe.LinkModMesh_Editor(paramSet, paramSet._meshData[0]);
+									//이전 (GC 발생)
+									//paramSet = paramSetGroup._paramSetList.Find(delegate (apModifierParamSet a)
+									//{
+									//	return a.SyncKeyframe == keyframe;
+									//});
+
+									//변경 v1.5.0
+									s_FindParamSet_Keyframe = keyframe;
+									paramSet = paramSetGroup._paramSetList.Find(s_FindParamSetByKeyframe_Func);
 								}
-								else if (paramSet != null && paramSet._boneData.Count > 0)//<<추가 : boneData => ModBone
+
+								bool isDataLinked = false;
+								if (paramSet != null)
 								{
-									keyframe.LinkModBone_Editor(paramSet, paramSet._boneData[0]);
+									int nMeshData = paramSet._meshData != null ? paramSet._meshData.Count : 0;
+									int nBoneData = paramSet._boneData != null ? paramSet._boneData.Count : 0;
+
+									if (nMeshData > 0)
+									{
+										//Mesh Data 연결
+										keyframe.LinkModMesh_Editor(paramSet, paramSet._meshData[0]);
+										isDataLinked = true;
+									}
+									else if (nBoneData > 0)
+									{
+										//Bone Data 연결
+										keyframe.LinkModBone_Editor(paramSet, paramSet._boneData[0]);
+										isDataLinked = true;
+									}
 								}
-								else
+
+								if (!isDataLinked)
 								{
 									keyframe.LinkModMesh_Editor(null, null);//<<null, null을 넣으면 ModBone도 Null이 된다.
 								}
@@ -1684,102 +1767,332 @@ namespace AnyPortrait
 						}
 					}
 				}
-				else if(isTargetTimelineLayer_Multiple)
-				{
-					//[다중] 20.6.19
-					//리스트의 타임라인 레이어만 링크
-					apAnimTimelineLayer curLayer = null;
-					apAnimTimeline curParentTimeline = null;
-					for (int iLayer = 0; iLayer < targetTimelineLayers.Count; iLayer++)
-					{
-						curLayer = targetTimelineLayers[iLayer];
-						if(curLayer == null)
-						{
-							continue;
-						}
-						curParentTimeline = curLayer._parentTimeline;
 
-						if (curParentTimeline != null &&
-							curParentTimeline._linkType == apAnimClip.LINK_TYPE.AnimatedModifier &&
-								curParentTimeline._linkedModifier != null)
-						{
-							apModifierParamSetGroup paramSetGroup = curParentTimeline._linkedModifier._paramSetGroup_controller.Find(delegate (apModifierParamSetGroup a)
-							{
-								return a._keyAnimTimelineLayer == curLayer;
-							});
 
-							if (paramSetGroup != null)
-							{
-								for (int iKey = 0; iKey < curLayer._keyframes.Count; iKey++)
-								{
-									apAnimKeyframe keyframe = curLayer._keyframes[iKey];
-									apModifierParamSet paramSet = paramSetGroup._paramSetList.Find(delegate (apModifierParamSet a)
-									{
-										return a.SyncKeyframe == keyframe;
-									});
 
-									if (paramSet != null && paramSet._meshData.Count > 0)
-									{
-										keyframe.LinkModMesh_Editor(paramSet, paramSet._meshData[0]);
-									}
-									else if (paramSet != null && paramSet._boneData.Count > 0)//<<추가 : boneData => ModBone
-									{
-										keyframe.LinkModBone_Editor(paramSet, paramSet._boneData[0]);
-									}
-									else
-									{
-										keyframe.LinkModMesh_Editor(null, null);//<<null, null을 넣으면 ModBone도 Null이 된다.
-									}
-								}
-							}
-						}
-					}
-				}
+				#region [미사용 코드] 위 코드에 통합됨
+				////if (targetTimelineLayer == null)
+				//if(!isTargetTimelineLayer_Single && !isTargetTimelineLayer_Multiple)//변경 20.6.19 : 타겟 레이어가 없는 경우
+				//{
+				//	//전체 링크
+				//	for (int iTimeline = 0; iTimeline < curAnimClip._timelines.Count; iTimeline++)
+				//	{
+				//		apAnimTimeline timeline = curAnimClip._timelines[iTimeline];
+
+				//		if (timeline == null)
+				//		{
+				//			continue;
+				//		}
+
+				//		if (timeline._linkType != apAnimClip.LINK_TYPE.AnimatedModifier
+				//			|| timeline._linkedModifier == null)
+				//		{
+				//			continue;
+				//		}
+
+				//		int nLayers = timeline._layers != null ? timeline._layers.Count : 0;
+				//		if (nLayers == 0)
+				//		{
+				//			continue;
+				//		}
+
+				//		for (int iLayer = 0; iLayer < nLayers; iLayer++)
+				//		{
+				//			apAnimTimelineLayer layer = timeline._layers[iLayer];
+
+				//			if (layer == null)
+				//			{
+				//				continue;
+				//			}
+
+				//			int nKeys = layer._keyframes != null ? layer._keyframes.Count : 0;
+				//			if(nKeys == 0)
+				//			{
+				//				continue;
+				//			}
+
+				//			int nPSGs = timeline._linkedModifier._paramSetGroup_controller != null ? timeline._linkedModifier._paramSetGroup_controller.Count : 0;
+				//			if(nPSGs == 0)
+				//			{
+				//				continue;
+				//			}
+
+				//			//이전 (GC 발생)
+				//			//apModifierParamSetGroup paramSetGroup = timeline._linkedModifier._paramSetGroup_controller.Find(delegate (apModifierParamSetGroup a)
+				//			//{
+				//			//	return a._keyAnimTimelineLayer == layer;
+				//			//});
+
+				//			//변경 v1.5.0
+				//			s_FindModPSG_TimelineLayer = layer;
+				//			apModifierParamSetGroup paramSetGroup = timeline._linkedModifier._paramSetGroup_controller.Find(s_FindModPSGByTimelineLayer_Func);
+
+				//			if (paramSetGroup != null)
+				//			{
+				//				apAnimKeyframe keyframe = null;
+				//				int nParamSets = paramSetGroup._paramSetList != null ? paramSetGroup._paramSetList.Count : 0;
+
+				//				for (int iKey = 0; iKey < nKeys; iKey++)
+				//				{
+				//					keyframe = layer._keyframes[iKey];
+
+				//					apModifierParamSet paramSet = null;
+				//					if(nParamSets > 0)
+				//					{
+				//						//이전 (GC 발생)
+				//						//paramSet = paramSetGroup._paramSetList.Find(delegate (apModifierParamSet a)
+				//						//{
+				//						//	return a.SyncKeyframe == keyframe;
+				//						//});
+
+				//						//변경 v1.5.0
+				//						s_FindParamSet_Keyframe = keyframe;
+				//						paramSet = paramSetGroup._paramSetList.Find(s_FindParamSetByKeyframe_Func);
+				//					}
+
+				//					bool isDataLinked = false;
+				//					if (paramSet != null)
+				//					{
+				//						int nMeshData = paramSet._meshData != null ? paramSet._meshData.Count : 0;
+				//						int nBoneData = paramSet._boneData != null ? paramSet._boneData.Count : 0;
+
+				//						if(nMeshData > 0)
+				//						{
+				//							//Mesh Data 연결
+				//							keyframe.LinkModMesh_Editor(paramSet, paramSet._meshData[0]);
+				//							isDataLinked = true;
+				//						}
+				//						else if(nBoneData > 0)
+				//						{
+				//							//Bone Data 연결
+				//							keyframe.LinkModBone_Editor(paramSet, paramSet._boneData[0]);
+				//							isDataLinked = true;
+				//						}
+				//					}
+
+				//					if(!isDataLinked)
+				//					{
+				//						keyframe.LinkModMesh_Editor(null, null);//<<null, null을 넣으면 ModBone도 Null이 된다.
+				//					}
+				//				}
+				//			}
+				//		}
+				//	}
+				//}
+				//else if(isTargetTimelineLayer_Single)
+				//{
+				//	//[단일]
+				//	//특정 TimelineLayer만 링크
+				//	apAnimTimeline parentTimeline = targetTimelineLayer._parentTimeline;
+
+				//	bool isValidTimeline = true;//조건 중 하나라도 실패하면 안됨
+
+				//	if (parentTimeline != null &&
+				//		parentTimeline._linkType == apAnimClip.LINK_TYPE.AnimatedModifier &&
+				//			parentTimeline._linkedModifier != null)
+				//	{
+				//		apModifierParamSetGroup paramSetGroup = parentTimeline._linkedModifier._paramSetGroup_controller.Find(delegate (apModifierParamSetGroup a)
+				//		{
+				//			return a._keyAnimTimelineLayer == targetTimelineLayer;
+				//		});
+
+				//		if (paramSetGroup != null)
+				//		{
+				//			for (int iKey = 0; iKey < targetTimelineLayer._keyframes.Count; iKey++)
+				//			{
+				//				apAnimKeyframe keyframe = targetTimelineLayer._keyframes[iKey];
+
+				//				//이전 (GC 발생)
+				//				//apModifierParamSet paramSet = paramSetGroup._paramSetList.Find(delegate (apModifierParamSet a)
+				//				//{
+				//				//	return a.SyncKeyframe == keyframe;
+				//				//});
+
+				//				//변경 v1.5.0
+				//				s_FindParamSet_Keyframe = keyframe;
+				//				apModifierParamSet paramSet = paramSetGroup._paramSetList.Find(s_FindParamSetByKeyframe_Func);
+
+
+				//				bool isDataLinked = false;
+				//				if (paramSet != null)
+				//				{
+				//					int nMeshData = paramSet._meshData != null ? paramSet._meshData.Count : 0;
+				//					int nBoneData = paramSet._boneData != null ? paramSet._boneData.Count : 0;
+
+				//					if(nMeshData > 0)
+				//					{
+				//						//Mesh Data 연결
+				//						keyframe.LinkModMesh_Editor(paramSet, paramSet._meshData[0]);
+				//						isDataLinked = true;
+				//					}
+				//					else if(nBoneData > 0)
+				//					{
+				//						//Bone Data 연결
+				//						keyframe.LinkModBone_Editor(paramSet, paramSet._boneData[0]);
+				//						isDataLinked = true;
+				//					}
+				//				}
+
+				//				if(!isDataLinked)
+				//				{
+				//					keyframe.LinkModMesh_Editor(null, null);//<<null, null을 넣으면 ModBone도 Null이 된다.
+				//				}
+				//			}
+				//		}
+				//	}
+				//}
+				//else if(isTargetTimelineLayer_Multiple)
+				//{
+				//	//[다중] 20.6.19
+				//	//리스트의 타임라인 레이어만 링크
+				//	apAnimTimelineLayer curLayer = null;
+				//	apAnimTimeline curParentTimeline = null;
+
+				//	int nTargetLayers = targetTimelineLayers != null ? targetTimelineLayers.Count : 0;
+
+				//	if (nTargetLayers > 0)
+				//	{
+				//		for (int iLayer = 0; iLayer < nTargetLayers; iLayer++)
+				//		{
+				//			curLayer = targetTimelineLayers[iLayer];
+				//			if (curLayer == null)
+				//			{
+				//				continue;
+				//			}
+				//			curParentTimeline = curLayer._parentTimeline;
+
+				//			if(curParentTimeline == null)
+				//			{
+				//				continue;
+				//			}
+
+				//			if(curParentTimeline._linkType != apAnimClip.LINK_TYPE.AnimatedModifier
+				//				|| curParentTimeline._linkedModifier == null)
+				//			{
+				//				continue;
+				//			}
+
+				//			int nPSGs = curParentTimeline._linkedModifier._paramSetGroup_controller != null ? curParentTimeline._linkedModifier._paramSetGroup_controller.Count : 0;
+				//			if(nPSGs == 0)
+				//			{
+				//				continue;
+				//			}
+
+				//			//이전 (GC 발생)
+				//			//apModifierParamSetGroup paramSetGroup = curParentTimeline._linkedModifier._paramSetGroup_controller.Find(delegate (apModifierParamSetGroup a)
+				//			//{
+				//			//	return a._keyAnimTimelineLayer == curLayer;
+				//			//});
+
+				//			//변경 v1.5.0
+				//			s_FindModPSG_TimelineLayer = curLayer;
+				//			apModifierParamSetGroup paramSetGroup = curParentTimeline._linkedModifier._paramSetGroup_controller.Find(s_FindModPSGByTimelineLayer_Func);
+
+
+				//			if (paramSetGroup != null)
+				//			{
+				//				int nKeys = curLayer._keyframes != null ? curLayer._keyframes.Count : 0;
+				//				if(nKeys > 0)
+				//				{
+
+				//				}
+				//				for (int iKey = 0; iKey < curLayer._keyframes.Count; iKey++)
+				//				{
+				//					apAnimKeyframe keyframe = curLayer._keyframes[iKey];
+				//					apModifierParamSet paramSet = paramSetGroup._paramSetList.Find(delegate (apModifierParamSet a)
+				//					{
+				//						return a.SyncKeyframe == keyframe;
+				//					});
+
+				//					if (paramSet != null && paramSet._meshData.Count > 0)
+				//					{
+				//						keyframe.LinkModMesh_Editor(paramSet, paramSet._meshData[0]);
+				//					}
+				//					else if (paramSet != null && paramSet._boneData.Count > 0)//<<추가 : boneData => ModBone
+				//					{
+				//						keyframe.LinkModBone_Editor(paramSet, paramSet._boneData[0]);
+				//					}
+				//					else
+				//					{
+				//						keyframe.LinkModMesh_Editor(null, null);//<<null, null을 넣으면 ModBone도 Null이 된다.
+				//					}
+				//				}
+				//			}
+				//		}
+				//	}
+
+				//} 
+				#endregion
 
 			}
 
 
 			//Select / Available 체크를 하자 : 이건 상시
-			for (int i = 0; i < _timelineInfoList.Count; i++)
+			int nTimelineInfos = _timelineInfoList != null ? _timelineInfoList.Count : 0;
+			if (nTimelineInfos > 0)
 			{
-				apTimelineLayerInfo info = _timelineInfoList[i];
-
-				info._isSelected = false;
-				info._isAvailable = false;
-
-				if (info._isTimeline)
+				apTimelineLayerInfo info = null;
+				for (int i = 0; i < nTimelineInfos; i++)
 				{
-					if (Select.ExAnimEditingMode != apSelection.EX_EDIT.None)
-					{
-						if (info._timeline == Select.AnimTimeline)
-						{ info._isAvailable = true; }
-					}
-					else
-					{
-						info._isAvailable = true;
-					}
+					info = _timelineInfoList[i];
 
-					if (info._isAvailable)
+					info._isSelected = false;
+					info._isAvailable = false;
+
+					if (info._isTimeline)
 					{
-						//변경 20.6.17 : 다중 선택을 인식해야한다.
-						//if (Select.AnimTimelineLayer == null)
-						if (Select.NumAnimTimelineLayers == 0)
+						if (Select.ExAnimEditingMode != apSelection.EX_EDIT.None)
 						{
 							if (info._timeline == Select.AnimTimeline)
 							{
-								info._isSelected = true;
+								info._isAvailable = true;
+							}
+						}
+						else
+						{
+							info._isAvailable = true;
+						}
+
+						if (info._isAvailable)
+						{
+							//변경 20.6.17 : 다중 선택을 인식해야한다.
+							//if (Select.AnimTimelineLayer == null)
+							if (Select.NumAnimTimelineLayers == 0)
+							{
+								if (info._timeline == Select.AnimTimeline)
+								{
+									info._isSelected = true;
+								}
 							}
 						}
 					}
-				}
-				else
-				{
-					if (Select.ExAnimEditingMode != apSelection.EX_EDIT.None)
+					else
 					{
-						if (info._parentTimeline == Select.AnimTimeline)
+						if (Select.ExAnimEditingMode != apSelection.EX_EDIT.None)
+						{
+							if (info._parentTimeline == Select.AnimTimeline)
+							{
+								info._isAvailable = true;
+
+								//이전
+								//info._isSelected = (info._layer == Select.AnimTimelineLayer);
+
+								//변경 20.6.17 : 다중 선택 지원
+								if (Select.NumAnimTimelineLayers == 1 && Select.AnimTimelineLayer_Main == info._layer)
+								{
+									//메인 타임라인 레이어
+									info._isSelected = true;
+								}
+								else if (Select.NumAnimTimelineLayers > 1 && Select.AnimTimelineLayers_All.Contains(info._layer))
+								{
+									//서브 타임라인 레이어
+									info._isSelected = true;
+								}
+							}
+						}
+						else
 						{
 							info._isAvailable = true;
-
 							//이전
 							//info._isSelected = (info._layer == Select.AnimTimelineLayer);
 
@@ -1789,33 +2102,16 @@ namespace AnyPortrait
 								//메인 타임라인 레이어
 								info._isSelected = true;
 							}
-							else if(Select.NumAnimTimelineLayers > 1 && Select.AnimTimelineLayers_All.Contains(info._layer))
+							else if (Select.NumAnimTimelineLayers > 1 && Select.AnimTimelineLayers_All.Contains(info._layer))
 							{
 								//서브 타임라인 레이어
 								info._isSelected = true;
 							}
 						}
 					}
-					else
-					{
-						info._isAvailable = true;
-						//이전
-						//info._isSelected = (info._layer == Select.AnimTimelineLayer);
-
-						//변경 20.6.17 : 다중 선택 지원
-						if (Select.NumAnimTimelineLayers == 1 && Select.AnimTimelineLayer_Main == info._layer)
-						{
-							//메인 타임라인 레이어
-							info._isSelected = true;
-						}
-						else if (Select.NumAnimTimelineLayers > 1 && Select.AnimTimelineLayers_All.Contains(info._layer))
-						{
-							//서브 타임라인 레이어
-							info._isSelected = true;
-						}
-					}
 				}
 			}
+			
 
 			//Common Keyframe을 갱신하자
 			Select.RefreshCommonAnimKeyframes();
@@ -1826,6 +2122,23 @@ namespace AnyPortrait
 
 			SetRepaint();
 		}
+
+		private static apAnimTimelineLayer s_FindModPSG_TimelineLayer = null;
+		private static Predicate<apModifierParamSetGroup> s_FindModPSGByTimelineLayer_Func = FUNC_FindModPSGByTimelineLayer;
+		private static bool FUNC_FindModPSGByTimelineLayer(apModifierParamSetGroup a)
+		{
+			return a._keyAnimTimelineLayer == s_FindModPSG_TimelineLayer;
+		}
+
+
+		private static apAnimKeyframe s_FindParamSet_Keyframe = null;
+		private static Predicate<apModifierParamSet> s_FindParamSetByKeyframe_Func = FUNC_FindParamSetByKeyframe;
+		private static bool FUNC_FindParamSetByKeyframe(apModifierParamSet a)
+		{
+			return a.SyncKeyframe == s_FindParamSet_Keyframe;
+		}
+
+
 
 		public void ShowAllTimelineLayers()
 		{
@@ -2136,6 +2449,14 @@ namespace AnyPortrait
 								{
 									//Profiler.BeginSample("Render - Mask Unit");
 
+									//테스트
+									//int nClipMeshes = renderUnit._meshTransform._clipChildMeshes != null ? renderUnit._meshTransform._clipChildMeshes.Count : 0;
+									//if(nClipMeshes == 0)
+									//{
+									//	Debug.Log("Clip Mesh = 0 [" + renderUnit.Name + "]");
+									//}
+
+
 									if (!isRenderOnlyVisible || renderUnit._isVisible)
 									{
 										apGL.DrawRenderUnit_ClippingParent_Renew(	renderUnit,
@@ -2430,7 +2751,7 @@ namespace AnyPortrait
 						if (!isDrawBoneOutline)
 						{
 							//IK 설정 등과 관련된 값을 추가로 렌더링
-							apGL.DrawSelectedBonePost(Select.Bone, isBoneIKUsing);
+							apGL.DrawSelectedBonePost(Select.Bone, _portrait, isBoneIKUsing);
 						}
 					}
 				}
@@ -2744,8 +3065,8 @@ namespace AnyPortrait
 
 			meshGroup.SetBoneIKEnabled(false, false);
 
-			//Debug.Log("Render ExEdit " + prevExEditMode + " > None > " + prevExEditMode);
 			Select.SetModifierExclusiveEditing_Tmp(prevExEditMode);
+
 			meshGroup.RefreshForce();
 
 			meshGroup.BoneGUIUpdate(false);
@@ -4352,6 +4673,11 @@ namespace AnyPortrait
 			_portrait._bakeSrcEditablePortrait = null;
 			_portrait._isImportant = true;
 
+			//신버전에서 초기값과 다른 값을 지정할 수 있다.
+			//신기능이 추가되었지만 이전 버전 사용자들은 Legacy 속성을 갖게 하기 위함
+			//따라서 신기능에 의한 기본값은 여기서 지정한다.
+			_portrait._IKMethod = apPortrait.IK_METHOD.FABRIK;//v1.5.0 : IK 방식 추가 및 기본값 변경(CCD > FABRIK)
+
 
 			_selection.SelectPortrait(_portrait);
 			
@@ -4374,12 +4700,14 @@ namespace AnyPortrait
 			//Selection.activeGameObject = _portrait.gameObject;
 			Selection.activeGameObject = null;//<<선택을 해제해준다. 프로파일러를 도와줘야져
 
-			//시작은 RootUnit
-			_selection.SelectRootUnitDefault();
-
-			OnAnyObjectAddedOrRemoved();
 
 			SyncHierarchyOrders();
+
+			//시작은 RootUnit
+			_selection.SelectRootUnitDefault();//순서 변경. Sync 함수 다음에 호출되어야 한다. (v1.5.0)
+			OnAnyObjectAddedOrRemoved();
+
+			
 
 			_hierarchy.ResetAllUnits();
 			_hierarchy_MeshGroup.ResetSubUnits();
@@ -4427,12 +4755,11 @@ namespace AnyPortrait
 				//Selection.activeGameObject = _portrait.gameObject;
 				Selection.activeGameObject = null;//<<선택을 해제해준다. 프로파일러를 도와줘야져
 
-				//시작은 RootUnit
-				_selection.SelectRootUnitDefault();
-
-				OnAnyObjectAddedOrRemoved();
-
 				SyncHierarchyOrders();
+
+				//시작은 RootUnit
+				_selection.SelectRootUnitDefault();//순서 변경 v1.5.0. Root Unit 선택은 Sync 이후에 해야한다.
+				OnAnyObjectAddedOrRemoved();
 
 				_hierarchy.ResetAllUnits();
 				_hierarchy_MeshGroup.ResetSubUnits();
@@ -4596,10 +4923,9 @@ namespace AnyPortrait
 			SavePref_Bool("AnyPortrait_CheckLiveVersionEnabled",	_isCheckLiveVersion_Option,		DefaultCheckLiverVersionOption);
 
 			SavePref_Bool("AnyPortrait_IsVersionCheckIgnored",		_isVersionNoticeIgnored,		false);
-			//SavePref_Int("AnyPortrait_VersionCheckIgnored_Year",	_versionNoticeIvnored_Year,		0);
-			//SavePref_Int("AnyPortrait_VersionCheckIgnored_Month",	_versionNoticeIvnored_Month,	0);
-			//SavePref_Int("AnyPortrait_VersionCheckIgnored_Day",		_versionNoticeIvnored_Day,		0);
-			SavePref_Int("AnyPortrait_VersionCheckIgnored_Ver",		_versionNoticeIgnored_Ver,		-1);
+			SavePref_Int("AnyPortrait_VerIgnored_Ver_Maj",		_versionNoticeIgnored_Ver_Major,		-1);
+			SavePref_Int("AnyPortrait_VerIgnored_Ver_Min",		_versionNoticeIgnored_Ver_Minor,		-1);
+			SavePref_Int("AnyPortrait_VerIgnored_Ver_Pat",		_versionNoticeIgnored_Ver_Patch,		-1);
 			
 
 
@@ -4703,6 +5029,11 @@ namespace AnyPortrait
 
 			SavePref_Int("AnyPortrait_AnimUI_SelectedTimelineGUIType", (int)_animUIOption_SelectedTimelineGUIType, (int)DefaultSelectedTimelineGUIType);
 			SavePref_Int("AnyPortrait_AnimUI_TimelineDefaultColor", (int)_animUIOption_DefaultTimelineColor, (int)DefaultTimelineDefaultColor);
+
+			SavePref_Int("AnyPortrait_EditorIKMethod", (int)_option_IKMethod, (int)apPortrait.IK_METHOD.FABRIK);
+			
+			SavePref_Bool("AnyPortrait_NewControlParamModBlended", _option_NewControlParamModMeshBoneBlended, true);
+
 
 			apGL.SetToneOption(_colorOption_OnionToneColor, _onionOption_OutlineThickness, _onionOption_IsOutlineRender, _onionOption_PosOffsetX, _onionOption_PosOffsetY, _colorOption_OnionBoneColor);
 			apGL.SetRiggingOption(	RigGUIOption_SizeRatioX100, 
@@ -4847,10 +5178,9 @@ namespace AnyPortrait
 			_isCheckLiveVersion_Option = EditorPrefs.GetBool("AnyPortrait_CheckLiveVersionEnabled", DefaultCheckLiverVersionOption);
 
 			_isVersionNoticeIgnored = EditorPrefs.GetBool("AnyPortrait_IsVersionCheckIgnored", false);
-			//_versionNoticeIvnored_Year = EditorPrefs.GetInt("AnyPortrait_VersionCheckIgnored_Year", 0);
-			//_versionNoticeIvnored_Month = EditorPrefs.GetInt("AnyPortrait_VersionCheckIgnored_Month", 0);
-			//_versionNoticeIvnored_Day = EditorPrefs.GetInt("AnyPortrait_VersionCheckIgnored_Day", 0);
-			_versionNoticeIgnored_Ver = EditorPrefs.GetInt("AnyPortrait_VersionCheckIgnored_Ver", -1);
+			_versionNoticeIgnored_Ver_Major = EditorPrefs.GetInt("AnyPortrait_VerIgnored_Ver_Maj", -1);
+			_versionNoticeIgnored_Ver_Minor = EditorPrefs.GetInt("AnyPortrait_VerIgnored_Ver_Min", -1);
+			_versionNoticeIgnored_Ver_Patch = EditorPrefs.GetInt("AnyPortrait_VerIgnored_Ver_Pat", -1);
 
 			
 			_meshTRSOption_MirrorOffset = EditorPrefs.GetFloat("AnyPortrait_MeshTRSOption_MirrorOffset", 0.5f);
@@ -4962,6 +5292,11 @@ namespace AnyPortrait
 			_option_ObjMovableWithoutClickGizmo = EditorPrefs.GetBool("AnyPortrait_ObjMovableWithoutClickGizmo", true);
 
 			_isSaveProjectWhenBaked = EditorPrefs.GetBool("AnyPortrait_SaveProjectWhenBaked", false);
+
+			_option_IKMethod = (apPortrait.IK_METHOD)EditorPrefs.GetInt("AnyPortrait_EditorIKMethod", (int)apPortrait.IK_METHOD.FABRIK);
+
+			_option_NewControlParamModMeshBoneBlended = EditorPrefs.GetBool("AnyPortrait_NewControlParamModBlended", true);
+
 
 			_animUIOption_SelectedTimelineGUIType = (SELECTED_TIMELINE_GUI_TYPE)EditorPrefs.GetInt("AnyPortrait_AnimUI_SelectedTimelineGUIType", (int)DefaultSelectedTimelineGUIType);
 			_animUIOption_DefaultTimelineColor = (TIMELINE_DEFAULT_COLOR)EditorPrefs.GetInt("AnyPortrait_AnimUI_TimelineDefaultColor", (int)DefaultTimelineDefaultColor);
@@ -5128,6 +5463,10 @@ namespace AnyPortrait
 
 			_isSaveProjectWhenBaked = DefaultSaveProjectWhenBaked;
 
+			_option_IKMethod = DefaultIKMethod;
+
+			_option_NewControlParamModMeshBoneBlended = DefaultNewControlParamModMeshBoneBlended;
+
 			_animUIOption_SelectedTimelineGUIType = DefaultSelectedTimelineGUIType;
 			_animUIOption_DefaultTimelineColor = DefaultTimelineDefaultColor;
 
@@ -5135,7 +5474,10 @@ namespace AnyPortrait
 
 			//버전 체크 무시도 해제
 			_isVersionNoticeIgnored = false;
-			_versionNoticeIgnored_Ver = -1;
+			_versionNoticeIgnored_Ver_Major = -1;
+			_versionNoticeIgnored_Ver_Minor = -1;
+			_versionNoticeIgnored_Ver_Patch = -1;
+			
 
 			SaveEditorPref();
 		}
@@ -5237,6 +5579,10 @@ namespace AnyPortrait
 		public static bool DefaultObjMovableWithoutClickGizmo { get { return true; } }
 
 		public static bool DefaultSaveProjectWhenBaked { get { return false; } }
+
+		public static apPortrait.IK_METHOD DefaultIKMethod { get { return apPortrait.IK_METHOD.FABRIK; } }
+
+		public static bool DefaultNewControlParamModMeshBoneBlended { get { return true; } }
 
 		public static SELECTED_TIMELINE_GUI_TYPE DefaultSelectedTimelineGUIType { get { return SELECTED_TIMELINE_GUI_TYPE.Flashing; } }
 		public static TIMELINE_DEFAULT_COLOR DefaultTimelineDefaultColor { get { return TIMELINE_DEFAULT_COLOR.Vivid; } }
@@ -5554,124 +5900,164 @@ namespace AnyPortrait
 				strText = _currentLiveVersion.Substring(i, 1);
 				if (strText == "0" || strText == "1" || strText == "2" || strText == "3"
 					|| strText == "4" || strText == "5" || strText == "6" || strText == "7"
-					|| strText == "8" || strText == "9")
+					|| strText == "8" || strText == "9"
+					|| strText == "."//마침표 포함
+					)
 				{
 					strNumeric += strText;
 				}
 			}
 
 			//Debug.Log("[" + strNumeric + "]");
-			int liveVersion = 0;
-			bool isParse = int.TryParse(strNumeric, out liveVersion);
-			if(!isParse)
+
+			int liveVersion_Major = 0;
+			int liveVersion_Minor = 0;
+			int liveVersion_Patch = 0;
+
+			string[] strVers = strNumeric.Split(new char[] { '.' }, StringSplitOptions.None);
+			int nStrVers = strVers != null ? strVers.Length : 0;
+
+			
+			if(nStrVers >= 1)
 			{
-				//파싱 실패
+				//Major
+				bool isParse = int.TryParse(strVers[0], out liveVersion_Major);
+				if(!isParse)
+				{
+					//파싱 실패
+					return;
+				}
+			}
+			if(nStrVers >= 2)
+			{
+				//Minor
+				bool isParse = int.TryParse(strVers[1], out liveVersion_Minor);
+				if(!isParse)
+				{
+					//파싱 실패
+					return;
+				}
+			}
+			if(nStrVers >= 3)
+			{
+				//Patch
+				bool isParse = int.TryParse(strVers[2], out liveVersion_Patch);
+				if(!isParse)
+				{
+					//파싱 실패
+					return;
+				}
+			}
+			
+			//이 앱의 버전
+			int curVersion_Major = apVersion.I.APP_VERSION_INT_MAJOR;
+			int curVersion_Minor = apVersion.I.APP_VERSION_INT_MINOR;
+			int curVersion_Patch = apVersion.I.APP_VERSION_INT_PATCH;
+
+			//Debug.Log("Live 버전 : " + liveVersion_Major + " - " + liveVersion_Minor + " - " + liveVersion_Patch);
+			//Debug.Log("앱 버전 : " + curVersion_Major + " - " + curVersion_Minor + " - " + curVersion_Patch);
+			
+			//Major부터 버전 체크
+			bool isNewVersion = false;
+			if(curVersion_Major < liveVersion_Major)
+			{
+				//Major에서 더 최신임을 발견했다.
+				isNewVersion = true;
+			}
+			else if(curVersion_Major == liveVersion_Major)
+			{
+				//Major는 같다.
+				if(curVersion_Minor < liveVersion_Minor)
+				{
+					//Minor에서 더 최신임을 발견했다.
+					isNewVersion = true;
+				}
+				else if(curVersion_Minor == liveVersion_Minor)
+				{
+					//Minor도 같다.
+					if(curVersion_Patch < liveVersion_Patch)
+					{
+						//Patch 버전이 더 올랐다.
+						isNewVersion = true;
+					}
+				}
+			}
+
+			if(!isNewVersion)
+			{
+				//새로운 버전이 아니다.
 				return;
 			}
-			if (liveVersion <= apVersion.I.APP_VERSION_INT)
-			{
-				//같거나 이전 버전이다.
-				//Debug.Log("Last Version : " + _currentLiveVersion);
-			}
-			else
-			{
-				Notification("A new version has been updated! [v" + apVersion.I.APP_VERSION_SHORT + " >> v" + _currentLiveVersion + "]", false, false);
 
-				//추가 : 웹에서 로드했으며, 알람을 줄 수 있는 상황이라면
-				if(isCalledByWebResponse && Localization.IsLoaded)
+			Notification("A new version has been updated! [v" + apVersion.I.APP_VERSION_SHORT + " >> v" + _currentLiveVersion + "]", false, false);
+
+			//추가 : 웹에서 로드했으며, 알람을 줄 수 있는 상황이라면
+			if(isCalledByWebResponse && Localization.IsLoaded)
+			{
+				//알람을 해야하는지 테스트
+				bool isNoticeEnabled = false;
+
+				if(!_isVersionNoticeIgnored)
 				{
-					//알람을 해야하는지 테스트
-					bool isNoticeEnabled = false;
+					//무시하기 상태가 아니다.
+					isNoticeEnabled = true;
+				}
+				else
+				{	
+					//변경 22.7.1 : 무시하려는 버전 외에는 메시지가 항상 나온다.
+					//if(liveVersion != _versionNoticeIgnored_Ver)
+					//{
+					//	isNoticeEnabled = true;
+					//}
 
-					if(!_isVersionNoticeIgnored)
+					if(liveVersion_Major == _versionNoticeIgnored_Ver_Major
+						&& liveVersion_Minor == _versionNoticeIgnored_Ver_Minor
+						&& liveVersion_Patch == _versionNoticeIgnored_Ver_Patch)
 					{
-						//무시하기 상태가 아니다.
-						isNoticeEnabled = true;
+						//무시한다고 저장했던 버전이다.
+						isNoticeEnabled = false;
 					}
 					else
 					{
-						//이전 : 날짜를 기준으로 메시지가 강제로 나왔다.
-						//if(_versionNoticeIvnored_Year == 0 || _versionNoticeIvnored_Month == 0 || _versionNoticeIvnored_Day == 0)
-						//{
-						//	//날짜가 잘못 되어 있다.
-						//	isNoticeEnabled = true;
-						//}
-						//else
-						//{
-						//	DateTime ignoredDay = new DateTime(_versionNoticeIvnored_Year, _versionNoticeIvnored_Month, _versionNoticeIvnored_Day);
-						//	int diffDays = (int)ignoredDay.Subtract(DateTime.Now).TotalDays;
-						//	if(diffDays < 0)
-						//	{
-						//		isNoticeEnabled = true;
-						//	}
-						//	//else
-						//	//{
-						//	//	Debug.Log("날짜가 아직 되지 않았다. [오늘 : " + DateTime.Now.ToShortDateString() + "] - [목표 날짜:" + ignoredDay.ToShortDateString() + "] (" + diffDays + ")");
-						//	//}
-						//}
-
-						//변경 22.7.1 : 무시하려는 버전 외에는 메시지가 항상 나온다.
-						if(liveVersion != _versionNoticeIgnored_Ver)
-						{
-							isNoticeEnabled = true;
-						}
+						//무시한다고 했던 버전이 아니다.
+						isNoticeEnabled = true;
 					}
-					if (isNoticeEnabled)
+				}
+
+				if (isNoticeEnabled)
+				{
+					//무시하기 조건이 해제된다.
+					_isVersionNoticeIgnored = false;
+
+					SaveEditorPref();
+
+					//바로 에셋 스토어를 열 수 있게 하자
+					int iBtn = EditorUtility.DisplayDialogComplex(GetText(TEXT.DLG_NewVersion_Title),
+																	GetText(TEXT.DLG_NewVersion_Body),
+																	GetText(TEXT.DLG_NewVersion_OpenAssetStore),
+																	GetText(TEXT.DLG_NewVersion_Ignore),
+																	GetText(TEXT.Cancel)
+																	);
+
+					if (iBtn == 0)
+					{
+						apEditorUtil.OpenAssetStorePage();
+					}
+					else if (iBtn == 1)
 					{
 						//이전
-						//한번 메시지를 보면 최소 일주일은 무조건 보이지 않는다.
-						//일주일간 무시하기 옵션이 사라진다.
-						//_isVersionNoticeIgnored = false;
-
-						//_versionNoticeIvnored_Year = DateTime.Now.Year;
-						//_versionNoticeIvnored_Month = DateTime.Now.Month;
-						//_versionNoticeIvnored_Day = DateTime.Now.Day;
-
-						//무시하기 조건이 해제된다.
-						_isVersionNoticeIgnored = false;
+						//변경 22.7.1 : 현재 버전 스킵하기
+						_isVersionNoticeIgnored = true;
+						_versionNoticeIgnored_Ver_Major = liveVersion_Major;
+						_versionNoticeIgnored_Ver_Minor = liveVersion_Minor;
+						_versionNoticeIgnored_Ver_Patch = liveVersion_Patch;
 
 						SaveEditorPref();
-
-
-						//바로 에셋 스토어를 열 수 있게 하자
-						int iBtn = EditorUtility.DisplayDialogComplex(GetText(TEXT.DLG_NewVersion_Title),
-																		GetText(TEXT.DLG_NewVersion_Body),
-																		GetText(TEXT.DLG_NewVersion_OpenAssetStore),
-																		GetText(TEXT.DLG_NewVersion_Ignore),
-																		GetText(TEXT.Cancel)
-																		);
-
-						if (iBtn == 0)
-						{
-							apEditorUtil.OpenAssetStorePage();
-						}
-						else if (iBtn == 1)
-						{
-							//이전
-							//일주일 동안 열지 않음
-							//_isVersionNoticeIgnored = true;
-
-							//DateTime dayAfter7 = DateTime.Now;
-							//dayAfter7 = dayAfter7.AddDays(7);
-
-							//_versionNoticeIvnored_Year = dayAfter7.Year;
-							//_versionNoticeIvnored_Month = dayAfter7.Month;
-							//_versionNoticeIvnored_Day = dayAfter7.Day;
-
-							////Debug.Log("7일 동안 알람 안보기 : " + _versionNoticeIvnored_Year + "-" + _versionNoticeIvnored_Month + "-" + _versionNoticeIvnored_Day);
-	
-							//변경 22.7.1 : 현재 버전 스킵하기
-							_isVersionNoticeIgnored = true;
-							_versionNoticeIgnored_Ver = liveVersion;
-
-							SaveEditorPref();
-						}
 					}
+				}
 					
 					
 
-				}
-				//GetText()
 			}
 		}
 

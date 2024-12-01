@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -46,8 +46,11 @@ namespace AnyPortrait
 		private bool _isSortingLayerInit = false;
 
 		private string[] _billboardTypeNames = new string[] { "None", "Billboard", "Billboard with fixed Up Vector" };
+		private string[] _billboardParentOptionNames = new string[] { "Ignore", "Pitch Yaw Roll (Local)", "Sync Up Vector (World)" };
 
 		private string[] _vrSupportModeLabel = new string[] { "None", "Single Camera and Eye Textures (Unity VR)", "Multiple Cameras" };
+
+		private string[] _cameraCheckModeLabel = new string[] { "Current Camera Mainly", "All Scene Cameras" };
 
 		private string[] _flippedMeshOptionLabel = new string[] { "Check excluding Rigged Meshes", "Check All"};
 
@@ -72,11 +75,29 @@ namespace AnyPortrait
 			"LateUpdate (Default)", "Update"
 		};
 
+		//v1.5.0
+		private string[] _invisibleMeshUpdateLabel = new string[]
+		{
+			"Not Update (Default)", "Update"
+		};
+
+
+#if UNITY_2017_1_OR_NEWER
+		//v1.5.1
+		private string[] _clippingMeshUpdateLabel = new string[]
+		{
+			"In Update (Default)",
+			"Before Rendering",
+		};
+#endif
+
+
 		private string[] _rootMotionModeLabel = new string[]
 		{
 			"None", "Lock to Center", "Move Parent Transform"
 		};
 
+		public string[] _IKMethodNames = new string[] { "FABRIK", "CCD (Legacy)" };
 
 		//추가 : 탭으로 분류하자
 		//private Vector2 _scroll_Bake = Vector2.zero;
@@ -96,6 +117,12 @@ namespace AnyPortrait
 
 		private apGUIContentWrapper _guiContent_Setting_MeshUpdateFrequency = null;
 		private apGUIContentWrapper _guiContent_Setting_MeshFreqFPS = null;
+		private apGUIContentWrapper _guiContent_Setting_MeshFreqFPSScaleOpt = null;
+
+		private apGUIContentWrapper _guiContent_Setting_InvisibleMesh = null;//v1.5.0
+#if UNITY_2017_1_OR_NEWER
+		private apGUIContentWrapper _guiContent_Setting_ClippingUpdate = null;//v1.5.1
+#endif
 
 		private apGUIContentWrapper _guiContent_Setting_ProcessEvent = null;
 
@@ -368,7 +395,7 @@ namespace AnyPortrait
 			if (prevBakeScale != _targetPortrait._bakeScale ||
 				prevBakeZSize != _targetPortrait._bakeZSize)
 			{
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 
@@ -382,7 +409,7 @@ namespace AnyPortrait
 				GUI.FocusControl(null);
 
 				//CheckChangedProperties(nextRootScale, nextZScale);
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 
 
 				//추가 22.1.7 : SRP 옵션이 적절한지 물어보고 자동으로 변경한다.
@@ -420,6 +447,28 @@ namespace AnyPortrait
 					{
 						apEditorUtil.SaveUnityProject();
 					}
+
+
+					//[v1.5.0]
+					//Bake 직후에 애니메이션 편집 중 / 루트 유닛 상태에서
+					//애니메이션 업데이트 중 Control Param 업데이트를 다시 해준다.
+					//컨트롤 파라미터 값이 원래대로 돌아가는 문제가 있다.
+					if (_editor.Select.SelectionType == apSelection.SELECTION_TYPE.Overall)
+					{
+						if (_editor.Select.RootUnitAnimClip != null)
+						{
+							_editor.Select.RootUnitAnimClip.UpdateControlParam_Editor();
+						}
+					}
+					if (_editor.Select.SelectionType == apSelection.SELECTION_TYPE.Animation)
+					{
+						if (_editor.Select.AnimClip != null)
+						{
+							_editor.Select.AnimClip.UpdateControlParam_Editor();
+						}
+					}
+
+					_editor.SetRepaint();
 				}
 				else
 				{
@@ -740,7 +789,7 @@ namespace AnyPortrait
 					curSortingLayerIndex = 0;
 				}
 
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 			//Sorting Layer
 			int nextIndex = Layout_Popup(	_editor.GetText(TEXT.SortingLayer),
@@ -765,7 +814,7 @@ namespace AnyPortrait
 					_targetPortrait._sortingLayerID = SortingLayer.layers[nextIndex].id;
 				}
 
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 			//추가 19.8.18 : Sorting Order를 지정하는 방식을 3가지 + 미적용 1가지로 더 세분화
@@ -784,7 +833,7 @@ namespace AnyPortrait
 													apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 				_targetPortrait._sortingOrderOption = nextSortingLayerOption;
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 			if (_targetPortrait._sortingOrderOption == apPortrait.SORTING_ORDER_OPTION.SetOrder)
@@ -806,7 +855,7 @@ namespace AnyPortrait
 														apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 					_targetPortrait._sortingOrder = nextOrder;
-					apEditorUtil.SetEditorDirty();
+					apEditorUtil.SetDirty(_editor);
 				}
 			}
 			else if (_targetPortrait._sortingOrderOption == apPortrait.SORTING_ORDER_OPTION.DepthToOrder
@@ -835,7 +884,7 @@ namespace AnyPortrait
 														apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 					_targetPortrait._sortingOrderPerDepth = nextOrderPerDepth;
-					apEditorUtil.SetEditorDirty();
+					apEditorUtil.SetDirty(_editor);
 				}
 			}
 
@@ -860,7 +909,7 @@ namespace AnyPortrait
 													apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 				_targetPortrait._isUsingMecanim = nextIsUseMecanim;
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 			
 			if (_targetPortrait._isUsingMecanim)
@@ -911,7 +960,7 @@ namespace AnyPortrait
 																apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 							_targetPortrait._mecanimAnimClipResourcePath = nextPath;
-							apEditorUtil.SetEditorDirty();
+							apEditorUtil.SetDirty(_editor);
 						}
 						else
 						{
@@ -969,7 +1018,7 @@ namespace AnyPortrait
 													apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 				_targetPortrait._mainProcessEvent = nextProcessEvent;
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 			GUILayout.Space(5);
@@ -994,7 +1043,7 @@ namespace AnyPortrait
 													apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 				_targetPortrait._isImportant = nextImportant;
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 			//"FPS (Important Off)"
@@ -1022,7 +1071,7 @@ namespace AnyPortrait
 						nextFPS = 10;
 					}
 					_targetPortrait._FPS = nextFPS;
-					apEditorUtil.SetEditorDirty();
+					apEditorUtil.SetDirty(_editor);
 					GUI.FocusControl(null);
 				}
 
@@ -1040,6 +1089,13 @@ namespace AnyPortrait
 			{
 				_guiContent_Setting_MeshFreqFPS = apGUIContentWrapper.Make(_editor.GetText(TEXT.DLG_Setting_FPS), false, "This is the FPS option when the mesh is updated at regular intervals. (1~30)");
 			}
+			if(_guiContent_Setting_MeshFreqFPSScaleOpt == null)
+			{
+				_guiContent_Setting_MeshFreqFPSScaleOpt = apGUIContentWrapper.Make(_editor.GetText(TEXT.FPSScaleOption), false, "This is an option to change FPS according to timeScale.");
+			}
+
+
+
 
 			int nextMeshUpdateFreqOption = Layout_Popup(	_guiContent_Setting_MeshUpdateFrequency.Content,
 															(int)_targetPortrait._meshRefreshRateOption,
@@ -1058,7 +1114,7 @@ namespace AnyPortrait
 													apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 				_targetPortrait._meshRefreshRateOption = (apPortrait.MESH_UPDATE_FREQUENCY)nextMeshUpdateFreqOption;
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 
@@ -1090,10 +1146,96 @@ namespace AnyPortrait
 						nextMeshUpdateFPS = 30;
 					}
 					_targetPortrait._meshRefreshRateFPS = nextMeshUpdateFPS;
-					apEditorUtil.SetEditorDirty();
+					apEditorUtil.SetDirty(_editor);
 					GUI.FocusControl(null);
 				}
+
+
+				if (_targetPortrait._meshRefreshRateOption == apPortrait.MESH_UPDATE_FREQUENCY.FixedFrames_NotSync)
+				{
+					//추가 v1.4.9 : 메시 업데이트 옵션 중 FPS의 가변 여부 (Sync가 아닌 경우에만)
+					apPortrait.FIXED_UPDATE_FPS_SCALE_OPTION nextFPSScaleOption = (apPortrait.FIXED_UPDATE_FPS_SCALE_OPTION)Layout_EnumPopup(
+																					_guiContent_Setting_MeshFreqFPSScaleOpt.Content,
+																					_targetPortrait._meshRefreshFPSScaleOption,
+																					width,
+																					isDefaultSaved,
+																					_editor.ProjectSettingData.Common_MeshUpdateFPSScaled);
+
+					if (nextFPSScaleOption != _targetPortrait._meshRefreshFPSScaleOption)
+					{
+						apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+															_editor,
+															_targetPortrait,
+															//null, 
+															false,
+															apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+						_targetPortrait._meshRefreshFPSScaleOption = nextFPSScaleOption;
+						apEditorUtil.SetDirty(_editor);
+						GUI.FocusControl(null);
+					}
+				}
+				
 			}
+
+			GUILayout.Space(5);
+
+			//v1.5.0 : 안보이는 메시의 업데이트 여부
+			if(_guiContent_Setting_InvisibleMesh == null)
+			{
+				_guiContent_Setting_InvisibleMesh = apGUIContentWrapper.Make(_editor.GetText(TEXT.Setting_InvisibleMeshes), false, "This option determines whether to apply the results of the modifier to invisible meshes.");
+			}
+
+			int nextInvisibleMeshUpdate = Layout_Popup(	_guiContent_Setting_InvisibleMesh.Content,
+														(int)_targetPortrait._invisibleMeshUpdate,
+														_invisibleMeshUpdateLabel,
+														width,
+														isDefaultSaved,
+														(int)_editor.ProjectSettingData.Common_InvisibleMeshUpdate);
+
+			if(nextInvisibleMeshUpdate != (int)_targetPortrait._invisibleMeshUpdate)
+			{
+				apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+													_editor,
+													_targetPortrait,
+													//null, 
+													false,
+													apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+				_targetPortrait._invisibleMeshUpdate = (apPortrait.INVISIBLE_MESH_UPDATE)nextInvisibleMeshUpdate;
+				apEditorUtil.SetDirty(_editor);
+			}
+
+#if UNITY_2017_1_OR_NEWER
+			GUILayout.Space(5);
+
+			//v1.5.1 : 클리핑 메시의 처리 타이밍 (Unity 2017부터)
+			if(_guiContent_Setting_ClippingUpdate == null)
+			{
+				_guiContent_Setting_ClippingUpdate = apGUIContentWrapper.Make(_editor.GetText(TEXT.Setting_ClippingProcess), false, "This option determines when processing of clipping meshes will be performed.");
+			}
+
+			int nextClippingUpdate = Layout_Popup(	_guiContent_Setting_ClippingUpdate.Content,
+														(int)_targetPortrait._clippingMeshUpdate,
+														_clippingMeshUpdateLabel,
+														width,
+														isDefaultSaved,
+														(int)_editor.ProjectSettingData.Common_ClippingUpdate);
+
+			if(nextClippingUpdate != (int)_targetPortrait._clippingMeshUpdate)
+			{
+				apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+													_editor,
+													_targetPortrait,
+													//null, 
+													false,
+													apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+				_targetPortrait._clippingMeshUpdate = (apPortrait.CLIPPING_MESH_UPDATE)nextClippingUpdate;
+				apEditorUtil.SetDirty(_editor);
+			}
+
+#endif
 
 
 			DrawDelimeter(width);
@@ -1117,7 +1259,7 @@ namespace AnyPortrait
 													apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 				_targetPortrait._billboardType = nextBillboardType;
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 			
@@ -1143,8 +1285,30 @@ namespace AnyPortrait
 														apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 					_targetPortrait._isForceCamSortModeToOrthographic = nextForceSortModeToOrtho;
-					apEditorUtil.SetEditorDirty();
+					apEditorUtil.SetDirty(_editor);
 				}
+
+				GUILayout.Space(2);
+
+				//추가 v1.5.0: 부모의 Rotation을 적용하는 옵션
+				apPortrait.BILLBOARD_PARENT_ROTATION nextBillboardParentOption = (apPortrait.BILLBOARD_PARENT_ROTATION)Layout_Popup(	_editor.GetText(TEXT.DLG_ParentRotation),
+																									(int)_targetPortrait._billboardParentRotation,
+																									_billboardParentOptionNames,
+																									width,
+																									isDefaultSaved,
+																									(int)_editor.ProjectSettingData.Common_BillboardParentRotation);
+				if (nextBillboardParentOption != _targetPortrait._billboardParentRotation)
+				{
+					apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+														_editor,
+														_targetPortrait,
+														false,
+														apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+					_targetPortrait._billboardParentRotation = nextBillboardParentOption;
+					apEditorUtil.SetDirty(_editor);
+				}
+				
 			}
 
 
@@ -1167,9 +1331,28 @@ namespace AnyPortrait
 													isDefaultSaved,
 													_editor.ProjectSettingData.Common_IsReceiveShadows);
 
+			//추가 v1.5.0 : Light Probe / Reflection Probe
+			GUILayout.Space(2);
+			apPortrait.LIGHT_PROBE_USAGE nextLightProbeUsage = (apPortrait.LIGHT_PROBE_USAGE)Layout_EnumPopup(	_editor.GetUIWord(UIWORD.LightProbes),
+																												_targetPortrait._meshLightProbeUsage,
+																												width,
+																												isDefaultSaved,
+																												_editor.ProjectSettingData.Common_LightProbeUsage);
+
+			apPortrait.REFLECTION_PROBE_USAGE nextReflectionProbeUsage = (apPortrait.REFLECTION_PROBE_USAGE)Layout_EnumPopup(
+																												_editor.GetUIWord(UIWORD.ReflectionProbes),
+																												_targetPortrait._meshReflectionProbeUsage,
+																												width,
+																												isDefaultSaved,
+																												_editor.ProjectSettingData.Common_ReflectionProbeUsage);
+
+
+
 
 			if (nextChastShadows != _targetPortrait._meshShadowCastingMode
-				|| nextReceiveShaodw != _targetPortrait._meshReceiveShadow)
+				|| nextReceiveShaodw != _targetPortrait._meshReceiveShadow
+				|| nextLightProbeUsage != _targetPortrait._meshLightProbeUsage
+				|| nextReflectionProbeUsage != _targetPortrait._meshReflectionProbeUsage)
 			{
 				apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
 													_editor,
@@ -1180,18 +1363,15 @@ namespace AnyPortrait
 
 				_targetPortrait._meshShadowCastingMode = nextChastShadows;
 				_targetPortrait._meshReceiveShadow = nextReceiveShaodw;
+				_targetPortrait._meshLightProbeUsage = nextLightProbeUsage;
+				_targetPortrait._meshReflectionProbeUsage = nextReflectionProbeUsage;
 
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 			
 
 			DrawDelimeter(width);
-
-
-			
-
-
 
 			//8. VR Supported 19.9.24 추가
 
@@ -1215,7 +1395,7 @@ namespace AnyPortrait
 
 				_targetPortrait._vrSupportMode = (apPortrait.VR_SUPPORT_MODE)iNextVRSupported;
 
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 			
@@ -1245,9 +1425,31 @@ namespace AnyPortrait
 
 					_targetPortrait._vrRenderTextureSize = (apPortrait.VR_RT_SIZE)iNextVRRTSize;
 
-					apEditorUtil.SetEditorDirty();
+					apEditorUtil.SetDirty(_editor);
 				}
 			}
+
+			//[v1.5.0] 카메라 자동 감지 방식
+			int iNextCameraCheckMode = Layout_Popup(	_editor.GetText(TEXT.Setting_CheckCameras),
+														(int)_targetPortrait._cameraCheckMode,
+														_cameraCheckModeLabel,
+														width,
+														isDefaultSaved,
+														(int)_editor.ProjectSettingData.Common_CameraCheckMode);
+
+			if(iNextCameraCheckMode != (int)_targetPortrait._cameraCheckMode)
+			{
+				apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+													_editor,
+													_targetPortrait,
+													//null, 
+													false,
+													apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+				_targetPortrait._cameraCheckMode = (apPortrait.CAMERA_CHECK_MODE)iNextCameraCheckMode;
+				apEditorUtil.SetDirty(_editor);
+			}
+
 
 
 			DrawDelimeter(width);
@@ -1279,7 +1481,7 @@ namespace AnyPortrait
 
 				_targetPortrait._flippedMeshOption = (apPortrait.FLIPPED_MESH_CHECK)iNextFlippedMeshOption;
 
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 			
@@ -1308,7 +1510,7 @@ namespace AnyPortrait
 				//모든 본에 대해서 ScaleOption을 적용해야한다.
 				_editor.Controller.RefreshBoneScaleMethod_Editor();
 
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 			DrawDelimeter(width);
@@ -1337,7 +1539,7 @@ namespace AnyPortrait
 
 				_targetPortrait._unspecifiedAnimControlParamOption = nextUnspecifiedAnimControlParam;
 
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 			DrawDelimeter(width);
@@ -1362,40 +1564,120 @@ namespace AnyPortrait
 
 				_targetPortrait._isTeleportCorrectionOption = nextTeleportOption;
 
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 
 			if (_targetPortrait._isTeleportCorrectionOption)
 			{
-				bool isGUIChanged = false;
-				float nextTeleportDist = Layout_DelayedFloat(	_editor.GetText(TEXT.Threshold),
-																_targetPortrait._teleportMovementDist,
-																width,
-																isDefaultSaved,
-																_editor.ProjectSettingData.Common_TeleportDist,
-																out isGUIChanged);
-				if (isGUIChanged)
+				//변경 v1.5.0 : 텔레포트 옵션이 1개의 세부 옵션에서 3개(위치, 회전, 크기)의 세부 옵션으로 더 나뉘었다.
+				
+
+				//1. 위치 (Position)
+				bool isGUIChanged_Position = false;
+				bool nextTeleport_PositionEnabled = _targetPortrait._teleportPositionEnabled;
+				float nextTeleport_MoveDist = _targetPortrait._teleportMovementDist;
+
+				Layout_ToggleAndFloat(	_editor.GetUIWord(UIWORD.Position),
+										_targetPortrait._teleportPositionEnabled,
+										_targetPortrait._teleportMovementDist,
+										width,
+										isDefaultSaved,
+										_editor.ProjectSettingData.Common_TeleportPositionEnabled,
+										_editor.ProjectSettingData.Common_TeleportDist,
+										out nextTeleport_PositionEnabled,
+										out nextTeleport_MoveDist,
+										out isGUIChanged_Position);
+
+				if (isGUIChanged_Position)
 				{
-					if (Mathf.Abs(nextTeleportDist - _targetPortrait._teleportMovementDist) > 0.0001f)
-					{
-						apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+					apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
 													_editor,
 													_targetPortrait,
-													//null, 
 													false,
 													apEditorUtil.UNDO_STRUCT.ValueOnly);
 
-						_targetPortrait._teleportMovementDist = nextTeleportDist;
+					_targetPortrait._teleportPositionEnabled = nextTeleport_PositionEnabled;
+					_targetPortrait._teleportMovementDist = nextTeleport_MoveDist;
 
-						if (_targetPortrait._teleportMovementDist < 0.1f)
-						{
-							_targetPortrait._teleportMovementDist = 0.1f;
-						}
+					if (_targetPortrait._teleportMovementDist < 0.1f)
+					{
+						_targetPortrait._teleportMovementDist = 0.1f;
 					}
 
-					apEditorUtil.SetEditorDirty();
+					apEditorUtil.SetDirty(_editor);
+					apEditorUtil.ReleaseGUIFocus();
+				}
 
+				//2. 회전 (Rotation)
+				bool isGUIChanged_Rotation = false;
+				bool nextTeleport_RotationEnabled = _targetPortrait._teleportRotationEnabled;
+				float nextTeleport_RotationOffset = _targetPortrait._teleportRotationOffset;
+
+				Layout_ToggleAndFloat(	_editor.GetUIWord(UIWORD.Rotation),
+										_targetPortrait._teleportRotationEnabled,
+										_targetPortrait._teleportRotationOffset,
+										width,
+										isDefaultSaved,
+										_editor.ProjectSettingData.Common_TeleportRotationEnabled,
+										_editor.ProjectSettingData.Common_TeleportRotationOffset,
+										out nextTeleport_RotationEnabled,
+										out nextTeleport_RotationOffset,
+										out isGUIChanged_Rotation);
+
+				if(isGUIChanged_Rotation)
+				{
+					apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+													_editor,
+													_targetPortrait,
+													false,
+													apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+					_targetPortrait._teleportRotationEnabled = nextTeleport_RotationEnabled;
+					_targetPortrait._teleportRotationOffset = nextTeleport_RotationOffset;
+
+					if (_targetPortrait._teleportRotationOffset < 0.1f)
+					{
+						_targetPortrait._teleportRotationOffset = 0.1f;
+					}
+
+					apEditorUtil.SetDirty(_editor);
+					apEditorUtil.ReleaseGUIFocus();
+				}
+
+				//3. 크기 (Scale)
+				bool isGUIChanged_Scale = false;
+				bool nextTeleport_ScaleEnabled = _targetPortrait._teleportScaleEnabled;
+				float nextTeleport_ScaleOffset = _targetPortrait._teleportScaleOffset;
+
+				Layout_ToggleAndFloat(	_editor.GetUIWord(UIWORD.Scaling),
+										_targetPortrait._teleportScaleEnabled,
+										_targetPortrait._teleportScaleOffset,
+										width,
+										isDefaultSaved,
+										_editor.ProjectSettingData.Common_TeleportScaleEnabled,
+										_editor.ProjectSettingData.Common_TeleportScaleOffset,
+										out nextTeleport_ScaleEnabled,
+										out nextTeleport_ScaleOffset,
+										out isGUIChanged_Scale);
+
+				if(isGUIChanged_Scale)
+				{
+					apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+													_editor,
+													_targetPortrait,
+													false,
+													apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+					_targetPortrait._teleportScaleEnabled = nextTeleport_ScaleEnabled;
+					_targetPortrait._teleportScaleOffset = nextTeleport_ScaleOffset;
+
+					if (_targetPortrait._teleportScaleOffset < 0.01f)
+					{
+						_targetPortrait._teleportScaleOffset = 0.01f;
+					}
+
+					apEditorUtil.SetDirty(_editor);
 					apEditorUtil.ReleaseGUIFocus();
 				}
 			}
@@ -1423,7 +1705,7 @@ namespace AnyPortrait
 
 				_targetPortrait._rootMotionModeOption = nextRootMotionMode;
 
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 				apEditorUtil.ReleaseGUIFocus();
 			}
 			if(_targetPortrait._rootMotionModeOption != apPortrait.ROOT_MOTION_MODE.None)
@@ -1460,7 +1742,7 @@ namespace AnyPortrait
 						_targetPortrait._rootMotionAxisOption_X = nextOptX;
 						_targetPortrait._rootMotionAxisOption_Y = nextOptY;
 
-						apEditorUtil.SetEditorDirty();
+						apEditorUtil.SetDirty(_editor);
 						apEditorUtil.ReleaseGUIFocus();
 					}
 				}
@@ -1492,7 +1774,7 @@ namespace AnyPortrait
 
 						_targetPortrait._rootMotionTargetTransformType = nextRMTargetType;
 
-						apEditorUtil.SetEditorDirty();
+						apEditorUtil.SetDirty(_editor);
 						apEditorUtil.ReleaseGUIFocus();
 					}
 				}
@@ -1536,7 +1818,7 @@ namespace AnyPortrait
 
 									_targetPortrait._rootMotionSpecifiedParentTransform = nextRootMotionParentTransform;
 
-									apEditorUtil.SetEditorDirty();
+									apEditorUtil.SetDirty(_editor);
 									apEditorUtil.ReleaseGUIFocus();
 								}
 							}
@@ -1554,6 +1836,32 @@ namespace AnyPortrait
 				}
 				
 			}
+
+			
+			DrawDelimeter(width);
+
+			//[v1.5.0] IK 업데이트 방식
+			apPortrait.IK_METHOD nextIKMethod = (apPortrait.IK_METHOD)Layout_Popup(	_editor.GetText(TEXT.IKMethod),
+																					(int)_targetPortrait._IKMethod, _IKMethodNames,
+																					width,
+																					isDefaultSaved,
+																					(int)_editor.ProjectSettingData.Common_IKMethod
+																					);
+			if(nextIKMethod != _targetPortrait._IKMethod)
+			{
+				apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+												_editor,
+												_targetPortrait,
+												false,
+												apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+				_targetPortrait._IKMethod = nextIKMethod;
+
+				apEditorUtil.SetDirty(_editor);
+				apEditorUtil.ReleaseGUIFocus();
+			}
+
+
 
 			//유효성을 테스트해서 메시지로 남긴다.
 
@@ -1641,7 +1949,7 @@ namespace AnyPortrait
 		{	
 			RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
 			RenderSettings.ambientLight = Color.black;
-			apEditorUtil.SetEditorDirty();
+			apEditorUtil.SetAllSceneDirty();
 		}
 
 
@@ -1966,7 +2274,7 @@ namespace AnyPortrait
 												apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 			_targetPortrait._rootMotionSpecifiedParentTransform = resultTransform;
-			apEditorUtil.SetEditorDirty();
+			apEditorUtil.SetDirty(_editor);
 			apEditorUtil.ReleaseGUIFocus();
 
 			Repaint();
@@ -2101,6 +2409,19 @@ namespace AnyPortrait
 			return result;
 		}
 
+		private Enum Layout_EnumPopup(GUIContent guiLabel, Enum curEnumValue, int width)
+		{
+			int valueWidth = width - (LEFT_MARGIN * 2 + LABEL_WIDTH);
+
+			EditorGUILayout.BeginHorizontal(GUILayout.Height(LAYOUT_HEIGHT), GUILayout.Width(width));
+			GUILayout.Space(LEFT_MARGIN);
+			EditorGUILayout.LabelField(guiLabel, _guiStyle_Label_Default, GUILayout.Width(LABEL_WIDTH));
+			Enum result = EditorGUILayout.EnumPopup(curEnumValue, GUILayout.Width(valueWidth));
+			EditorGUILayout.EndHorizontal();
+
+			return result;
+		}
+
 		private Enum Layout_EnumPopup(string strLabel, Enum curEnumValue, int width, bool isDefaultSaved, Enum defaultValue)
 		{
 			if(!isDefaultSaved)
@@ -2121,6 +2442,44 @@ namespace AnyPortrait
 			GUILayout.Space(LEFT_MARGIN);
 
 			EditorGUILayout.LabelField(	strLabel,
+										Enum.Equals(defaultValue, curEnumValue) ? _guiStyle_Label_Default : _guiStyle_Label_Changed,
+										GUILayout.Width(LABEL_WIDTH));
+
+			Enum result = EditorGUILayout.EnumPopup(curEnumValue, GUILayout.Width(valueWidth));
+
+			if(isShowSyncBtn)
+			{
+				if(GUILayout.Button(_editor.ImageSet.Get(apImageSet.PRESET.SyncSettingToFile12px), _guiStyle_SyncBtn, GUILayout.Width(SYNC_BTN_WIDTH), GUILayout.Height(SYNC_BTN_HEIGHT)))
+				{
+					result = defaultValue;
+				}
+			}
+
+			EditorGUILayout.EndHorizontal();
+
+			return result;
+		}
+
+		private Enum Layout_EnumPopup(GUIContent guiLabel, Enum curEnumValue, int width, bool isDefaultSaved, Enum defaultValue)
+		{
+			if(!isDefaultSaved)
+			{
+				return Layout_EnumPopup(guiLabel, curEnumValue, width);
+			}
+
+			int valueWidth = width - (LEFT_MARGIN * 2 + LABEL_WIDTH);
+			bool isShowSyncBtn = false;
+			if(isDefaultSaved && !Enum.Equals(defaultValue, curEnumValue))
+			{
+				isShowSyncBtn = true;
+				valueWidth -= SYNC_BTN_WIDTH + 3;
+			}
+
+
+			EditorGUILayout.BeginHorizontal(GUILayout.Height(LAYOUT_HEIGHT), GUILayout.Width(width));
+			GUILayout.Space(LEFT_MARGIN);
+
+			EditorGUILayout.LabelField(	guiLabel,
 										Enum.Equals(defaultValue, curEnumValue) ? _guiStyle_Label_Default : _guiStyle_Label_Changed,
 										GUILayout.Width(LABEL_WIDTH));
 
@@ -2430,6 +2789,84 @@ namespace AnyPortrait
 			return result;
 		}
 
+
+
+		private void Layout_ToggleAndFloat(	string strLabel,
+											bool curValue_Bool,
+											float curValue_Float,
+											int width,
+											bool isDefaultSaved,
+											bool defaultValue_Bool,
+											float defaultValue_Float,
+											out bool resultValue_Bool,
+											out float resultValue_Float,
+											out bool isGUIChanged)
+		{
+			resultValue_Bool = curValue_Bool;
+			resultValue_Float = curValue_Float;
+
+			int valueWidth_Toggle = 25;
+			int valueWidth_Float = width - (LEFT_MARGIN * 2 + LABEL_WIDTH + valueWidth_Toggle + 4);
+			bool isShowSyncBtn = false;
+
+			//기본값과 같은지 확인
+			bool isSameDefault = false;
+			if(curValue_Bool == defaultValue_Bool
+				&& Mathf.Abs(curValue_Float - defaultValue_Float) < 0.001f)
+			{
+				isSameDefault = true;
+			}
+			if(isDefaultSaved && !isSameDefault)
+			{
+				//저장된 기본값과 다른 상태
+				isShowSyncBtn = true;
+				valueWidth_Float -= SYNC_BTN_WIDTH + 3;
+			}
+
+			isGUIChanged = false;
+
+			
+
+			EditorGUILayout.BeginHorizontal(GUILayout.Height(LAYOUT_HEIGHT), GUILayout.Width(width));
+			GUILayout.Space(LEFT_MARGIN);
+			if(isDefaultSaved)
+			{
+				EditorGUILayout.LabelField(	strLabel,
+											isSameDefault ? _guiStyle_Label_Default : _guiStyle_Label_Changed,
+											GUILayout.Width(LABEL_WIDTH));
+			}
+			else
+			{
+				EditorGUILayout.LabelField(	strLabel,
+											_guiStyle_Label_Default,
+											GUILayout.Width(LABEL_WIDTH));
+			}
+			
+			//1. 토글 옵션
+			EditorGUI.BeginChangeCheck();
+			resultValue_Bool = EditorGUILayout.Toggle(curValue_Bool, GUILayout.Width(valueWidth_Toggle));
+
+			//2. Float 옵션
+			resultValue_Float = EditorGUILayout.DelayedFloatField(curValue_Float, GUILayout.Width(valueWidth_Float));
+			if(EditorGUI.EndChangeCheck() || resultValue_Bool != curValue_Bool)
+			{
+				
+				isGUIChanged = true;
+			}
+
+			if(isShowSyncBtn)
+			{
+				if(GUILayout.Button(_editor.ImageSet.Get(apImageSet.PRESET.SyncSettingToFile12px), _guiStyle_SyncBtn, GUILayout.Width(SYNC_BTN_WIDTH), GUILayout.Height(SYNC_BTN_HEIGHT)))
+				{
+					resultValue_Bool = defaultValue_Bool;
+					resultValue_Float = defaultValue_Float;
+					isGUIChanged = true;
+					apEditorUtil.ReleaseGUIFocus();
+				}
+			}
+
+			EditorGUILayout.EndHorizontal();
+		}
 
 		private UnityEngine.Object Layout_Object<T>(	string strLabel,
 														UnityEngine.Object curValue,

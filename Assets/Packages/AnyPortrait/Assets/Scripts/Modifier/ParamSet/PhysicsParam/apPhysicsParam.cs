@@ -468,59 +468,143 @@ namespace AnyPortrait
 			//1. 추가할 것을 체크하자
 			apMesh.LinkedVertexResult srcVert = null;
 			apModifiedVertexWeight modVertWeight = null;
-			for (int iSrcVert = 0; iSrcVert < linkedVerticesOnMesh.Count; iSrcVert++)
+			int nLinkedVertsOnMesh = linkedVerticesOnMesh != null ? linkedVerticesOnMesh.Count : 0;
+			if(nLinkedVertsOnMesh > 0)
 			{
-				srcVert = linkedVerticesOnMesh[iSrcVert];
-				modVertWeight = _parentModMesh.GetVertexWeight(srcVert._vertex);
-
-				LinkedVertex linkedVert = _linkedVertices.Find(delegate (LinkedVertex a)
+				for (int iSrcVert = 0; iSrcVert < nLinkedVertsOnMesh; iSrcVert++)
 				{
-					return a._vertUniqueID == srcVert._vertex._uniqueID;
-				});
+					srcVert = linkedVerticesOnMesh[iSrcVert];
+					modVertWeight = _parentModMesh.GetVertexWeight(srcVert._vertex);
 
-				if (linkedVert == null)
-				{
-					//새로 추가해야하는 Linked Vert
-					LinkedVertex newLinkedVert = new LinkedVertex(srcVert._vertex, srcVert._level);
-					newLinkedVert.Link(srcVert._vertex, modVertWeight);
+					//이전 (GC 발생)
+					// LinkedVertex linkedVert = _linkedVertices.Find(delegate (LinkedVertex a)
+					// {
+					// 	return a._vertUniqueID == srcVert._vertex._uniqueID;
+					// });
 
+					//변경 v1.5.0
+					s_FindLinkedVert_ID = srcVert._vertex._uniqueID;
+					LinkedVertex linkedVert = _linkedVertices.Find(s_FindLinkedVertByID_Func);
 
-					_linkedVertices.Add(newLinkedVert);
-				}
-				else
-				{
-					//이미 추가되었으니 Link만 하자
-					linkedVert.Link(srcVert._vertex, modVertWeight);
+					if (linkedVert == null)
+					{
+						//새로 추가해야하는 Linked Vert
+						LinkedVertex newLinkedVert = new LinkedVertex(srcVert._vertex, srcVert._level);
+						newLinkedVert.Link(srcVert._vertex, modVertWeight);
+
+						_linkedVertices.Add(newLinkedVert);
+					}
+					else
+					{
+						//이미 추가되었으니 Link만 하자
+						linkedVert.Link(srcVert._vertex, modVertWeight);
+					}
 				}
 			}
+			
 
 			//2. 이제 제거할 것을 체크하자
 			//연결 안된건 지우자
-			_linkedVertices.RemoveAll(delegate (LinkedVertex a)
+			//이전
+			// _linkedVertices.RemoveAll(delegate (LinkedVertex a)
+			// {
+			// 	if (a._vertex == null || a._modVertWeight == null)
+			// 	{
+			// 		return true;
+			// 	}
+			// 	if (!linkedVerticesOnMesh.Exists(delegate (apMesh.LinkedVertexResult b)
+			// 	{
+			// 			return b._vertex == a._vertex;
+			// 		}))
+			// 	{
+			// 		//연결된게 아니다. 찾을 수 없다.
+			// 		return true;
+			// 	}
+
+			// 	return false;
+			// });
+
+			//변경 v1.5.0
+			//지울 리스트를 별도로 만들자
+			int nLinkedVerts = _linkedVertices != null ? _linkedVertices.Count : 0;
+			if(nLinkedVerts > 0)
 			{
-				if (a._vertex == null || a._modVertWeight == null)
+				List<LinkedVertex> removeVerts = null;
+
+				LinkedVertex curLinkedVerts = null;
+				for (int i = 0; i < nLinkedVerts; i++)
 				{
-					return true;
-				}
-				if (!linkedVerticesOnMesh.Exists(delegate (apMesh.LinkedVertexResult b)
-			 {
-					return b._vertex == a._vertex;
-				}))
-				{
-				//연결된게 아니다. 찾을 수 없다.
-				return true;
+					curLinkedVerts = _linkedVertices[i];
+					bool isRemovable = false;
+					
+					if (curLinkedVerts._vertex == null
+						|| curLinkedVerts._modVertWeight == null)
+					{
+						//버텍스 정보가 없다 > 삭제
+						isRemovable = true;
+					}
+					else if(linkedVerticesOnMesh != null)
+					{
+						//GC 발생
+						// bool isExist = linkedVerticesOnMesh.Exists(delegate (apMesh.LinkedVertexResult b)
+						// 				{
+						// 						return b._vertex == curLinkedVerts._vertex;
+						// 				});
+						//GC 발생 안함
+						s_FindLinkedVertResult_Vertex = curLinkedVerts._vertex;
+						bool isExist = linkedVerticesOnMesh.Exists(s_FindLinkedVertResultBySrcVertex_Func);
+
+						if (!isExist)
+						{
+							//연결된게 아니다. 찾을 수 없다. > 삭제
+							isRemovable = true;
+						}
+					}
+
+					if(isRemovable)
+					{
+						//삭제 대상
+						if(removeVerts == null)
+						{
+							removeVerts = new List<LinkedVertex>();
+						}
+						removeVerts.Add(curLinkedVerts);
+					}
 				}
 
-				return false;
-			});
+				int nRemove = removeVerts != null ? removeVerts.Count : 0;
+				if(nRemove > 0)
+				{
+					for (int i = 0; i < nRemove; i++)
+					{
+						curLinkedVerts = removeVerts[i];
+						_linkedVertices.Remove(curLinkedVerts);
+					}
+				}
+			}
+			
 
 			//전체 길이를 체크하여 역 Weight를 걸자
-
-
-
-
 			RefreshLinkedVertex();
 		}
+
+		private static int s_FindLinkedVert_ID = -1;
+		private static Predicate<LinkedVertex> s_FindLinkedVertByID_Func = FUNC_FindLinkedVertByID;
+		private static bool FUNC_FindLinkedVertByID(LinkedVertex a)
+		{
+			return a._vertUniqueID == s_FindLinkedVert_ID;
+		}
+
+		private static apVertex s_FindLinkedVertResult_Vertex = null;
+		private static Predicate<apMesh.LinkedVertexResult> s_FindLinkedVertResultBySrcVertex_Func = FUNC_FindLinkedVertResultBySrcVertex;
+		private static bool FUNC_FindLinkedVertResultBySrcVertex(apMesh.LinkedVertexResult b)
+		{
+			return b._vertex == s_FindLinkedVertResult_Vertex;
+		}
+
+
+
+
 
 		/// <summary>
 		/// Linked Vertex의 Dist, Weight을 갱신하자
@@ -536,7 +620,9 @@ namespace AnyPortrait
 			}
 
 			float totalDist = 0.0f;
-			for (int i = 0; i < _linkedVertices.Count; i++)
+			int nLinkedVerts = _linkedVertices != null ? _linkedVertices.Count : 0;
+
+			for (int i = 0; i < nLinkedVerts; i++)
 			{
 				LinkedVertex linkVert = _linkedVertices[i];
 				linkVert.SetDistance(_parentModVertWeight._vertex._pos - linkVert._vertex._pos);
@@ -544,18 +630,18 @@ namespace AnyPortrait
 			}
 			if (totalDist > 0.0f)
 			{
-				if (_linkedVertices.Count > 1)
+				if (nLinkedVerts > 1)
 				{
-					float totalWeight = totalDist * (_linkedVertices.Count - 1);
+					float totalWeight = totalDist * (nLinkedVerts - 1);
 
-					for (int i = 0; i < _linkedVertices.Count; i++)
+					for (int i = 0; i < nLinkedVerts; i++)
 					{
 						LinkedVertex linkVert = _linkedVertices[i];
 
 						linkVert.SetWeight((totalDist - linkVert._distLocal) / totalWeight);//Normalized된 Weight를 넣자
 					}
 				}
-				else if (_linkedVertices.Count == 0)
+				else if (nLinkedVerts == 0)
 				{
 					_linkedVertices[0].SetWeight(1.0f);
 				}

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -30,7 +30,7 @@ namespace AnyPortrait
 		//--------------------------------------------------------------
 		//우선순위가 10 이상 차이가 나면 구분자가 생긴다.
 
-		[MenuItem("Window/AnyPortrait/Reset Editor", false, 21)]
+		[MenuItem("Window/AnyPortrait/Reset Editor", false, 741)]
 		public static void ShowWindow()
 		{
 			apEditor.CloseEditor();
@@ -46,7 +46,7 @@ namespace AnyPortrait
 
 		//추가 22.7.13 : 씬의 전체 apPortrait의 Mesh를 갱신하는 메뉴
 		//--------------------------------------------------------------
-		[MenuItem("Window/AnyPortrait/Refresh All Meshes", false, 41)]
+		[MenuItem("Window/AnyPortrait/Refresh All Meshes", false, 761)]
 		public static void RefrehsAllScenePortraits()
 		{
 			try
@@ -262,13 +262,13 @@ namespace AnyPortrait
 
 
 
-		[MenuItem("Window/AnyPortrait/Homepage", false, 61)]
+		[MenuItem("Window/AnyPortrait/Homepage", false, 781)]
 		public static void OpenHomepage()
 		{
 			Application.OpenURL("https://www.rainyrizzle.com/");
 		}
 
-		[MenuItem("Window/AnyPortrait/Getting Started", false, 62)]
+		[MenuItem("Window/AnyPortrait/Getting Started", false, 782)]
 		public static void OpenGettingStarted()
 		{
 			string url = "";
@@ -294,7 +294,7 @@ namespace AnyPortrait
 		}
 
 
-		[MenuItem("Window/AnyPortrait/Manual", false, 63)]
+		[MenuItem("Window/AnyPortrait/Manual", false, 783)]
 		public static void OpenAdvancedManul()
 		{
 			string url = "";
@@ -319,7 +319,7 @@ namespace AnyPortrait
 			Application.OpenURL(url);
 		}
 
-		[MenuItem("Window/AnyPortrait/Scripting", false, 64)]
+		[MenuItem("Window/AnyPortrait/Scripting", false, 784)]
 		public static void OpenScripting()
 		{
 			string url = "";
@@ -345,7 +345,7 @@ namespace AnyPortrait
 		}
 
 		//추가 21.10.11
-		[MenuItem("Window/AnyPortrait/Video Tutorials", false, 65)]
+		[MenuItem("Window/AnyPortrait/Video Tutorials", false, 785)]
 		public static void OpenVideoTutorials()
 		{
 			string url = "";
@@ -375,7 +375,7 @@ namespace AnyPortrait
 		//}
 
 
-		[MenuItem("Window/AnyPortrait/Report a Bug or Suggestion", false, 101)]
+		[MenuItem("Window/AnyPortrait/Report a Bug or Suggestion", false, 821)]
 		public static void OpenReportABug()
 		{
 			string url = "";
@@ -397,7 +397,7 @@ namespace AnyPortrait
 			Application.OpenURL(url);
 		}
 
-		[MenuItem("Window/AnyPortrait/Ask a Question", false, 102)]
+		[MenuItem("Window/AnyPortrait/Ask a Question", false, 822)]
 		public static void OpenAskQuestion()
 		{
 			string url = "";
@@ -419,14 +419,14 @@ namespace AnyPortrait
 			Application.OpenURL(url);
 		}
 
-		[MenuItem("Window/AnyPortrait/Forum", false, 103)]
+		[MenuItem("Window/AnyPortrait/Forum", false, 823)]
 		public static void OpenForum()
 		{
 			Application.OpenURL("https://www.rainyrizzle.com/ap-forum");
 		}
 
 
-		[MenuItem("Window/AnyPortrait/Open Asset Store Page", false, 121)]
+		[MenuItem("Window/AnyPortrait/Open Asset Store Page", false, 841)]
 		public static void OpenAssetStorePage()
 		{
 			apEditorUtil.OpenAssetStorePage();

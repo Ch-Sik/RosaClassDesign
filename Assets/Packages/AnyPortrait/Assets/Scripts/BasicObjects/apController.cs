@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -216,18 +216,44 @@ namespace AnyPortrait
 
 		public apControlParam FindParam(string keyName)
 		{
-			return _controlParams.Find(delegate (apControlParam a)
-			{
-				return a._keyName.Equals(keyName);
-			});
+			//이전 (GC 발생)
+			//return _controlParams.Find(delegate (apControlParam a)
+			//{
+			//	return a._keyName.Equals(keyName);
+			//});
+
+			//변경 v1.5.0
+			s_FindParam_KeyName = keyName;
+			return _controlParams.Find(s_FindParamByName_Func);
 		}
+
+		private static string s_FindParam_KeyName = null;
+		private static Predicate<apControlParam> s_FindParamByName_Func = FUNC_FindParamByName;
+		private static bool FUNC_FindParamByName(apControlParam a)
+		{
+			return a._keyName.Equals(s_FindParam_KeyName);
+		}
+
 
 		public apControlParam FindParam(int uniqueID)
 		{
-			return _controlParams.Find(delegate (apControlParam a)
-			{
-				return a._uniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _controlParams.Find(delegate (apControlParam a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_FindParam_ID = uniqueID;
+			return _controlParams.Find(s_FindParamByID_Func);
+		}
+
+
+		private static int s_FindParam_ID = -1;
+		private static Predicate<apControlParam> s_FindParamByID_Func = FUNC_FindParamByID;
+		private static bool FUNC_FindParamByID(apControlParam a)
+		{
+			return a._uniqueID == s_FindParam_ID;
 		}
 
 

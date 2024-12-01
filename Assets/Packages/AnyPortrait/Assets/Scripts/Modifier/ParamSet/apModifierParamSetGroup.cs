@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -184,14 +184,14 @@ namespace AnyPortrait
 		//현재 파라미터들에 공통적으로 적용된 Transform들을 저장한다.
 		//뭔가 변동사항이 생기면 Refresh하자
 
-		[NonSerialized]
-		public List<apTransform_Mesh> _syncTransform_Mesh = new List<apTransform_Mesh>();
+		[NonSerialized] public List<apTransform_Mesh> _syncTransform_Mesh = new List<apTransform_Mesh>();
+		[NonSerialized] public List<apTransform_MeshGroup> _syncTransform_MeshGroup = new List<apTransform_MeshGroup>();
+		[NonSerialized] public List<apBone> _syncBone = new List<apBone>();
 
-		[NonSerialized]
-		public List<apTransform_MeshGroup> _syncTransform_MeshGroup = new List<apTransform_MeshGroup>();
-
-		[NonSerialized]
-		public List<apBone> _syncBone = new List<apBone>();
+		//추가 v1.5.0 : Sync 데이터의 확장 버전
+		[NonSerialized] private Dictionary<apTransform_Mesh, List<apModifierParamSet>> _syncSets_MeshTF = new Dictionary<apTransform_Mesh, List<apModifierParamSet>>();
+		[NonSerialized] private Dictionary<apTransform_MeshGroup, List<apModifierParamSet>> _syncSets_MeshGroupTF = new Dictionary<apTransform_MeshGroup, List<apModifierParamSet>>();
+		[NonSerialized] private Dictionary<apBone, List<apModifierParamSet>> _syncSets_Bone = new Dictionary<apBone, List<apModifierParamSet>>();
 
 
 		//추가 21.9.1 : 회전 옵션 (컨트롤 파라미터만 해당)
@@ -304,30 +304,11 @@ namespace AnyPortrait
 					return false;
 				});
 
-				//if (nRemoveModMesh > 0)
-				//{
-				//	//테스트
-				//	if (_keyAnimClip != null)
-				//	{
-				//		Debug.LogError("<" + _keyAnimClip._name + "> RemoveInvalidParamSet ModMesh 삭제됨 : " + nRemoveModMesh);
-				//	}
-				//	else
-				//	{
-				//		Debug.LogError("<애니메이션 아님> RemoveInvalidParamSet ModMesh 삭제됨 : " + nRemoveModMesh);
-				//	}
-				//}
-
 				//Debug.LogError("TODO : RemoveInvalidParamSet : 유효하지 않는 Bone을 결정해야한다.");
 				paramSet._boneData.RemoveAll(delegate (apModifiedBone a)
 				{
 					return a._bone == null;//4.4 변경
 				});
-
-				//if(nRemoveModBone > 0)
-				//{
-				//	//Debug.LogError("RemoveInvalidParamSet ModBone 삭제됨 : " + nRemoveModMesh);
-				//}
-
 			}
 		}
 
@@ -502,267 +483,395 @@ namespace AnyPortrait
 									}
 								}
 								break;
-
-								//case apControlParam.TYPE.Vector3:
-								//	{
-								//		Vector3 nextValue_Vec3 = nextParamSet._conSyncValue_Vector3;
-								//		//X, Y에 대해서 값을 각각 처리한다.
-
-								//		//X에 대해서 영역 처리할 땐 -> Y가 같은 경우에만
-								//		//Y에 대해서 영역 처리할 땐 -> X가 같은 경우에만
-								//		//Z는 자유롭게
-
-								//		bool isXSame = Mathf.Abs(nextValue_Vec3.x - paramSet._conSyncValue_Vector3.x) < 0.01f;
-								//		bool isYSame = Mathf.Abs(nextValue_Vec3.y - paramSet._conSyncValue_Vector3.y) < 0.01f;
-
-								//		//Under - X
-								//		if(nextValue_Vec3.x <= paramSet._conSyncValue_Vector3.x && isYSame)
-								//		{
-								//			//값이 작은 경우 + 영역보다 값이 큰 경우
-								//			if(nextValue_Vec3.x > paramSet._conSyncValueRange_Under.x)
-								//			{
-								//				paramSet._conSyncValueRange_Under.x = nextValue_Vec3.x;
-								//			}
-								//		}
-
-								//		//Under - Y
-								//		if(nextValue_Vec3.y <= paramSet._conSyncValue_Vector3.y && isXSame)
-								//		{
-								//			//값이 작은 경우 + 영역보다 값이 큰 경우
-								//			if(nextValue_Vec3.y > paramSet._conSyncValueRange_Under.y)
-								//			{
-								//				paramSet._conSyncValueRange_Under.y = nextValue_Vec3.y;
-								//			}
-								//		}
-
-								//		//Under - Z
-								//		if(nextValue_Vec3.z <= paramSet._conSyncValue_Vector3.z)
-								//		{
-								//			//값이 작은 경우 + 영역보다 값이 큰 경우
-								//			if(nextValue_Vec3.z > paramSet._conSyncValueRange_Under.z)
-								//			{
-								//				paramSet._conSyncValueRange_Under.z = nextValue_Vec3.z;
-								//			}
-								//		}
-
-								//		//Over - X
-								//		if(nextValue_Vec3.x >= paramSet._conSyncValue_Vector3.x && isYSame)
-								//		{
-								//			//값이 큰 경우 + 영역보다 값이 작은 경우
-								//			if(nextValue_Vec3.x < paramSet._conSyncValueRange_Over.x)
-								//			{
-								//				paramSet._conSyncValueRange_Over.x = nextValue_Vec3.x;
-								//			}
-								//		}
-
-								//		//Over - Y
-								//		if(nextValue_Vec3.y >= paramSet._conSyncValue_Vector3.y && isXSame)
-								//		{
-								//			//값이 큰 경우 + 영역보다 값이 작은 경우
-								//			if(nextValue_Vec3.y < paramSet._conSyncValueRange_Over.y)
-								//			{
-								//				paramSet._conSyncValueRange_Over.y = nextValue_Vec3.y;
-								//			}
-								//		}
-
-								//		//Over - Z
-								//		if(nextValue_Vec3.z >= paramSet._conSyncValue_Vector3.z)
-								//		{
-								//			//값이 큰 경우 + 영역보다 값이 작은 경우
-								//			if(nextValue_Vec3.z < paramSet._conSyncValueRange_Over.z)
-								//			{
-								//				paramSet._conSyncValueRange_Over.z = nextValue_Vec3.z;
-								//			}
-								//		}
-								//	}
-								//	break;
 						}
 					}
 				}
 			}
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="isUseMeshDefaultColorToModifier">Sync 도중 ModMesh 생성시 기본 색상 값을 어떤 값으로 할지 여부 (옵션에 따름)</param>
-		/// <returns></returns>
+
 		public bool RefreshSync()
 		{
-			if (_syncTransform_Mesh == null)
-			{
-				_syncTransform_Mesh = new List<apTransform_Mesh>();
-			}
+			return RefreshSyncWithNewMod(null, null);
+		}
+
+		public bool RefreshSyncWithNewMod(Dictionary<apModifierParamSet, List<apModifiedMesh>> createdModMeshes, Dictionary<apModifierParamSet, List<apModifiedBone>> createdModBones)
+		{
+			if (_syncTransform_Mesh == null) { _syncTransform_Mesh = new List<apTransform_Mesh>(); }
 			_syncTransform_Mesh.Clear();
 
-			if (_syncTransform_MeshGroup == null)
-			{
-				_syncTransform_MeshGroup = new List<apTransform_MeshGroup>();
-			}
+			if (_syncTransform_MeshGroup == null) { _syncTransform_MeshGroup = new List<apTransform_MeshGroup>(); }
 			_syncTransform_MeshGroup.Clear();
 
-			if (_syncBone == null)
-			{
-				_syncBone = new List<apBone>();
-			}
+			if (_syncBone == null) { _syncBone = new List<apBone>(); }
 			_syncBone.Clear();
 
+			//추가 v1.5.0 : 객체-ModBone/ModMesh 연결 정보도 저장
+			if(_syncSets_MeshTF == null) { _syncSets_MeshTF = new Dictionary<apTransform_Mesh, List<apModifierParamSet>>(); }
+			_syncSets_MeshTF.Clear();
+
+			if (_syncSets_MeshGroupTF == null) { _syncSets_MeshGroupTF = new Dictionary<apTransform_MeshGroup, List<apModifierParamSet>>(); }
+			_syncSets_MeshGroupTF.Clear();
+
+			if (_syncSets_Bone == null) { _syncSets_Bone = new Dictionary<apBone, List<apModifierParamSet>>(); }
+			_syncSets_Bone.Clear();
+
+			List<apModifierParamSet> curSyncSetPS = null;
+
 			//한번이라도 등장한 MeshTransform / MeshGroup Transform을 찾자
-			for (int i = 0; i < _paramSetList.Count; i++)
+			apModifierParamSet paramSet = null;
+			int nParamSets = _paramSetList != null ? _paramSetList.Count : 0;
+			if (nParamSets > 0)
 			{
-				apModifierParamSet paramSet = _paramSetList[i];
-
-				for (int iModMesh = 0; iModMesh < paramSet._meshData.Count; iModMesh++)
+				for (int i = 0; i < nParamSets; i++)
 				{
-					apModifiedMesh modMesh = paramSet._meshData[iModMesh];
-					if (modMesh._transform_Mesh != null)
+					paramSet = _paramSetList[i];
+
+					int nModMeshes = paramSet._meshData != null ? paramSet._meshData.Count : 0;
+					if (nModMeshes > 0)
 					{
-						//수정 4.1 : Mesh가 없는 MeshTransform 
-						if (modMesh._transform_Mesh._mesh == null)
+						apModifiedMesh modMesh = null;
+						for (int iModMesh = 0; iModMesh < nModMeshes; iModMesh++)
 						{
-							//Debug.Log("AnyPortrait : Mesh of [" + modMesh._transform_Mesh._nickName + "] is removed. Please check it.");
-						}
-						else
-						{
-							if (!_syncTransform_Mesh.Contains(modMesh._transform_Mesh))
+							modMesh = paramSet._meshData[iModMesh];
+
+							if (modMesh._transform_Mesh != null
+								&& modMesh._transform_Mesh._mesh != null)
 							{
-								_syncTransform_Mesh.Add(modMesh._transform_Mesh);
+								if (!_syncTransform_Mesh.Contains(modMesh._transform_Mesh))
+								{
+									_syncTransform_Mesh.Add(modMesh._transform_Mesh);
+								}
+
+								//추가 v1.5.0 : 빠른 동기화 위한 데이터 생성
+								curSyncSetPS = null;
+								_syncSets_MeshTF.TryGetValue(modMesh._transform_Mesh, out curSyncSetPS);
+								if(curSyncSetPS == null)
+								{
+									curSyncSetPS = new List<apModifierParamSet>();
+									_syncSets_MeshTF.Add(modMesh._transform_Mesh, curSyncSetPS);
+								}
+								if(!curSyncSetPS.Contains(paramSet))
+								{
+									curSyncSetPS.Add(paramSet);
+								}
+
+							}
+							if (modMesh._transform_MeshGroup != null)
+							{
+								if (!_syncTransform_MeshGroup.Contains(modMesh._transform_MeshGroup))
+								{
+									_syncTransform_MeshGroup.Add(modMesh._transform_MeshGroup);
+								}
+
+								//추가 v1.5.0 : 빠른 동기화 위한 데이터 생성
+								curSyncSetPS = null;
+								_syncSets_MeshGroupTF.TryGetValue(modMesh._transform_MeshGroup, out curSyncSetPS);
+								if(curSyncSetPS == null)
+								{
+									curSyncSetPS = new List<apModifierParamSet>();
+									_syncSets_MeshGroupTF.Add(modMesh._transform_MeshGroup, curSyncSetPS);
+								}
+								if(!curSyncSetPS.Contains(paramSet))
+								{
+									curSyncSetPS.Add(paramSet);
+								}
 							}
 						}
-
-						//이전 코드
-						//if (!_syncTransform_Mesh.Contains(modMesh._transform_Mesh))
-						//{
-						//	_syncTransform_Mesh.Add(modMesh._transform_Mesh);
-						//}
 					}
-					if (modMesh._transform_MeshGroup != null)
-					{
-						if (!_syncTransform_MeshGroup.Contains(modMesh._transform_MeshGroup))
-						{
-							_syncTransform_MeshGroup.Add(modMesh._transform_MeshGroup);
-						}
-					}
-				}
-				for (int iModBone = 0; iModBone < paramSet._boneData.Count; iModBone++)
-				{
-					apModifiedBone modBone = paramSet._boneData[iModBone];
 
-					if (modBone._bone != null)
+					int nModBones = paramSet._boneData != null ? paramSet._boneData.Count : 0;
+					if (nModBones > 0)
 					{
-						//>> 이건 Bone Set이 필요없다.
-						if (modBone._meshGroup_Bone != null 
-							&& modBone._meshGroup_Bone._boneList_All.Contains(modBone._bone)//해당 MeshGroup에 Bone이 존재하는가.
-							)
+						apModifiedBone modBone = null;
+						for (int iModBone = 0; iModBone < nModBones; iModBone++)
 						{
-							if (!_syncBone.Contains(modBone._bone))
+							modBone = paramSet._boneData[iModBone];
+
+							if (modBone._bone != null)
 							{
-								_syncBone.Add(modBone._bone);
+								//>> 이건 Bone Set이 필요없다.
+								if (modBone._meshGroup_Bone != null
+									&& modBone._meshGroup_Bone._boneList_All != null
+									&& modBone._meshGroup_Bone._boneList_All.Contains(modBone._bone)//해당 MeshGroup에 Bone이 존재하는가.
+									)
+								{
+									if (!_syncBone.Contains(modBone._bone))
+									{
+										_syncBone.Add(modBone._bone);
+									}
+
+									//추가 v1.5.0 : 빠른 동기화 위한 데이터 생성
+									curSyncSetPS = null;
+									_syncSets_Bone.TryGetValue(modBone._bone, out curSyncSetPS);
+									if(curSyncSetPS == null)
+									{
+										curSyncSetPS = new List<apModifierParamSet>();
+										_syncSets_Bone.Add(modBone._bone, curSyncSetPS);
+									}
+									if(!curSyncSetPS.Contains(paramSet))
+									{
+										curSyncSetPS.Add(paramSet);
+									}
+								}
 							}
 						}
-						else
-						{
-							//Modifier로 등록되었지만 Bone이 삭제되었다면 여기로 들어온다.
-							//Sync가 안됨
-						}
 					}
+
 				}
 			}
+			
+
+			//MeshTF, MeshGroupTF, Bone을 Sync 리스트에 넣고 ModMesh/ModBone이 있는지 확인하여 없으면 추가하는 코드
+			//근데 이미 생성된 ModMesh/ModBone을 전달하지 않으니 매번 전체 검사를 해야한다. (AddMeshTransformToParamSet 함수 등등에서)
+			//그래서 Sync 리스트에 ModMesh/ModBone도 넣어서 전달하던가 해야겠다.
 
 			//동기화 전용 Sync Transform을 모든 ParamSet에 넣자
 			bool isAnyChanged = false;
 
-			for (int iSync = 0; iSync < _syncTransform_Mesh.Count; iSync++)
+			int nSyncMeshes = _syncTransform_Mesh != null ? _syncTransform_Mesh.Count : 0;
+			nParamSets = _paramSetList != null ? _paramSetList.Count : 0;
+			
+			apModifierParamSet curParamSet = null;
+
+			if (nSyncMeshes > 0 && nParamSets > 0)
 			{
-				apTransform_Mesh meshTransform = _syncTransform_Mesh[iSync];
-				//bool isAdd = _parentModifier.AddMeshTransformToAllParamSet(_parentModifier._meshGroup, meshTransform, false);
-				for (int iParamSet = 0; iParamSet < _paramSetList.Count; iParamSet++)
+				apTransform_Mesh meshTransform = null;
+
+				//이전 (모든 ParamSet을 항상 비교하여 불필요한 처리가 많음)
+				//for (int iSync = 0; iSync < nSyncMeshes; iSync++)
+				//{
+				//	meshTransform = _syncTransform_Mesh[iSync];
+					
+				//	for (int iParamSet = 0; iParamSet < nParamSets; iParamSet++)
+				//	{
+				//		curParamSet = _paramSetList[iParamSet];
+				//		bool isAdd = AddMeshTransformToParamSet(curParamSet, meshTransform);
+
+				//		if (isAdd)
+				//		{
+				//			isAnyChanged = true;
+				//		}
+				//	}
+				//}
+
+				//변경 v1.5.0
+				foreach (KeyValuePair<apTransform_Mesh, List<apModifierParamSet>> syncSet in _syncSets_MeshTF)
 				{
-					bool isAdd = AddMeshTransformToParamSet(_paramSetList[iParamSet], meshTransform);
-					if (isAdd)
+					meshTransform = syncSet.Key;
+					curSyncSetPS = syncSet.Value;
+
+					//이 MeshTF에 대한 ParamSet 개수와 PSG의 ParamSet 개수가 다른 경우 누락된게 있다.
+					//반대로 개수가 같다면 동기화를 할 필요가 없다. (불필요한 처리 방지)
+					if(curSyncSetPS.Count == nParamSets)
 					{
-						isAnyChanged = true;
+						//Debug.Log("이 MeshTF [" + meshTransform._nickName + "]에 대한 Sync가 이미 완료되어 동기화 불필요 (" + nParamSets + ")");
+						continue;
+					}
+
+					//Debug.LogError("이 MeshTF [" + meshTransform._nickName + "]에 대한 Sync가 이미 완료되지 않아서 동기화 필요 (" + curSyncSetPS.Count + " > " + nParamSets + ")");
+
+					//이 MeshTF를 ModMesh로서 저장하지 못한 ParamSet을 찾아서 ModMesh를 생성해주자
+					for (int iParamSet = 0; iParamSet < nParamSets; iParamSet++)
+					{
+						curParamSet = _paramSetList[iParamSet];
+						
+						//빠른 PS 체크를 한다.
+						if(curSyncSetPS.Contains(curParamSet))
+						{
+							continue;
+						}
+
+						//이 ParamSet은 해당 MeshTF를 가지지 못했다.
+						//ModMesh를 생성해주자.
+						apModifiedMesh newModMesh = null;
+						bool isAdd = AddMeshTransformToParamSet(curParamSet, meshTransform, out newModMesh);
+
+						if (isAdd)
+						{
+							isAnyChanged = true;
+
+							//요청이 있다면 추가된 ModMesh를 매핑 리스트에 넣어주자
+							if(createdModMeshes != null && newModMesh != null)
+							{
+								List<apModifiedMesh> modMeshList = null;
+								createdModMeshes.TryGetValue(curParamSet, out modMeshList);
+								if(modMeshList == null)
+								{
+									modMeshList = new List<apModifiedMesh>();
+									createdModMeshes.Add(curParamSet, modMeshList);
+								}
+								modMeshList.Add(newModMesh);
+							}
+						}
 					}
 				}
-
 			}
-
-			for (int iSync = 0; iSync < _syncTransform_MeshGroup.Count; iSync++)
+			
+			int nSyncMeshGroups = _syncTransform_MeshGroup != null ? _syncTransform_MeshGroup.Count : 0;
+			if (nSyncMeshGroups > 0 && nParamSets > 0)
 			{
-				apTransform_MeshGroup meshGroupTransform = _syncTransform_MeshGroup[iSync];
-				for (int iParamSet = 0; iParamSet < _paramSetList.Count; iParamSet++)
-				{
-					bool isAdd = AddMeshGroupTransformToParamSet(_paramSetList[iParamSet], meshGroupTransform);
-					//bool isAdd = _parentModifier.AddMeshGroupTransformToAllParamSet(_parentModifier._meshGroup, meshGroupTransform, false);
-					if (isAdd)
-					{
-						isAnyChanged = true;
-					}
-				}
-			}
-
-			for (int iSync = 0; iSync < _syncBone.Count; iSync++)
-			{
-				apBone bone = _syncBone[iSync];
-				
 				apTransform_MeshGroup meshGroupTransform = null;
-				if(_parentModifier._meshGroup == bone._meshGroup)
-				{
-					meshGroupTransform = _parentModifier._meshGroup._rootMeshGroupTransform;
-				}
-				else
-				{
-					meshGroupTransform = _parentModifier._meshGroup.FindChildMeshGroupTransform(bone._meshGroup);
-				}
+				
+				//이전 (항상 모든 ParamSet에 대해 동기화)
+				//for (int iSync = 0; iSync < nSyncMeshGroups; iSync++)
+				//{
+				//	meshGroupTransform = _syncTransform_MeshGroup[iSync];					
+				//	for (int iParamSet = 0; iParamSet < nParamSets; iParamSet++)
+				//	{
+				//		curParamSet = _paramSetList[iParamSet];
+				//		bool isAdd = AddMeshGroupTransformToParamSet(curParamSet, meshGroupTransform);
+				//		if (isAdd)
+				//		{
+				//			isAnyChanged = true;
+				//		}
+				//	}
+				//}
 
-				for (int iParamSet = 0; iParamSet < _paramSetList.Count; iParamSet++)
+				//변경 v1.5.0
+				foreach (KeyValuePair<apTransform_MeshGroup, List<apModifierParamSet>> syncSet in _syncSets_MeshGroupTF)
 				{
-					//이전
-					//bool isAdd = AddBoneToParamSet(_paramSetList[iParamSet], bone._meshGroup._rootMeshGroupTransform, bone);
-					//변경 : ChildMeshGroup의 Root MGTF로 설정하는 코드는 잘못되었다.
-					bool isAdd = AddBoneToParamSet(_paramSetList[iParamSet], meshGroupTransform, bone);
-					if (isAdd)
+					meshGroupTransform = syncSet.Key;
+					curSyncSetPS = syncSet.Value;
+
+					//이 MeshGroupTF에 대한 ParamSet 개수와 PSG의 ParamSet 개수가 다른 경우 누락된게 있다.
+					//반대로 개수가 같다면 동기화를 할 필요가 없다. (불필요한 처리 방지)
+					if(curSyncSetPS.Count == nParamSets)
 					{
-						isAnyChanged = true;
+						continue;
+					}
+
+					for (int iParamSet = 0; iParamSet < nParamSets; iParamSet++)
+					{
+						curParamSet = _paramSetList[iParamSet];
+
+						//빠른 PS 체크를 한다.
+						if(curSyncSetPS.Contains(curParamSet))
+						{
+							continue;
+						}
+
+						apModifiedMesh newModMesh = null;
+						bool isAdd = AddMeshGroupTransformToParamSet(curParamSet, meshGroupTransform, out newModMesh);
+						if (isAdd)
+						{
+							isAnyChanged = true;
+
+							//요청이 있다면 추가된 ModMesh를 매핑 리스트에 넣어주자
+							if(createdModMeshes != null && newModMesh != null)
+							{
+								List<apModifiedMesh> modMeshList = null;
+								createdModMeshes.TryGetValue(curParamSet, out modMeshList);
+								if(modMeshList == null)
+								{
+									modMeshList = new List<apModifiedMesh>();
+									createdModMeshes.Add(curParamSet, modMeshList);
+								}
+								modMeshList.Add(newModMesh);
+							}
+						}
 					}
 				}
 			}
+			
+			int nSyncBones = _syncBone != null ? _syncBone.Count : 0;
+			if (nSyncBones > 0 && nParamSets > 0)
+			{
+				apBone bone = null;
+				apTransform_MeshGroup meshGroupTransform = null;
 
-			// 변경 19.5.20 : 이 변수는 더이상 사용되지 않는다. > 삭제
+				//이전 (항상 모든 ParamSet에 대해서 동기화 시도)
+				//for (int iSync = 0; iSync < nSyncBones; iSync++)
+				//{
+				//	bone = _syncBone[iSync];
 
-			////Sync시 WeightedVertex도 같이 처리해주자
-			//// 동기화 안된건 자동 삭제
-			//for (int i = 0; i < _calculatedWeightedVertexList.Count; i++)
-			//{
-			//	_calculatedWeightedVertexList[i]._isSync = false;
-			//}
+				//	meshGroupTransform = null;
+				//	if (_parentModifier._meshGroup == bone._meshGroup)
+				//	{
+				//		meshGroupTransform = _parentModifier._meshGroup._rootMeshGroupTransform;
+				//	}
+				//	else
+				//	{
+				//		meshGroupTransform = _parentModifier._meshGroup.FindChildMeshGroupTransform(bone._meshGroup);
+				//	}
 
-			//for (int iSync = 0; iSync < _syncTransform_Mesh.Count; iSync++)
-			//{
-			//	apTransform_Mesh meshTransform = _syncTransform_Mesh[iSync];
-			//	apModifierParamSetGroupVertWeight existWV = _calculatedWeightedVertexList.Find(delegate (apModifierParamSetGroupVertWeight a)
-			//	{
-			//		return a._meshTransform_ID == meshTransform._transformUniqueID;
-			//	});
-			//	if (existWV != null)
-			//	{
-			//		existWV._isSync = true;
-			//		existWV.LinkMeshTransform(meshTransform);
-			//	}
-			//	else
-			//	{
-			//		//없다. 새로 만들자
-			//		apModifierParamSetGroupVertWeight newVW = new apModifierParamSetGroupVertWeight(meshTransform);
-			//		newVW._isSync = true;
-			//		_calculatedWeightedVertexList.Add(newVW);
-			//	}
-			//}
+				//	for (int iParamSet = 0; iParamSet < nParamSets; iParamSet++)
+				//	{
+				//		//이전
+				//		//bool isAdd = AddBoneToParamSet(_paramSetList[iParamSet], bone._meshGroup._rootMeshGroupTransform, bone);
+						
+				//		//변경 : ChildMeshGroup의 Root MGTF로 설정하는 코드는 잘못되었다.
+				//		curParamSet = _paramSetList[iParamSet];
+				//		bool isAdd = AddBoneToParamSet(curParamSet, meshGroupTransform, bone);
+				//		if (isAdd)
+				//		{
+				//			isAnyChanged = true;
+				//		}
+				//	}
+				//}
 
-			////동기화 되지 않은건 지운다.
-			//_calculatedWeightedVertexList.RemoveAll(delegate (apModifierParamSetGroupVertWeight a)
-			//{
-			//	return !a._isSync;
-			//});
+				//변경 v1.5.0
+				foreach (KeyValuePair<apBone, List<apModifierParamSet>> syncSet in _syncSets_Bone)
+				{
+					bone = syncSet.Key;
+					curSyncSetPS = syncSet.Value;
+
+					meshGroupTransform = null;
+					if (_parentModifier._meshGroup == bone._meshGroup)
+					{
+						meshGroupTransform = _parentModifier._meshGroup._rootMeshGroupTransform;
+					}
+					else
+					{
+						meshGroupTransform = _parentModifier._meshGroup.FindChildMeshGroupTransform(bone._meshGroup);
+					}
+
+					//이 Bone에 대한 ParamSet 개수와 PSG의 ParamSet 개수가 다른 경우 누락된게 있다.
+					//반대로 개수가 같다면 동기화를 할 필요가 없다. (불필요한 처리 방지)
+					if(curSyncSetPS.Count == nParamSets)
+					{
+						//Debug.Log("이 Bone [" + bone._name + "]에 대한 Sync가 이미 완료되어 동기화 불필요 (" + nParamSets + ")");
+						continue;
+					}
+
+					//Debug.LogError("이 Bone [" + bone._name + "]에 대한 Sync가 이미 완료되지 않아서 동기화 필요 (" + curSyncSetPS.Count + " > " + nParamSets + ")");
+
+					//이 Bone를 ModBone으로 저장하지 못한 ParamSet을 찾아서 ModBone을 생성해주자
+					for (int iParamSet = 0; iParamSet < nParamSets; iParamSet++)
+					{
+						//변경 : ChildMeshGroup의 Root MGTF로 설정하는 코드는 잘못되었다.
+						curParamSet = _paramSetList[iParamSet];
+
+						//빠른 PS 체크를 한다.
+						if(curSyncSetPS.Contains(curParamSet))
+						{
+							continue;
+						}
+
+						apModifiedBone newModBone = null;
+						bool isAdd = AddBoneToParamSet(curParamSet, meshGroupTransform, bone, out newModBone);
+						if (isAdd)
+						{
+							isAnyChanged = true;
+
+							//요청이 있다면 추가된 ModBone을 매핑 리스트에 넣어주자
+							if(createdModBones != null && newModBone != null)
+							{
+								List<apModifiedBone> modBoneList = null;
+								createdModBones.TryGetValue(curParamSet, out modBoneList);
+								if(modBoneList == null)
+								{
+									modBoneList = new List<apModifiedBone>();
+									createdModBones.Add(curParamSet, modBoneList);
+								}
+								modBoneList.Add(newModBone);
+							}
+						}
+					}
+				}
+			}
+			
+
 
 			return isAnyChanged;
 		}
@@ -771,27 +880,42 @@ namespace AnyPortrait
 		// 중요!
 		//Mesh Transform / MeshGroup Transform을 각각의 ParamSet에 넣어준다.
 		//Modifier 조건에 맞게 처리한다.
-		private bool AddMeshTransformToParamSet(apModifierParamSet paramSet, apTransform_Mesh meshTransform)
+		private bool AddMeshTransformToParamSet(apModifierParamSet paramSet, apTransform_Mesh meshTransform, out apModifiedMesh addedModMesh)
 		{
-			//if(_parentModifier.ModifiedTargetType != apModifiedMesh.TARGET_TYPE.MeshTransformOnly &&
-			//	_parentModifier.ModifiedTargetType != apModifiedMesh.TARGET_TYPE.VertexWithMeshTransform)
-			//{
-			//	//추가할 수 없다.
-			//	return false;
-			//}ㅠB
-			if (!_parentModifier.IsTarget_MeshTransform)
+			addedModMesh = null;
+
+			if (!_parentModifier.IsTarget_MeshTransform || meshTransform == null)
+			{
+				return false;
+			}
+
+			if(meshTransform._mesh == null)
 			{
 				return false;
 			}
 			
-			bool isExist = paramSet._meshData.Exists(delegate (apModifiedMesh a)
+			apMeshGroup parentMeshGroup = _parentModifier._meshGroup;
+
+			//이전 (GC 발생)
+			//bool isExist = paramSet._meshData.Exists(delegate (apModifiedMesh a)
+			//{
+			//	return a.IsContains_MeshTransform(_parentModifier._meshGroup, meshTransform, meshTransform._mesh);
+			//});
+
+			s_FindModMesh_MeshGroup = parentMeshGroup;
+			s_FindModMesh_MeshTF = meshTransform;
+			s_FindModMesh_SrcMesh = meshTransform._mesh;
+		
+			//변경 v1.5.0
+			bool isExist = false;
+			if(paramSet._meshData != null)
 			{
-				return a.IsContains_MeshTransform(_parentModifier._meshGroup, meshTransform, meshTransform._mesh);
-			});
+				isExist = paramSet._meshData.Exists(s_FindModMeshByMeshTF_Func);
+			}
 
 			if (!isExist)
-			{
-				apRenderUnit targetRenderUnit = _parentModifier._meshGroup.GetRenderUnit(meshTransform);
+			{	
+				apRenderUnit targetRenderUnit = parentMeshGroup.GetRenderUnit(meshTransform);
 				if (targetRenderUnit != null)
 				{
 					apMeshGroup parentMeshGroupOfTransform = GetParentMeshGroupOfMeshTransform(meshTransform);
@@ -803,60 +927,57 @@ namespace AnyPortrait
 
 					apModifiedMesh modMesh = new apModifiedMesh();
 
+					modMesh.Init(parentMeshGroup._uniqueID, parentMeshGroupOfTransform._uniqueID, _parentModifier.ModifiedValueType);
 
 
-
-					modMesh.Init(_parentModifier._meshGroup._uniqueID, parentMeshGroupOfTransform._uniqueID, _parentModifier.ModifiedValueType);
-
-					
 					modMesh.SetTarget_MeshTransform(meshTransform._transformUniqueID, meshTransform._mesh._uniqueID, meshTransform._meshColor2X_Default, meshTransform._isVisible_Default);
-					modMesh.Link_MeshTransform(_parentModifier._meshGroup, parentMeshGroupOfTransform, meshTransform, targetRenderUnit, _portrait);
+					modMesh.Link_MeshTransform(parentMeshGroup, parentMeshGroupOfTransform, meshTransform, targetRenderUnit, _portrait);
 
-					#region [미사용 코드] 확장성 있는 코드로 변경했다.
-					//if (_parentModifier.ModifiedTargetType == apModifiedMesh.TARGET_TYPE.VertexWithMeshTransform)
-					//{
-					//	modMesh.Init_VertexMorph(_parentModifier._meshGroup._uniqueID,
-					//		meshTransform._transformUniqueID,
-					//		meshTransform._mesh._uniqueID);
-
-					//	modMesh.Link_VertexMorph(_parentModifier._meshGroup, meshTransform, targetRenderUnit);
-					//}
-					//else if (_parentModifier.ModifiedTargetType == apModifiedMesh.TARGET_TYPE.MeshTransformOnly)
-					//{
-					//	modMesh.Init_MeshTransform(_parentModifier._meshGroup._uniqueID,
-					//		meshTransform._transformUniqueID,
-					//		meshTransform._mesh._uniqueID);
-
-					//	modMesh.Link_MeshTransform(_parentModifier._meshGroup, meshTransform, targetRenderUnit);
-					//} 
-					#endregion
-
+					if (paramSet._meshData == null)
+					{
+						paramSet._meshData = new List<apModifiedMesh>();
+					}
 					paramSet._meshData.Add(modMesh);
+
+					addedModMesh = modMesh;
 				}
 			}
 
 			return !isExist;
 		}
 
-		private bool AddMeshGroupTransformToParamSet(apModifierParamSet paramSet, apTransform_MeshGroup meshGroupTransform)
+		
+
+
+
+
+
+		private bool AddMeshGroupTransformToParamSet(apModifierParamSet paramSet, apTransform_MeshGroup meshGroupTransform, out apModifiedMesh addedModMesh)
 		{
-			//if(_parentModifier.ModifiedTargetType != apModifiedMesh.TARGET_TYPE.MeshGroupTransformOnly)
-			//{
-			//	return false;
-			//}
+			addedModMesh = null;
+
 			if (!_parentModifier.IsTarget_MeshGroupTransform)
 			{
 				return false;
 			}
 
-			bool isExist = paramSet._meshData.Exists(delegate (apModifiedMesh a)
-			{
-				return a.IsContains_MeshGroupTransform(_parentModifier._meshGroup, meshGroupTransform);
-			});
+			apMeshGroup parentMeshGroup = _parentModifier._meshGroup;
+
+			//이전
+			//bool isExist = paramSet._meshData.Exists(delegate (apModifiedMesh a)
+			//{
+			//	return a.IsContains_MeshGroupTransform(_parentModifier._meshGroup, meshGroupTransform);
+			//});
+
+			//변경 v1.5.0
+			s_FindModMesh_MeshGroup = parentMeshGroup;
+			s_FindModMesh_MeshGroupTF = meshGroupTransform;
+			bool isExist = paramSet._meshData.Exists(s_FindModMeshByMeshGroupTF_Func);
+
 
 			if (!isExist)
 			{
-				apRenderUnit targetRenderUnit = _parentModifier._meshGroup.GetRenderUnit(meshGroupTransform);
+				apRenderUnit targetRenderUnit = parentMeshGroup.GetRenderUnit(meshGroupTransform);
 				if (targetRenderUnit != null)
 				{
 					apMeshGroup parentMeshGroupOfTransform = GetParentMeshGroupOfMeshGroupTransform(meshGroupTransform);
@@ -867,33 +988,43 @@ namespace AnyPortrait
 					}
 
 					apModifiedMesh modMesh = new apModifiedMesh();
-					modMesh.Init(_parentModifier._meshGroup._uniqueID, parentMeshGroupOfTransform._uniqueID, _parentModifier.ModifiedValueType);
+					modMesh.Init(parentMeshGroup._uniqueID, parentMeshGroupOfTransform._uniqueID, _parentModifier.ModifiedValueType);
 					modMesh.SetTarget_MeshGroupTransform(meshGroupTransform._transformUniqueID, meshGroupTransform._meshColor2X_Default, meshGroupTransform._isVisible_Default);
 
-					//modMesh.Init_MeshGroupTransform(_parentModifier._meshGroup._uniqueID,
-					//		meshGroupTransform._transformUniqueID);
-
-					modMesh.Link_MeshGroupTransform(_parentModifier._meshGroup, parentMeshGroupOfTransform, meshGroupTransform, targetRenderUnit);
+					modMesh.Link_MeshGroupTransform(parentMeshGroup, parentMeshGroupOfTransform, meshGroupTransform, targetRenderUnit);
 					paramSet._meshData.Add(modMesh);
+
+					addedModMesh = modMesh;
 				}
 			}
 
 			return !isExist;
 		}
 
+		
 
 
-		private bool AddBoneToParamSet(apModifierParamSet paramSet, apTransform_MeshGroup meshGroupTransform, apBone bone)
+
+		private bool AddBoneToParamSet(apModifierParamSet paramSet, apTransform_MeshGroup meshGroupTransform, apBone bone, out apModifiedBone addedModBone)
 		{
+			addedModBone = null;
+
 			if (!_parentModifier.IsTarget_Bone)
 			{
 				return false;
 			}
 
-			bool isExist = paramSet._boneData.Exists(delegate (apModifiedBone a)
-			{
-				return a._bone == bone;
-			});
+			apMeshGroup parentMeshGroup = _parentModifier._meshGroup;
+
+			//이전
+			//bool isExist = paramSet._boneData.Exists(delegate (apModifiedBone a)
+			//{
+			//	return a._bone == bone;
+			//});
+
+			//변경 v1.5.0
+			s_FindModBone_Bone = bone;
+			bool isExist = paramSet._boneData.Exists(s_FindModBoneByBone_Func);
 
 			if (!isExist)
 			{
@@ -903,17 +1034,43 @@ namespace AnyPortrait
 					return false;
 				}
 
-				apRenderUnit targetRenderUnit = _parentModifier._meshGroup.GetRenderUnit(meshGroupTransform);
+				apRenderUnit targetRenderUnit = parentMeshGroup.GetRenderUnit(meshGroupTransform);
 
 				apModifiedBone modBone = new apModifiedBone();
-				modBone.Init(_parentModifier._meshGroup._uniqueID, parentMeshGroupOfBone._uniqueID, meshGroupTransform._transformUniqueID, bone);
-				modBone.Link(_parentModifier._meshGroup, parentMeshGroupOfBone, bone, targetRenderUnit, meshGroupTransform);
+				modBone.Init(parentMeshGroup._uniqueID, parentMeshGroupOfBone._uniqueID, meshGroupTransform._transformUniqueID, bone);
+				modBone.Link(parentMeshGroup, parentMeshGroupOfBone, bone, targetRenderUnit, meshGroupTransform);
 
 
 				paramSet._boneData.Add(modBone);
+
+				addedModBone = modBone;
 			}
 
 			return !isExist;
+		}
+
+
+		private static apMeshGroup s_FindModMesh_MeshGroup = null;
+		private static apTransform_Mesh s_FindModMesh_MeshTF = null;
+		private static apMesh s_FindModMesh_SrcMesh = null;
+		private static Predicate<apModifiedMesh> s_FindModMeshByMeshTF_Func = FUNC_FindModMeshByMeshTF;
+		private static bool FUNC_FindModMeshByMeshTF(apModifiedMesh a)
+		{
+			return a.IsContains_MeshTransform(s_FindModMesh_MeshGroup, s_FindModMesh_MeshTF, s_FindModMesh_SrcMesh);
+		}
+
+		private static apTransform_MeshGroup s_FindModMesh_MeshGroupTF = null;
+		private static Predicate<apModifiedMesh> s_FindModMeshByMeshGroupTF_Func = FUNC_FindModMeshByMeshGroupTF;
+		private static bool FUNC_FindModMeshByMeshGroupTF(apModifiedMesh a)
+		{
+			return a.IsContains_MeshGroupTransform(s_FindModMesh_MeshGroup, s_FindModMesh_MeshGroupTF);
+		}
+
+		private static apBone s_FindModBone_Bone = null;
+		private static Predicate<apModifiedBone> s_FindModBoneByBone_Func = FUNC_FindModBoneByBone;
+		private static bool FUNC_FindModBoneByBone(apModifiedBone a)
+		{
+			return a._bone == s_FindModBone_Bone;
 		}
 
 		/// <summary>
@@ -923,12 +1080,25 @@ namespace AnyPortrait
 		/// <returns></returns>
 		private apMeshGroup GetParentMeshGroupOfMeshTransform(apTransform_Mesh meshTransform)
 		{
-			for (int i = 0; i < _portrait._meshGroups.Count; i++)
+			int nMeshGroups = _portrait._meshGroups != null ? _portrait._meshGroups.Count : 0;
+			if(nMeshGroups == 0)
 			{
-				if (_portrait._meshGroups[i]._childMeshTransforms.Contains(meshTransform))
+				return null;
+			}
+
+			apMeshGroup curMeshGroup = null;
+			for (int i = 0; i < nMeshGroups; i++)
+			{
+				curMeshGroup = _portrait._meshGroups[i];
+				int nMeshTFs = curMeshGroup._childMeshTransforms != null ? curMeshGroup._childMeshTransforms.Count : 0;
+				if(nMeshTFs == 0)
+				{
+					continue;
+				}
+				if (curMeshGroup._childMeshTransforms.Contains(meshTransform))
 				{
 					//찾았다!
-					return _portrait._meshGroups[i];
+					return curMeshGroup;
 				}
 			}
 			return null;
@@ -942,12 +1112,27 @@ namespace AnyPortrait
 		/// <returns></returns>
 		private apMeshGroup GetParentMeshGroupOfMeshGroupTransform(apTransform_MeshGroup meshGroupTransform)
 		{
-			for (int i = 0; i < _portrait._meshGroups.Count; i++)
+			int nMeshGroups = _portrait._meshGroups != null ? _portrait._meshGroups.Count : 0;
+			if(nMeshGroups == 0)
 			{
-				if (_portrait._meshGroups[i]._childMeshGroupTransforms.Contains(meshGroupTransform))
+				return null;
+			}
+
+			apMeshGroup curMeshGroup = null;
+
+			for (int i = 0; i < nMeshGroups; i++)
+			{
+				curMeshGroup = _portrait._meshGroups[i];
+				int nMeshGroupTFs = curMeshGroup._childMeshGroupTransforms != null ? curMeshGroup._childMeshGroupTransforms.Count : 0;
+				if(nMeshGroupTFs == 0)
+				{
+					continue;
+				}
+
+				if (curMeshGroup._childMeshGroupTransforms.Contains(meshGroupTransform))
 				{
 					//찾았다!
-					return _portrait._meshGroups[i];
+					return curMeshGroup;
 				}
 			}
 			return null;
@@ -955,30 +1140,46 @@ namespace AnyPortrait
 
 		private apMeshGroup GetParentMeshGroupOfBone(apBone bone)
 		{
-			for (int i = 0; i < _portrait._meshGroups.Count; i++)
+			int nMeshGroups = _portrait._meshGroups != null ? _portrait._meshGroups.Count : 0;
+			if(nMeshGroups == 0)
 			{
-				if (_portrait._meshGroups[i]._boneList_All.Contains(bone))
+				return null;
+			}
+
+			apMeshGroup curMeshGroup = null;
+
+			for (int i = 0; i < nMeshGroups; i++)
+			{
+				curMeshGroup = _portrait._meshGroups[i];
+				int nBones = curMeshGroup._boneList_All != null ? curMeshGroup._boneList_All.Count : 0;
+				if(nBones == 0)
+				{
+					continue;
+				}
+
+				if (curMeshGroup._boneList_All.Contains(bone))
 				{
 					//찾았다!
-					return _portrait._meshGroups[i];
+					return curMeshGroup;
 				}
 			}
 			return null;
 		}
 
-		public bool IsSubMeshInGroup(apTransform_Mesh subMeshTransform)
-		{
-			if (subMeshTransform == null)
-			{ return false; }
-			return _syncTransform_Mesh.Contains(subMeshTransform);
-		}
+		//삭제 v1.5.0
+		//public bool IsSubMeshInGroup(apTransform_Mesh subMeshTransform)
+		//{
+		//	if (subMeshTransform == null)
+		//	{ return false; }
+		//	return _syncTransform_Mesh.Contains(subMeshTransform);
+		//}
 
-		public bool IsSubMeshGroupInGroup(apTransform_MeshGroup subMeshGroupTransform)
-		{
-			if (subMeshGroupTransform == null)
-			{ return false; }
-			return _syncTransform_MeshGroup.Contains(subMeshGroupTransform);
-		}
+		//public bool IsSubMeshGroupInGroup(apTransform_MeshGroup subMeshGroupTransform)
+		//{
+		//	if (subMeshGroupTransform == null)
+		//	{ return false; }
+		//	return _syncTransform_MeshGroup.Contains(subMeshGroupTransform);
+		//}
 
 
 		// 추가

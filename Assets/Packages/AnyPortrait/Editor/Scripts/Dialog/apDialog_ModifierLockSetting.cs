@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -197,7 +197,7 @@ namespace AnyPortrait
 				//값 저장
 				_editor.SaveEditorPref();
 				isChanged = true;
-				apEditorUtil.SetEditorDirty();
+				//apEditorUtil.SetEditorDirty();
 			}
 
 
@@ -246,7 +246,7 @@ namespace AnyPortrait
 				}
 
 				isChanged = true;
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 
@@ -286,7 +286,7 @@ namespace AnyPortrait
 				}
 
 				isChanged = true;
-				apEditorUtil.SetEditorDirty();
+				apEditorUtil.SetDirty(_editor);
 			}
 
 

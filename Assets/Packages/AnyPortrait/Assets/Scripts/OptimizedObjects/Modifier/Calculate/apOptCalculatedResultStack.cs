@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -102,6 +102,15 @@ namespace AnyPortrait
 		private bool _isAnyRigging = false;
 		private bool _isAnyBoneTransform = false;
 		private bool _isAnyExtra = false;//추가 12.5 : ExtraOption 결과
+
+		//[v1.5.0] Result Param 개수
+		private int _nResultParams_VertLocal = 0;
+		private int _nResultParams_Transform = 0;
+		private int _nResultParams_MeshColor = 0;
+		private int _nResultParams_VertWorld = 0;
+		private int _nResultParams_Rigging = 0;
+		private int _nResultParams_Extra = 0;
+		private int _nResultParams_BoneTransform = 0;
 
 
 		//추가 19.5.25 : ModMeshSet을 사용하면서 추가된 변수들
@@ -397,6 +406,15 @@ namespace AnyPortrait
 		// Functions
 		//--------------------------------------------
 
+// //[v1.5.0] Result Param 개수
+// 			_nResultParams_VertLocal = 0;
+// 			_nResultParams_Transform = 0;
+// 			_nResultParams_MeshColor = 0;
+// 			_nResultParams_VertWorld = 0;
+// 			_nResultParams_Rigging = 0;
+// 			_nResultParams_Extra = 0;
+// 			_nResultParams_BoneTransform = 0;
+
 		// Add / Remove / Sort
 		//----------------------------------------------------------------------
 		public void AddCalculatedResultParam(apOptCalculatedResultParam resultParam)
@@ -410,6 +428,7 @@ namespace AnyPortrait
 						_resultParams_VertLocal.Add(resultParam);
 					}
 					_isAnyVertLocal = true;
+					_nResultParams_VertLocal = _resultParams_VertLocal.Count;//v1.5.0
 				}
 				else if (resultParam._calculatedSpace == apCalculatedResultParam.CALCULATED_SPACE.World)
 				{
@@ -418,6 +437,7 @@ namespace AnyPortrait
 						_resultParams_VertWorld.Add(resultParam);
 					}
 					_isAnyVertWorld = true;
+					_nResultParams_VertWorld = _resultParams_VertWorld.Count;//v1.5.0
 				}
 				else if (resultParam._calculatedSpace == apCalculatedResultParam.CALCULATED_SPACE.Rigging)//<<추가
 				{
@@ -426,6 +446,7 @@ namespace AnyPortrait
 						_resultParams_Rigging.Add(resultParam);
 					}
 					_isAnyRigging = true;
+					_nResultParams_Rigging = _resultParams_Rigging.Count;
 				}
 			}
 			if ((int)(resultParam._calculatedValueType & apCalculatedResultParam.CALCULATED_VALUE_TYPE.TransformMatrix) != 0)
@@ -433,13 +454,19 @@ namespace AnyPortrait
 				//변경 : Bone타입과 일반 Transform타입으로 나뉜다.
 				if (resultParam._targetBone != null)
 				{
-
 					//Bone 타입이다.
 					//Modifier + ResultParam Pair로 저장해야한다.
-					OptBoneAndModParamPair modParamPair = _resultParams_BoneTransform.Find(delegate (OptBoneAndModParamPair a)
-					{
-						return a._keyBone == resultParam._targetBone;
-					});
+
+					//이전 (GC 발생)
+					//OptBoneAndModParamPair modParamPair = _resultParams_BoneTransform.Find(delegate (OptBoneAndModParamPair a)
+					//{
+					//	return a._keyBone == resultParam._targetBone;
+					//});
+
+					//변경 v1.5.0
+					s_FindBoneModParamPair_Bone = resultParam._targetBone;
+					OptBoneAndModParamPair modParamPair = _resultParams_BoneTransform.Find(s_FindBoneModParamPair_Func);
+
 					if (modParamPair == null)
 					{
 						modParamPair = new OptBoneAndModParamPair(resultParam._targetBone);
@@ -448,13 +475,7 @@ namespace AnyPortrait
 
 					modParamPair.AddCalculatedResultParam(resultParam);
 					_isAnyBoneTransform = true;
-
-					//이전 코드
-					//if(!_resultParams_BoneTransform.Contains(resultParam))
-					//{
-					//	_resultParams_BoneTransform.Add(resultParam);
-					//	_isAnyBoneTransform = true;
-					//}
+					_nResultParams_BoneTransform = _resultParams_BoneTransform.Count;//v1.5.0
 				}
 				else
 				{
@@ -462,8 +483,9 @@ namespace AnyPortrait
 					if (!_resultParams_Transform.Contains(resultParam))
 					{
 						_resultParams_Transform.Add(resultParam);
-						_isAnyTransformation = true;
 					}
+					_isAnyTransformation = true;
+					_nResultParams_Transform = _resultParams_Transform.Count;//v1.5.0
 				}
 			}
 			if ((int)(resultParam._calculatedValueType & apCalculatedResultParam.CALCULATED_VALUE_TYPE.Color) != 0)
@@ -471,8 +493,9 @@ namespace AnyPortrait
 				if (!_resultParams_MeshColor.Contains(resultParam))
 				{
 					_resultParams_MeshColor.Add(resultParam);
-					_isAnyMeshColor = true;
 				}
+				_isAnyMeshColor = true;
+				_nResultParams_MeshColor = _resultParams_MeshColor.Count;//v1.5.0
 			}
 
 			//추가 11.29 : ExtraOption
@@ -489,55 +512,68 @@ namespace AnyPortrait
 					bool isExtraEnabledParam = false;
 					apOptCalculatedResultParam.OptParamKeyValueSet curParamKeyValue = null;
 
-					for (int i = 0; i < resultParam._paramKeyValues.Count; i++)
+					int nPKVs = resultParam._paramKeyValues != null ? resultParam._paramKeyValues.Count : 0;
+					if(nPKVs > 0)
 					{
-						curParamKeyValue = resultParam._paramKeyValues[i];
-
-						if (curParamKeyValue._modifiedMesh == null
-							&& curParamKeyValue._modifiedMeshSet == null//<<19.5.24 추가
-							)
+						for (int i = 0; i < nPKVs; i++)
 						{
-							continue;
-						}
+							curParamKeyValue = resultParam._paramKeyValues[i];
 
-
-						if (curParamKeyValue._modifiedMesh != null)
-						{
-							if (curParamKeyValue._modifiedMesh._isExtraValueEnabled
-								&&
-								(curParamKeyValue._modifiedMesh._extraValue._isDepthChanged || curParamKeyValue._modifiedMesh._extraValue._isTextureChanged))
-							{
-								//하나라도 Extra Option이 켜진 ParamKeyValueSet이 있다면
-								//이 ResultParam은 ExtraOption 계산에 참조되어야 한다.
-								isExtraEnabledParam = true;
-								break;
-							}
-						}
-						else if (curParamKeyValue._modifiedMeshSet != null)
-						{
-							//추가 19.5.24 ; ModMeshSet을 사용하여 검사하는 경우
-							apOptModifiedMesh_Extra subModMesh_Extra = curParamKeyValue._modifiedMeshSet.SubModMesh_Extra;
-							if (subModMesh_Extra != null &&
-								(subModMesh_Extra._extraValue._isDepthChanged || subModMesh_Extra._extraValue._isTextureChanged)
+							if (curParamKeyValue._modifiedMesh == null
+								&& curParamKeyValue._modifiedMeshSet == null//<<19.5.24 추가
 								)
 							{
-								//하나라도 Extra Option이 켜진 ParamKeyValueSet이 있다면
-								//이 ResultParam은 ExtraOption 계산에 참조되어야 한다.
-								isExtraEnabledParam = true;
-								break;
+								continue;
+							}
+
+
+							if (curParamKeyValue._modifiedMesh != null)
+							{
+								if (curParamKeyValue._modifiedMesh._isExtraValueEnabled
+									&&
+									(curParamKeyValue._modifiedMesh._extraValue._isDepthChanged || curParamKeyValue._modifiedMesh._extraValue._isTextureChanged))
+								{
+									//하나라도 Extra Option이 켜진 ParamKeyValueSet이 있다면
+									//이 ResultParam은 ExtraOption 계산에 참조되어야 한다.
+									isExtraEnabledParam = true;
+									break;
+								}
+							}
+							else if (curParamKeyValue._modifiedMeshSet != null)
+							{
+								//추가 19.5.24 ; ModMeshSet을 사용하여 검사하는 경우
+								apOptModifiedMesh_Extra subModMesh_Extra = curParamKeyValue._modifiedMeshSet.SubModMesh_Extra;
+								if (subModMesh_Extra != null &&
+									(subModMesh_Extra._extraValue._isDepthChanged || subModMesh_Extra._extraValue._isTextureChanged)
+									)
+								{
+									//하나라도 Extra Option이 켜진 ParamKeyValueSet이 있다면
+									//이 ResultParam은 ExtraOption 계산에 참조되어야 한다.
+									isExtraEnabledParam = true;
+									break;
+								}
 							}
 						}
 					}
+					
 					if (isExtraEnabledParam)
 					{
 						if (!_resultParams_Extra.Contains(resultParam))
 						{
 							_resultParams_Extra.Add(resultParam);
-							_isAnyExtra = true;
 						}
+						_isAnyExtra = true;
+						_nResultParams_Extra = _resultParams_Extra.Count;
 					}
 				}
 			}
+		}
+
+		private static apOptBone s_FindBoneModParamPair_Bone = null;
+		private static Predicate<OptBoneAndModParamPair> s_FindBoneModParamPair_Func = FUNC_FindBoneModParamPair;
+		private static bool FUNC_FindBoneModParamPair(OptBoneAndModParamPair a)
+		{
+			return a._keyBone == s_FindBoneModParamPair_Bone;
 		}
 
 
@@ -569,6 +605,15 @@ namespace AnyPortrait
 			_isAnyRigging = false;
 			_isAnyBoneTransform = false;
 			_isAnyExtra = false;
+
+			//[v1.5.0] Result Param 개수
+			_nResultParams_VertLocal = 0;
+			_nResultParams_Transform = 0;
+			_nResultParams_MeshColor = 0;
+			_nResultParams_VertWorld = 0;
+			_nResultParams_Rigging = 0;
+			_nResultParams_Extra = 0;
+			_nResultParams_BoneTransform = 0;
 
 			_riggingLUT = null;
 			_vertLUTTables = null;
@@ -633,9 +678,12 @@ namespace AnyPortrait
 						}
 						if (isExtraEnabledParam)
 						{
-							_resultParams_Extra.Add(resultParam);
+							_resultParams_Extra.Add(resultParam);//중복 여부는 위에서 검사했다.
 							_isAnyExtra = true;
+							_nResultParams_Extra = _resultParams_Extra.Count;
 						}
+						
+
 					}
 				}
 			}
@@ -654,67 +702,86 @@ namespace AnyPortrait
 
 			//같은 RenderUnit에 대해서는
 			//오름차순 정렬 (레이어 값이 낮은 것 부터 처리할 수 있도록)
-			_resultParams_Rigging.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+			if(_isAnyRigging)
 			{
-				if (a._targetOptTransform == b._targetOptTransform)
-				{ return a.ModifierLayer - b.ModifierLayer; }
-				else
-				{ return a._targetOptTransform._level - b._targetOptTransform._level; }
-			});
+				_resultParams_Rigging.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+				{
+					if (a._targetOptTransform == b._targetOptTransform)
+					{ return a.ModifierLayer - b.ModifierLayer; }
+					else
+					{ return a._targetOptTransform._level - b._targetOptTransform._level; }
+				});
+			}
+			
 
-			_resultParams_VertLocal.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+			if(_isAnyVertLocal)
 			{
-				if (a._targetOptTransform == b._targetOptTransform)
-				{ return a.ModifierLayer - b.ModifierLayer; }
-				else
-				{ return a._targetOptTransform._level - b._targetOptTransform._level; }
-			});
-
-			_resultParams_Transform.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+				_resultParams_VertLocal.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+				{
+					if (a._targetOptTransform == b._targetOptTransform)
+					{ return a.ModifierLayer - b.ModifierLayer; }
+					else
+					{ return a._targetOptTransform._level - b._targetOptTransform._level; }
+				});
+			}
+			
+			if(_isAnyTransformation)
 			{
-				if (a._targetOptTransform == b._targetOptTransform)
-				{ return a.ModifierLayer - b.ModifierLayer; }
-				else
-				{ return a._targetOptTransform._level - b._targetOptTransform._level; }
-			});
-
-			_resultParams_MeshColor.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+				_resultParams_Transform.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+				{
+					if (a._targetOptTransform == b._targetOptTransform)
+					{ return a.ModifierLayer - b.ModifierLayer; }
+					else
+					{ return a._targetOptTransform._level - b._targetOptTransform._level; }
+				});
+			}
+			
+			if(_isAnyMeshColor)
 			{
-				if (a._targetOptTransform == b._targetOptTransform)
-				{ return a.ModifierLayer - b.ModifierLayer; }
-				else
-				{ return a._targetOptTransform._level - b._targetOptTransform._level; }
-			});
+				_resultParams_MeshColor.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+				{
+					if (a._targetOptTransform == b._targetOptTransform)
+					{ return a.ModifierLayer - b.ModifierLayer; }
+					else
+					{ return a._targetOptTransform._level - b._targetOptTransform._level; }
+				});
+			}
 
-			_resultParams_VertWorld.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+			if(_isAnyVertWorld)
 			{
-				if (a._targetOptTransform == b._targetOptTransform)
-				{ return a.ModifierLayer - b.ModifierLayer; }
-				else
-				{ return a._targetOptTransform._level - b._targetOptTransform._level; }
-			});
+				_resultParams_VertWorld.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+				{
+					if (a._targetOptTransform == b._targetOptTransform)
+					{ return a.ModifierLayer - b.ModifierLayer; }
+					else
+					{ return a._targetOptTransform._level - b._targetOptTransform._level; }
+				});
+			}
 
-
-			for (int i = 0; i < _resultParams_BoneTransform.Count; i++)
+			if(_isAnyBoneTransform)
 			{
-				_resultParams_BoneTransform[i].Sort();
+				for (int i = 0; i < _nResultParams_BoneTransform; i++)
+				{
+					_resultParams_BoneTransform[i].Sort();
+				}
 			}
 
 			//추가 12.5 : Extra
-			_resultParams_Extra.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+			if(_isAnyExtra)
 			{
-				if (a._targetOptTransform == b._targetOptTransform)
-				{ return a.ModifierLayer - b.ModifierLayer; }
-				else
-				{ return a._targetOptTransform._level - b._targetOptTransform._level; }
-			});
+				_resultParams_Extra.Sort(delegate (apOptCalculatedResultParam a, apOptCalculatedResultParam b)
+				{
+					if (a._targetOptTransform == b._targetOptTransform)
+					{ return a.ModifierLayer - b.ModifierLayer; }
+					else
+					{ return a._targetOptTransform._level - b._targetOptTransform._level; }
+				});
+			}
 
-
-
-			//추가 20.11.26 리깅에 대한 LUT 및 CalParam과의 연결
-			//리깅 속도를 올리자!
-			if(_resultParams_Rigging != null && _resultParams_Rigging.Count > 0)
+			if(_isAnyRigging && _nResultParams_Rigging > 0)
 			{
+				//추가 20.11.26 리깅에 대한 LUT 및 CalParam과의 연결
+				//리깅 속도를 올리자!
 				_riggingLUT = new apOptCalculatedRigPairLUT(_parentOptTransform);
 				_riggingLUT.MakeLUTAndLink(this, _resultParams_Rigging);
 
@@ -730,13 +797,14 @@ namespace AnyPortrait
 					List<float> weights = new List<float>();
 
 					//GetDeferredRiggingMatrix_WithLUT 함수에서 내용을 조금 바꾸었다.
-					for (int iParam = 0; iParam < _resultParams_Rigging.Count; iParam++)
+					for (int iParam = 0; iParam < _nResultParams_Rigging; iParam++)
 					{
 						_cal_resultParam = _resultParams_Rigging[iParam];
-						for (int iVR = 0; iVR < _cal_resultParam._result_VertLocalPairs.Count; iVR++)
+						int nVertLocalPair = _cal_resultParam._result_VertLocalPairs != null ? _cal_resultParam._result_VertLocalPairs.Count : 0;
+
+						for (int iVR = 0; iVR < nVertLocalPair; iVR++)
 						{
 							_cal_vertRequest = _cal_resultParam._result_VertLocalPairs[iVR];
-							
 
 							_tmpVertRigWeightTable = _cal_vertRequest._rigBoneWeightTables[iVert];
 							if (_tmpVertRigWeightTable._nRigTable == 0)
@@ -896,13 +964,6 @@ namespace AnyPortrait
 					_result_VertLocal = new Vector2[_nRenderVerts];
 				}
 
-				//이전
-				//for (int i = 0; i < nRenderVerts; i++)
-				//{
-				//	_result_VertLocal[i] = Vector2.zero;
-				//}
-
-				//변경 21.5.22
 				Array.Clear(_result_VertLocal, 0, _nRenderVerts);
 			}
 
@@ -914,12 +975,6 @@ namespace AnyPortrait
 					_result_VertWorld = new Vector2[_nRenderVerts];
 				}
 
-				//이전
-				//for (int i = 0; i < nRenderVerts; i++)
-				//{
-				//	_result_VertWorld[i] = Vector2.zero;
-				//}
-				//변경 21.5.22
 				Array.Clear(_result_VertWorld, 0, _nRenderVerts);
 			}
 
@@ -941,67 +996,9 @@ namespace AnyPortrait
 					SetRiggingWeightToCache();//캐시를 지금 구하자
 				}
 
-				//이 부분도 ArrayCopy를 이용하면 되지 않을까
-				//이전
-				//for (int i = 0; i < _nRenderVerts; i++)
-				//{
-				//	_result_RiggingMatrices[i].SetIdentity();
-				//}
-				//변경 21.5.22 : Array.Copy를 이용한 초기화
 				Array.Copy(_result_RiggingMatrices_Init, _result_RiggingMatrices, _nRenderVerts);
-				
-
 				_result_RiggingWeight = 0.0f;
 			}
-
-
-
-			#region [미사용 코드 : 모디파이어에 따라 다 분리시켰다]
-			//if (_isAnyVertLocal || _isAnyVertWorld || _isAnyRigging)
-			//{
-
-			//	if (_result_VertLocal == null || _result_VertLocal.Length != _targetOptMesh.RenderVertices.Length)
-			//	{
-			//		//RenderUnit의 RenderVertex 개수 만큼 결과를 만들자
-			//		_result_VertLocal = new Vector2[_targetOptMesh.RenderVertices.Length];
-			//		_result_VertWorld = new Vector2[_targetOptMesh.RenderVertices.Length];
-			//		//_result_Rigging = new Vector2[_targetOptMesh.RenderVertices.Length];
-			//		_result_RiggingMatrices = new apMatrix3x3[_targetOptMesh.RenderVertices.Length];
-			//		_result_RiggingWeight = 0.0f;
-
-
-			//		for (int i = 0; i < nRenderVerts; i++)
-			//		{
-			//			_result_VertLocal[i] = Vector2.zero;
-			//			_result_VertWorld[i] = Vector2.zero;
-			//			//_result_Rigging[i] = Vector2.zero;
-			//			_result_RiggingMatrices[i].SetIdentity();
-			//		}
-			//	}
-			//	else
-			//	{
-			//		_result_RiggingWeight = 0.0f;
-
-			//		for (int i = 0; i < _result_VertLocal.Length; i++)
-			//		{
-			//			_result_VertLocal[i] = Vector2.zero;
-			//			_result_VertWorld[i] = Vector2.zero;
-			//			//_result_Rigging[i] = Vector2.zero;
-			//			_result_RiggingMatrices[i].SetIdentity();
-			//		}
-			//	}
-			//}
-
-			//_result_BoneTransform.SetIdentity();
-			//_result_MeshTransform.SetIdentity();
-			//_result_MeshTransform.MakeMatrix();
-			////_result_Color = _color_Default;
-			//_result_Color = _parentOptTransform._meshColor2X_Default;
-			//if (!_parentOptTransform._isVisible_Default)
-			//{
-			//	_result_Color.a = 0.0f;
-			//} 
-			#endregion
 
 			_result_MeshTransform.SetIdentity();
 			_result_MeshTransform.MakeMatrix();
@@ -1014,9 +1011,7 @@ namespace AnyPortrait
 
 			_result_IsVisible = true;
 			_result_CalculatedColor = false;
-			//_result_BoneIKWeight = 0.0f;
-			//_result_CalculatedBoneIK = false;
-
+			
 			//추가 12.5 : Extra Option
 			_result_IsExtraDepthChanged = false;
 			_result_IsExtraTextureChanged = false;
@@ -1029,7 +1024,6 @@ namespace AnyPortrait
 		private float _cal_curWeight = 0.0f;
 		private apOptCalculatedResultParam _cal_resultParam = null;
 		private Vector2[] _cal_posVerts = null;
-		//private apMatrix3x3[] _cal_vertMatrices = null;
 		private List<apOptVertexRequest> _cal_vertRequestList = null;
 		private apOptVertexRequest _cal_vertRequest = null;
 		private apOptVertexRequest.ModWeightPair _cal_vertRequestModWeightPair = null;
@@ -1047,15 +1041,9 @@ namespace AnyPortrait
 			_cal_resultParam = null;
 			_cal_posVerts = null;
 
-
-			//Debug.Log("Is Any Vert Local : " + _isAnyVertLocal + " [" + _resultParams_VertLocal.Count +"]");
 			// 1. Local Morph
 			if (_isAnyVertLocal)
 			{
-
-				//#if UNITY_EDITOR
-				//				Profiler.BeginSample("Calcuate Result Stack - 1. Vert Local");
-				//#endif
 				_cal_prevWeight = 0.0f;
 				_cal_curWeight = 0.0f;
 				_cal_resultParam = null;
@@ -1065,58 +1053,9 @@ namespace AnyPortrait
 
 				_iCalculatedParam = 0;//<<추가 : 첫 모디파이어는 무조건 Interpolation으로 만들자
 
-
-				#region [미사용 코드 : 최적화 전]
-				//이전 코드
-				//for (int iParam = 0; iParam < _resultParams_VertLocal.Count; iParam++)
-				//{
-				//	_cal_resultParam = _resultParams_VertLocal[iParam];
-				//	_cal_curWeight = _cal_resultParam.ModifierWeight;
-
-				//	if (!_cal_resultParam.IsModifierAvailable || _cal_curWeight <= 0.001f)
-				//	{ continue; }
-
-
-				//	_cal_posVerts = _cal_resultParam._result_Positions;
-				//	if (_result_VertLocal == null)
-				//	{
-				//		Debug.LogError("Result Vert Local is Null");
-				//	}
-				//	if (_cal_posVerts == null)
-				//	{
-				//		Debug.LogError("Cal Pos Vert is Null");
-				//	}
-				//	if (_cal_posVerts.Length != _result_VertLocal.Length)
-				//	{
-				//		//결과가 잘못 들어왔다 갱신 필요
-				//		Debug.LogError("Wrong Vert Local Result (Cal : " + _cal_posVerts.Length + " / Verts : " + _result_VertLocal.Length + ")");
-				//		continue;
-				//	}
-
-				//	// Blend 방식에 맞게 Pos를 만들자
-				//	if (_cal_resultParam.ModifierBlendMethod == apModifierBase.BLEND_METHOD.Interpolation || _iCalculatedParam == 0)
-				//	{
-				//		for (int i = 0; i < _cal_posVerts.Length; i++)
-				//		{
-				//			_result_VertLocal[i] = BlendPosition_ITP(_result_VertLocal[i], _cal_posVerts[i], _cal_curWeight);
-				//		}
-
-				//		_cal_prevWeight += _cal_curWeight;
-				//	}
-				//	else
-				//	{
-				//		for (int i = 0; i < _cal_posVerts.Length; i++)
-				//		{
-				//			_result_VertLocal[i] = BlendPosition_Add(_result_VertLocal[i], _cal_posVerts[i], _cal_curWeight);
-				//		}
-				//	}
-				//	_iCalculatedParam++;
-				//} 
-				#endregion
-
 				//최적화된 코드.
 				//Vertex Pos를 건드리지 않고 보간식을 중첩한다.
-				for (int iParam = 0; iParam < _resultParams_VertLocal.Count; iParam++)
+				for (int iParam = 0; iParam < _nResultParams_VertLocal; iParam++)
 				{
 					_cal_resultParam = _resultParams_VertLocal[iParam];
 					_cal_resultParam._resultWeight = 0.0f;
@@ -1126,7 +1065,6 @@ namespace AnyPortrait
 					{ continue; }
 
 					_cal_resultParam._resultWeight = 1.0f;//<<일단 Weight를 1로 두고 계산 시작
-
 
 					// Blend 방식에 맞게 Pos를 만들자
 					if (_cal_resultParam.ModifierBlendMethod == apModifierBase.BLEND_METHOD.Interpolation || _iCalculatedParam == 0)
@@ -1147,43 +1085,36 @@ namespace AnyPortrait
 				}
 
 				//이제 계산된 Weight를 모두 입력해주자
-				for (int iParam = 0; iParam < _resultParams_VertLocal.Count; iParam++)
+				int nVertLocalPairs = 0;
+				for (int iParam = 0; iParam < _nResultParams_VertLocal; iParam++)
 				{
 					_cal_resultParam = _resultParams_VertLocal[iParam];
 					_cal_vertRequestList = _cal_resultParam._result_VertLocalPairs;
-					for (int iVR = 0; iVR < _cal_vertRequestList.Count; iVR++)
+					nVertLocalPairs = _cal_vertRequestList.Count;
+
+					for (int iVR = 0; iVR < nVertLocalPairs; iVR++)
 					{
 						_cal_vertRequestList[iVR].MultiplyWeight(_cal_resultParam._resultWeight);
 					}
 				}
-
-				//#if UNITY_EDITOR
-				//				Profiler.EndSample();
-				//#endif
 			}
 
 			// 2. Mesh / MeshGroup Transformation
 			if (_isAnyTransformation)
 			{
-				//#if UNITY_EDITOR
-				//				Profiler.BeginSample("Calcuate Result Stack - 2. MeshGroup Transformation");
-				//#endif
 				_cal_prevWeight = 0.0f;
 				_cal_curWeight = 0.0f;
 				_cal_resultParam = null;
 
 				_iCalculatedParam = 0;
 
-				//Debug.Log("Update TF - OPT");
-				for (int iParam = 0; iParam < _resultParams_Transform.Count; iParam++)
+				for (int iParam = 0; iParam < _nResultParams_Transform; iParam++)
 				{
 					_cal_resultParam = _resultParams_Transform[iParam];
 					_cal_curWeight = _cal_resultParam.ModifierWeight;
 
 					if (!_cal_resultParam.IsModifierAvailable || _cal_curWeight <= 0.001f)
 					{ continue; }
-
-
 
 					// Blend 방식에 맞게 Matrix를 만들자 하자
 					if (_cal_resultParam.ModifierBlendMethod == apModifierBase.BLEND_METHOD.Interpolation || _iCalculatedParam == 0)
@@ -1203,19 +1134,11 @@ namespace AnyPortrait
 				}
 
 				_result_MeshTransform.MakeMatrix();
-
-
-				//#if UNITY_EDITOR
-				//				Profiler.EndSample();
-				//#endif
 			}
 
 			// 3. Mesh Color
 			if (_isAnyMeshColor)
 			{
-				//#if UNITY_EDITOR
-				//				Profiler.BeginSample("Calcuate Result Stack - 3. Mesh Color");
-				//#endif
 				_cal_prevWeight = 0.0f;
 				_cal_curWeight = 0.0f;
 				_cal_resultParam = null;
@@ -1226,7 +1149,7 @@ namespace AnyPortrait
 				_nMeshColorCalculated = 0;
 				_result_CalculatedColor = false;
 
-				for (int iParam = 0; iParam < _resultParams_MeshColor.Count; iParam++)
+				for (int iParam = 0; iParam < _nResultParams_MeshColor; iParam++)
 				{
 					_cal_resultParam = _resultParams_MeshColor[iParam];
 					_cal_curWeight = Mathf.Clamp01(_cal_resultParam.ModifierWeight);
@@ -1240,12 +1163,9 @@ namespace AnyPortrait
 						continue;
 					}
 
-					
-
 					// Blend 방식에 맞게 Matrix를 만들자 하자
 					if (_cal_resultParam.ModifierBlendMethod == apModifierBase.BLEND_METHOD.Interpolation || _iCalculatedParam == 0)
 					{
-						//_result_Color = BlendColor_ITP(_result_Color, _cal_resultParam._result_Color, _cal_prevWeight, _cal_curWeight);
 						_result_Color = apUtil.BlendColor_ITP(_result_Color, _cal_resultParam._result_Color, _cal_curWeight);
 						_cal_prevWeight += _cal_curWeight;
 					}
@@ -1266,12 +1186,6 @@ namespace AnyPortrait
 				{
 					_result_IsVisible = true;
 				}
-
-				//Debug.Log("Calculate : Color (" + _nMeshColorCalculated + ") : " + _result_Color + " / visible : " + _result_IsVisible);
-
-				//#if UNITY_EDITOR
-				//				Profiler.EndSample();
-				//#endif
 			}
 			else
 			{
@@ -1281,20 +1195,19 @@ namespace AnyPortrait
 			//AnyBoneTransform
 			if (_isAnyBoneTransform)
 			{
-				//#if UNITY_EDITOR
-				//				Profiler.BeginSample("Calcuate Result Stack - 5. Bone Transform");
-				//#endif
 				_cal_prevWeight = 0.0f;
 				_cal_curWeight = 0.0f;
 				_cal_resultParam = null;
 
-
 				OptBoneAndModParamPair boneModPair = null;
 				apOptBone targetBone = null;
 				List<OptModifierAndResultParamListPair> modParamPairs = null;
+				int nModBonePairs = 0;
+				OptModifierAndResultParamListPair modParamPair = null;
+				int nModParams = 0;
 
 
-				for (int iBonePair = 0; iBonePair < _resultParams_BoneTransform.Count; iBonePair++)
+				for (int iBonePair = 0; iBonePair < _nResultParams_BoneTransform; iBonePair++)
 				{
 					boneModPair = _resultParams_BoneTransform[iBonePair];
 					targetBone = boneModPair._keyBone;
@@ -1305,17 +1218,18 @@ namespace AnyPortrait
 						continue;
 					}
 
-
 					_iCalculatedParam = 0;
 					_result_BoneTransform.SetIdentity();
-					//_result_BoneIKWeight = 0.0f;//<<추가
-					//_result_CalculatedBoneIK = false;//<<추가
 
-					for (int iModParamPair = 0; iModParamPair < modParamPairs.Count; iModParamPair++)
+					nModBonePairs = modParamPairs.Count;
+
+					for (int iModParamPair = 0; iModParamPair < nModBonePairs; iModParamPair++)
 					{
-						OptModifierAndResultParamListPair modParamPair = modParamPairs[iModParamPair];
+						modParamPair = modParamPairs[iModParamPair];
 
-						for (int iParam = 0; iParam < modParamPair._resultParams.Count; iParam++)
+						nModParams = modParamPair._resultParams.Count;
+
+						for (int iParam = 0; iParam < nModParams; iParam++)
 						{
 							_cal_resultParam = modParamPair._resultParams[iParam];
 
@@ -1329,26 +1243,11 @@ namespace AnyPortrait
 							if (_cal_resultParam.ModifierBlendMethod == apModifierBase.BLEND_METHOD.Interpolation || _iCalculatedParam == 0)
 							{
 								BlendMatrix_ITP(_result_BoneTransform, _cal_resultParam._result_Matrix, _cal_curWeight);
-
-								//추가 BoneIK 적용
-								//if (_cal_resultParam._isBoneIKWeightCalculated)
-								//{
-								//	_result_BoneIKWeight = _result_BoneIKWeight * (1.0f - _cal_curWeight) + (_cal_resultParam._result_BoneIKWeight * _cal_curWeight);//<<추가
-								//	_result_CalculatedBoneIK = true;
-								//}
-
 								_cal_prevWeight += _cal_curWeight;
 							}
 							else
 							{
 								BlendMatrix_Add(_result_BoneTransform, _cal_resultParam._result_Matrix, _cal_curWeight);
-
-								//BoneIK 적용
-								//if (_cal_resultParam._isBoneIKWeightCalculated)
-								//{
-								//	_result_BoneIKWeight += _cal_resultParam._result_BoneIKWeight * _cal_curWeight;//<<추가
-								//	_result_CalculatedBoneIK = true;
-								//}
 							}
 
 							_iCalculatedParam++;
@@ -1357,15 +1256,8 @@ namespace AnyPortrait
 
 					//참조된 본에 직접 값을 넣어주자
 					targetBone.UpdateModifiedValue(_result_BoneTransform._pos, _result_BoneTransform._angleDeg, _result_BoneTransform._scale);//<<수정됨
-
-
 				}
-
-				//#if UNITY_EDITOR
-				//				Profiler.EndSample();
-				//#endif
 			}
-
 
 
 			//추가 12.5 : Extra Option
@@ -1378,7 +1270,7 @@ namespace AnyPortrait
 				_result_ExtraDeltaDepth = 0;
 				_result_ExtraTextureData = null;
 
-				for (int iParam = 0; iParam < _resultParams_Extra.Count; iParam++)
+				for (int iParam = 0; iParam < _nResultParams_Extra; iParam++)
 				{
 					_cal_resultParam = _resultParams_Extra[iParam];
 
@@ -1403,7 +1295,6 @@ namespace AnyPortrait
 					}
 				}
 			}
-
 		}
 
 
@@ -1414,24 +1305,17 @@ namespace AnyPortrait
 		/// </summary>
 		public void Calculate_Post()
 		{
-			//bool isFirstDebug = true;
 			_cal_prevWeight = 0.0f;
 			_cal_curWeight = 0.0f;
 			_cal_resultParam = null;
 			_cal_posVerts = null;
 
-
 			// Rigging
 			if (_isAnyRigging)
 			{
-				//#if UNITY_EDITOR
-				//				Profiler.BeginSample("Calcuate Result Stack - 0. Rigging");
-				//#endif
 				_cal_prevWeight = 0.0f;
 				_cal_curWeight = 0.0f;
 				_cal_resultParam = null;
-				//_cal_posVerts = null;
-				//_cal_vertMatrices = null;
 
 				_iCalculatedParam = 0;
 
@@ -1441,13 +1325,12 @@ namespace AnyPortrait
 
 				_result_RiggingWeight = 0.0f;
 
+				int nVertRequestList = 0;
 
-
-				for (int iParam = 0; iParam < _resultParams_Rigging.Count; iParam++)
+				for (int iParam = 0; iParam < _nResultParams_Rigging; iParam++)
 				{
 					_cal_resultParam = _resultParams_Rigging[iParam];
 					_cal_resultParam._resultWeight = 0.0f;
-					//_cal_curWeight = _cal_resultParam.ModifierWeight;//이전
 					_cal_curWeight = _cal_resultParam.ModifierWeightForRigging;//변경 20.11.26
 
 					if (!_cal_resultParam.IsModifierAvailable || _cal_curWeight <= 0.001f)
@@ -1456,7 +1339,6 @@ namespace AnyPortrait
 					}
 
 					_cal_resultParam._resultWeight = 1.0f;//<<일단 Weight를 1로 두고 계산 시작
-
 
 					_result_RiggingWeight += _cal_curWeight;
 
@@ -1486,33 +1368,20 @@ namespace AnyPortrait
 				}
 
 				//이제 계산된 Weight를 모두 입력해주자
-				for (int iParam = 0; iParam < _resultParams_Rigging.Count; iParam++)
+				for (int iParam = 0; iParam < _nResultParams_Rigging; iParam++)
 				{
 					_cal_resultParam = _resultParams_Rigging[iParam];
 					_cal_vertRequestList = _cal_resultParam._result_VertLocalPairs;
-					for (int iVR = 0; iVR < _cal_vertRequestList.Count; iVR++)
+
+					nVertRequestList = _cal_vertRequestList.Count;
+					for (int iVR = 0; iVR < nVertRequestList; iVR++)
 					{
 						_cal_vertRequestList[iVR].MultiplyWeight(_cal_resultParam._resultWeight);
 					}
 				}
 
-
-
-//#if UNITY_EDITOR
-//				UnityEngine.Profiling.Profiler.BeginSample("Opt Mesh - Update calculate Render Vertices");
-//#endif
 				//추가 20.11.26 : LUT 업데이트 <중요> 여기서 Rig Matrix가 다 계산된다.
 				_riggingLUT.Update();
-//#if UNITY_EDITOR
-//				UnityEngine.Profiling.Profiler.EndSample();
-//#endif
-
-
-
-
-				//#if UNITY_EDITOR
-				//				Profiler.EndSample();
-				//#endif
 			}
 
 
@@ -1520,10 +1389,6 @@ namespace AnyPortrait
 			// 4. World Morph
 			if (_isAnyVertWorld)
 			{
-
-				//#if UNITY_EDITOR
-				//				Profiler.BeginSample("Calcuate Result Stack - 4. Vert World");
-				//#endif
 				_cal_prevWeight = 0.0f;
 				_cal_curWeight = 0.0f;
 				_cal_resultParam = null;
@@ -1531,7 +1396,9 @@ namespace AnyPortrait
 
 				_iCalculatedParam = 0;
 
-				for (int iParam = 0; iParam < _resultParams_VertWorld.Count; iParam++)
+				int nCalPosVerts = 0;
+
+				for (int iParam = 0; iParam < _nResultParams_VertWorld; iParam++)
 				{
 					_cal_resultParam = _resultParams_VertWorld[iParam];
 					_cal_curWeight = _cal_resultParam.ModifierWeight;
@@ -1542,7 +1409,9 @@ namespace AnyPortrait
 					//Debug.Log("Vert World [" + iParam + "] (" + _cal_curWeight + ")");
 
 					_cal_posVerts = _cal_resultParam._result_Positions;
-					if (_cal_posVerts.Length != _result_VertWorld.Length)
+					nCalPosVerts = _cal_posVerts.Length;
+
+					if (nCalPosVerts != _result_VertWorld.Length)
 					{
 						//결과가 잘못 들어왔다 갱신 필요
 						Debug.LogError("Wrong Vert World Result (Cal : " + _cal_posVerts.Length + " / Verts : " + _result_VertWorld.Length + ")");
@@ -1552,7 +1421,7 @@ namespace AnyPortrait
 					// Blend 방식에 맞게 Pos를 만들자
 					if (_cal_resultParam.ModifierBlendMethod == apModifierBase.BLEND_METHOD.Interpolation || _iCalculatedParam == 0)
 					{
-						for (int i = 0; i < _cal_posVerts.Length; i++)
+						for (int i = 0; i < nCalPosVerts; i++)
 						{
 							_result_VertWorld[i] = BlendPosition_ITP(_result_VertWorld[i], _cal_posVerts[i], _cal_curWeight);
 						}
@@ -1561,23 +1430,14 @@ namespace AnyPortrait
 					}
 					else
 					{
-						for (int i = 0; i < _cal_posVerts.Length; i++)
+						for (int i = 0; i < nCalPosVerts; i++)
 						{
 							_result_VertWorld[i] = BlendPosition_Add(_result_VertWorld[i], _cal_posVerts[i], _cal_curWeight);
 						}
 					}
 
-
 					_iCalculatedParam++;
-
-
 				}
-
-				//#if UNITY_EDITOR
-				//				Profiler.EndSample();
-				//#endif
-				//Debug.Log(" >> Vert World");
-
 			}
 		}
 
@@ -1607,7 +1467,9 @@ namespace AnyPortrait
 
 				_result_RiggingWeight = 0.0f;
 
-				for (int iParam = 0; iParam < _resultParams_Rigging.Count; iParam++)
+				int nVertRequestList = 0;
+
+				for (int iParam = 0; iParam < _nResultParams_Rigging; iParam++)
 				{
 					_cal_resultParam = _resultParams_Rigging[iParam];
 					_cal_resultParam._resultWeight = 0.0f;
@@ -1648,11 +1510,13 @@ namespace AnyPortrait
 				}
 
 				//이제 계산된 Weight를 모두 입력해주자
-				for (int iParam = 0; iParam < _resultParams_Rigging.Count; iParam++)
+				for (int iParam = 0; iParam < _nResultParams_Rigging; iParam++)
 				{
 					_cal_resultParam = _resultParams_Rigging[iParam];
 					_cal_vertRequestList = _cal_resultParam._result_VertLocalPairs;
-					for (int iVR = 0; iVR < _cal_vertRequestList.Count; iVR++)
+
+					nVertRequestList = _cal_vertRequestList.Count;
+					for (int iVR = 0; iVR < nVertRequestList; iVR++)
 					{
 						_cal_vertRequestList[iVR].MultiplyWeight(_cal_resultParam._resultWeight);
 					}
@@ -1672,7 +1536,9 @@ namespace AnyPortrait
 
 				_iCalculatedParam = 0;
 
-				for (int iParam = 0; iParam < _resultParams_VertWorld.Count; iParam++)
+				int nCalPosVerts = 0;
+
+				for (int iParam = 0; iParam < _nResultParams_VertWorld; iParam++)
 				{
 					_cal_resultParam = _resultParams_VertWorld[iParam];
 					_cal_curWeight = _cal_resultParam.ModifierWeight;
@@ -1681,7 +1547,9 @@ namespace AnyPortrait
 					{ continue; }
 
 					_cal_posVerts = _cal_resultParam._result_Positions;
-					if (_cal_posVerts.Length != _result_VertWorld.Length)
+
+					nCalPosVerts = _cal_posVerts.Length;
+					if (nCalPosVerts != _result_VertWorld.Length)
 					{
 						//결과가 잘못 들어왔다 갱신 필요
 						Debug.LogError("Wrong Vert World Result (Cal : " + _cal_posVerts.Length + " / Verts : " + _result_VertWorld.Length + ")");
@@ -1691,7 +1559,7 @@ namespace AnyPortrait
 					// Blend 방식에 맞게 Pos를 만들자
 					if (_cal_resultParam.ModifierBlendMethod == apModifierBase.BLEND_METHOD.Interpolation || _iCalculatedParam == 0)
 					{
-						for (int i = 0; i < _cal_posVerts.Length; i++)
+						for (int i = 0; i < nCalPosVerts; i++)
 						{
 							_result_VertWorld[i] = BlendPosition_ITP(_result_VertWorld[i], _cal_posVerts[i], _cal_curWeight);
 						}
@@ -1700,7 +1568,7 @@ namespace AnyPortrait
 					}
 					else
 					{
-						for (int i = 0; i < _cal_posVerts.Length; i++)
+						for (int i = 0; i < nCalPosVerts; i++)
 						{
 							_result_VertWorld[i] = BlendPosition_Add(_result_VertWorld[i], _cal_posVerts[i], _cal_curWeight);
 						}
@@ -1726,22 +1594,6 @@ namespace AnyPortrait
 		{
 			return prevResult + nextResult * nextWeight;
 		}
-
-		//이전 : apMatrix를 사용하는 경우
-		//private void BlendMatrix_ITP(apMatrix prevResult, apMatrix nextResult, float nextWeight)
-		//{
-		//	prevResult.LerpMartix(nextResult, nextWeight);
-		//}
-
-		//private void BlendMatrix_Add(apMatrix prevResult, apMatrix nextResult, float nextWeight)
-		//{
-		//	prevResult._pos += nextResult._pos * nextWeight;
-		//	prevResult._angleDeg += nextResult._angleDeg * nextWeight;
-
-		//	prevResult._scale.x = (prevResult._scale.x * (1.0f - nextWeight)) + (prevResult._scale.x * nextResult._scale.x * nextWeight);
-		//	prevResult._scale.y = (prevResult._scale.y * (1.0f - nextWeight)) + (prevResult._scale.y * nextResult._scale.y * nextWeight);
-
-		//}
 
 		//이후 : apMatrixCal을 사용하는 경우
 		// 변경 3.26 : apMatrixCal을 이용하는 것으로 변경
@@ -1774,10 +1626,6 @@ namespace AnyPortrait
 			{
 				_riggingLUT.EnableSyncBones();
 			}
-			//else
-			//{
-			//	Debug.LogError("No LUT");
-			//}
 		}
 
 		public void DisableSync()
@@ -1802,7 +1650,6 @@ namespace AnyPortrait
 		}
 
 		//추가 21.5.22 : GetDeferredLocalPos > SetDeferredLocalPos로 변경
-		//public void SetDeferredLocalPos(Vector2[] vertsLocal, int nVerts)
 		public void SetDeferredLocalPos()//변경 21.5.21
 		{
 			_funcSetDeferredLocalPos(_result_VertLocal, _nRenderVerts);
@@ -1817,12 +1664,15 @@ namespace AnyPortrait
 			_tmpCalculatedModWeightPairs = null;
 			_tmpNumCalculatedModWeightPairs = 0;
 
-			for (int iParam = 0; iParam < _resultParams_VertLocal.Count; iParam++)
+			int nVertLocalPairs = 0;
+
+			for (int iParam = 0; iParam < _nResultParams_VertLocal; iParam++)
 			{
 				_cal_resultParam = _resultParams_VertLocal[iParam];
 
+				nVertLocalPairs = _cal_resultParam._result_VertLocalPairs.Count;
 
-				for (int iVR = 0; iVR < _cal_resultParam._result_VertLocalPairs.Count; iVR++)
+				for (int iVR = 0; iVR < nVertLocalPairs; iVR++)
 				{
 					_cal_vertRequest = _cal_resultParam._result_VertLocalPairs[iVR];
 
@@ -1833,19 +1683,6 @@ namespace AnyPortrait
 					}
 
 					//v1.4.7 : _isCalculated를 사용하지 않는 전략을 적용하자
-					//이전
-					//for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
-					//{
-					//	_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
-					//	if (!_cal_vertRequestModWeightPair._isCalculated)
-					//	{
-					//		continue;
-
-					//	}
-					//	_tmpPos += _cal_vertRequestModWeightPair._modMesh._vertices[vertexIndex]._deltaPos * _cal_vertRequestModWeightPair._weight * _cal_vertRequest._totalWeight;//<<수정
-
-					//}
-
 					//변경. 계산된 결과 리스트만 받아오자 (_isCalculated 필요 없음)
 					_tmpCalculatedModWeightPairs = _cal_vertRequest.CalculatedModWeightPairs;
 					_tmpNumCalculatedModWeightPairs = _cal_vertRequest.NumCalculatedModWeightPairs;
@@ -1877,15 +1714,17 @@ namespace AnyPortrait
 			_tmpCalculatedModWeightPairs = null;
 			_tmpNumCalculatedModWeightPairs = 0;
 
-			for (int iParam = 0; iParam < _resultParams_VertLocal.Count; iParam++)
+			int nVertLocalPairs = 0;
+
+			for (int iParam = 0; iParam < _nResultParams_VertLocal; iParam++)
 			{
 				_cal_resultParam = _resultParams_VertLocal[iParam];
 
+				nVertLocalPairs = _cal_resultParam._result_VertLocalPairs.Count;
 
-				for (int iVR = 0; iVR < _cal_resultParam._result_VertLocalPairs.Count; iVR++)
+				for (int iVR = 0; iVR < nVertLocalPairs; iVR++)
 				{
 					_cal_vertRequest = _cal_resultParam._result_VertLocalPairs[iVR];
-
 
 					if (!_cal_vertRequest._isCalculated || _cal_vertRequest._totalWeight == 0.0f)
 					{
@@ -1893,19 +1732,6 @@ namespace AnyPortrait
 					}
 
 					//v1.4.7 : _isCalculated를 사용하지 않는 전략을 적용하자
-					//이전
-					//for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
-					//{
-					//	_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
-					//	if (!_cal_vertRequestModWeightPair._isCalculated)
-					//	{
-					//		continue;
-
-					//	}
-					//	//ModMeshSet을 이용하는 것으로 변경						
-					//	_tmpPos += _cal_vertRequestModWeightPair._modMeshSet_Vertex._vertDeltaPos[vertexIndex] * _cal_vertRequestModWeightPair._weight * _cal_vertRequest._totalWeight;//<<수정
-					//}
-
 					//변경. 계산된 결과 리스트만 받아오자 (_isCalculated 필요 없음)
 					_tmpCalculatedModWeightPairs = _cal_vertRequest.CalculatedModWeightPairs;
 					_tmpNumCalculatedModWeightPairs = _cal_vertRequest.NumCalculatedModWeightPairs;
@@ -1920,10 +1746,8 @@ namespace AnyPortrait
 
 						//ModMeshSet을 이용하는 것으로 변경						
 						_tmpPos += _cal_vertRequestModWeightPair._modMeshSet_Vertex._vertDeltaPos[vertexIndex] * _cal_vertRequestModWeightPair._weight * _cal_vertRequest._totalWeight;//<<수정
-
 					}
 				}
-
 			}
 
 			return _tmpPos;
@@ -1933,8 +1757,6 @@ namespace AnyPortrait
 		{
 			return _result_VertLocal[vertexIndex];
 		}
-
-
 
 
 		/// <summary>
@@ -1949,20 +1771,21 @@ namespace AnyPortrait
 			float weight_VertRequest = 0.0f;
 			float weight_ModWeightPair = 0.0f;
 
-
 			//v1.4.7 : 계산된 ModWeightPair 결과 리스트
 			_tmpCalculatedModWeightPairs = null;
 			_tmpNumCalculatedModWeightPairs = 0;
 
-			for (int iParam = 0; iParam < _resultParams_VertLocal.Count; iParam++)
+			int nVertLocalPairs = 0;
+
+			for (int iParam = 0; iParam < _nResultParams_VertLocal; iParam++)
 			{
 				_cal_resultParam = _resultParams_VertLocal[iParam];
 
+				nVertLocalPairs = _cal_resultParam._result_VertLocalPairs.Count;
 
-				for (int iVR = 0; iVR < _cal_resultParam._result_VertLocalPairs.Count; iVR++)
+				for (int iVR = 0; iVR < nVertLocalPairs; iVR++)
 				{
 					_cal_vertRequest = _cal_resultParam._result_VertLocalPairs[iVR];
-
 
 					if (!_cal_vertRequest._isCalculated || _cal_vertRequest._totalWeight == 0.0f)
 					{
@@ -1972,25 +1795,6 @@ namespace AnyPortrait
 					weight_VertRequest = _cal_vertRequest._totalWeight;
 
 					//v1.4.7 : _isCalculated를 사용하지 않는 전략
-					//이전
-					//for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
-					//{
-					//	_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
-					//	if (!_cal_vertRequestModWeightPair._isCalculated)
-					//	{
-					//		continue;
-
-					//	}
-
-					//	weight_ModWeightPair = _cal_vertRequestModWeightPair._weight;
-
-					//	for (int iVert = 0; iVert < nVerts; iVert++)
-					//	{
-					//		vertLocal[iVert] += _cal_vertRequestModWeightPair._modMesh._vertices[iVert]._deltaPos * weight_ModWeightPair * weight_VertRequest;
-					//	}
-					//}
-
-					//변경
 					_tmpCalculatedModWeightPairs = _cal_vertRequest.CalculatedModWeightPairs;
 					_tmpNumCalculatedModWeightPairs = _cal_vertRequest.NumCalculatedModWeightPairs;
 					
@@ -2032,12 +1836,15 @@ namespace AnyPortrait
 			_tmpCalculatedModWeightPairs = null;
 			_tmpNumCalculatedModWeightPairs = 0;
 
-			for (int iParam = 0; iParam < _resultParams_VertLocal.Count; iParam++)
+			int nVertLocalPairs = 0;
+
+			for (int iParam = 0; iParam < _nResultParams_VertLocal; iParam++)
 			{
 				_cal_resultParam = _resultParams_VertLocal[iParam];
 
+				nVertLocalPairs = _cal_resultParam._result_VertLocalPairs.Count;
 
-				for (int iVR = 0; iVR < _cal_resultParam._result_VertLocalPairs.Count; iVR++)
+				for (int iVR = 0; iVR < nVertLocalPairs; iVR++)
 				{
 					_cal_vertRequest = _cal_resultParam._result_VertLocalPairs[iVR];
 
@@ -2047,25 +1854,6 @@ namespace AnyPortrait
 					}
 
 					weight_VertRequest = _cal_vertRequest._totalWeight;
-
-					//v1.4.7 : _isCalculated를 사용하지 않는 전략
-					//이전
-					//for (int iModPair = 0; iModPair < _cal_vertRequest._nModWeightPairs; iModPair++)
-					//{
-					//	_cal_vertRequestModWeightPair = _cal_vertRequest._modWeightPairs[iModPair];
-					//	if (!_cal_vertRequestModWeightPair._isCalculated)
-					//	{
-					//		continue;
-					//	}
-
-					//	weight_ModWeightPair = _cal_vertRequestModWeightPair._weight;
-
-					//	for (int iVert = 0; iVert < nVerts; iVert++)
-					//	{
-					//		vertLocal[iVert] += _cal_vertRequestModWeightPair._modMeshSet_Vertex._vertDeltaPos[iVert] * weight_ModWeightPair * weight_VertRequest;
-					//	}
-						
-					//}
 
 					//변경
 					_tmpCalculatedModWeightPairs = _cal_vertRequest.CalculatedModWeightPairs;
@@ -2088,66 +1876,18 @@ namespace AnyPortrait
 						}
 					}
 				}
-
 			}
-
 		}
 
-
-
-
-
-
-
-
-
-
-
-		//public Vector2 GetVertexRigging(int vertexIndex)
-		//{
-		//	return _result_Rigging[vertexIndex];
-		//}
-
+		
 		public float GetRiggingWeight()
 		{
 			return _result_RiggingWeight;
 		}
 
-		//이전 방식 : LUT 사용 전
-		//public apMatrix3x3 GetDeferredRiggingMatrix(int vertexIndex)
-		//{
-		//	_tmpMatrix.SetZero3x2();
 
-		//	for (int iParam = 0; iParam < _resultParams_Rigging.Count; iParam++)
-		//	{
-		//		_cal_resultParam = _resultParams_Rigging[iParam];
-		//		for (int iVR = 0; iVR < _cal_resultParam._result_VertLocalPairs.Count; iVR++)
-		//		{
-		//			_cal_vertRequest = _cal_resultParam._result_VertLocalPairs[iVR];
-		//			//삭제 20.11.26 : Opt에서 Rigging이 비활성화되는 경우는 없으므로, Weight와 Calculate 여부를 확인할 필요가 없다.
-		//			//if (!_cal_vertRequest._isCalculated || _cal_vertRequest._totalWeight == 0.0f)
-		//			//{
-		//			//	continue;
-		//			//}
-
-		//			_tmpVertRigWeightTable = _cal_vertRequest._rigBoneWeightTables[vertexIndex];
-		//			if (_tmpVertRigWeightTable._nRigTable == 0)
-		//			{
-		//				continue;
-		//			}
-
-		//			for (int iRig = 0; iRig < _tmpVertRigWeightTable._nRigTable; iRig++)
-		//			{
-		//				_tmpVertRigWeightTable._rigTable[iRig].CalculateMatrix();//<<TODO : 이걸 호출하면 성능이 떨어진다.
-		//				_tmpMatrix.AddMatrixWithWeight(_tmpVertRigWeightTable._rigTable[iRig]._boneMatrix, _tmpVertRigWeightTable._rigTable[iRig]._weight);
-		//			}
-		//		}
-		//	}
-
-		//	return _tmpMatrix;
-		//}
-
-
+		private int _cal_NumResultParam_Rigging = 0;
+		private int _cal_NumVertLocalPairs = 0;
 
 		/// <summary>
 		/// 추가 20.11.26: LUT를 이용하여 중복 연산을 막는다.
@@ -2156,17 +1896,27 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apMatrix3x3 GetDeferredRiggingMatrix_WithLUT(int vertexIndex)
 		{
-#if UNITY_EDITOR
-			UnityEngine.Profiling.Profiler.BeginSample("Get LUT Matrix");
-#endif
 			_tmpMatrix.SetZero3x2();
 
-			for (int iParam = 0; iParam < _resultParams_Rigging.Count; iParam++)
+			_cal_NumResultParam_Rigging = _resultParams_Rigging != null ? _resultParams_Rigging.Count : 0;
+			if(_cal_NumResultParam_Rigging == 0)
+			{
+				return _tmpMatrix;
+			}
+
+			for (int iParam = 0; iParam < _cal_NumResultParam_Rigging; iParam++)
 			{
 				_cal_resultParam = _resultParams_Rigging[iParam];
-				for (int iVR = 0; iVR < _cal_resultParam._result_VertLocalPairs.Count; iVR++)
+
+				_cal_NumVertLocalPairs = _cal_resultParam._result_VertLocalPairs != null ? _cal_resultParam._result_VertLocalPairs.Count : 0;
+				if(_cal_NumVertLocalPairs == 0)
+				{
+					continue;
+				}
+				for (int iVR = 0; iVR < _cal_NumVertLocalPairs; iVR++)
 				{
 					_cal_vertRequest = _cal_resultParam._result_VertLocalPairs[iVR];
+					
 					//삭제 20.11.26 : Opt에서 Rigging이 비활성화되는 경우는 없으므로, Weight와 Calculate 여부를 확인할 필요가 없다.
 					//if (!_cal_vertRequest._isCalculated || _cal_vertRequest._totalWeight == 0.0f)
 					//{
@@ -2181,77 +1931,29 @@ namespace AnyPortrait
 
 					for (int iRig = 0; iRig < _tmpVertRigWeightTable._nRigTable; iRig++)
 					{
-						//_tmpVertRigWeightTable._rigTable[iRig].CalculateMatrix();//<<TODO : 이걸 호출하면 성능이 떨어진다.
-						//_tmpMatrix.AddMatrixWithWeight(_tmpVertRigWeightTable._rigTable[iRig]._boneMatrix, _tmpVertRigWeightTable._rigTable[iRig]._weight);
 						//LUT 코드로 변경
 						_tmpMatrix.AddMatrixWithWeight(ref _riggingLUT._LUT[_tmpVertRigWeightTable._rigTable[iRig]._iRigPairLUT]._resultMatrix, _tmpVertRigWeightTable._rigTable[iRig]._weight);
 					}
 				}
 			}
-
-#if UNITY_EDITOR
-			UnityEngine.Profiling.Profiler.EndSample();
-#endif
 			return _tmpMatrix;
 		}
-
-
-
-		public float GetDeferredRiggingWeight(int vertexIndex)
-		{
-			_tmpWeight = 0.0f;
-
-			for (int iParam = 0; iParam < _resultParams_Rigging.Count; iParam++)
-			{
-
-				_cal_resultParam = _resultParams_Rigging[iParam];
-
-				for (int iVR = 0; iVR < _cal_resultParam._result_VertLocalPairs.Count; iVR++)
-				{
-					_cal_vertRequest = _cal_resultParam._result_VertLocalPairs[iVR];
-					
-					//삭제 20.11.26 : Opt에서 계산 여부는 필요하지 않다.
-					//if (!_cal_vertRequest._isCalculated || _cal_vertRequest._totalWeight == 0.0f)
-					//{
-					//	continue;
-					//}
-					//이전
-					//_tmpWeight += _cal_vertRequest._totalRiggingWeight;
-
-					//변경됨
-					_tmpWeight = _cal_vertRequest._rigBoneWeightTables[vertexIndex]._totalRiggingWeight;
-
-				}
-			}
-			if (_tmpWeight > 1.0f)
-			{
-				_result_RiggingVertWeight_Cache[vertexIndex] = 1.0f;//캐시에 저장하자
-				return 1.0f;
-			}
-
-			_result_RiggingVertWeight_Cache[vertexIndex] = _tmpWeight;//캐시에 저장하자
-			return _tmpWeight;
-		}
-
-
-
-		public float GetDeferredRiggingWeightCache(int vertexIndex)
-		{
-			return _result_RiggingVertWeight_Cache[vertexIndex];
-		}
+		
 
 		//추가 21.5.25
 		public void SetRiggingWeightToCache()
 		{
+			int nVertLocalPairs = 0;
 			for (int iVert = 0; iVert < _nRenderVerts; iVert++)
 			{
 				_tmpWeight = 0.0f;
-				for (int iParam = 0; iParam < _resultParams_Rigging.Count; iParam++)
+				for (int iParam = 0; iParam < _nResultParams_Rigging; iParam++)
 				{
-
 					_cal_resultParam = _resultParams_Rigging[iParam];
 
-					for (int iVR = 0; iVR < _cal_resultParam._result_VertLocalPairs.Count; iVR++)
+					nVertLocalPairs = _cal_resultParam._result_VertLocalPairs.Count;
+
+					for (int iVR = 0; iVR < nVertLocalPairs; iVR++)
 					{
 						_cal_vertRequest = _cal_resultParam._result_VertLocalPairs[iVR];
 
@@ -2260,12 +1962,8 @@ namespace AnyPortrait
 						//{
 						//	continue;
 						//}
-						//이전
-						//_tmpWeight += _cal_vertRequest._totalRiggingWeight;
-
-						//변경됨
+						
 						_tmpWeight = _cal_vertRequest._rigBoneWeightTables[iVert]._totalRiggingWeight;
-
 					}
 				}
 				if (_tmpWeight > 1.0f)
@@ -2275,18 +1973,13 @@ namespace AnyPortrait
 
 				_result_RiggingVertWeight_Cache[iVert] = _tmpWeight;//캐시에 저장하자
 			}
-			
 		}
+
 
 		//추가 21.5.24 : GetDeferredRiggingMatrix_WithLUT 함수가 매 버텍스마다 호출하는 거였고,
 		//이번엔 Set 방식으로 순회하면서 배열에 넣는 방식. VertLUTTableSet을 이용한다.
-		//public void SetDeferredRiggingMatrix_WithLUT(apMatrix3x3[] dstRigMatrix)
 		public void SetDeferredRiggingMatrix_WithLUT()//변경 21.5.27 : 인자 삭제.
 		{
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.BeginSample("Set LUT Matrix");
-//#endif
-
 			if(_vertLUTTables == null)
 			{
 				Debug.LogError("_vertLUTTables가 null임");
@@ -2316,17 +2009,8 @@ namespace AnyPortrait
 
 			for (int iVert = 0; iVert < _nRenderVerts; iVert++)
 			{
-				//이전
-				//_vertLUTTables[iVert].CalculateLUT(ref dstRigMatrix[iVert]);
-				//_result_RiggingMatrices[iVert].SetMatrixWithWeight(ref dstRigMatrix[iVert], _result_RiggingWeight * _result_RiggingVertWeight_Cache[iVert]);
-
-				//변경 21.5.27 : 한번에 하자
 				_vertLUTTables[iVert].CalculateLUT(ref _result_RiggingMatrices[iVert], _result_RiggingWeight * _result_RiggingVertWeight_Cache[iVert]);
 			}
-
-//#if UNITY_EDITOR
-//			UnityEngine.Profiling.Profiler.EndSample();
-//#endif
 		}
 
 
@@ -2344,6 +2028,7 @@ namespace AnyPortrait
 				return apMatrix3x3.identity;
 			}
 		}
+		
 
 		public apMatrix MeshWorldMatrixWrap
 		{
@@ -2399,8 +2084,6 @@ namespace AnyPortrait
 			}
 		}
 
-
-
 		//추가 12.5 : Extra Option
 		public bool IsExtraDepthChanged
 		{
@@ -2434,7 +2117,7 @@ namespace AnyPortrait
 		//Result Stack의 Rigging에 포함된 모든 본들을 리스트로 정리해서 내보내는 함수
 		//Bake 전용이다.
 		//----------------------------------------------------------------
-		public List<apOptBone> GetRiggineBonesForBake()
+		public List<apOptBone> GetRiggingBonesForBake()
 		{
 			if (!_isAnyRigging || _resultParams_Rigging == null || _resultParams_Rigging.Count == 0)
 			{

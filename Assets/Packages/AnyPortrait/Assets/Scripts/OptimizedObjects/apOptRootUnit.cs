@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -309,7 +309,6 @@ namespace AnyPortrait
 			_sortedRenderBuffer.UpdateDepthChangedEventAndBuffers();
 
 			//---------------------------------------------------------
-
 			//3. Bone World Matrix 업데이트
 			//인자로는 지글본에 적용될 물리 값(시간과 여부)을 넣는다.
 			_rootOptTransform.UpdateBonesWorldMatrix(	_portrait.PhysicsDeltaTime, 
@@ -747,10 +746,16 @@ namespace AnyPortrait
 				return _optBonesMap[name];
 			}
 
-			apOptBone resultBone = _optBones.Find(delegate (apOptBone a)
-			{
-				return string.Equals(a._name, name);
-			});
+			//이전 (GC 발생)
+			// apOptBone resultBone = _optBones.Find(delegate (apOptBone a)
+			// {
+			// 	return string.Equals(a._name, name);
+			// });
+
+			//변경 v1.5.0
+			s_GetOptBone_Name = name;
+			apOptBone resultBone = _optBones.Find(s_GetOptBoneByName_Func);
+
 
 			if(resultBone == null)
 			{
@@ -762,6 +767,14 @@ namespace AnyPortrait
 
 			return resultBone;
 		}
+
+		private static string s_GetOptBone_Name = null;
+		private static Predicate<apOptBone> s_GetOptBoneByName_Func = FUNC_GetOptBoneByName;
+		private static bool FUNC_GetOptBoneByName(apOptBone a)
+		{
+			return string.Equals(a._name, s_GetOptBone_Name);
+		}
+
 
 
 		public apOptTransform GetTransform(string name)
@@ -776,10 +789,16 @@ namespace AnyPortrait
 			}
 			
 			//처음엔 직접 찾기
-			resultTransform = _optTransforms.Find(delegate (apOptTransform a)
-			{
-				return string.Equals(a._name, name);
-			});
+			//이전 (GC 발생)
+			// resultTransform = _optTransforms.Find(delegate (apOptTransform a)
+			// {
+			// 	return string.Equals(a._name, name);
+			// });
+
+			//변경 v1.5.0
+			s_GetOptTransform_Name = name;
+			resultTransform = _optTransforms.Find(s_GetOptTransformByName_Func);
+
 
 			if(resultTransform == null)
 			{
@@ -791,22 +810,57 @@ namespace AnyPortrait
 
 			return resultTransform;
 		}
+
+
+		private static string s_GetOptTransform_Name = null;
+		private static Predicate<apOptTransform> s_GetOptTransformByName_Func = FUNC_GetOptTransformByName;
+		private static bool FUNC_GetOptTransformByName(apOptTransform a)
+		{
+			return string.Equals(a._name, s_GetOptTransform_Name);
+		}
+
+
+
+
+
 		
 		public apOptTransform GetTransform(int transformID)
 		{
-			return _optTransforms.Find(delegate(apOptTransform a)
-			{
-				return a._transformID == transformID;
-			});
+			//이전 (GC 발생)
+			// return _optTransforms.Find(delegate(apOptTransform a)
+			// {
+			// 	return a._transformID == transformID;
+			// });
+
+			//변경 (v1.5.0)
+			s_GetOptTransform_ID = transformID;
+			return _optTransforms.Find(s_GetOptTransformByID_Func);
+		}
+
+		private static int s_GetOptTransform_ID = -1;
+		private static Predicate<apOptTransform> s_GetOptTransformByID_Func = FUNC_GetOptTransformByID;
+		private static bool FUNC_GetOptTransformByID(apOptTransform a)
+		{
+			return a._transformID == s_GetOptTransform_ID;
 		}
 
 		//추가 21.9.18
 		public List<apOptBone> GetRootBones()
 		{
-			return _optBones.FindAll(delegate(apOptBone a)
-			{
-				return a._parentBone == null;
-			});
+			//이전 (GC 발생)
+			// return _optBones.FindAll(delegate(apOptBone a)
+			// {
+			// 	return a._parentBone == null;
+			// });
+
+			//변경 v1.5.0
+			return _optBones.FindAll(s_GetRootBone_Func);
+		}
+
+		private static Predicate<apOptBone> s_GetRootBone_Func = FUNC_GetRootBone;
+		private static bool FUNC_GetRootBone(apOptBone a)
+		{
+			return a._parentBone == null;
 		}
 	}
 

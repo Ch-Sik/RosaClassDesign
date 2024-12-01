@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -76,6 +76,9 @@ namespace AnyPortrait
 			}
 			//통계 재계산 요청
 			SetStatisticsRefresh();
+
+			//[v1.5.0] 메모리 관리 체크 (GC.Collect 포함)
+			Editor.MemUtil.CheckAndCollect();
 		}
 
 
@@ -104,6 +107,7 @@ namespace AnyPortrait
 			_modData.ClearAll();//추가 20.6.10
 
 			_modifier = null;
+			_lastSelectedModifier = null;
 
 			_isMeshGroupSetting_EditDefaultTransform = false;
 
@@ -244,8 +248,9 @@ namespace AnyPortrait
 			_captureGIF_IsProgressDialog = false;
 
 			_captureSprite_IsAnimClipInit = false;
-			_captureSprite_AnimClips.Clear();
-			_captureSprite_AnimClipFlags.Clear();
+			if (_captureSprite_AnimClipInfos == null) { _captureSprite_AnimClipInfos = new List<CaptureAnimInfo>(); }
+			_captureSprite_AnimClipInfos.Clear();
+			_captureSprite_AnimSearchKeyword = "";
 
 
 			//당장 다음 1프레임은 쉰다.
@@ -350,14 +355,10 @@ namespace AnyPortrait
 
 			_exAnimEditingMode = EX_EDIT.None;
 			_isAnimSelectionLock = false;
-			//이전
-			//SetModifierExclusiveEditing(EX_EDIT.None);
 
 			//변경 22.5.15
 			_exclusiveEditing = EX_EDIT.None;
-			//AutoRefreshModifierExclusiveEditing();
-
-
+			
 
 			SetModifierSelectionLock(false);
 
@@ -518,7 +519,8 @@ namespace AnyPortrait
 				Editor.RefreshControllerAndHierarchy(false);
 			}
 			
-
+			//[v1.5.0] 메모리 관리 체크 (GC.Collect 포함)
+			Editor.MemUtil.CheckAndCollect();
 		}
 
 
@@ -578,6 +580,9 @@ namespace AnyPortrait
 
 			//통계 재계산 요청
 			SetStatisticsRefresh();
+
+			//[v1.5.0] 메모리 관리 체크 (GC.Collect 포함)
+			Editor.MemUtil.CheckAndCollect();
 		}
 
 
@@ -685,6 +690,9 @@ namespace AnyPortrait
 				//자동으로 가운데로 초점 이동
 				Editor.ResetScrollPosition(false, true, false, false, false);
 			}
+
+			//[v1.5.0] 메모리 관리 체크 (GC.Collect 포함)
+			Editor.MemUtil.CheckAndCollect();
 		}
 
 
@@ -714,6 +722,10 @@ namespace AnyPortrait
 			//변경 20.4.4 : 아래와 같이 호출하자
 			apUtil.LinkRefresh.Set_MeshGroup_ExceptAnimModifiers(_meshGroup);
 
+			//[v1.5.0 추가] IK Run Node 갱신 겸, Bone 정리를 한번 하자
+			Editor.Controller.RefreshBoneHierarchy(_meshGroup);
+			Editor.Controller.RefreshBoneChaining(_meshGroup);
+
 			//추가 21.3.20 : 이 함수를 호출하면 RenderUnit이 재활용되지 않고 아예 새로 만들어진다.
 			_meshGroup.ClearRenderUnits();
 
@@ -723,7 +735,7 @@ namespace AnyPortrait
 
 
 
-			Editor._meshGroupEditMode = apEditor.MESHGROUP_EDIT_MODE.Setting;
+			Editor._meshGroupEditMode = apEditor.MESHGROUP_EDIT_MODE.Setting;//Setting 탭으로 시작
 
 			if (isChanged)
 			{
@@ -788,6 +800,9 @@ namespace AnyPortrait
 
 			//변경 21.3.4 : 자동으로 가운데로 초점 이동
 			Editor.ResetScrollPosition(false, true, false, false, false);
+
+			//[v1.5.0] 메모리 관리 체크 (GC.Collect 포함)
+			Editor.MemUtil.CheckAndCollect();
 		}
 
 
@@ -809,6 +824,9 @@ namespace AnyPortrait
 
 			//변경 21.3.4 : 자동으로 가운데로 초점 이동
 			Editor.ResetScrollPosition(false, true, false, false, false);
+
+			//[v1.5.0] 메모리 관리 체크 (GC.Collect 포함)
+			Editor.MemUtil.CheckAndCollect();
 		}
 
 
@@ -919,6 +937,10 @@ namespace AnyPortrait
 					//_animClip._targetMeshGroup.SetDirtyToSort();
 					//_animClip._targetMeshGroup.RefreshForce(true);
 					
+					//[v1.5.0 추가] IK Run Node 갱신 겸, Bone 정리를 한번 하자
+					Editor.Controller.RefreshBoneHierarchy(_animClip._targetMeshGroup);
+					Editor.Controller.RefreshBoneChaining(_animClip._targetMeshGroup);
+
 					//변경 20.4.3 : 이렇게 직접 호출하자
 					apUtil.LinkRefresh.Set_AnimClip(_animClip);
 
@@ -1114,6 +1136,14 @@ namespace AnyPortrait
 			//추가 v1.4.5
 			//애니메이션 이벤트창이 열려있다면 내용 갱신
 			apDialog_AnimationEvents.OnAnimClipChanged();
+
+
+			//[v1.5.0]
+			//애니메이션 클립 선택 직후에 컨트롤 파라미터가 갱신되지 않는 문제 수정
+			_animClip.UpdateControlParam_Editor();
+
+			//[v1.5.0] 메모리 관리 체크 (GC.Collect 포함)
+			Editor.MemUtil.CheckAndCollect();
 		}
 
 
@@ -2004,6 +2034,8 @@ namespace AnyPortrait
 				return;
 			}
 
+			//EX_EDIT prevMode = ExEditingMode;
+
 			bool isChanged = false;
 			if (_paramSetOfMod != paramSetOfMod)
 			{
@@ -2023,6 +2055,11 @@ namespace AnyPortrait
 			{
 				Editor.Gizmos.RevertFFD(false);//<<변경 : Refresh -> Revert (강제)
 			}
+
+			//if(ExEditingMode == EX_EDIT.None && prevMode != ExEditingMode)
+			//{
+			//	Debug.LogError("Ex Mode > None");
+			//}
 		}
 
 		/// <summary>
@@ -2121,6 +2158,11 @@ namespace AnyPortrait
 
 				//Editor.RefreshControllerAndHierarchy();
 				Editor.Gizmos.RevertFFDTransformForce();//<추가
+			}
+
+			if(ExEditingMode == EX_EDIT.None)
+			{
+				Debug.LogError("Ex Mode > None");
 			}
 
 		}
@@ -4123,15 +4165,14 @@ namespace AnyPortrait
 
 
 				_animTimelineCommonCurve.Clear();//추가 3.30
-
 			}
-
-			_subAnimKeyframe._parentTimelineLayer.SortAndRefreshKeyframes();
-
-
-			//키프레임 선택시 자동으로 Frame을 이동한다.
+			
 			if (_subAnimKeyframe != null)
 			{
+				//정렬을 한다.
+				_subAnimKeyframe._parentTimelineLayer.SortAndRefreshKeyframes();
+
+				//키프레임 선택시 자동으로 Frame을 이동한다.
 				int selectedFrameIndex = _subAnimKeyframe._frameIndex;
 				if (_animClip.IsLoop &&
 					(selectedFrameIndex < _animClip.StartFrame || selectedFrameIndex > _animClip.EndFrame))
@@ -4505,11 +4546,15 @@ namespace AnyPortrait
 
 		//---------------------------------------------------------------
 
+		
+
 		/// <summary>
 		/// Keyframe의 변동사항이 있을때 Common Keyframe을 갱신한다.
 		/// </summary>
 		public void RefreshCommonAnimKeyframes()
 		{
+			if(_subAnimCommonKeyframeList == null) { _subAnimCommonKeyframeList = new List<apAnimCommonKeyframe>(); }
+			if(_subAnimCommonKeyframeList_Selected == null) { _subAnimCommonKeyframeList_Selected = new List<apAnimCommonKeyframe>(); }
 
 
 			if (_animClip == null)
@@ -4520,89 +4565,163 @@ namespace AnyPortrait
 			}
 
 			//0. 전체 Keyframe과 FrameIndex를 리스트로 모은다.
-			List<int> commFrameIndexList = new List<int>();
-			List<apAnimKeyframe> totalKeyframes = new List<apAnimKeyframe>();
+			//List<int> commFrameIndexList = new List<int>();
+			//List<apAnimKeyframe> totalKeyframes = new List<apAnimKeyframe>();
+
+			if(s_CommFrameIndexList == null) { s_CommFrameIndexList = new List<int>(); }
+			s_CommFrameIndexList.Clear();
+
+			if(s_TotalKeyframes == null) { s_TotalKeyframes = new List<apAnimKeyframe>(); }
+			s_TotalKeyframes.Clear();
+
+
 			apAnimTimeline timeline = null;
 			apAnimTimelineLayer timelineLayer = null;
 			apAnimKeyframe keyframe = null;
-			for (int iTimeline = 0; iTimeline < _animClip._timelines.Count; iTimeline++)
+
+			int nTimelines = _animClip._timelines != null ? _animClip._timelines.Count : 0;
+
+			if (nTimelines > 0)
 			{
-				timeline = _animClip._timelines[iTimeline];
-				for (int iLayer = 0; iLayer < timeline._layers.Count; iLayer++)
+				for (int iTimeline = 0; iTimeline < nTimelines; iTimeline++)
 				{
-					timelineLayer = timeline._layers[iLayer];
-					for (int iKeyframe = 0; iKeyframe < timelineLayer._keyframes.Count; iKeyframe++)
+					timeline = _animClip._timelines[iTimeline];
+					if(timeline == null)
 					{
-						keyframe = timelineLayer._keyframes[iKeyframe];
+						continue;
+					}
 
-						//키프레임과 프레임 인덱스를 저장
-						totalKeyframes.Add(keyframe);
+					int nLayers = timeline._layers != null ? timeline._layers.Count : 0;
+					if (nLayers == 0)
+					{
+						continue;
+					}
 
-						if (!commFrameIndexList.Contains(keyframe._frameIndex))
+					for (int iLayer = 0; iLayer < nLayers; iLayer++)
+					{
+						timelineLayer = timeline._layers[iLayer];
+
+						int nKeys = timelineLayer._keyframes != null ? timelineLayer._keyframes.Count : 0;
+						if(nKeys == 0)
 						{
-							commFrameIndexList.Add(keyframe._frameIndex);
+							continue;
+						}
+
+						for (int iKeyframe = 0; iKeyframe < nKeys; iKeyframe++)
+						{
+							keyframe = timelineLayer._keyframes[iKeyframe];
+
+							//키프레임과 프레임 인덱스를 저장
+							s_TotalKeyframes.Add(keyframe);
+
+							if (!s_CommFrameIndexList.Contains(keyframe._frameIndex))
+							{
+								s_CommFrameIndexList.Add(keyframe._frameIndex);
+							}
 						}
 					}
 				}
 			}
+			
 
 			//기존의 AnimCommonKeyframe에서 불필요한 것들을 먼저 없애고, 일단 Keyframe을 클리어한다.
-			_subAnimCommonKeyframeList.RemoveAll(delegate (apAnimCommonKeyframe a)
-			{
-				//공통적으로 존재하지 않는 FrameIndex를 가진다면 삭제
-				return !commFrameIndexList.Contains(a._frameIndex);
-			});
 
-			for (int i = 0; i < _subAnimCommonKeyframeList.Count; i++)
+			//이전 (GC 발생)
+			//_subAnimCommonKeyframeList.RemoveAll(delegate (apAnimCommonKeyframe a)
+			//{
+			//	//공통적으로 존재하지 않는 FrameIndex를 가진다면 삭제
+			//	return !s_CommFrameIndexList.Contains(a._frameIndex);
+			//});
+
+			//변경 v1.5.0
+			_subAnimCommonKeyframeList.RemoveAll(s_FindNotCommonFrame_Func);
+
+			
+			int nSubCommonKeys = _subAnimCommonKeyframeList.Count;
+			apAnimCommonKeyframe commonKey = null;
+			if (nSubCommonKeys > 0)
 			{
-				_subAnimCommonKeyframeList[i].Clear();
-				_subAnimCommonKeyframeList[i].ReadyToAdd();
+				for (int i = 0; i < nSubCommonKeys; i++)
+				{
+					commonKey = _subAnimCommonKeyframeList[i];
+					commonKey.Clear();
+					commonKey.ReadyToAdd();
+				}
 			}
+			
 
 
 
 
 			//1. Keyframe들의 공통 Index를 먼저 가져온다.
-			for (int iKF = 0; iKF < totalKeyframes.Count; iKF++)
+			int nTotalKeys = s_TotalKeyframes.Count;
+			if (nTotalKeys > 0)
 			{
-				keyframe = totalKeyframes[iKF];
-
-				apAnimCommonKeyframe commonKeyframe = GetCommonKeyframe(keyframe._frameIndex);
-
-				if (commonKeyframe == null)
+				for (int iKF = 0; iKF < nTotalKeys; iKF++)
 				{
-					commonKeyframe = new apAnimCommonKeyframe(keyframe._frameIndex);
-					commonKeyframe.ReadyToAdd();
+					keyframe = s_TotalKeyframes[iKF];
 
-					_subAnimCommonKeyframeList.Add(commonKeyframe);
+					apAnimCommonKeyframe commonKeyframe = GetCommonKeyframe(keyframe._frameIndex);
+
+					if (commonKeyframe == null)
+					{
+						commonKeyframe = new apAnimCommonKeyframe(keyframe._frameIndex);
+						commonKeyframe.ReadyToAdd();
+
+						_subAnimCommonKeyframeList.Add(commonKeyframe);
+					}
+
+					//Common Keyframe에 추가한다.
+					commonKeyframe.AddAnimKeyframe(keyframe, _subAnimKeyframeList.Contains(keyframe));
 				}
-
-				//Common Keyframe에 추가한다.
-				commonKeyframe.AddAnimKeyframe(keyframe, _subAnimKeyframeList.Contains(keyframe));
 			}
-
 
 			_subAnimCommonKeyframeList_Selected.Clear();
 
 			//선택된 Common Keyframe만 처리한다.
-			for (int i = 0; i < _subAnimCommonKeyframeList.Count; i++)
+			nSubCommonKeys = _subAnimCommonKeyframeList.Count;//개수 갱신
+			for (int i = 0; i < nSubCommonKeys; i++)
 			{
-				if (_subAnimCommonKeyframeList[i]._isSelected)
+				commonKey = _subAnimCommonKeyframeList[i];
+				if (commonKey._isSelected)
 				{
-					_subAnimCommonKeyframeList_Selected.Add(_subAnimCommonKeyframeList[i]);
+					_subAnimCommonKeyframeList_Selected.Add(commonKey);
 				}
 			}
-
-
-
 		}
+
+		private static List<int> s_CommFrameIndexList = new List<int>();
+		private static List<apAnimKeyframe> s_TotalKeyframes = new List<apAnimKeyframe>();
+		private static Predicate<apAnimCommonKeyframe> s_FindNotCommonFrame_Func = FUNC_FindNotCommonFrame;
+		private static bool FUNC_FindNotCommonFrame(apAnimCommonKeyframe a)
+		{
+			//공통적으로 존재하지 않는 FrameIndex를 가진다면 삭제
+			return !s_CommFrameIndexList.Contains(a._frameIndex);
+		}
+
+
+
+
+
 
 		public apAnimCommonKeyframe GetCommonKeyframe(int frameIndex)
 		{
-			return _subAnimCommonKeyframeList.Find(delegate (apAnimCommonKeyframe a)
-			{
-				return a._frameIndex == frameIndex;
-			});
+			//이전 (GC 발생)
+			//return _subAnimCommonKeyframeList.Find(delegate (apAnimCommonKeyframe a)
+			//{
+			//	return a._frameIndex == frameIndex;
+			//});
+
+			//변경 v1.5.0
+			s_GetCommonKeyframe_Index = frameIndex;
+			return _subAnimCommonKeyframeList.Find(s_GetCommonKeyframeByIndex_Func);
+		}
+
+		private static int s_GetCommonKeyframe_Index = -1;
+		private static Predicate<apAnimCommonKeyframe> s_GetCommonKeyframeByIndex_Func = FUNC_GetCommonKeyframeByIndex;
+		private static bool FUNC_GetCommonKeyframeByIndex(apAnimCommonKeyframe a)
+		{
+			return a._frameIndex == s_GetCommonKeyframe_Index;
 		}
 
 
@@ -4854,24 +4973,30 @@ namespace AnyPortrait
 
 
 
+		//변경 v1.5.0 : 다중 선택 가능
 		/// <summary>
 		/// AnimClip 작업을 위해 Control Param을 선택한다.
 		/// 해당 데이터가 Timeline에 없어도 선택 가능하다
 		/// </summary>
 		/// <param name="controlParam"></param>
-		public void SelectControlParam_ForAnimEdit(apControlParam controlParam, bool isAutoSelectAnimTimelineLayer, bool isAutoTimelineUIScroll)
+		public void SelectControlParam_ForAnimEdit(	apControlParam controlParam,
+													bool isAutoSelectAnimTimelineLayer,
+													bool isAutoTimelineUIScroll,
+													MULTI_SELECT multiSelect)
 		{
-			//변경 20.5.27 : 래핑 
-			_subObjects.Clear();
-
 			if (_selectionType != SELECTION_TYPE.Animation || _animClip == null)
 			{
+				_subObjects.Clear();
 				return;
 			}
 
 			if(controlParam != null)
 			{
-				_subObjects.SelectControlParamForAnim(controlParam);
+				_subObjects.SelectControlParamForAnim(controlParam, multiSelect);
+
+				//컨트롤 파라미터가 아닌 대상 선택을 해제
+				_subObjects.ClearTF();
+				_subObjects.ClearBone();
 			}
 			
 			if (isAutoSelectAnimTimelineLayer)
@@ -5223,13 +5348,10 @@ namespace AnyPortrait
 				isWorkKeyframeChangedOrNone = true;
 				return;
 			}
-
 			
 			//변경된 코드 20.6.12 : 래핑
 			bool isSelectedWorkKeyframeChanged = false;
 			_subObjects.AutoSelectWorkKeyframes(_animClip, IsAnimPlaying, out isSelectedWorkKeyframeChanged);
-
-			
 
 			if(_subObjects.NumWorkKeyframes == 0)
 			{

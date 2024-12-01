@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -59,7 +59,7 @@ namespace AnyPortrait
 
 				//[v1.4.5] 맥에서는 세로가 너무 짧으면 안된다.
 #if UNITY_EDITOR_OSX
-				height += 20;
+				height += 30;
 #endif
 
 				s_window = curTool;
@@ -141,17 +141,18 @@ namespace AnyPortrait
 
 
 			//이름
+			GUILayout.Space(5);
 			EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_NewPortraitName), GUILayout.Width(width));//"New Portrait Name"
 			//X, Y 개수를 표시
 
-			GUILayout.Space(10);
+			GUILayout.Space(4);
 
 			apEditorUtil.SetNextGUIID(apStringFactory.I.GUI_ID__NewPortraitName);
 			_newPortraitName = EditorGUILayout.TextField(_newPortraitName, GUILayout.Width(width));
 
-			GUILayout.Space(20);
+			GUILayout.Space(8);
 			EditorGUILayout.BeginHorizontal(GUILayout.Width(width));
-			int width_Btn = ((width - 10) / 2) - 4;
+			int width_Btn = (width / 2) - 2;
 			if (GUILayout.Button(_editor.GetText(TEXT.DLG_MakePortrait), GUILayout.Width(width_Btn), GUILayout.Height(30)))//"Make Portrait"
 			{
 				_funcResult(true, _loadKey, _newPortraitName);

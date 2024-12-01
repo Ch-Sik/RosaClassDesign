@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -290,200 +290,259 @@ namespace AnyPortrait
 
 			//1. Root Unit
 			apRootUnit curRootUnit = null;
-			
-			for (int i = 0; i < rootUnits.Count; i++)
+
+			int nRootUnits = rootUnits != null ? rootUnits.Count : 0;
+
+			if (nRootUnits > 0)
 			{
-				curRootUnit = rootUnits[i];
-				if(curRootUnit == null || curRootUnit._childMeshGroup == null)
+				for (int i = 0; i < nRootUnits; i++)
 				{
-					continue;
-				}
+					curRootUnit = rootUnits[i];
+					if (curRootUnit == null || curRootUnit._childMeshGroup == null)
+					{
+						continue;
+					}
 
-				existOrderSet = _orderSets_RootUnit.Find(delegate(OrderSet a)
-				{
-					return a._ID == curRootUnit._childMeshGroup._uniqueID;
-				});
+					//변경 v1.5.0
+					s_FindOrderSet_ID = curRootUnit._childMeshGroup._uniqueID;
+					existOrderSet = _orderSets_RootUnit.Find(s_FindOrderSet_Func);
 
-				if(existOrderSet != null)
-				{
-					//이미 등록된 OrderSet이다.
-					existOrderSet._isExist = true;
-					existOrderSet._regOrder = i;
-					existOrderSet._linked_RootUnit = curRootUnit;
-				}
-				else
-				{
-					//아직 등록되지 않은 OrderSet이다.
-					OrderSet newOrderSet = new OrderSet();
-					newOrderSet.SetRootUnit(curRootUnit, i);
-					newOrderSets.Add(newOrderSet);
+					if (existOrderSet != null)
+					{
+						//이미 등록된 OrderSet이다.
+						existOrderSet._isExist = true;
+						existOrderSet._regOrder = i;
+						existOrderSet._linked_RootUnit = curRootUnit;
+					}
+					else
+					{
+						//아직 등록되지 않은 OrderSet이다.
+						OrderSet newOrderSet = new OrderSet();
+						newOrderSet.SetRootUnit(curRootUnit, i);
+						newOrderSets.Add(newOrderSet);
+					}
 				}
 			}
+			
 
 			//2. Images
 			apTextureData curImage = null;
 
-			for (int i = 0; i < images.Count; i++)
+			int nImages = images != null ? images.Count : 0;
+			if (nImages > 0)
 			{
-				curImage = images[i];
-				if(curImage == null)
+				for (int i = 0; i < nImages; i++)
 				{
-					continue;
-				}
+					curImage = images[i];
+					if (curImage == null)
+					{
+						continue;
+					}
 
-				existOrderSet = _orderSets_Image.Find(delegate(OrderSet a)
-				{
-					return a._ID == curImage._uniqueID;
-				});
+					//이전 (GC 발생)
+					//existOrderSet = _orderSets_Image.Find(delegate(OrderSet a)
+					//{
+					//	return a._ID == curImage._uniqueID;
+					//});
 
-				if(existOrderSet != null)
-				{
-					//이미 등록된 OrderSet이다.
-					existOrderSet._isExist = true;
-					existOrderSet._regOrder = i;
-					existOrderSet._linked_Image = curImage;
-				}
-				else
-				{
-					//아직 등록되지 않은 OrderSet이다.
-					OrderSet newOrderSet = new OrderSet();
-					newOrderSet.SetImage(curImage, i);
-					newOrderSets.Add(newOrderSet);
+					//변경 v1.5.0
+					s_FindOrderSet_ID = curImage._uniqueID;
+					existOrderSet = _orderSets_Image.Find(s_FindOrderSet_Func);
+
+					if (existOrderSet != null)
+					{
+						//이미 등록된 OrderSet이다.
+						existOrderSet._isExist = true;
+						existOrderSet._regOrder = i;
+						existOrderSet._linked_Image = curImage;
+					}
+					else
+					{
+						//아직 등록되지 않은 OrderSet이다.
+						OrderSet newOrderSet = new OrderSet();
+						newOrderSet.SetImage(curImage, i);
+						newOrderSets.Add(newOrderSet);
+					}
 				}
 			}
+			
 
 			//3. Meshes
 			apMesh curMesh = null;
 
-			for (int i = 0; i < meshes.Count; i++)
+			int nMeshes = meshes != null ? meshes.Count : 0;
+			if (nMeshes > 0)
 			{
-				curMesh = meshes[i];
-				if(curMesh == null)
+				for (int i = 0; i < nMeshes; i++)
 				{
-					continue;
-				}
+					curMesh = meshes[i];
+					if (curMesh == null)
+					{
+						continue;
+					}
 
-				existOrderSet = _orderSets_Mesh.Find(delegate(OrderSet a)
-				{
-					return a._ID == curMesh._uniqueID;
-				});
+					//이전 (GC 발생)
+					//existOrderSet = _orderSets_Mesh.Find(delegate(OrderSet a)
+					//{
+					//	return a._ID == curMesh._uniqueID;
+					//});
 
-				if(existOrderSet != null)
-				{
-					//이미 등록된 OrderSet이다.
-					existOrderSet._isExist = true;
-					existOrderSet._regOrder = i;
-					existOrderSet._linked_Mesh = curMesh;
-				}
-				else
-				{
-					//아직 등록되지 않은 OrderSet이다.
-					OrderSet newOrderSet = new OrderSet();
-					newOrderSet.SetMesh(curMesh, i);
-					newOrderSets.Add(newOrderSet);
+					//변경 v1.5.0
+					s_FindOrderSet_ID = curMesh._uniqueID;
+					existOrderSet = _orderSets_Mesh.Find(s_FindOrderSet_Func);
+
+
+					if (existOrderSet != null)
+					{
+						//이미 등록된 OrderSet이다.
+						existOrderSet._isExist = true;
+						existOrderSet._regOrder = i;
+						existOrderSet._linked_Mesh = curMesh;
+					}
+					else
+					{
+						//아직 등록되지 않은 OrderSet이다.
+						OrderSet newOrderSet = new OrderSet();
+						newOrderSet.SetMesh(curMesh, i);
+						newOrderSets.Add(newOrderSet);
+					}
 				}
 			}
+			
 
 			//4. MeshGroup
 			apMeshGroup curMeshGroup = null;
-
-			for (int i = 0; i < meshGroups.Count; i++)
+			int nMeshGroups = meshGroups != null ? meshGroups.Count : 0;
+			if (nMeshGroups > 0)
 			{
-				curMeshGroup = meshGroups[i];
-				if(curMeshGroup == null)
+				for (int i = 0; i < nMeshGroups; i++)
 				{
-					continue;
-				}
-				//자식 MeshGroup인 경우 처리하지 않는다.
-				if(curMeshGroup._parentMeshGroup != null)
-				{
-					continue;
-				}
+					curMeshGroup = meshGroups[i];
+					if (curMeshGroup == null)
+					{
+						continue;
+					}
+					//자식 MeshGroup인 경우 처리하지 않는다.
+					if (curMeshGroup._parentMeshGroup != null)
+					{
+						continue;
+					}
 
-				existOrderSet = _orderSets_MeshGroup.Find(delegate(OrderSet a)
-				{
-					return a._ID == curMeshGroup._uniqueID;
-				});
+					//이전 (GC 발생)
+					//existOrderSet = _orderSets_MeshGroup.Find(delegate(OrderSet a)
+					//{
+					//	return a._ID == curMeshGroup._uniqueID;
+					//});
 
-				if(existOrderSet != null)
-				{
-					//이미 등록된 OrderSet이다.
-					existOrderSet._isExist = true;
-					existOrderSet._regOrder = i;
-					existOrderSet._linked_MeshGroup = curMeshGroup;
-				}
-				else
-				{
-					//아직 등록되지 않은 OrderSet이다.
-					OrderSet newOrderSet = new OrderSet();
-					newOrderSet.SetMeshGroup(curMeshGroup, i);
-					newOrderSets.Add(newOrderSet);
+					// 변경 v1.5.0
+					s_FindOrderSet_ID = curMeshGroup._uniqueID;
+					existOrderSet = _orderSets_MeshGroup.Find(s_FindOrderSet_Func);
+
+
+
+					if (existOrderSet != null)
+					{
+						//이미 등록된 OrderSet이다.
+						existOrderSet._isExist = true;
+						existOrderSet._regOrder = i;
+						existOrderSet._linked_MeshGroup = curMeshGroup;
+					}
+					else
+					{
+						//아직 등록되지 않은 OrderSet이다.
+						OrderSet newOrderSet = new OrderSet();
+						newOrderSet.SetMeshGroup(curMeshGroup, i);
+						newOrderSets.Add(newOrderSet);
+					}
 				}
 			}
+			
 
 			//5. AnimClip
 			apAnimClip curAnimClip = null;
-
-			for (int i = 0; i < animClips.Count; i++)
+			int nAnimClips = animClips != null ? animClips.Count : 0;
+			if (nAnimClips > 0)
 			{
-				curAnimClip = animClips[i];
-				if(curAnimClip == null)
+				for (int i = 0; i < nAnimClips; i++)
 				{
-					continue;
-				}
+					curAnimClip = animClips[i];
+					if (curAnimClip == null)
+					{
+						continue;
+					}
 
-				existOrderSet = _orderSets_AnimClip.Find(delegate(OrderSet a)
-				{
-					return a._ID == curAnimClip._uniqueID;
-				});
+					//이전 (GC 발생)
+					//existOrderSet = _orderSets_AnimClip.Find(delegate(OrderSet a)
+					//{
+					//	return a._ID == curAnimClip._uniqueID;
+					//});
 
-				if(existOrderSet != null)
-				{
-					//이미 등록된 OrderSet이다.
-					existOrderSet._isExist = true;
-					existOrderSet._regOrder = i;
-					existOrderSet._linked_AnimClip = curAnimClip;
-				}
-				else
-				{
-					//아직 등록되지 않은 OrderSet이다.
-					OrderSet newOrderSet = new OrderSet();
-					newOrderSet.SetAnimClip(curAnimClip, i);
-					newOrderSets.Add(newOrderSet);
+					//변경 v1.5.0
+					s_FindOrderSet_ID = curAnimClip._uniqueID;
+					existOrderSet = _orderSets_AnimClip.Find(s_FindOrderSet_Func);
+
+
+
+
+					if (existOrderSet != null)
+					{
+						//이미 등록된 OrderSet이다.
+						existOrderSet._isExist = true;
+						existOrderSet._regOrder = i;
+						existOrderSet._linked_AnimClip = curAnimClip;
+					}
+					else
+					{
+						//아직 등록되지 않은 OrderSet이다.
+						OrderSet newOrderSet = new OrderSet();
+						newOrderSet.SetAnimClip(curAnimClip, i);
+						newOrderSets.Add(newOrderSet);
+					}
 				}
 			}
+			
 
 			//6. Control Param
 			apControlParam curControlParam = null;
-
-			for (int i = 0; i < controlParams.Count; i++)
+			int nControlParams = controlParams != null ? controlParams.Count : 0;
+			if (nControlParams > 0)
 			{
-				curControlParam = controlParams[i];
-				if(curControlParam == null)
+				for (int i = 0; i < nControlParams; i++)
 				{
-					continue;
-				}
+					curControlParam = controlParams[i];
+					if (curControlParam == null)
+					{
+						continue;
+					}
 
-				existOrderSet = _orderSets_ControlParam.Find(delegate(OrderSet a)
-				{
-					return a._ID == curControlParam._uniqueID;
-				});
+					//이전 (GC 발생)
+					//existOrderSet = _orderSets_ControlParam.Find(delegate(OrderSet a)
+					//{
+					//	return a._ID == curControlParam._uniqueID;
+					//});
 
-				if(existOrderSet != null)
-				{
-					//이미 등록된 OrderSet이다.
-					existOrderSet._isExist = true;
-					existOrderSet._regOrder = i;
-					existOrderSet._linked_ControlParam = curControlParam;
-				}
-				else
-				{
-					//아직 등록되지 않은 OrderSet이다.
-					OrderSet newOrderSet = new OrderSet();
-					newOrderSet.SetControlParam(curControlParam, i);
-					newOrderSets.Add(newOrderSet);
+					//변경 v1.5.0
+					s_FindOrderSet_ID = curControlParam._uniqueID;
+					existOrderSet = _orderSets_ControlParam.Find(s_FindOrderSet_Func);
+
+
+					if (existOrderSet != null)
+					{
+						//이미 등록된 OrderSet이다.
+						existOrderSet._isExist = true;
+						existOrderSet._regOrder = i;
+						existOrderSet._linked_ControlParam = curControlParam;
+					}
+					else
+					{
+						//아직 등록되지 않은 OrderSet이다.
+						OrderSet newOrderSet = new OrderSet();
+						newOrderSet.SetControlParam(curControlParam, i);
+						newOrderSets.Add(newOrderSet);
+					}
 				}
 			}
+			
 
 			bool isAnyChanged = false;
 
@@ -491,10 +550,15 @@ namespace AnyPortrait
 			foreach (KeyValuePair<OBJECT_TYPE, List<OrderSet>> subOrderSet in _orderSets)
 			{
 				List<OrderSet> orderSets = subOrderSet.Value;
-				int nRemoved = orderSets.RemoveAll(delegate(OrderSet a)
-				{
-					return !a._isExist;
-				});
+				//이전 (GC 발생)
+				//int nRemoved = orderSets.RemoveAll(delegate(OrderSet a)
+				//{
+				//	return !a._isExist;
+				//});
+
+				//변경 v1.5.0
+				int nRemoved = orderSets.RemoveAll(s_RemoveInvalidOrderSet_Func);
+
 
 				if(nRemoved > 0)
 				{
@@ -526,10 +590,15 @@ namespace AnyPortrait
 				foreach (KeyValuePair<OBJECT_TYPE, List<OrderSet>> subOrderSet in _orderSets)
 				{
 					List<OrderSet> orderSets = subOrderSet.Value;
-					orderSets.Sort(delegate(OrderSet a, OrderSet b)
-					{
-						return a._customOrder - b._customOrder;//오름차순
-					});
+
+					//이전 (GC 발생)
+					//orderSets.Sort(delegate(OrderSet a, OrderSet b)
+					//{
+					//	return a._customOrder - b._customOrder;//오름차순
+					//});
+
+					//변경 v1.5.0
+					orderSets.Sort(s_SortOrderSet_Func);
 
 					for (int i = 0; i < orderSets.Count; i++)
 					{
@@ -546,6 +615,76 @@ namespace AnyPortrait
 			//Debug.Log("Control Params : " + _orderSets[OBJECT_TYPE.ControlParam].Count);
 
 			_isSync = true;
+		}
+
+
+		private static int s_FindOrderSet_ID = -1;
+		private static Predicate<OrderSet> s_FindOrderSet_Func = FUNC_FindOrderSetByID;
+		private static bool FUNC_FindOrderSetByID(OrderSet a)
+		{
+			return a._ID == s_FindOrderSet_ID;
+		}
+
+		private static Predicate<OrderSet> s_RemoveInvalidOrderSet_Func = FUNC_RemoveInvalidOrderSet;
+		private static bool FUNC_RemoveInvalidOrderSet(OrderSet a)
+		{
+			return !a._isExist;
+		}
+
+		private static Comparison<OrderSet> s_SortOrderSet_Func = FUNC_SortOrderSet;
+		private static int FUNC_SortOrderSet(OrderSet a, OrderSet b)
+		{
+			return a._customOrder - b._customOrder;//오름차순
+		}
+
+		private static int s_SwitchTarget_NextOrder = -1;
+		private static OrderSet s_SwitchTarget_Target = null;
+		private static Predicate<OrderSet> s_SwitchTarget_MeshGroup_Func = FUNC_SwitchTarget_MeshGroup;
+		private static bool FUNC_SwitchTarget_MeshGroup(OrderSet a)
+		{
+			if(a._linked_MeshGroup == null)
+			{
+				return false;
+			}
+			if(a._linked_MeshGroup._parentMeshGroup != null)
+			{
+				return false;
+			}
+			//MeshGroup이 null이거나 하위 MeshGroup이면 패스
+
+			return a._customOrder == s_SwitchTarget_NextOrder && a != s_SwitchTarget_Target;
+		}
+
+		private static Predicate<OrderSet> s_SwitchTarget_Normal_Func = FUNC_SwitchTarget_Normal;
+		private static bool FUNC_SwitchTarget_Normal(OrderSet a)
+		{
+			return a._customOrder == s_SwitchTarget_NextOrder && a != s_SwitchTarget_Target;
+		}
+
+
+		private static Predicate<OrderSet> s_PullTargets_MeshGroup_Func = FUNC_PullTargets_MeshGroup;
+		private static bool FUNC_PullTargets_MeshGroup(OrderSet a)
+		{
+			if(a._linked_MeshGroup == null)
+			{
+				return false;
+			}
+			if(a._linked_MeshGroup._parentMeshGroup != null)
+			{
+				return false;
+			}
+			//MeshGroup이 null이거나 하위 MeshGroup이면 패스
+
+			//요청된 NextOrder보다 같거나 큰 값을 가졌다면 true 리턴 (밀어야 하므로)
+			return a._customOrder >= s_SwitchTarget_NextOrder && a != s_SwitchTarget_Target;
+		}
+
+
+		private static Predicate<OrderSet> s_PullTargets_Normal_Func = FUNC_PullTargets_Normal;
+		private static bool FUNC_PullTargets_Normal(OrderSet a)
+		{
+			//요청된 NextOrder보다 같거나 큰 값을 가졌다면 true 리턴 (밀어야 하므로)
+			return a._customOrder >= s_SwitchTarget_NextOrder && a != s_SwitchTarget_Target;
 		}
 
 		// Sort
@@ -601,10 +740,19 @@ namespace AnyPortrait
 
 			//1. 타겟이 있는지 확인
 			List<OrderSet> orderSets = _orderSets[objectType];
-			OrderSet target = orderSets.Find(delegate(OrderSet a)
-			{
-				return a._ID == ID;
-			});
+
+			//이전 (GC 발생)
+			//OrderSet target = orderSets.Find(delegate(OrderSet a)
+			//{
+			//	return a._ID == ID;
+			//});
+
+			//변경 v1.5.0
+			s_FindOrderSet_ID = ID;
+			OrderSet target = orderSets.Find(s_FindOrderSet_Func);
+
+
+
 			if(target == null)
 			{
 				return false;
@@ -633,27 +781,39 @@ namespace AnyPortrait
 			OrderSet switchTarget = null;
 			if(objectType == OBJECT_TYPE.MeshGroup)
 			{
-				switchTarget = orderSets.Find(delegate(OrderSet a)
-				{
-					if(a._linked_MeshGroup == null)
-					{
-						return false;
-					}
-					if(a._linked_MeshGroup._parentMeshGroup != null)
-					{
-						return false;
-					}
-					//MeshGroup이 null이거나 하위 MeshGroup이면 패스
+				//이전 (GC 발생)
+				//switchTarget = orderSets.Find(delegate(OrderSet a)
+				//{
+				//	if(a._linked_MeshGroup == null)
+				//	{
+				//		return false;
+				//	}
+				//	if(a._linked_MeshGroup._parentMeshGroup != null)
+				//	{
+				//		return false;
+				//	}
+				//	//MeshGroup이 null이거나 하위 MeshGroup이면 패스
 
-					return a._customOrder == nextOrder && a != target;
-				});
+				//	return a._customOrder == nextOrder && a != target;
+				//});
+
+				//변경 v1.5.0
+				s_SwitchTarget_NextOrder = nextOrder;
+				s_SwitchTarget_Target = target;
+				switchTarget = orderSets.Find(s_SwitchTarget_MeshGroup_Func);
 			}
 			else
 			{
-				switchTarget = orderSets.Find(delegate(OrderSet a)
-				{
-					return a._customOrder == nextOrder && a != target;
-				});
+				//이전 (GC 발생)
+				//switchTarget = orderSets.Find(delegate(OrderSet a)
+				//{
+				//	return a._customOrder == nextOrder && a != target;
+				//});
+
+				//변경 v1.5.0
+				s_SwitchTarget_NextOrder = nextOrder;
+				s_SwitchTarget_Target = target;
+				switchTarget = orderSets.Find(s_SwitchTarget_Normal_Func);
 			}
 
 			if(switchTarget != null)
@@ -689,6 +849,102 @@ namespace AnyPortrait
 			//}
 
 			return false;
+			
+		}
+
+
+
+		/// <summary>
+		/// 특정 대상(Target)의 순서를 다른 대상(PrevTarget)의 "다음"에 위치시킨다. 복제시 사용됨
+		/// </summary>
+		/// <returns>실패하면 false 리턴</returns>
+		public bool SetOrderToNext(apPortrait portrait, OBJECT_TYPE objectType, int targetID, int prevTargetID)
+		{
+			//1. 타겟이 있는지 확인
+			List<OrderSet> orderSets = _orderSets[objectType];
+
+			s_FindOrderSet_ID = targetID;
+			OrderSet target = orderSets.Find(s_FindOrderSet_Func);
+
+			s_FindOrderSet_ID = prevTargetID;
+			OrderSet prevTarget = orderSets.Find(s_FindOrderSet_Func);
+
+			if(target == null || prevTarget == null)
+			{
+				//현재, 이전 대상을 찾지 못했다.
+				return false;
+			}
+
+			if(objectType == OBJECT_TYPE.MeshGroup)
+			{
+				//MeshGroup이 없거나 자식 MeshGroup이면 순서를 바꿀 수 없다.
+				if(target._linked_MeshGroup == null)
+				{
+					return false;
+				}
+				if(target._linked_MeshGroup._parentMeshGroup != null)
+				{
+					return false;
+				}
+			}
+			
+			//Order Up : order 값이 1 줄어든다.
+			//Order Down : order 값이 1 증가한다.
+			//자리가 바뀔 대상을 찾는다. 
+			//단, MeshGroup은 Parent가 없는 것들이어야 한다.
+
+			int prevOrder = prevTarget._customOrder;
+			int nextOrder = prevOrder + 1;//Prev의 다음걸로 한다.
+
+			//Next Order과 같거나 큰 Order들은 +1씩 더 증가시킨다.
+			List<OrderSet> pullTargets = null;
+			if(objectType == OBJECT_TYPE.MeshGroup)
+			{
+				s_SwitchTarget_NextOrder = nextOrder;
+				s_SwitchTarget_Target = target;
+				pullTargets = orderSets.FindAll(s_PullTargets_MeshGroup_Func);
+			}
+			else
+			{
+				s_SwitchTarget_NextOrder = nextOrder;
+				s_SwitchTarget_Target = target;
+				pullTargets = orderSets.FindAll(s_PullTargets_Normal_Func);
+			}
+
+			//1. Target의 Order 할당
+			target._customOrder = nextOrder;
+
+			//2. Pull Target의 Order들은 모두 +1
+			int nPullTargets = pullTargets != null ? pullTargets.Count : 0; 
+			if(nPullTargets > 0)
+			{
+				OrderSet orderSet = null;
+				for (int i = 0; i < nPullTargets; i++)
+				{
+					orderSet = pullTargets[i];
+					orderSet._customOrder += 1;//1 증가
+				}
+			}
+
+			//전체 정렬을 한다.
+			SortByCustom();
+
+			//만약 RootUnit의 경우라면, Portrait에서의 RootUnit 인덱스를 교환할 필요도 있다.
+			if(objectType == OBJECT_TYPE.RootUnit)
+			{
+				portrait._mainMeshGroupIDList.Clear();
+				portrait._rootUnits.Clear();
+
+				for (int i = 0; i < orderSets.Count; i++)
+				{
+					apRootUnit rootUnit = orderSets[i]._linked_RootUnit;
+					portrait._mainMeshGroupIDList.Add(rootUnit._childMeshGroup._uniqueID);
+					portrait._rootUnits.Add(rootUnit);
+				}
+					
+					
+			}
+			return true;
 			
 		}
 

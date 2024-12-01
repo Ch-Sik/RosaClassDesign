@@ -173,21 +173,21 @@ namespace AnyPortrait
 		/// </summary>
 		/// <param name="portrait"></param>
 		public void LinkWeightPair(apPortrait portrait, apMeshGroup parentMeshGroup)
-		{
-			
+		{			
 			_totalWeight = 0.0f;
 			WeightPair weightPair = null;
 			bool isAnyRemove = false;
-			for (int i = 0; i < _weightPairs.Count; i++)
+
+			int nWeightPairs = _weightPairs != null ? _weightPairs.Count : 0;
+
+			if(nWeightPairs == 0)
+			{
+				return;
+			}
+
+			for (int i = 0; i < nWeightPairs; i++)
 			{
 				weightPair = _weightPairs[i];
-				//이 코드는 필요하지만 일단 주석. 최적화 작업을 더 하자
-				//if(weightPair._meshGroup != null && weightPair._bone != null)
-				//{
-				//	//이미 링크가 되었다.
-				//	_totalWeight += weightPair._weight;
-				//	continue;
-				//}
 
 				if (weightPair._meshGroupID >= 0)
 				{
@@ -255,9 +255,12 @@ namespace AnyPortrait
 					return a._meshGroup == null || a._bone == null;
 				});
 
-				//뭔가 삭제되었다면 Normalize를 해야한다.
-				Normalize();
+				//변경 v1.5.0 : 삭제시만 Normalize하는게 아니라 항상 Normalize를 한다.
+				// //뭔가 삭제되었다면 Normalize를 해야한다.
+				// Normalize();
 			}
+
+			Normalize();
 		}
 
 

@@ -120,6 +120,8 @@ namespace AnyPortrait
 			//_matBatch.SetMaterial(mat_Color, mat_Texture, mat_MaskedTexture);
 			//_matBatch = matBatch;
 
+			_matBatch.SetClippingSizeToAllMaterial(_glScreenClippingSize);//테스트
+
 			_matBatch.SetShader(	shader_Color, 
 									shader_Texture_Normal_Set, 
 									shader_Texture_VColorAdd_Set, 

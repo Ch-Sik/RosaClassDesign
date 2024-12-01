@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -330,7 +330,7 @@ namespace AnyPortrait
 						else if(targetObj is apControlParam)
 						{
 							apControlParam targetCP = targetObj as apControlParam;
-							Select.SelectControlParam_ForAnimEdit(targetCP, true, true);
+							Select.SelectControlParam_ForAnimEdit(targetCP, true, true, apSelection.MULTI_SELECT.Main);
 							isProcessed = true;
 						}
 

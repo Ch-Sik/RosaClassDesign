@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -205,49 +205,58 @@ namespace AnyPortrait
 
 
 			apAnimPlayData animPlayData = null;
+			int nPlayDataList = _animPlayDataList != null ? _animPlayDataList.Count : 0;
 
-			for (int i = 0; i < _animPlayDataList.Count; i++)
+			if (nPlayDataList > 0)
 			{
-				animPlayData = _animPlayDataList[i];
-				animPlayData._isValid = false;//일단 유효성 초기화 (나중에 값 넣으면 자동으로 true)
 
-				apAnimClip animClip = _portrait.GetAnimClip(animPlayData._animClipID);
-
-
-				apOptRootUnit rootUnit = _portrait._optRootUnitList.Find(delegate (apOptRootUnit a)
+				for (int i = 0; i < _animPlayDataList.Count; i++)
 				{
-					if (a._rootOptTransform != null)
+					animPlayData = _animPlayDataList[i];
+					animPlayData._isValid = false;//일단 유효성 초기화 (나중에 값 넣으면 자동으로 true)
+
+					apAnimClip animClip = _portrait.GetAnimClip(animPlayData._animClipID);
+
+					//이전 (GC 발생)
+					//apOptRootUnit rootUnit = _portrait._optRootUnitList.Find(delegate (apOptRootUnit a)
+					//{
+					//	if (a._rootOptTransform != null)
+					//	{
+					//		if (a._rootOptTransform._meshGroupUniqueID == animPlayData._meshGroupID)
+					//		{
+					//			return true;
+					//		}
+					//	}
+					//	return false;
+					//});
+
+					//변경 v1.5.0
+					s_FindRootUnit_MeshGroupID = animPlayData._meshGroupID;
+					apOptRootUnit rootUnit = _portrait._optRootUnitList.Find(s_FindRootUnit_Func);
+
+					if (animClip != null && rootUnit != null)
 					{
-						if (a._rootOptTransform._meshGroupUniqueID == animPlayData._meshGroupID)
+						animPlayData.Link(animClip, rootUnit);
+
+						//추가 : 여기서 ControlParamResult를 미리 만들어서 이후에 AnimClip이 미리 만들수 있게 해주자
+						animClip.MakeAndLinkControlParamResults();
+					}
+
+					//추가 22.6.8 : 빠른 참조를 위해 연동
+					if (!string.IsNullOrEmpty(animPlayData._animClipName))
+					{
+						if (!_mapping_AnimPlayData_ByName.ContainsKey(animPlayData._animClipName))
 						{
-							return true;
+							_mapping_AnimPlayData_ByName.Add(animPlayData._animClipName, animPlayData);
 						}
 					}
-					return false;
-				});
 
-				if (animClip != null && rootUnit != null)
-				{
-					animPlayData.Link(animClip, rootUnit);
-
-					//추가 : 여기서 ControlParamResult를 미리 만들어서 이후에 AnimClip이 미리 만들수 있게 해주자
-					animClip.MakeAndLinkControlParamResults();
-				}
-
-				//추가 22.6.8 : 빠른 참조를 위해 연동
-				if (!string.IsNullOrEmpty(animPlayData._animClipName))
-				{
-					if (!_mapping_AnimPlayData_ByName.ContainsKey(animPlayData._animClipName))
+					if (animPlayData._linkedAnimClip != null)
 					{
-						_mapping_AnimPlayData_ByName.Add(animPlayData._animClipName, animPlayData);
-					}
-				}
-
-				if (animPlayData._linkedAnimClip != null)
-				{
-					if (!_mapping_AnimPlayData_ByClip.ContainsKey(animPlayData._linkedAnimClip))
-					{
-						_mapping_AnimPlayData_ByClip.Add(animPlayData._linkedAnimClip, animPlayData);
+						if (!_mapping_AnimPlayData_ByClip.ContainsKey(animPlayData._linkedAnimClip))
+						{
+							_mapping_AnimPlayData_ByClip.Add(animPlayData._linkedAnimClip, animPlayData);
+						}
 					}
 				}
 			}
@@ -268,7 +277,19 @@ namespace AnyPortrait
 
 		}
 
-
+		private static int s_FindRootUnit_MeshGroupID = -1;
+		private Predicate<apOptRootUnit> s_FindRootUnit_Func = FUNC_FindRootUnit;
+		private static bool FUNC_FindRootUnit(apOptRootUnit a)
+		{
+			if (a._rootOptTransform != null)
+				{
+					if (a._rootOptTransform._meshGroupUniqueID == s_FindRootUnit_MeshGroupID)
+					{
+						return true;
+					}
+				}
+				return false;
+		}
 
 
 		// [런타임에서] Portrait를 연결하고, Portrait를 검색하여 animPlayData를 세팅한다.
@@ -304,53 +325,61 @@ namespace AnyPortrait
 
 
 			apAnimPlayData animPlayData = null;
+			int nPlayDataList = _animPlayDataList != null ? _animPlayDataList.Count : 0;
 
-			for (int i = 0; i < _animPlayDataList.Count; i++)
+			if (nPlayDataList > 0)
 			{
-				animPlayData = _animPlayDataList[i];
-				animPlayData._isValid = false;//일단 유효성 초기화 (나중에 값 넣으면 자동으로 true)
-
-				apAnimClip animClip = _portrait.GetAnimClip(animPlayData._animClipID);
-
-
-				apOptRootUnit rootUnit = _portrait._optRootUnitList.Find(delegate (apOptRootUnit a)
+				for (int i = 0; i < _animPlayDataList.Count; i++)
 				{
-					if (a._rootOptTransform != null)
+					animPlayData = _animPlayDataList[i];
+					animPlayData._isValid = false;//일단 유효성 초기화 (나중에 값 넣으면 자동으로 true)
+
+					apAnimClip animClip = _portrait.GetAnimClip(animPlayData._animClipID);
+
+					//이전 (GC 발생)
+					//apOptRootUnit rootUnit = _portrait._optRootUnitList.Find(delegate (apOptRootUnit a)
+					//{
+					//	if (a._rootOptTransform != null)
+					//	{
+					//		if (a._rootOptTransform._meshGroupUniqueID == animPlayData._meshGroupID)
+					//		{
+					//			return true;
+					//		}
+					//	}
+					//	return false;
+					//});
+
+					//변경 v1.5.0
+					s_FindRootUnit_MeshGroupID = animPlayData._meshGroupID;
+					apOptRootUnit rootUnit = _portrait._optRootUnitList.Find(s_FindRootUnit_Func);
+
+					if (animClip != null && rootUnit != null)
 					{
-						if (a._rootOptTransform._meshGroupUniqueID == animPlayData._meshGroupID)
-						{
-							return true;
-						}
+						animPlayData.Link(animClip, rootUnit);
+
+						//추가 : 여기서 ControlParamResult를 미리 만들어서 이후에 AnimClip이 미리 만들수 있게 해주자
+						animClip.MakeAndLinkControlParamResults();
 					}
-					return false;
-				});
 
-				if (animClip != null && rootUnit != null)
-				{
-					animPlayData.Link(animClip, rootUnit);
+					//추가 22.6.8 : 빠른 참조를 위해 연동
+					if (!_mapping_AnimPlayData_ByName.ContainsKey(animPlayData._animClipName))
+					{
+						_mapping_AnimPlayData_ByName.Add(animPlayData._animClipName, animPlayData);
+					}
 
-					//추가 : 여기서 ControlParamResult를 미리 만들어서 이후에 AnimClip이 미리 만들수 있게 해주자
-					animClip.MakeAndLinkControlParamResults();
-				}
+					if (!_mapping_AnimPlayData_ByClip.ContainsKey(animPlayData._linkedAnimClip))
+					{
+						_mapping_AnimPlayData_ByClip.Add(animPlayData._linkedAnimClip, animPlayData);
+					}
 
-				//추가 22.6.8 : 빠른 참조를 위해 연동
-				if(!_mapping_AnimPlayData_ByName.ContainsKey(animPlayData._animClipName))
-				{
-					_mapping_AnimPlayData_ByName.Add(animPlayData._animClipName, animPlayData);
-				}
-
-				if(!_mapping_AnimPlayData_ByClip.ContainsKey(animPlayData._linkedAnimClip))
-				{
-					_mapping_AnimPlayData_ByClip.Add(animPlayData._linkedAnimClip, animPlayData);
-				}
-
-				//Async Wait
-				if (asyncTimer.IsYield())
-				{
-					yield return asyncTimer.WaitAndRestart();
+					//Async Wait
+					if (asyncTimer.IsYield())
+					{
+						yield return asyncTimer.WaitAndRestart();
+					}
 				}
 			}
-
+			
 			//추가 : 메카님 연동
 			_mecanim.LinkPortrait(portrait, this);
 			
@@ -1160,13 +1189,26 @@ namespace AnyPortrait
 			}
 			if(result == null)
 			{
-				result = _animPlayDataList.Find(delegate (apAnimPlayData a)
-				{
-					return string.Equals(a._animClipName, animClipName);
-				});
+				//이전 (GC 발생)
+				//result = _animPlayDataList.Find(delegate (apAnimPlayData a)
+				//{
+				//	return string.Equals(a._animClipName, animClipName);
+				//});
+
+				//변경 v1.5.0
+				s_GetAnimPlayDataOpt_AnimClipName = animClipName;
+				result = _animPlayDataList.Find(s_GetAnimPlayDataOptByName_Func);
 			}
 			return result;
 		}
+
+		private static string s_GetAnimPlayDataOpt_AnimClipName = null;
+		private static Predicate<apAnimPlayData> s_GetAnimPlayDataOptByName_Func = FUNC_GetAnimPlayDataOpt_FindByName;
+		private static bool FUNC_GetAnimPlayDataOpt_FindByName(apAnimPlayData a)
+		{
+			return string.Equals(a._animClipName, s_GetAnimPlayDataOpt_AnimClipName);
+		}
+
 
 		/// <summary>
 		/// Get Animation Data in runtime
@@ -1175,12 +1217,6 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apAnimPlayData GetAnimPlayData_Opt(apAnimClip animClip)
 		{
-			//이전
-			//return _animPlayDataList.Find(delegate (apAnimPlayData a)
-			//{
-			//	return a._linkedAnimClip == animClip;
-			//});
-
 			//변경 22.6.8 : 코드 최적화
 			apAnimPlayData result = null;
 			if(_mapping_AnimPlayData_ByClip != null)
@@ -1189,14 +1225,26 @@ namespace AnyPortrait
 			}
 			if (result == null)
 			{
-				result = _animPlayDataList.Find(delegate (apAnimPlayData a)
-				{
-					return a._linkedAnimClip == animClip;
-				});
+				//이전 (GC 발생)
+				//result = _animPlayDataList.Find(delegate (apAnimPlayData a)
+				//{
+				//	return a._linkedAnimClip == animClip;
+				//});
+
+				//변경 v1.5.0
+				s_GetAnimPlayDataOpt_AnimClip = animClip;
+				result = _animPlayDataList.Find(s_GetAnimPlayDataOptByClip_Func);
 			}
 			return result;
-			
 		}
+
+		private static apAnimClip s_GetAnimPlayDataOpt_AnimClip = null;
+		private static Predicate<apAnimPlayData> s_GetAnimPlayDataOptByClip_Func = FUNC_GetAnimPlayDataOpt_FindByClip;
+		private static bool FUNC_GetAnimPlayDataOpt_FindByClip(apAnimPlayData a)
+		{
+			return a._linkedAnimClip == s_GetAnimPlayDataOpt_AnimClip;
+		}
+
 
 
 		public bool IsPlaying(string animClipName)

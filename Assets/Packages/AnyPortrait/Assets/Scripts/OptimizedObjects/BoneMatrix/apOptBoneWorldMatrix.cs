@@ -120,6 +120,7 @@ namespace AnyPortrait
 		public virtual void SetTRSAsResult(	bool isMove, Vector2 pos, 
 											bool isRotate, float angle, 
 											bool isScale, Vector2 scale,
+											bool isLookAt, Vector2 lookTargetPos, float lookAtWeight, //추가 v1.5.0
 											bool isIKAngle, float IKAngle_World, float IKAngle_Delta, float IKWeight) { }
 
 
