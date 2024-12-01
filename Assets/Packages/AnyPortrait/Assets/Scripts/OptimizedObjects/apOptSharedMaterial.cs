@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -61,7 +61,9 @@ namespace AnyPortrait
 				_isUseMaterialInfo = false;
 				_materialInfo = null;
 
-				_material = new Material(_shader);
+				_material = new Material(_shader);				
+				_material.name = "Shared-" + _material.name;
+
 				_material.SetColor("_Color", new Color(0.5f, 0.5f, 0.5f, 1.0f));
 				_material.SetTexture("_MainTex", _texture);
 
@@ -88,6 +90,8 @@ namespace AnyPortrait
 				//_shader = _materialInfo._shader;
 
 				_material = new Material(_materialInfo._shader);
+				_material.name = "Shared-" + _material.name;
+				
 				_material.SetColor("_Color", new Color(0.5f, 0.5f, 0.5f, 1.0f));
 				_material.SetTexture("_MainTex", _materialInfo._mainTex);
 
@@ -170,6 +174,22 @@ namespace AnyPortrait
 		{
 			Clear();
 		}
+
+
+#if UNITY_2020_1_OR_NEWER
+		//[v1.5.0] Reload Domain 옵션 비활성화시 static 필드 초기화가 안되는데, 이 기능에 영향을 줘버린다.
+		//Reload Domain 비활성화 + 게임 시작시 강제로 초기화를 호출해야한다.
+		// 참조 : https://docs.unity3d.com/kr/2022.3/Manual/DomainReloading.html
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		private static void InitDomain()
+		{	
+			if (_instance != null)
+			{
+				_instance.Clear();
+			}
+		}
+#endif
+
 
 		public void Clear()
 		{	
@@ -307,10 +327,15 @@ namespace AnyPortrait
 				{
 					List<MaterialUnit> matUnitList = _matUnits_MatInfo[matInfo._mainTex][matInfo._shader];
 
-					matUnit = matUnitList.Find(delegate(MaterialUnit a)
-					{
-						return a.IsEqualMaterialInfo(matInfo);
-					});
+					//이전 (GC 발생)
+					// matUnit = matUnitList.Find(delegate(MaterialUnit a)
+					// {
+					// 	return a.IsEqualMaterialInfo(matInfo);
+					// });
+
+					//변경 v1.5.0
+					s_GetMatUnit_Info = matInfo;
+					matUnit = matUnitList.Find(s_GetMatUnitByInfo_Func);
 				}
 			}
 
@@ -366,6 +391,12 @@ namespace AnyPortrait
 			return matUnit._material;
 		}
 
+		private static apOptMaterialInfo s_GetMatUnit_Info = null;
+		private static Predicate<MaterialUnit> s_GetMatUnitByInfo_Func = FUNC_GetMatUnitByInfo;
+		private static bool FUNC_GetMatUnitByInfo(MaterialUnit a)
+		{
+			return a.IsEqualMaterialInfo(s_GetMatUnit_Info);
+		}
 		
 
 

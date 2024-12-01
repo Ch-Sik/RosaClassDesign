@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -109,7 +109,7 @@ namespace AnyPortrait
 		public List<apAnimCommonKeyframe> AnimCommonKeyframes_Selected { get { return _subAnimCommonKeyframeList_Selected; } }
 
 		//추가 3.30 : 키프레임들을 동시에 편집하고자 하는 경우
-		public apTimelineCommonCurve _animTimelineCommonCurve = new apTimelineCommonCurve();
+		public apTimelineCommonCurve _animTimelineCommonCurve = null;
 
 
 		//애니메이션 선택 잠금
@@ -203,15 +203,17 @@ namespace AnyPortrait
 			if(subObject is apTransform_Mesh) { return _subObjects.IsSelected(subObject as apTransform_Mesh); }
 			if(subObject is apTransform_MeshGroup) { return _subObjects.IsSelected(subObject as apTransform_MeshGroup); }
 			if(subObject is apBone) { return _subObjects.IsSelected(subObject as apBone); }
+			if(subObject is apControlParam) { return _subObjects.IsSelected(subObject as apControlParam); }
 			return SUB_SELECTED_RESULT.None;
 		}
 
 		//선택된 MeshTF, MeshGroupTF, Bone을 리턴한다. 전체 또는 추가(Sub)를 리턴한다.
 		//메인으로 선택된건 All 리스트에 있거나 다른 변수를 이용하자
-		public List<apTransform_Mesh>		GetSubSeletedMeshTFs(bool isSubOnly)				{ return isSubOnly ? _subObjects.SubMeshTFs : _subObjects.AllMeshTFs; }
-		public List<apTransform_MeshGroup>	GetSubSeletedMeshGroupTFs(bool isSubOnly)	{ return isSubOnly ? _subObjects.SubMeshGroupTFs : _subObjects.AllMeshGroupTFs; }
-		public List<apBone>					GetSubSeletedBones(bool isSubOnly)							{ return isSubOnly ? _subObjects.SubBones : _subObjects.AllBones; }
-
+		public List<apTransform_Mesh>		GetSubSelectedMeshTFs(bool isSubOnly)				{ return isSubOnly ? _subObjects.SubMeshTFs : _subObjects.AllMeshTFs; }
+		public List<apTransform_MeshGroup>	GetSubSelectedMeshGroupTFs(bool isSubOnly)	{ return isSubOnly ? _subObjects.SubMeshGroupTFs : _subObjects.AllMeshGroupTFs; }
+		public List<apBone>					GetSubSelectedBones(bool isSubOnly)							{ return isSubOnly ? _subObjects.SubBones : _subObjects.AllBones; }
+		public List<apControlParam>			GetSubSelectedControlParams(bool isSubOnly) { return isSubOnly ? _subObjects.SubControlParamsForAnim : _subObjects.AllControlParamsForAnim; }
+		
 		
 
 
@@ -239,6 +241,9 @@ namespace AnyPortrait
 		
 
 		private apModifierBase _modifier = null;
+		//[v1.5.0] UI 상에서 마지막으로 직접 선택한 Modifier (빠른 선택 위함)
+		private apModifierBase _lastSelectedModifier = null;
+
 
 		//Modifier 작업시 선택하는 객체들
 		private apModifierParamSet _paramSetOfMod = null;
@@ -448,45 +453,51 @@ namespace AnyPortrait
 		public bool IsSelectionLock { get { return _isSelectionLock; } }
 
 
-		public bool IsExEditable
+		//public bool IsExEditable
+		//{
+		//	get
+		//	{
+		//		if (_selectionType != SELECTION_TYPE.MeshGroup)
+		//		{
+		//			return false;
+		//		}
+
+		//		if (_meshGroup == null || _modifier == null)
+		//		{
+		//			return false;
+		//		}
+
+		//		//변경 22.5.14 : ExEditMode 삭제됨
+		//		return SubEditedParamSetGroup != null && ParamSetOfMod != null;//변경 20.6.10
+		//	}
+		//}
+
+		//변경 v1.5.0 : Param Set (예:컨트롤 파라미터의 키 등)이 있는지 여부를 체크하거나 체크하지 않을 수 있다.
+		/// <summary>
+		/// 편집 모드로 전환이 가능한가.
+		/// </summary>
+		/// <param name="isCheckParamSet">이 값이 true라면 ParamSet(컨트롤 파라미터의 키 등)의 유무도 체크한다. false라면 무시한다.</param>
+		/// <returns></returns>
+		public bool IsExEditable(bool isCheckParamSet)
 		{
-			get
+			//메시 그룹이 아니라면
+			if (_selectionType != SELECTION_TYPE.MeshGroup
+				|| _meshGroup == null
+				|| _modifier == null
+				|| _subEditedParamSetGroup == null)
 			{
-				if (_selectionType != SELECTION_TYPE.MeshGroup)
-				{
-					return false;
-				}
-
-				if (_meshGroup == null || _modifier == null)
-				{
-					return false;
-				}
-
-
-				//이전
-				//switch (ExEditMode)
-				//{
-				//	case EX_EDIT_KEY_VALUE.None:
-				//		return false;
-
-				//	case EX_EDIT_KEY_VALUE.ModMeshAndParamKey_ModVert:
-				//		//return (ExKey_ModParamSetGroup != null) && (ExKey_ModParamSet != null);//이전
-				//		return SubEditedParamSetGroup != null && ParamSetOfMod != null;//변경 20.6.10
-
-				//	case EX_EDIT_KEY_VALUE.ParamKey_Bone:
-				//	case EX_EDIT_KEY_VALUE.ParamKey_ModMesh:
-				//		//return (ExKey_ModParamSetGroup != null) && (ExKey_ModParamSet != null);//이전
-				//		return SubEditedParamSetGroup != null && ParamSetOfMod != null;//변경 20.6.10
-
-				//	default:
-				//		Debug.LogError("TODO : IsExEditable에 정의되지 않는 타입이 들어왔습니다. [" + ExEditMode + "]");
-				//		break;
-				//}
-				//return false;
-
-				//변경 22.5.14 : ExEditMode 삭제됨
-				return SubEditedParamSetGroup != null && ParamSetOfMod != null;//변경 20.6.10
+				return false;
 			}
+
+			if (isCheckParamSet)
+			{
+				//ParamSet 유무도 체크한다.
+				if(_paramSetOfMod == null)
+				{
+					return false;
+				}
+			}
+			return true;//조건 통과
 		}
 
 		//추가 22.3.20 : Morph 모디파이어 편집시 (MeshGroup-Modifier(Controller) 또는 Animation)
@@ -794,8 +805,21 @@ namespace AnyPortrait
 		private bool _captureGIF_IsProgressDialog = false;
 
 		private bool _captureSprite_IsAnimClipInit = false;
-		private List<apAnimClip> _captureSprite_AnimClips = new List<apAnimClip>();
-		private List<bool> _captureSprite_AnimClipFlags = new List<bool>();
+		
+		public class CaptureAnimInfo
+		{
+			public apAnimClip _animClip = null;
+			public bool _isSelected = false;//선택되었는가
+			public bool _isVisible = false;//검색 키워드에 의해서 보여지고 있는 중인가
+			public CaptureAnimInfo(apAnimClip animClip)
+			{
+				_animClip = animClip;
+				_isSelected = false;
+				_isVisible = true;//기본은 보여지고 있는 중
+			}
+		}
+		private List<CaptureAnimInfo> _captureSprite_AnimClipInfos = new List<CaptureAnimInfo>();
+		private string _captureSprite_AnimSearchKeyword = "";//v1.5.1 : 이름으로 검색하기
 
 
 		//추가 19.6.10 : MeshTransform의 속성 관련
@@ -898,6 +922,7 @@ namespace AnyPortrait
 		private object _loadKey_SelectTextureAsset = null;
 		private object _loadKey_SelectBonesForAutoRig = null;
 		private object _loadKey_MigrateMeshTransform = null;
+		private object _loadKey_RescaleKeyframes = null;
 
 		private int _timlineGUIWidth = -1;
 
@@ -965,6 +990,7 @@ namespace AnyPortrait
 		private apGUIContentWrapper _guiContent_Bottom_Animation_RemoveKeyframes = null;
 		private apGUIContentWrapper _guiContent_Bottom_Animation_RemoveNumKeyframes = null;
 		private apGUIContentWrapper _guiContent_Bottom_Animation_Fit = null;
+		private apGUIContentWrapper _guiContent_Bottom_Animation_ScaleKeys = null;
 
 		private apGUIContentWrapper _guiContent_Right_MeshGroup_MaterialSet = null;
 		private apGUIContentWrapper _guiContent_Right_MeshGroup_CustomShader = null;
@@ -1091,6 +1117,13 @@ namespace AnyPortrait
 		//public readonly string[] _captureFilterModeNames = new string[] { "Point (Nearest)", "Bilinear (Smooth)" };
 
 
+		//추가 v1.5.0 : IK용 Enum 이름
+		private string[] _propNames_IKInitPose = new string[]
+		{
+			"Preferred Angle",
+			"Keep Current (FK)",
+			"Average (Preferred+FK)"
+		};
 
 
 
@@ -1195,10 +1228,17 @@ namespace AnyPortrait
 			//_isAnimAutoKey = false;
 			_isAnimSelectionLock = false;
 
+			if(_animTimelineCommonCurve == null)
+			{
+				_animTimelineCommonCurve = new apTimelineCommonCurve(this);
+			}
 			_animTimelineCommonCurve.Clear();//추가 3.30
 
 			_subAnimCommonKeyframeList.Clear();
 			_subAnimCommonKeyframeList_Selected.Clear();
+
+
+			
 
 
 			//삭제 20.6.10 : 래핑되었다.
@@ -1240,6 +1280,8 @@ namespace AnyPortrait
 			{
 				_isPasteSlotSelected[i] = false;
 			}
+
+			_lastSelectedModifier = null;
 			
 
 			//추가 20.4.13 : VisibilityController 추가됨
@@ -1339,103 +1381,14 @@ namespace AnyPortrait
 				|| _subEditedParamSetGroup == null
 				//|| _exEditKeyValue == EX_EDIT_KEY_VALUE.None//삭제
 				)
-			{
+			{	
 				_exclusiveEditing = EX_EDIT.None;
 				return false;
 			}
 
-			//이전 : 상황에 따라 편집 모드가 자동으로 해제된다.
-			//bool isExEditable = IsExEditable;
-			//if (MeshGroup == null || Modifier == null || SubEditedParamSetGroup == null)
-			//{
-			//	isExEditable = false;
-			//}
-
-			////기존
-			//if (!isIgnoreExEditable)
-			//{
-			//	if (isExEditable)
-			//	{
-			//		_exclusiveEditing = exclusiveEditing;
-			//	}
-			//	else
-			//	{
-			//		_exclusiveEditing = EX_EDIT.None;
-			//	}
-			//}
-			//else
-			//{
-			//	//추가 3.31 : ExEditing 모드를 유지하는 옵션 추가
-			//	_exclusiveEditing = exclusiveEditing;
-			//}
-
-
-			//변경 22.5.14 : 일단 무조건 적용
 			_exclusiveEditing = exclusiveEditing;
 
-
-			//작업중인 Modifier 외에는 일부 제외를 하자
-			//switch (_exclusiveEditing)
-			//{
-			//	case EX_EDIT.None:
-			//		//모든 Modifier를 활성화한다.
-			//		{
-			//			//이전
-			//			//if (MeshGroup != null)
-			//			//{
-			//			//	//Exclusive 모두 해제
-			//			//	MeshGroup._modifierStack.ActiveAllModifierFromExclusiveEditing();
-							
-			//			//	//이전
-			//			//	//Editor.Controller.SetMeshGroupTmpWorkVisibleReset(MeshGroup, false, true, true);
-							
-			//			//	//변경 20.4.13
-			//			//	Editor.Controller.SetMeshGroupTmpWorkVisibleReset(	MeshGroup, 
-			//			//														apEditorController.RESET_VISIBLE_ACTION.OnlyRefreshIfOptionIsOff,
-			//			//														apEditorController.RESET_VISIBLE_TARGET.RenderUnitsAndBones);
-
-
-			//			//	//RefreshMeshGroupExEditingFlags(MeshGroup, null, null, null, false);//<<추가
-
-			//			//	//변경 21.2.15
-			//			//	RefreshMeshGroupExEditingFlags(false);
-			//			//}
-
-						
-
-			//			//_modRenderVert_Main = null;
-			//			//_modRenderVerts_All.Clear();
-			//			//_modRenderVerts_Weighted.Clear();
-
-			//			//_modRenderPin_Main = null;
-			//			//_modRenderPins_All.Clear();
-			//			//_modRenderPins_Weighted.Clear();
-			//		}
-			//		break;
-
-					
-			//	case EX_EDIT.ExOnly_Edit:
-			//		{
-			//			//작업중인 Modifier만 활성화한다. (Mod Lock)
-
-			//			//이전
-			//			//apModifierStack.OTHER_MOD_RUN_OPTION otherModRunOption = apModifierStack.OTHER_MOD_RUN_OPTION.Disabled;
-			//			//if(Editor._exModObjOption_UpdateByOtherMod)
-			//			//{
-			//			//	//다중 편집 허용 중이라면 (D키)
-			//			//	otherModRunOption = apModifierStack.OTHER_MOD_RUN_OPTION.ActiveAllPossible;
-			//			//}
-			//			//else if(Editor._modLockOption_ColorPreview)
-			//			//{
-			//			//	//다중 편집은 아니지만 색상 미리보기라도 지원한다면
-			//			//	otherModRunOption = apModifierStack.OTHER_MOD_RUN_OPTION.ActiveColorOnly;
-			//			//}
-			//			////변경 21.2.15
-			//			//RefreshMeshGroupExEditingFlags(false);
-			//		}
-			//		break;
-			//}
-
+			
 			//변경 22.5.14 : 함수로 깔끔하게 정리
 			AutoRefreshModifierExclusiveEditing();
 
@@ -1652,7 +1605,7 @@ namespace AnyPortrait
 
 			//편집 모드가 자동으로 무조건 꺼져야 하는 상태라면
 			if(isTurnOffEditMode)
-			{
+			{	
 				_exclusiveEditing = EX_EDIT.None;
 				_exAnimEditingMode = EX_EDIT.None;
 			}
@@ -1743,6 +1696,11 @@ namespace AnyPortrait
 			//이 함수 호출 이후엔, 다음의 코드가 실행되어야 한다.
 			//Editor.Gizmos.OnSelectedObjectsChanged();//20.7.5 기즈모 이 함수를 호출해야 기즈모 시작시 선택이 제대로 처리된다.
 			//Editor.RefreshControllerAndHierarchy(false);
+
+			//if(ExEditingMode == EX_EDIT.None)
+			//{
+			//	Debug.LogError("None");
+			//}
 		}
 
 
@@ -1764,11 +1722,16 @@ namespace AnyPortrait
 				return false;
 			}
 
-			bool isExEditable = IsExEditable;
-			if (MeshGroup == null || Modifier == null || SubEditedParamSetGroup == null)
-			{
-				isExEditable = false;
-			}
+			//이전
+			//bool isExEditable = IsExEditable;
+			//if (MeshGroup == null || Modifier == null || SubEditedParamSetGroup == null)
+			//{
+			//	isExEditable = false;
+			//}
+
+			//변경 v1.5.0 : ParamSet이 없을때 자동으로 편집 모드가 풀리는 버그가 수정됨
+			bool isExEditable = IsExEditable(false);//false : ParamSet의 유무는 체크하지 않고 복구한다.
+			
 
 			if (isExEditable)
 			{
@@ -3393,6 +3356,12 @@ namespace AnyPortrait
 						}
 						else if (Editor._meshGroupEditMode == apEditor.MESHGROUP_EDIT_MODE.Setting)
 						{
+							//[v1.5.0 추가]
+							if(_isMeshGroupSetting_EditDefaultTransform)
+							{
+								//Default Transform 편집시에는 IK가 꺼져있어야 한다.
+								return false;
+							}
 							return true;
 						}
 						else
@@ -3461,6 +3430,13 @@ namespace AnyPortrait
 						else if (Editor._meshGroupEditMode == apEditor.MESHGROUP_EDIT_MODE.Setting)
 						{
 							return true;
+						}
+						else if(Editor._meshGroupEditMode == apEditor.MESHGROUP_EDIT_MODE.Bone)
+						{
+							//[v1.5.0 추가]
+							//본 탭에서도 Rigging 결과가 IK에 적용되도록 만들자
+							return true;
+
 						}
 						return false;
 
@@ -4460,6 +4436,7 @@ namespace AnyPortrait
 			_guiContent_Bottom_Animation_RemoveKeyframes = null;
 			_guiContent_Bottom_Animation_RemoveNumKeyframes = null;
 			_guiContent_Bottom_Animation_Fit = null;
+			_guiContent_Bottom_Animation_ScaleKeys = null;
 
 			_guiContent_Right_MeshGroup_MaterialSet = null;
 			_guiContent_Right_MeshGroup_CustomShader = null;

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -58,6 +58,8 @@ namespace AnyPortrait
 			_pos = vPos;
 			_isRealPoint = isRealPoint;
 
+			if(_refParams == null) { _refParams = new List<apCalculatedResultParam.ParamKeyValueSet>(); }
+			if(_refWeights == null) { _refWeights = new List<float>(); }
 			_refParams.Clear();
 			_refWeights.Clear();
 			_nRefPoints = 0;
@@ -70,6 +72,9 @@ namespace AnyPortrait
 		{
 			_pos.x = fPos;
 			_isRealPoint = isRealPoint;
+
+			if(_refParams == null) { _refParams = new List<apCalculatedResultParam.ParamKeyValueSet>(); }
+			if(_refWeights == null) { _refWeights = new List<float>(); }
 
 			_refParams.Clear();
 			_refWeights.Clear();
@@ -84,6 +89,8 @@ namespace AnyPortrait
 			_iPos = iPos;
 			_isRealPoint = isRealPoint;
 
+			if(_refParams == null) { _refParams = new List<apCalculatedResultParam.ParamKeyValueSet>(); }
+			if(_refWeights == null) { _refWeights = new List<float>(); }
 			_refParams.Clear();
 			_refWeights.Clear();
 			_nRefPoints = 0;
@@ -96,12 +103,28 @@ namespace AnyPortrait
 		//-----------------------------------------
 		public void AddPoint(apCalculatedResultParam.ParamKeyValueSet point, float weight)
 		{
-			_refParams.Add(point);
-			_refWeights.Add(weight);
+			//이전
+			// _refParams.Add(point);
+			// _refWeights.Add(weight);
+
+			//변경 v1.5.0
+			int iRef = _refParams.IndexOf(point);
+			if(iRef >= 0)
+			{
+				//이미 있는 값이다.
+				_refWeights[iRef] = _refWeights[iRef] + weight;
+			}
+			else
+			{
+				//없는 값이다.
+				_refParams.Add(point);
+				_refWeights.Add(weight);
+			}
+
 			_nRefPoints = _refParams.Count;
 		}
 
-		public void Addpoints(apCalculatedLerpPoint lerpPoint, float weight)
+		public void AddPoints(apCalculatedLerpPoint lerpPoint, float weight)
 		{
 			for (int i = 0; i < lerpPoint._refParams.Count; i++)
 			{
@@ -109,9 +132,36 @@ namespace AnyPortrait
 			}
 		}
 
+		//추가 v1.5.0
+		//이게 없어서 Virtual Lerp Point가 에러를 유발한다.
+		public void NormalizeWeights()
+		{
+			_nRefPoints = _refParams.Count;
+			if(_nRefPoints == 0)
+			{
+				return;
+			}
+			float totalWeights = 0.0f;
+			for (int i = 0; i < _nRefPoints; i++)
+			{
+				totalWeights += _refWeights[i];
+			}
+
+			if(totalWeights > 0.0f)
+			{
+				for (int i = 0; i < _nRefPoints; i++)
+				{
+					_refWeights[i] /= totalWeights;
+				}				
+			}
+		}
+
+
+
 		public void CalculateITPWeight(ref float totalWeight)//v1.4.7 : totalWeight 추가
 		{	
 			float curWeight = 0.0f;
+			
 			for (int i = 0; i < _nRefPoints; i++)
 			{
 				//v1.4.6 변경

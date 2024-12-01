@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -419,7 +419,7 @@ namespace AnyPortrait
 		//GUIStyle들
 		public GUIStyle None										{ get { return _gs_None; } }
 		public GUIStyle None_LabelColor								{ get { return _gs_None_LabelColor; } }
-		public GUIStyle None_White2Cyan								{ get { return _gs_None_White2Cyan; } }
+		//public GUIStyle None_White2Cyan								{ get { return _gs_None_White2Cyan; } }
 		public GUIStyle None_Margin0_Padding0						{ get { return _gs_None_Margin0_Padding0; } }
 		public GUIStyle None_MiddleLeft_LabelColor					{ get { return _gs_None_MiddleLeft_LabelColor; } }
 		public GUIStyle None_MiddleLeft_White2Cyan					{ get { return _gs_None_MiddleLeft_White2Cyan; } }

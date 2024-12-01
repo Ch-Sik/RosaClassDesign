@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -55,7 +55,7 @@ namespace AnyPortrait
 
 		// Show Window
 		//------------------------------------------------------------------
-		[MenuItem("Window/AnyPortrait/Update Log", false, 81)]
+		[MenuItem("Window/AnyPortrait/Update Log", false, 801)]
 		public static void ShowDialog()
 		{
 			ShowDialog(null);
@@ -451,73 +451,84 @@ namespace AnyPortrait
 			_info = _info.Substring(firstCR);
 
 			
-			_str_Next = "▶";
+			//_str_Next = "▶";			
 			switch (_language)
 			{
 				case apEditor.LANGUAGE.English:
 					_str_GotoHomepage = "Go to Homepage";
 					_str_OpenAssetStore = "Open Asset Store";
 					_str_Close = "Close";
+					_str_Next = "Next";
 					break;
 
 				case apEditor.LANGUAGE.Korean:
 					_str_GotoHomepage = "홈페이지로 가기";
 					_str_OpenAssetStore = "에셋 스토어 열기";
 					_str_Close = "닫기";
+					_str_Next = "다음";
 					break;
 
 				case apEditor.LANGUAGE.French:
 					_str_GotoHomepage = "Aller à la page d'accueil";
 					_str_OpenAssetStore = "Ouvrir Asset Store";
 					_str_Close = "Fermer";
+					_str_Next = "Suivant";
 					break;
 
 				case apEditor.LANGUAGE.German:
 					_str_GotoHomepage = "Gehe zur Startseite";
 					_str_OpenAssetStore = "Asset Store öffnen";
 					_str_Close = "Schließen";
+					_str_Next = "Nächste Seite";
 					break;
 
 				case apEditor.LANGUAGE.Spanish:
 					_str_GotoHomepage = "Ir a la página de inicio";
 					_str_OpenAssetStore = "Abrir Asset Store";
 					_str_Close = "Cerca";
+					_str_Next = "Siguiente";
 					break;
 
 				case apEditor.LANGUAGE.Italian:
 					_str_GotoHomepage = "Vai alla pagina principale";
 					_str_OpenAssetStore = "Apri Asset Store";
 					_str_Close = "Vicino";
+					_str_Next = "Successivo";
 					break;
 
 				case apEditor.LANGUAGE.Danish:
 					_str_GotoHomepage = "Gå til Hjemmeside";
 					_str_OpenAssetStore = "Åbn Asset Store";
 					_str_Close = "Tæt";
+					_str_Next = "Næste";
 					break;
 
 				case apEditor.LANGUAGE.Japanese:
 					_str_GotoHomepage = "ホームページへ";
 					_str_OpenAssetStore = "アセットストアを開く";
 					_str_Close = "閉じる";
+					_str_Next = "次のページ";
 					break;
 
 				case apEditor.LANGUAGE.Chinese_Traditional:
 					_str_GotoHomepage = "去首頁";
 					_str_OpenAssetStore = "打開[資產商店]";
 					_str_Close = "關";
+					_str_Next = "下一頁";
 					break;
 
 				case apEditor.LANGUAGE.Chinese_Simplified:
 					_str_GotoHomepage = "去首页";
 					_str_OpenAssetStore = "打开[资产商店]";
 					_str_Close = "关";
+					_str_Next = "下一页";
 					break;
 
 				case apEditor.LANGUAGE.Polish:
 					_str_GotoHomepage = "Wróć do strony głównej";
 					_str_OpenAssetStore = "Otwórz Asset Store";
 					_str_Close = "Blisko";
+					_str_Next = "Następna";
 					break;
 			}
 

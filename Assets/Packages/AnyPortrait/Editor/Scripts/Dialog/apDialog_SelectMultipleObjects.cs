@@ -25,7 +25,10 @@ namespace AnyPortrait
 	{
 		// Members
 		//--------------------------------------------------------------
-		public delegate void FUNC_SELECT_MULTIPLE_OBJECTS(bool isSuccess, object loadKey, List<object> selectedObjects, object savedObject);
+		public delegate void FUNC_SELECT_MULTIPLE_OBJECTS(	bool isSuccess,
+															object loadKey,
+															List<object> selectedObjects,
+															object savedObject);
 
 		private static apDialog_SelectMultipleObjects s_window = null;
 
@@ -557,34 +560,51 @@ namespace AnyPortrait
 			if(GUILayout.Button(_editor.GetText(TEXT.DLG_SelectAll), GUILayout.Width(width_BtnHalf), GUILayout.Height(22)))
 			{
 				//Select All
-				for (int i = 0; i < _meshes.Count; i++)
+				//변경 v1.5.0
+				//현재 보여지는 리스트만 선택을 한다. (나머지는 선택 해제됨)
+				_selectedObjects.Clear();
+
+				switch (curListType)
 				{
-					apMesh curMesh = _meshes[i];
-					if(!_selectedObjects.Contains(curMesh))
-					{
-						_selectedObjects.Add(curMesh);
-					}
+					case LIST_TYPE.Mesh:
+						{
+							for (int i = 0; i < _meshes.Count; i++)
+							{
+								apMesh curMesh = _meshes[i];
+								if(!_selectedObjects.Contains(curMesh))
+								{
+									_selectedObjects.Add(curMesh);
+								}
+							}
+						}
+						break;
+
+					case LIST_TYPE.MeshGroup:
+						{
+							for (int i = 0; i < _meshGroups.Count; i++)
+							{
+								apMeshGroup curMeshGroup = _meshGroups[i];
+								if(!_selectedObjects.Contains(curMeshGroup))
+								{
+									_selectedObjects.Add(curMeshGroup);
+								}
+							}
+						}
+						break;
+
+					case LIST_TYPE.MeshTransforms:
+						{
+							for (int i = 0; i < _meshTransforms.Count; i++)
+							{
+								apTransform_Mesh curMeshTF = _meshTransforms[i];
+								if(!_selectedObjects.Contains(curMeshTF))
+								{
+									_selectedObjects.Add(curMeshTF);
+								}
+							}
+						}
+						break;
 				}
-
-				for (int i = 0; i < _meshGroups.Count; i++)
-				{
-					apMeshGroup curMeshGroup = _meshGroups[i];
-					if(!_selectedObjects.Contains(curMeshGroup))
-					{
-						_selectedObjects.Add(curMeshGroup);
-					}
-				}
-
-				for (int i = 0; i < _meshTransforms.Count; i++)
-				{
-					apTransform_Mesh curMeshTF = _meshTransforms[i];
-					if(!_selectedObjects.Contains(curMeshTF))
-					{
-						_selectedObjects.Add(curMeshTF);
-					}
-				}
-
-
 			}
 			if(GUILayout.Button(_editor.GetText(TEXT.DLG_DeselectAll), GUILayout.Width(width_BtnHalf), GUILayout.Height(22)))
 			{
@@ -603,6 +623,8 @@ namespace AnyPortrait
 			bool isClose = false;
 			if (GUILayout.Button(_positiveBtnText, GUILayout.Width(width_BtnHalf), GUILayout.Height(30)))
 			{
+				//탭에 따라서 선택된게 다르다.
+
 				_funcResult(true, _loadKey, _selectedObjects, _savedObject);
 				isClose = true;
 			}

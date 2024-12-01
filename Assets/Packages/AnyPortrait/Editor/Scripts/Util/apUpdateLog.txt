@@ -1,361 +1,417 @@
-﻿(업데이트 이미지 개수)
+(업데이트 이미지 개수)
 0
 -----------------------------------------
 (영어)
-<size=16>AnyPortrait Update Log v1.4.8</size>
-(December 8, 2023)
+<size=16>AnyPortrait Update Log v1.5.1</size>
+(October 30, 2024)
 
 <size=13>Improvements</size>
 
-- <color=blue>Improved compatibility in Unity 2023</color>
-    A feature has been added to resolve the issue of "excessively slow performance after the focus is moved to an external program while the AnyPortrait editor is turned on."
-    Some code has been fixed due to deprecated APIs in Unity 2023.
-    An issue where some UI, such as the modifier list, was displayed abnormally in Unity 2023 has been fixed.
+- <color=blue>Compatibility with Unity</color>
+    The compatibility issue is resolved between versions for the material control function, "SetInt" .
+    Compatibility issues are resolved that occurred due to changes in the APIs of "Render Pipeline" and "Rigidbody" in Unity 6.
+    Due to the change in layout of the un-docked editor in Unity 6, a "Close Editor Button" is added to the top of the screen.
+    An issue is fixed where warnings about clipping meshes and command buffers were raised in Unity 6.
 
-- <color=blue>Update Options</color>
-    An option to change when the main logic is executed has been added to the Bake dialog and Inspector.
+- <color=blue>Material Library</color>
+    The "Keyword" type is added to the shader properties of the material library, and shaders with "multi_compile" applied are supported.
+    You can conveniently set the shader properties of a material set by specifying a Reference Material.
+    It is improved so that you can add shader properties of a material set by selecting them from the list.
+    The material set designated as the default is improved so that a check icon is output on the right side of the list.
 
-- <color=blue>Root Motion</color>
-    A "Root Motion" option has been added to the Bake dialog and Inspector to anchor the root bone to the origin of the parent GameObject and move the parent GameObject instead.
+- <color=blue>Screen capture</color>
+    Ability to export or import capture settings to an external file is added.
+    A search UI is added for easy selection of animations when capturing Sprite Sheets.
 
-- When the "Animator" component is added according to the Mecanim option, the default properties have been changed so that the character's Local Position is not fixed to (0, 0, 0).
-- The Inspector UI has been improved to look a little better.
-- The color of the grid UI of the animation timeline has been modified so that it is not too bright.
+- "Update clipping just before rendering" option is added to Bake dialog to address clipping not working properly in asynchronous projects
 
 
 
 <size=13>Fixed issues</size>
 
-- An issue is fixed where meshes become invisible before the first keyframe of a non-Loop animation because the Transform value of the object becomes 0.
-- An issue is fixed where the editor update frequency remained reduced even when the mouse was dragged when the performance optimization function for laptops was turned on.
-- An issue is fixed where the UI of the dialog for selecting presets for control parameters was displayed abnormally.
+- An issue is fixed where the shader property UI would display abnormally when selecting a material preset in the material library.
+- An issue is fixed where some code in the script would cause compilation problems
+- An issue is fixed where some properties related to jigglebone and IK were not copied when duplicating a bone
+- An issue is fixed where the "Update invisible meshes" option was not applied when "Optimized Bake"
+- An issue is fixed where some UIs in the material library would display strangely in Unity 2023 or later.
 
 
 
 
 -----------------------------------------
 (한국어)
-<size=16>AnyPortrait 업데이트 로그 v1.4.8</size>
-(2023년 12월 8일)
+<size=16>AnyPortrait 업데이트 로그 v1.5.1</size>
+(2024년 10월 30일)
 
 <size=13>개선된 사항</size>
 
-- <color=blue>Unity 2023 호환성 개선</color>
-    AnyPortrait 에디터가 켜진 상태에서 외부 프로그램으로 포커스가 이동한 이후에 성능이 지나치게 느려지는 문제를 해결하는 기능이 추가됨
-    Unity 2023에서 사용되지 않는 API에 맞추어 일부 코드가 수정됨
-    Unity 2023에서 모디파이어 리스트 등의 일부 UI가 비정상적으로 출력되는 문제가 수정됨
+- <color=blue>유니티와의 호환성</color>
+    재질 제어 함수 중 "SetInt"에 대한 버전별 호환성 문제가 해결됨
+    유니티 6에서 "Render Pipeline"과 "Rigidbody"의 API가 변경되면서 발생하는 호환성 문제가 해결됨
+    유니티 6에서 도킹되지 않은 에디터의 레이아웃이 변경됨에 따라 "에디터 닫기 버튼"이 화면 상단에 추가됨
+    유니티 6에서 클리핑 메시와 커맨드 버퍼에 대한 경고가 발생되는 문제가 수정됨
 
-- <color=blue>업데이트 옵션</color>
-    메인 로직이 실행되는 시점을 변경할 수 있는 옵션이 Bake 다이얼로그와 Inspector에 추가됨
+- <color=blue>재질 라이브러리</color>
+    재질 라이브러리의 쉐이더 속성 옵션에 "Keyword" 타입이 추가되어 "multi_compile"이 적용된 쉐이더가 지원됨
+    참조 재질 ("Reference Material")을 지정하여 재질 세트의 쉐이더 프로퍼티를 편리하게 설정 가능
+    재질 세트의 쉐이더 프로퍼티를 목록에서 선택하여 추가할 수 있도록 개선됨
+    기본값으로 설정된 재질 세트는 목록의 오른쪽에 체크 마크가 출력되도록 개선됨
 
-- <color=blue>루트 모션 (Root Motion)</color>
-    루트 본이 부모 GameObject의 원점에 위치하도록 고정하고, 부모 GameObject를 대신 움직이는 "루트 모션 (Root Motion)" 옵션이 Bake 다이얼로그와 Inspector에 추가됨
+- <color=blue>캡쳐 기능</color>
+    캡쳐 설정을 외부 파일로 내보내거나 가져오는 기능이 추가됨
+    스프라이트 시트 캡쳐 기능시, 애니메이션을 빠르게 선택하기 위한 검색 UI가 추가됨
 
-- 메카님을 사용하도록 설정하여 Animator 컴포넌트가 새로 추가되었을 때의 기본 속성이 캐릭터의 Local Position을 (0, 0, 0)으로 고정하지 않도록 변경됨
-- Inspector UI가 조금 더 보기 좋도록 개선됨
-- 애니메이션 타임라인의 그리드 UI의 색상이 너무 밝지 않도록 수정됨
+- 비동기로 동작하는 프로젝트에서 클리핑 메시가 제대로 동작하지 않는 문제를 해결하기 위해, "렌더링 직전에 클리핑 갱신하기" 옵션이 Bake 다이얼로그에 추가됨
 
 
 
 <size=13>수정된 문제점</size>
 
-- Loop가 아닌 애니메이션의 첫 키프레임보다 앞에서는 해당 객체의 Transform 값이 0이 되어버려서 메시들이 보이지 않게 되는 문제가 수정됨
-- 노트북을 위한 성능 최적화 기능을 켰을 때 마우스 드래그시에도 에디터 갱신 빈도가 줄어든 상태가 유지되는 문제가 수정됨
-- 컨트롤 파라미터의 프리셋을 선택하는 다이얼로그의 UI가 비정상적으로 출력되는 문제가 수정됨
+- 재질 라이브러리에서 재질 프리셋을 선택하면 쉐이더 프로퍼티 UI가 비정상적으로 표시되는 문제가 수정됨
+- 스크립트 내에 일부 코드가 컴파일 문제를 발생시키는 문제가 수정됨
+- 본 복제시 지글본과 IK와 관련된 일부 속성이 복사되지 않는 문제가 수정됨
+- "Optimized Bake"시 "보이지 않는 메시의 업데이트" 옵션이 적용되지 않는 문제가 수정됨
+- 유니티 2023 또는 그 이후 버전에서 재질 라이브러리의 일부 UI가 이상하게 출력되는 문제가 수정됨
 
 
 
 
 -----------------------------------------
 (프랑스어)
-<size=16>Fichier de mise à jour AnyPortrait v1.4.8</size>
-(8 décembre 2023)
+<size=16>Fichier de mise à jour AnyPortrait v1.5.1</size>
+(30 octobre 2024)
 
 <size=13>Améliorations</size>
 
-- <color=blue>Compatibilité améliorée dans Unity 2023</color>
-    Une fonctionnalité a été ajoutée pour résoudre le problème des « performances excessivement lentes après que le focus soit déplacé vers un programme externe alors que l'éditeur AnyPortrait est activé ».
-    Certains codes ont été corrigés en raison d'API obsolètes dans Unity 2023.
-    Un problème où certaines interfaces utilisateur, telles que la liste des modificateurs, s'affichaient anormalement dans Unity 2023 a été corrigé.
+- <color=blue>Compatibilité avec Unity</color>
+    Le problème de compatibilité entre les versions de la fonction de contrôle des matériaux, « SetInt », est résolu.
+    Les problèmes de compatibilité survenus en raison de modifications des API de « Render Pipeline » et « Rigidbody » dans Unity 6 sont résolus.
+    En raison du changement de disposition de l'éditeur non ancré dans Unity 6, un « bouton Fermer l'éditeur » est ajouté en haut de l'écran.
+    Un problème a été résolu où des avertissements concernant le découpage des maillages et des tampons de commande ont été générés dans Unity 6.
 
-- <color=blue>Options de mise à jour</color>
-    Une option permettant de modifier le moment où la logique principale est exécutée a été ajoutée à la boîte de dialogue Bake et à l'inspecteur.
+- <color=blue>Bibliothèque de matériaux</color>
+    Le type « Mot-clé » est ajouté aux propriétés de shader de la bibliothèque de matériaux, et les shaders avec « multi_compile » appliqué sont pris en charge.
+    Vous pouvez facilement définir les propriétés de shader d'un ensemble de matériaux en spécifiant un matériau de référence.
+    Il a été amélioré afin que vous puissiez ajouter des propriétés de shader d'un ensemble de matériaux en les sélectionnant dans la liste.
+    L'ensemble de matériaux désigné par défaut a été amélioré afin qu'une icône de coche apparaisse sur le côté droit de la liste.
 
-- <color=blue>Root Motion</color>
-    Une option "Root Motion" a été ajoutée à la boîte de dialogue Bake et à l'inspecteur pour ancrer l'os racine à l'origine du GameObject parent et déplacer le GameObject parent à la place.
+- <color=blue>Capture d'écran</color>
+    La possibilité d'exporter ou d'importer les paramètres de capture vers un fichier externe a été ajoutée.
+    Une interface de recherche a été ajoutée pour faciliter la sélection des animations lors de la capture des feuilles de sprites.
 
-- Lorsque le composant "Animateur" est ajouté selon l'option Mecanim, les propriétés par défaut ont été modifiées afin que la Position Locale du personnage ne soit pas fixée à (0, 0, 0).
-- L'interface utilisateur de l'inspecteur a été améliorée pour être un peu meilleure.
-- La couleur de l'interface utilisateur de la grille de la timeline de l'animation a été modifiée afin qu'elle ne soit pas trop lumineuse.
+- L'option « Mettre à jour le découpage juste avant le rendu » a été ajoutée à la boîte de dialogue Bake pour résoudre le problème du découpage qui ne fonctionne pas correctement dans les projets asynchrones
 
 
 
 <size=13>Problème résolu</size>
 
-- Un problème est résolu où les maillages deviennent invisibles avant la première image clé d'une animation sans boucle car la valeur de transformation de l'objet devient 0.
-- Un problème est résolu où la fréquence de mise à jour de l'éditeur restait réduite même lorsque la souris était déplacée lorsque la fonction d'optimisation des performances pour les ordinateurs portables était activée.
-- Un problème est résolu où l'interface utilisateur de la boîte de dialogue de sélection des préréglages pour les paramètres de contrôle s'affichait anormalement.
+- Un problème a été résolu où l'interface utilisateur des propriétés du shader s'affichait anormalement lors de la sélection d'un préréglage de matériau dans la bibliothèque de matériaux.
+- Un problème a été résolu où du code dans le script provoquait des problèmes de compilation
+- Un problème a été résolu où certaines propriétés liées à jigglebone et IK n'étaient pas copiées lors de la duplication d'un os
+- Un problème a été résolu où l'option « Mettre à jour les maillages invisibles » n'était pas appliquée lors de la « Cuisson optimisée »
+- Un problème a été résolu où certaines interfaces utilisateur de la bibliothèque de matériaux s'affichaient étrangement dans Unity 2023 ou version ultérieure.
 
 
 
 -----------------------------------------
 (독일어)
-<size=16>AnyPortrait-Aktualisierungsprotokoll v1.4.8</size>
-(8. Dezember 2023)
+<size=16>AnyPortrait-Aktualisierungsprotokoll v1.5.1</size>
+(30. Oktober 2024)
 
 <size=13>Verbesserungen</size>
 
-- <color=blue>Verbesserte Kompatibilität in Unity 2023</color>
-    Es wurde eine Funktion hinzugefügt, um das Problem der „übermäßig langsamen Leistung, nachdem der Fokus auf ein externes Programm verschoben wurde, während der AnyPortrait-Editor aktiviert ist“ zu beheben.
-    Einige Codes wurden aufgrund veralteter APIs in Unity 2023 behoben.
-    Ein Problem, bei dem einige Benutzeroberflächen, wie z. B. die Modifikatorliste, in Unity 2023 ungewöhnlich angezeigt wurden, wurde behoben.
+- <color=blue>Kompatibilität mit Unity</color>
+    Das Kompatibilitätsproblem zwischen den Versionen für die Materialsteuerungsfunktion „SetInt“ wurde behoben.
+    Kompatibilitätsprobleme, die aufgrund von Änderungen in den APIs von „Render Pipeline“ und „Rigidbody“ in Unity 6 auftraten, wurden behoben.
+    Aufgrund der Änderung des Layouts des nicht angedockten Editors in Unity 6 wird oben auf dem Bildschirm eine Schaltfläche „Editor schließen“ hinzugefügt.
+    Ein Problem wurde behoben, bei dem in Unity 6 Warnungen zu Clipping-Meshes und Befehlspuffern auftraten.
 
-- <color=blue>Update-Optionen</color>
-    Dem Bake-Dialog und dem Inspektor wurde eine Option hinzugefügt, mit der geändert werden kann, wann die Hauptlogik ausgeführt wird.
+- <color=blue>Materialbibliothek</color>
+    Der Typ „Schlüsselwort“ wird den Shader-Eigenschaften der Materialbibliothek hinzugefügt, und Shader mit angewendetem „multi_compile“ werden unterstützt.
+    Sie können die Shader-Eigenschaften eines Materialsatzes bequem festlegen, indem Sie ein Referenzmaterial angeben.
+    Es wurde verbessert, sodass Sie Shader-Eigenschaften eines Materialsatzes hinzufügen können, indem Sie sie aus der Liste auswählen.
+    Der als Standard festgelegte Materialsatz wurde verbessert, sodass auf der rechten Seite der Liste ein Häkchensymbol ausgegeben wird.
 
-- <color=blue>Root Motion</color>
-    Dem Backen-Dialogfeld und dem Inspektor wurde die Option „Root Motion“ hinzugefügt, um den Root-Bone am Ursprung des übergeordneten GameObjects zu verankern und stattdessen das übergeordnete GameObject zu verschieben.
+- <color=blue>Bildschirmaufnahme</color>
+    Die Möglichkeit, Aufnahmeeinstellungen in eine externe Datei zu exportieren oder zu importieren, wurde hinzugefügt.
+    Eine Such-Benutzeroberfläche wurde hinzugefügt, um beim Aufnehmen von Sprite Sheets die Auswahl von Animationen zu vereinfachen.
 
-- Wenn die Komponente „Animator“ gemäß der Mecanim-Option hinzugefügt wird, wurden die Standardeigenschaften geändert, sodass die lokale Position des Charakters nicht auf (0, 0, 0) festgelegt ist.
-- Die Benutzeroberfläche des Inspektors wurde verbessert und sieht nun etwas besser aus.
-- Die Farbe der Raster-Benutzeroberfläche der Animationszeitleiste wurde geändert, sodass sie nicht zu hell ist.
+- Dem Bake-Dialog wurde die Option „Clipping unmittelbar vor dem Rendern aktualisieren“ hinzugefügt, um das Problem zu beheben, dass Clipping in asynchronen Projekten nicht richtig funktioniert.
 
 
 
 <size=13>Problem behoben</size>
 
-- Es wurde ein Problem behoben, bei dem Netze vor dem ersten Keyframe einer Nicht-Loop-Animation unsichtbar wurden, weil der Transformationswert des Objekts 0 wird.
-- Es wurde ein Problem behoben, bei dem die Aktualisierungshäufigkeit des Editors reduziert blieb, selbst wenn die Maus gezogen wurde, während die Leistungsoptimierungsfunktion für Laptops aktiviert war.
-- Es wurde ein Problem behoben, bei dem die Benutzeroberfläche des Dialogs zur Auswahl von Voreinstellungen für Steuerungsparameter nicht ordnungsgemäß angezeigt wurde.
+- Ein Problem wurde behoben, bei dem die Benutzeroberfläche der Shader-Eigenschaften beim Auswählen einer Materialvorgabe in der Materialbibliothek ungewöhnlich angezeigt wurde.
+- Ein Problem wurde behoben, bei dem Code im Skript Kompilierungsprobleme verursachte.
+- Ein Problem wurde behoben, bei dem einige Eigenschaften im Zusammenhang mit Jigglebone und IK beim Duplizieren eines Bones nicht kopiert wurden.
+- Ein Problem wurde behoben, bei dem die Option „Unsichtbare Meshes aktualisieren“ bei „Optimized Bake“ nicht angewendet wurde.
+- Ein Problem wurde behoben, bei dem einige Benutzeroberflächen in der Materialbibliothek in Unity 2023 oder höher seltsam angezeigt wurden.
 
 
 
 
 -----------------------------------------
 (스페인어)
-<size=16>AnyPortrait Update Log v1.4.8</size>
-(8 de diciembre de 2023)
+<size=16>AnyPortrait Update Log v1.5.1</size>
+(30 de octubre de 2024)
 
 <size=13>Mejoras</size>
 
-- <color=blue>Compatibilidad mejorada en Unity 2023</color>
-    Se agregó una función para resolver el problema de "rendimiento excesivamente lento después de mover el foco a un programa externo mientras el editor AnyPortrait está activado".
-    Se ha corregido parte del código debido a API obsoletas en Unity 2023.
-    Se solucionó un problema por el cual alguna interfaz de usuario, como la lista de modificadores, se mostraba de manera anormal en Unity 2023.
+- <color=blue>Compatibilidad con Unity</color>
+    Se resuelve el problema de compatibilidad entre versiones de la función de control de material, "SetInt".
+    Se resuelven los problemas de compatibilidad que se produjeron debido a los cambios en las API de "Render Pipeline" y "Rigidbody" en Unity 6.
+    Debido al cambio en el diseño del editor no acoplado en Unity 6, se agrega un "Botón Cerrar editor" en la parte superior de la pantalla.
+    Se solucionó un problema por el cual se generaban advertencias sobre recortes de mallas y buffers de comandos en Unity 6.
 
-- <color=blue>Opciones de actualización</color>
-    Se agregó una opción para cambiar cuándo se ejecuta la lógica principal al cuadro de diálogo Hornear y al Inspector.
+- <color=blue>Biblioteca de materiales</color>
+    Se agregó el tipo "Palabra clave" a las propiedades de sombreado de la biblioteca de materiales y se admiten sombreadores con "multi_compile" aplicado.
+    Puede configurar cómodamente las propiedades de sombreado de un conjunto de materiales especificando un Material de referencia.
+    Se mejoró para que pueda agregar propiedades de sombreado de un conjunto de materiales seleccionándolas de la lista.
+    Se mejoró el conjunto de materiales designado como predeterminado para que aparezca un ícono de verificación en el lado derecho de la lista.
 
-- <color=blue>Root Motion</color>
-    Se agregó una opción de "Movimiento de raíz" al cuadro de diálogo Bake y al Inspector para anclar el hueso de raíz al origen del GameObject principal y mover el GameObject principal en su lugar.
+- <color=blue>Captura de pantalla</color>
+    Se agregó la capacidad de exportar o importar configuraciones de captura a un archivo externo.
+    Se agregó una interfaz de búsqueda para una selección sencilla de animaciones al capturar hojas de sprites.
 
-- Cuando se agrega el componente "Animador" según la opción Mecanim, las propiedades predeterminadas se han cambiado para que la Posición local del personaje no esté fijada en (0, 0, 0).
-- La interfaz de usuario del Inspector se ha mejorado para que se vea un poco mejor.
-- Se ha modificado el color de la interfaz de usuario de la cuadrícula de la línea de tiempo de la animación para que no sea demasiado brillante.
+- Se agregó la opción "Actualizar el recorte justo antes de renderizar" al cuadro de diálogo Bake para solucionar el problema de que el recorte no funciona correctamente en proyectos asincrónicos.
 
 
 
 <size=13>Problema solucionado</size>
 
-- Se solucionó un problema por el cual las mallas se volvían invisibles antes del primer fotograma clave de una animación sin bucle porque el valor de Transformación del objeto se convertía en 0.
-- Se solucionó un problema por el cual la frecuencia de actualización del editor permanecía reducida incluso cuando se arrastraba el mouse cuando la función de optimización del rendimiento para computadoras portátiles estaba activada.
-- Se solucionó un problema por el cual la interfaz de usuario del cuadro de diálogo para seleccionar ajustes preestablecidos para los parámetros de control se mostraba de manera anormal.
+- Se solucionó un problema en el que la IU de la propiedad del sombreador se mostraba de forma anormal al seleccionar un ajuste preestablecido de material en la biblioteca de materiales.
+- Se solucionó un problema en el que parte del código del script causaba problemas de compilación
+- Se solucionó un problema en el que algunas propiedades relacionadas con jigglebone e IK no se copiaban al duplicar un hueso
+- Se solucionó un problema en el que la opción "Actualizar mallas invisibles" no se aplicaba cuando se usaba "Hornear optimizado"
+- Se solucionó un problema en el que algunas IU de la biblioteca de materiales se mostraban de forma extraña en Unity 2023 o posterior.
+
 
 
 
 -----------------------------------------
 (이탈리아어)
-<size=16>Registro aggiornamenti AnyPortrait v1.4.8</size>
-(8 dicembre 2023)
+<size=16>Registro aggiornamenti AnyPortrait v1.5.1</size>
+(30 ottobre 2024)
 
 <size=13>Miglioramenti</size>
 
-- <color=blue>Compatibilità migliorata in Unity 2023</color>
-    È stata aggiunta una funzionalità per risolvere il problema delle "prestazioni eccessivamente lente dopo lo spostamento dello stato attivo su un programma esterno mentre l'editor AnyPortrait è attivo".
-    Alcuni codici sono stati corretti a causa delle API deprecate in Unity 2023.
-    È stato risolto un problema per cui alcune interfacce utente, come l'elenco dei modificatori, venivano visualizzate in modo anomalo in Unity 2023.
+- <color=blue>Compatibilità con Unity</color>
+    Il problema di compatibilità è stato risolto tra le versioni per la funzione di controllo del materiale, "SetInt".
+    Sono stati risolti i problemi di compatibilità che si sono verificati a causa di modifiche nelle API di "Render Pipeline" e "Rigidbody" in Unity 6.
+    A causa della modifica del layout dell'editor non ancorato in Unity 6, è stato aggiunto un "Pulsante Chiudi editor" nella parte superiore dello schermo.
+    È stato risolto un problema per cui venivano visualizzati avvisi relativi al ritaglio delle mesh e ai buffer dei comandi in Unity 6.
 
-- <color=blue>Opzioni di aggiornamento</color>
-    Un'opzione per modificare il momento in cui viene eseguita la logica principale è stata aggiunta alla finestra di dialogo Bake e all'Inspector.
+- <color=blue>Libreria materiali</color>
+    Il tipo "Parola chiave" è stato aggiunto alle proprietà shader della libreria materiali e sono supportati gli shader con "multi_compile" applicato.
+    È possibile impostare comodamente le proprietà shader di un set di materiali specificando un materiale di riferimento.
+    È stato migliorato in modo da poter aggiungere le proprietà shader di un set di materiali selezionandole dall'elenco.
+    Il set di materiali designato come predefinito è stato migliorato in modo che un'icona di controllo venga visualizzata sul lato destro dell'elenco.
 
-- <color=blue>Root Motion</color>
-    Un'opzione "Root Motion" è stata aggiunta alla finestra di dialogo Bake e all'Ispettore per ancorare l'osso della radice all'origine del GameObject genitore e spostare invece il GameObject genitore.
+- <color=blue>Cattura schermo</color>
+    È stata aggiunta la possibilità di esportare o importare le impostazioni di cattura in un file esterno.
+    È stata aggiunta un'interfaccia utente di ricerca per una facile selezione delle animazioni durante la cattura di Sprite Sheets.
 
-- Quando il componente "Animatore" viene aggiunto in base all'opzione Mecanim, le proprietà predefinite sono state modificate in modo che la posizione locale del personaggio non sia fissa su (0, 0, 0).
-- L'interfaccia utente dell'ispettore è stata migliorata per avere un aspetto leggermente migliore.
-- Il colore dell'interfaccia utente della griglia della timeline dell'animazione è stato modificato in modo che non sia troppo luminoso.
+- L'opzione "Aggiorna ritaglio appena prima del rendering" è stata aggiunta alla finestra di dialogo Bake per risolvere il problema del ritaglio che non funziona correttamente nei progetti asincroni
 
 
 
 <size=13>Risolto il problema</size>
 
-- È stato risolto un problema per cui le mesh diventavano invisibili prima del primo fotogramma chiave di un'animazione non loop perché il valore di trasformazione dell'oggetto diventa 0.
-- È stato risolto un problema per cui la frequenza di aggiornamento dell'editor rimaneva ridotta anche quando il mouse veniva trascinato quando era attivata la funzione di ottimizzazione delle prestazioni per i laptop.
-- È stato risolto un problema per cui l'interfaccia utente della finestra di dialogo per la selezione delle preimpostazioni per i parametri di controllo veniva visualizzata in modo anomalo.
+- È stato risolto un problema per cui l'interfaccia utente delle proprietà dello shader veniva visualizzata in modo anomalo quando si selezionava un preset di materiale nella libreria materiali.
+- È stato risolto un problema per cui parte del codice nello script causava problemi di compilazione
+- È stato risolto un problema per cui alcune proprietà relative a jigglebone e IK non venivano copiate durante la duplicazione di un osso
+- È stato risolto un problema per cui l'opzione "Aggiorna mesh invisibili" non veniva applicata quando "Cuocia ottimizzata"
+- È stato risolto un problema per cui alcune interfacce utente nella libreria materiali venivano visualizzate in modo strano in Unity 2023 o versioni successive.
 
 
 
 -----------------------------------------
 (덴마크어)
-<size=16>AnyPortrait Update Log v1.4.8</size>
-(8. december 2023)
+<size=16>AnyPortrait Update Log v1.5.1</size>
+(30. oktober 2024)
 
 <size=13>Forbedringer</size>
 
-- <color=blue>Forbedret kompatibilitet i Unity 2023</color>
-    En funktion er blevet tilføjet for at løse problemet med "overdrevent langsom ydeevne, efter at fokus er flyttet til et eksternt program, mens AnyPortrait-editoren er tændt."
-    Noget kode er blevet rettet på grund af forældede API'er i Unity 2023.
-    Et problem, hvor nogle brugergrænseflader, såsom ændringslisten, blev vist unormalt i Unity 2023, er blevet rettet.
+- <color=blue>Kompatibilitet med Unity</color>
+    Kompatibilitetsproblemet er løst mellem versioner for materialekontrolfunktionen "SetInt" .
+    Kompatibilitetsproblemer er løst, der opstod på grund af ændringer i API'erne for "Render Pipeline" og "Rigidbody" i Unity 6.
+    På grund af ændringen i layoutet af den ikke-dockede editor i Unity 6, tilføjes en "Luk Editor-knap" øverst på skærmen.
+    Et problem er rettet, hvor advarsler om klipning af masker og kommandobuffere blev rejst i Unity 6.
 
-- <color=blue>Opdateringsindstillinger</color>
-    En mulighed for at ændre, når hovedlogikken udføres, er blevet tilføjet til Bake-dialogen og Inspector.
+- <color=blue>Materialbibliotek</color>
+    "Keyword"-typen føjes til materialebibliotekets shader-egenskaber, og shaders med "multi_compile" anvendt understøttes.
+    Du kan bekvemt indstille skyggeegenskaberne for et materialesæt ved at angive et referencemateriale.
+    Det er forbedret, så du kan tilføje shader-egenskaber for et materialesæt ved at vælge dem fra listen.
+    Materialesættet, der er angivet som standard, er forbedret, så der vises et afkrydsningsikon i højre side af listen.
 
-- <color=blue>Root Motion</color>
-    En "Root Motion"-indstilling er blevet tilføjet til Bake-dialogen og Inspector for at forankre rodknoglen til oprindelsen af det overordnede GameObject og flytte det overordnede GameObject i stedet.
+- <color=blue>Skærmoptagelse</color>
+    Mulighed for at eksportere eller importere optagelsesindstillinger til en ekstern fil tilføjes.
+    En søge-UI er tilføjet for let valg af animationer, når du optager Sprite Sheets.
 
-- Når "Animator"-komponenten tilføjes i henhold til Mecanim-indstillingen, er standardegenskaberne blevet ændret, så karakterens lokale position ikke er fastsat til (0, 0, 0).
-- Inspector UI er blevet forbedret til at se lidt bedre ud.
-- Farven på gitterets brugergrænseflade på animationstidslinjen er blevet ændret, så den ikke er for lys.
+- Muligheden "Opdater klipning lige før gengivelse" er tilføjet til Bake-dialogen for at adressere, at klipning ikke fungerer korrekt i asynkrone projekter
 
 
 
 <size=13>Faste problem</size>
 
-- Et problem er rettet, hvor mesh bliver usynlig før den første keyframe i en ikke-loop-animation, fordi transformationsværdien for objektet bliver 0.
-- Et problem er rettet, hvor editorens opdateringsfrekvens forblev reduceret, selv når musen blev trukket, når ydelsesoptimeringsfunktionen for bærbare computere blev slået til.
-- Et problem er rettet, hvor brugergrænsefladen i dialogen til valg af forudindstillinger for kontrolparametre blev vist unormalt.
+- Et problem er rettet, hvor brugergrænsefladen for shader-egenskaber ville blive vist unormalt, når der blev valgt en forudindstillet materiale i materialebiblioteket.
+- Et problem er rettet, hvor noget kode i scriptet ville forårsage kompileringsproblemer
+- Et problem er rettet, hvor nogle egenskaber relateret til jigglebone og IK ikke blev kopieret ved duplikering af en knogle
+- Et problem er rettet, hvor "Opdater usynlige masker"-indstillingen ikke blev anvendt, når "Optimeret bage"
+- Et problem er rettet, hvor nogle brugergrænseflader i materialebiblioteket ville blive vist mærkeligt i Unity 2023 eller nyere.
 
 
 
 
 -----------------------------------------
 (일본어)
-<size=16> AnyPortrait更新ログv1.4.8</size>
-(2023年12月8日)
+<size=16> AnyPortrait更新ログv1.5.1</size>
+（2024年10月30日）
 
 <size=13>改善点</size>
 
-- <color=blue>Unity 2023 での互換性の向上</color>
-    「AnyPortraitエディターをONにした状態で、外部プログラムにフォーカスを移動すると動作が異常に遅くなる」問題を解決する機能を追加しました。
-    Unity 2023 で非推奨となった API のため、一部のコードが修正されました。
-    Unity 2023 でモディファイアリストなどの一部の UI が異常に表示される問題が修正されました。
+- <color=blue>Unity との互換性</color>
+    マテリアル制御機能「SetInt」のバージョン間の互換性問題を解決しました。
+    「Unity 6」の「Render Pipeline」と「Rigidbody」の「API」の変更により発生した互換性問題を解決しました。
+    「Unity 6」のアンドッキング エディターのレイアウト変更により、画面上部に「エディターを閉じるボタン」が追加されました。
+    「Unity 6」でクリッピング メッシュとコマンド バッファーに関する警告が発生する問題が修正されました。
 
-- <color=blue>アップデートオプション</color>
-    メインロジックの実行時に変更するオプションがベイクダイアログとインスペクターに追加されました。
+- <color=blue>マテリアル ライブラリ</color>
+    マテリアル ライブラリのシェーダー プロパティに「キーワード」タイプが追加され、「multi_compile」が適用されたシェーダーがサポートされました。
+    リファレンス マテリアルを指定することで、マテリアル セットのシェーダー プロパティを簡単に設定できます。
+    リストから選択してマテリアル セットのシェーダー プロパティを追加できるように改善されました。
+    デフォルトに指定されているマテリアル セットには、リストの右側にチェック アイコンが出力されるように改善されました。
 
-- <color=blue>ルートモーション</color>
-    「ルートモーション」オプションがベイク ダイアログとインスペクターに追加され、ルート ボーンを親ゲームオブジェクトの原点に固定し、代わりに親ゲームオブジェクトを移動します。
+- <color=blue>スクリーン キャプチャ</color>
+    キャプチャ設定を外部ファイルにエクスポートまたはインポートする機能が追加されました。
+    スプライト シートをキャプチャするときにアニメーションを簡単に選択できるように、検索 UI が追加されました。
 
-- 「Mecanim」オプションにより「Animator」コンポーネントを追加した場合、キャラクターのLocal Positionが(0, 0, 0)に固定されないようにデフォルトのプロパティが変更されました。
-- インスペクター UI が改善され、見た目が少し良くなりました。
-- アニメーションタイムラインのグリッドUIの色が明るすぎないように修正されました。
+- 非同期プロジェクトでクリッピングが正しく機能しない問題を解決するために、ベイク ダイアログに「レンダリング直前にクリッピングを更新」オプションが追加されました
 
 
 
 <size=13>修正された問題</size>
 
-- オブジェクトの Transform 値が 0 になるため、非ループ アニメーションの最初のキーフレームの前にメッシュが非表示になる問題が修正されました。
-- ノートパソコンのパフォーマンス最適化機能がオンの場合、マウスをドラッグしてもエディタの更新頻度が低下したままになる問題を修正しました。
-- 制御パラメータのプリセットを選択するダイアログのUIが異常に表示される問題を修正しました。
+- マテリアル ライブラリでマテリアル プリセットを選択すると、シェーダー プロパティ UI が異常に表示される問題が修正されました。
+- スクリプトの一部のコードがコンパイルの問題を引き起こす問題が修正されました
+- ボーンを複製するときに、ジグルボーンおよび「IK」に関連する一部のプロパティがコピーされない問題が修正されました
+- 「最適化されたベイク」時に「非表示メッシュを更新」オプションが適用されない問題が修正されました
+- 「Unity 2023」以降で、マテリアル ライブラリの一部の「UI」が異常に表示される問題が修正されました。
 
 
 
 
 -----------------------------------------
 (중국어-번체)
-<size=16>AnyPortrait更新日誌v1.4.8</size>
-（2023年12月8日）
+<size=16>AnyPortrait更新日誌v1.5.1</size>
+（2024年10月30日）
 
 <size=13>改進</size>
 
-- <color=blue>改進了 Unity 2023 中的相容性</color>
-    新增了一項功能來解決「開啟 AnyPortrait 編輯器時焦點移至外部程式後效能過慢」的問題。
-    由於 Unity 2023 中已棄用 API，因此部分程式碼已修復。
-    修正了Unity 2023中部分UI（例如修改器清單）顯示異常的問題。
+- <color=blue>與Unity的相容性</color>
+    材質控制功能「SetInt」的版本之間的相容性問題已解決。
+    解決了由於 Unity 6 中「渲染管道」和「剛體」API 變更而導致的兼容性問題。
+    由於Unity 6中非停靠編輯器的佈局發生變化，螢幕頂部新增了「關閉編輯器按鈕」。
+    修正了 Unity 6 中出現有關剪切網格和命令緩衝區的警告的問題。
 
-- <color=blue>更新選項</color>
-    烘焙對話方塊和檢查器中新增了執行主邏輯時變更的選項。
+- <color=blue>材質庫</color>
+    材質庫的著色器屬性中新增了「Keyword」類型，並且支援應用了「multi_compile」的著色器。
+    您可以透過指定參考材質來方便地設定材質集的著色器屬性。
+    它得到了改進，以便您可以透過從清單中選擇材質集來添加材質集的著色器屬性。
+    指定為預設材質集得到改進，以便在清單右側輸出複選圖示。
 
-- <color=blue>根運動</color>
-    「烘焙」對話方塊和檢視器中新增了「根運動」選項，以將根骨骼錨定到父遊戲物件的原點並移動父遊戲物件。
+- <color=blue>螢幕截圖</color>
+    新增了將捕獲設定匯出或匯入外部文件的功能。
+    新增了搜尋 UI，以便在捕獲 Sprite Sheet 時輕鬆選擇動畫。
 
-- 當根據「Mecanim」選項新增「Animator」元件時，預設屬性已更改，因此角色的本地位置不固定為(0, 0, 0)。
-- 檢查器 UI 已改進，看起來更好一些。
-- 動畫時間軸網格UI的顏色已修改，使其不會太亮。
+- 「在渲染之前更新剪輯」選項會新增至「烘焙」對話方塊中，以解決非同步專案中剪輯無法正常運作的問題
 
 
 
 <size=13>修復了問題</size>
 
-- 修正了以下問題：由於物件的變換值變為 0，網格在非循環動畫的第一個關鍵影格之前變得不可見。
-- 修正了筆記型電腦效能最佳化功能開啟時，即使拖曳滑鼠，編輯器更新頻率仍然降低的問題。
-- 修正了用於選擇控制參數預設的對話框 UI 顯示異常的問題。
+- 修正了在材質庫中選擇材質預設時著色器屬性 UI 顯示異常的問題。
+- 修正了腳本中的某些程式碼會導致編譯問題的問題
+- 修正了複製骨骼時未複製與 Jiggle bone 和 IK 相關的某些屬性的問題
+- 修正了「優化烘焙」時未套用「更新不可見網格」選項的問題
+- 修正了材質庫中的某些 UI 在 Unity 2023 或更高版本中顯示奇怪的問題。
 
 
 
 
 -----------------------------------------
 (중국어-간체)
-<size=16>AnyPortrait更新日志v1.4.8</size>
-（2023年12月8日）
+<size=16>AnyPortrait更新日志v1.5.1</size>
+（2024年10月30日）
 
 <size=13>改进</size>
 
-- <color=blue>改进了 Unity 2023 中的兼容性</color>
-    添加了一项功能来解决“打开 AnyPortrait 编辑器时焦点移至外部程序后性能过慢”的问题。
-    由于 Unity 2023 中已弃用 API，一些代码已得到修复。
-    修复了Unity 2023中部分UI（例如修改器列表）显示异常的问题。
+- <color=blue>与Unity的相容性</color>
+ 材质控制功能「SetInt」的版本之间的相容性问题已解决。
+ 解决了由于 Unity 6 中「渲染管道」和「刚体」API 变更而导致的兼容性问题。
+ 由于Unity 6中非停靠编辑器的布局发生变化，萤幕顶部新增了「关闭编辑器按钮」。
+ 已修复 Unity 6 中出现有关剪切网格和命令缓冲区的警告的问题。
 
-- <color=blue>更新选项</color>
-    烘焙对话框和检查器中添加了执行主逻辑时更改的选项。
+- <color=blue>材质库</color>
+ 材质库的著色器属性中新增了「Keyword」类型，并且支援应用了「multi_compile」的著色器。
+ 您可以透过指定参考材质来方便地设定材质集的著色器属性。
+ 它得到了改进，以便您可以透过从清单中选择材质集来添加材质集的著色器属性。
+ 指定为预设材质集得到改进，以便在清单右侧输出复选图示。
 
-- <color=blue>根运动</color>
-    “烘焙”对话框和检查器中添加了“根运动”选项，以将根骨骼锚定到父游戏对象的原点并移动父游戏对象。
+- <color=blue>萤幕截图</color>
+ 新增了将捕获设定汇出或汇入外部文件的功能。
+ 新增了搜寻 UI，以便在捕获 Sprite Sheet 时轻松选择动画。
 
-- 当根据 Mecanim 选项添加“Animator”组件时，默认属性已更改，因此角色的本地位置不固定为 (0, 0, 0)。
-- 检查器 UI 已得到改进，看起来更好一些。
-- 动画时间轴网格UI的颜色已修改，使其不会太亮。
+- 「在渲染之前更新剪辑」选项会新增至「烘焙」对话方块中，以解决非同步专案中剪辑无法正常运作的问题
 
 
 
 <size=13>修复了问题</size>
 
-- 修复了以下问题：由于对象的变换值变为 0，网格在非循环动画的第一个关键帧之前变得不可见。
-- 修复了笔记本电脑性能优化功能打开时，即使拖动鼠标，编辑器更新频率仍然降低的问题。
-- 修复了用于选择控制参数预设的对话框 UI 显示异常的问题。
+- 修正了在材质库中选择材质预设时着色器属性 UI 显示异常的问题。
+- 修正了脚本中的某些程式码会导致编译问题的问题
+- 修正了复制骨骼时未复制与 Jiggle bone 和 IK 相关的某些属性的问题
+- 修正了「优化烘焙」时未套用「更新不可见网格」选项的问题
+- 修正了材质库中的某些 UI 在 Unity 2023 或更高版本中显示奇怪的问题。
 
 
 
 
 -----------------------------------------
 (폴란드어)
-<size=16>Dziennik aktualizacji AnyPortret v1.4.8</size>
-(8 grudnia 2023 r.)
+<size=16>Dziennik aktualizacji AnyPortret v1.5.1</size>
+(30 października 2024)
 
 <size=13>Ulepszenia</size>
 
-- <color=blue>Poprawiona kompatybilność w Unity 2023</color>
-    Dodano funkcję rozwiązującą problem „zbyt niskiej wydajności po przeniesieniu fokusu na program zewnętrzny, gdy włączony jest edytor AnyPortrait”.
-    Część kodu została naprawiona z powodu przestarzałych interfejsów API w Unity 2023.
-    Naprawiono problem polegający na tym, że niektóre interfejsy użytkownika, takie jak lista modyfikatorów, były nieprawidłowo wyświetlane w Unity 2023.
+- <color=blue>Zgodność z Unity</color>
+    Problem zgodności został rozwiązany między wersjami dla funkcji kontroli materiału, „SetInt”.
+    Problemy zgodności, które wystąpiły z powodu zmian w interfejsach API „Render Pipeline” i „Rigidbody” w Unity 6, zostały rozwiązane.
+    Z powodu zmiany układu niezadokowanego edytora w Unity 6, na górze ekranu dodano „Przycisk Zamknij edytor”.
+    Naprawiono problem, w wyniku którego w Unity 6 pojawiały się ostrzeżenia dotyczące przycinania siatek i buforów poleceń.
 
-- <color=blue>Opcje aktualizacji</color>
-    Do okna dialogowego pieczenia i inspektora dodano opcję zmiany czasu wykonywania głównej logiki.
+- <color=blue>Biblioteka materiałów</color>
+    Typ „Słowo kluczowe” został dodany do właściwości shaderów biblioteki materiałów, a shadery z zastosowanym „multi_compile” są obsługiwane.
+    Możesz wygodnie ustawić właściwości shaderów zestawu materiałów, określając Materiał referencyjny.
+    Ulepszono, aby można było dodawać właściwości shaderów zestawu materiałów, wybierając je z listy.
+    Zestaw materiałów oznaczony jako domyślny został ulepszony, aby po prawej stronie listy wyświetlała się ikona zaznaczenia.
 
-- <color=blue>Root Motion</color>
-    Do okna dialogowego Bake i Inspektora dodano opcję „Root Motion”, która pozwala zakotwiczyć kość korzenia w początku nadrzędnego obiektu GameObject i zamiast tego przenieść nadrzędny obiekt GameObject.
+- <color=blue>Zrzut ekranu</color>
+    Dodano możliwość eksportowania lub importowania ustawień przechwytywania do pliku zewnętrznego.
+    Dodano interfejs użytkownika wyszukiwania, aby ułatwić wybór animacji podczas przechwytywania arkuszy Sprite.
 
-- Po dodaniu komponentu „Animator” zgodnie z opcją Mecanim, domyślne właściwości zostały zmienione w taki sposób, że pozycja lokalna postaci nie jest ustalona na (0, 0, 0).
-- Interfejs Inspektora został ulepszony i wygląda nieco lepiej.
-- Kolor interfejsu siatki osi czasu animacji został zmodyfikowany, aby nie był zbyt jasny.
+- Do okna dialogowego Bake dodano opcję „Aktualizuj przycinanie tuż przed renderowaniem”, aby rozwiązać problem z nieprawidłowym działaniem przycinania w projektach asynchronicznych
 
 
 
 <size=13>Naprawiono problem</size>
 
-- Naprawiono problem polegający na tym, że siatki stają się niewidoczne przed pierwszą klatką kluczową animacji innej niż pętla, ponieważ wartość transformacji obiektu wynosi 0.
-- Naprawiono problem polegający na tym, że częstotliwość aktualizacji edytora pozostawała zmniejszona nawet po przeciągnięciu myszy, gdy włączona była funkcja optymalizacji wydajności dla laptopów.
-- Naprawiono problem polegający na tym, że interfejs użytkownika okna dialogowego wyboru ustawień wstępnych parametrów kontrolnych był wyświetlany nieprawidłowo.
+- Naprawiono problem, w którym interfejs użytkownika właściwości shadera wyświetlał się nieprawidłowo podczas wybierania ustawienia wstępnego materiału w bibliotece materiałów.
+- Naprawiono problem, w którym pewien kod w skrypcie powodował problemy z kompilacją
+- Naprawiono problem, w którym niektóre właściwości związane z jigglebone i IK nie były kopiowane podczas duplikowania kości
+- Naprawiono problem, w którym opcja „Aktualizuj niewidoczne siatki” nie była stosowana podczas „Zoptymalizowanego pieczenia”
+- Naprawiono problem, w którym niektóre interfejsy użytkownika w bibliotece materiałów wyświetlały się dziwnie w Unity 2023 lub nowszym.
 
 
 

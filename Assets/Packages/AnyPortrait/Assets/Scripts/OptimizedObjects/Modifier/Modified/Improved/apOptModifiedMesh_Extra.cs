@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -139,10 +139,15 @@ namespace AnyPortrait
 			{
 				if(_textureDataID >= 0 && _isTextureChanged)
 				{
-					apOptTextureData linkedOptTextureData = portrait._optTextureData.Find(delegate(apOptTextureData a)
-					{
-						return a._srcUniqueID == _textureDataID;
-					});
+					//이전 (GC 발생)
+					//apOptTextureData linkedOptTextureData = portrait._optTextureData.Find(delegate(apOptTextureData a)
+					//{
+					//	return a._srcUniqueID == _textureDataID;
+					//});
+
+					//변경 v1.5.0
+					s_FindTextureData_ID = _textureDataID;
+					apOptTextureData linkedOptTextureData = portrait._optTextureData.Find(s_FindTextureDataByID_Func);
 
 					if(linkedOptTextureData != null)
 					{
@@ -156,6 +161,14 @@ namespace AnyPortrait
 					}
 				}
 			}
+
+			private static int s_FindTextureData_ID = -1;
+			private static Predicate<apOptTextureData> s_FindTextureDataByID_Func = FUNC_FindTextureDataByID;
+			private static bool FUNC_FindTextureDataByID(apOptTextureData a)
+			{
+				return a._srcUniqueID == s_FindTextureData_ID;
+			}
+
 		}
 	}
 }

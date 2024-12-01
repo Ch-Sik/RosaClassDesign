@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -12,8 +12,6 @@
 */
 
 using UnityEngine;
-//using UnityEditor;
-//using UnityEditor.SceneManagement;
 using System.Collections;
 using System;
 using System.Collections.Generic;
@@ -138,24 +136,42 @@ namespace AnyPortrait
 					return null;
 				}
 
-				return _objectDataList.Find(delegate(ObjectVisibilityData a)
-				{
-					return a._objectType == OBJECT_TYPE.Transform && a._targetID == meshTFID;
-				});
+				//이전 (GC 발생)
+				//return _objectDataList.Find(delegate(ObjectVisibilityData a)
+				//{
+				//	return a._objectType == OBJECT_TYPE.Transform && a._targetID == meshTFID;
+				//});
+
+				//변경 v1.5.0
+				s_GetObjDataMeshTF_ID = meshTFID;
+				return _objectDataList.Find(s_GetObjDataMeshTFByID_Func);
 			}
+
+			private static int s_GetObjDataMeshTF_ID = -1;
+			private static Predicate<ObjectVisibilityData> s_GetObjDataMeshTFByID_Func = FUNC_GetObjDataMeshTFByID;
+			private static bool FUNC_GetObjDataMeshTFByID(ObjectVisibilityData a)
+			{
+				return a._objectType == OBJECT_TYPE.Transform && a._targetID == s_GetObjDataMeshTF_ID;
+			}
+
 
 			public ObjectVisibilityData AddOrGetObjData_TF(int meshTFID)
 			{
 				ObjectVisibilityData targetObjData = null;
+
 				if(_objectDataList == null)
 				{
 					_objectDataList = new List<ObjectVisibilityData>();
 				}
 
-				targetObjData = _objectDataList.Find(delegate(ObjectVisibilityData a)
-				{
-					return a._objectType == OBJECT_TYPE.Transform && a._targetID == meshTFID;
-				});
+				//이전 (GC 발생)
+				//targetObjData = _objectDataList.Find(delegate(ObjectVisibilityData a)
+				//{
+				//	return a._objectType == OBJECT_TYPE.Transform && a._targetID == meshTFID;
+				//});
+
+				//변경 v1.5.0
+				targetObjData = GetObjData_TF(meshTFID);
 
 				if(targetObjData == null)
 				{
@@ -175,11 +191,24 @@ namespace AnyPortrait
 					return null;
 				}
 
-				return _objectDataList.Find(delegate(ObjectVisibilityData a)
-				{
-					return a._objectType == OBJECT_TYPE.Bone && a._targetID == boneID;
-				});
+				//이전 (GC 발생)
+				//return _objectDataList.Find(delegate(ObjectVisibilityData a)
+				//{
+				//	return a._objectType == OBJECT_TYPE.Bone && a._targetID == boneID;
+				//});
+
+				//변경 v1.5.0
+				s_GetObjDataBone_ID = boneID;
+				return _objectDataList.Find(s_GetObjDataBoneByID_Func);
 			}
+
+			private static int s_GetObjDataBone_ID = -1;
+			private static Predicate<ObjectVisibilityData> s_GetObjDataBoneByID_Func = FUNC_GetObjDataBoneByID;
+			private static bool FUNC_GetObjDataBoneByID(ObjectVisibilityData a)
+			{
+				return a._objectType == OBJECT_TYPE.Bone && a._targetID == s_GetObjDataBone_ID;
+			}
+
 
 
 			public ObjectVisibilityData AddOrGetObjData_Bone(int boneID)
@@ -190,10 +219,14 @@ namespace AnyPortrait
 					_objectDataList = new List<ObjectVisibilityData>();
 				}
 
-				targetObjData = _objectDataList.Find(delegate(ObjectVisibilityData a)
-				{
-					return a._objectType == OBJECT_TYPE.Bone && a._targetID == boneID;
-				});
+				//이전 (GC 발생)
+				//targetObjData = _objectDataList.Find(delegate(ObjectVisibilityData a)
+				//{
+				//	return a._objectType == OBJECT_TYPE.Bone && a._targetID == boneID;
+				//});
+
+				//변경 v1.5.0
+				targetObjData = GetObjData_Bone(boneID);
 
 				if(targetObjData == null)
 				{
@@ -229,18 +262,30 @@ namespace AnyPortrait
 
 			public void RemoveTF(int meshTFID)
 			{
-				_objectDataList.RemoveAll(delegate(ObjectVisibilityData a)
-				{
-					return a._objectType == OBJECT_TYPE.Transform && a._targetID == meshTFID;
-				});
+				//이전 (GC 발생)
+				//_objectDataList.RemoveAll(delegate(ObjectVisibilityData a)
+				//{
+				//	return a._objectType == OBJECT_TYPE.Transform && a._targetID == meshTFID;
+				//});
+
+				//변경 v1.5.0
+				s_GetObjDataMeshTF_ID = meshTFID;
+				_objectDataList.RemoveAll(s_GetObjDataMeshTFByID_Func);
 			}
+
+			
 
 			public void RemoveBone(int boneID)
 			{
-				_objectDataList.RemoveAll(delegate(ObjectVisibilityData a)
-				{
-					return a._objectType == OBJECT_TYPE.Bone && a._targetID == boneID;
-				});
+				//이전 (GC 발생)
+				//_objectDataList.RemoveAll(delegate(ObjectVisibilityData a)
+				//{
+				//	return a._objectType == OBJECT_TYPE.Bone && a._targetID == boneID;
+				//});
+
+				//변경 v1.5.0
+				s_GetObjDataBone_ID = boneID;
+				_objectDataList.RemoveAll(s_GetObjDataBoneByID_Func);
 			}
 		}
 
@@ -287,11 +332,26 @@ namespace AnyPortrait
 				{
 					return null;
 				}
-				return _meshGroupData.Find(delegate(MeshGroupVisibilityData a)
-				{
-					return a._meshGroupID == srcMeshGroup._uniqueID;
-				});
+
+				//이전 (GC 발생)
+				//return _meshGroupData.Find(delegate(MeshGroupVisibilityData a)
+				//{
+				//	return a._meshGroupID == srcMeshGroup._uniqueID;
+				//});
+
+				//변경 v1.5.0
+				s_GetMeshGroupData_ID = srcMeshGroup._uniqueID;
+				return _meshGroupData.Find(s_GetMeshGroupDataByID_Func);
 			}
+
+			private static int s_GetMeshGroupData_ID = -1;
+			private static Predicate<MeshGroupVisibilityData> s_GetMeshGroupDataByID_Func = FUNC_GetMeshGroupDataByID;
+			private static bool FUNC_GetMeshGroupDataByID(MeshGroupVisibilityData a)
+			{
+				return a._meshGroupID == s_GetMeshGroupData_ID;
+			}
+
+
 
 			public void CopyFromSrc(RuleData srcRule)
 			{
@@ -1082,12 +1142,23 @@ namespace AnyPortrait
 
 		public RuleData GetRuleByHotkey(HOTKEY hotkey)
 		{
-			return _rules.Find(delegate(RuleData a)
-			{
-				return a._hotKey == hotkey;
-			});
+			//이전 (GC 발생)
+			//return _rules.Find(delegate(RuleData a)
+			//{
+			//	return a._hotKey == hotkey;
+			//});
+
+			//변경 v1.5.0
+			s_GetRule_HotKey = hotkey;
+			return _rules.Find(s_GetRuleByHotKey_Func);
 		}
-		
+
+		private static HOTKEY s_GetRule_HotKey = HOTKEY.None;
+		private static Predicate<RuleData> s_GetRuleByHotKey_Func = FUNC_GetRuleByHotKey;
+		private static bool FUNC_GetRuleByHotKey(RuleData a)
+		{
+			return a._hotKey == s_GetRule_HotKey;
+		}
 
 		// Get / Set
 		//-----------------------------------------------

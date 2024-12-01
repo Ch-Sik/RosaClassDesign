@@ -862,7 +862,6 @@ namespace AnyPortrait
 
 					//값을 누적시키자
 					dstVert._deltaPos += srcVert._deltaPos * weight;
-
 				}
 			}
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -28,6 +28,7 @@ namespace AnyPortrait
 		//------------------------------------------
 		[NonSerialized]
 		public apModifiedMesh _modifiedMesh = null;
+
 
 
 		public int _vertexUniqueID = -1;

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -520,15 +520,25 @@ namespace AnyPortrait
 
 		// Functions
 		//--------------------------------------------------
+
+		private static int FUNC_SortKeyframes(apAnimKeyframe a, apAnimKeyframe b)
+		{
+			return a._frameIndex - b._frameIndex;
+		}
+
 		//이전
 		//public int SortAndRefreshKeyframes(bool isPrintLog = false, bool isMakeCurveForce = false)
 		//변경 19.5.20 : 최적화 작업 겸 불필요한 인자 제거 (성능상에 Curve 만들고 안만들고는 큰 영향이 없다.. 이 함수 전체가 무거움)
 		public int SortAndRefreshKeyframes()
 		{
-			_keyframes.Sort(delegate (apAnimKeyframe a, apAnimKeyframe b)
-			{
-				return a._frameIndex - b._frameIndex;
-			});
+			//이전 (GC 발생)
+			//_keyframes.Sort(delegate (apAnimKeyframe a, apAnimKeyframe b)
+			//{
+			//	return a._frameIndex - b._frameIndex;
+			//});
+
+			//변경 v1.5.0
+			_keyframes.Sort(FUNC_SortKeyframes);
 
 			int startFrame = _parentAnimClip.StartFrame;
 			int endFrame = _parentAnimClip.EndFrame;
@@ -922,19 +932,45 @@ namespace AnyPortrait
 
 		public apAnimKeyframe GetKeyframeByID(int keyframeUniqueID)
 		{
-			return _keyframes.Find(delegate (apAnimKeyframe a)
-			{
-				return a._uniqueID == keyframeUniqueID;
-			});
+			//이전 (GC 발생)
+			//return _keyframes.Find(delegate (apAnimKeyframe a)
+			//{
+			//	return a._uniqueID == keyframeUniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetKeyframeByID_UniqueID = keyframeUniqueID;
+			return _keyframes.Find(s_GetKeyframeByID_Func);
 		}
+
+		private static int s_GetKeyframeByID_UniqueID = -1;
+		private static Predicate<apAnimKeyframe> s_GetKeyframeByID_Func = FUNC_GetKeyframeByID;
+		private static bool FUNC_GetKeyframeByID(apAnimKeyframe a)
+		{
+			return a._uniqueID == s_GetKeyframeByID_UniqueID;
+		}
+
 
 		public apAnimKeyframe GetKeyframeByFrameIndex(int frame)
 		{
-			return _keyframes.Find(delegate (apAnimKeyframe a)
-			{
-				return a._frameIndex == frame;
-			});
+			//이전 (GC 발생)
+			//return _keyframes.Find(delegate (apAnimKeyframe a)
+			//{
+			//	return a._frameIndex == frame;
+			//});
+
+			//변경 v1.5.0
+			s_GetKeyframeByFrameIndex_Frame = frame;
+			return _keyframes.Find(s_GetKeyframeByFrame_Func);
 		}
+
+		private static int s_GetKeyframeByFrameIndex_Frame = -1;
+		private static Predicate<apAnimKeyframe> s_GetKeyframeByFrame_Func = FUNC_GetKeyframeByFrameIndex;
+		private static bool FUNC_GetKeyframeByFrameIndex(apAnimKeyframe a)
+		{
+			return a._frameIndex == s_GetKeyframeByFrameIndex_Frame;
+		}
+
 
 		//-----------------------------------------------------------------------------------
 		// Copy For Bake

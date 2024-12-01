@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -92,7 +92,10 @@ namespace AnyPortrait
 		
 		[NonSerialized, NonBackupField]
 		public List<BoneListSet> _boneListSets = new List<BoneListSet>();
-
+		
+		//[v1.5.0] 추가 : IK 연산 순서를 자유롭게 하기 위해 별도의 래퍼 리스트를 활용한다.
+		[NonSerialized, NonBackupField]
+		private List<apBoneIKRunNode> _boneIKRunNodes = null;
 
 
 		private bool _isBoneUpdatable = false;
@@ -293,33 +296,48 @@ namespace AnyPortrait
 			//}
 
 			//추가 10.4 : Child Mesh에도 적용
-			if(_childMeshGroupTransforms != null && _childMeshGroupTransforms.Count > 0)
+			int nChild = _childMeshGroupTransforms != null ? _childMeshGroupTransforms.Count : 0;
+			if(nChild == 0)
 			{
-				apTransform_MeshGroup childTransform = null;
-				for (int i = 0; i < _childMeshGroupTransforms.Count; i++)
+				return;
+			}
+
+			apTransform_MeshGroup childTransform = null;
+			for (int i = 0; i < nChild; i++)
+			{
+				childTransform = _childMeshGroupTransforms[i];
+				if(childTransform == null)
 				{
-					childTransform = _childMeshGroupTransforms[i];
-					if(childTransform == null)
-					{
-						//Debug.LogError("Null Child Mesh Group");
-						continue;
-					}
-					if(childTransform._meshGroup != this && childTransform._meshGroup != null)
-					{
-						childTransform._meshGroup.SetBoneIKEnabled(isEnabled_Matrix, isEnabled_Rigging);
-					}
+					continue;
+				}
+
+				if(childTransform._meshGroup != this && childTransform._meshGroup != null)
+				{
+					childTransform._meshGroup.SetBoneIKEnabled(isEnabled_Matrix, isEnabled_Rigging);
 				}
 			}
-			
 		}
 
 		public void BoneGUIUpdate(bool isIKUsing)
 		{
 			BoneListSet boneSet = null;
-			for (int iSet = 0; iSet < _boneListSets.Count; iSet++)
+			int nBoneListSets = _boneListSets != null ? _boneListSets.Count : 0;
+			if(nBoneListSets == 0)
+			{
+				return;
+			}
+
+			for (int iSet = 0; iSet < nBoneListSets; iSet++)
 			{
 				boneSet = _boneListSets[iSet];
-				for (int iRoot = 0; iRoot < boneSet._bones_Root.Count; iRoot++)
+
+				int nRootBones = boneSet._bones_Root != null ? boneSet._bones_Root.Count : 0;
+				if(nRootBones == 0)
+				{
+					continue;
+				}
+
+				for (int iRoot = 0; iRoot < nRootBones; iRoot++)
 				{
 					boneSet._bones_Root[iRoot].GUIUpdate(true, isIKUsing);
 				}
@@ -715,11 +733,17 @@ namespace AnyPortrait
 		}
 
 
+
+		private List<apRenderUnit> _tmpSortedList = null;//v1.5.0 : 
 		public void SortRenderUnits(bool isDepthChanged , DEPTH_ASSIGN depthAssignOption)
 		{
 			_isNeedRenderUnitSort = false;
 
-			List<apRenderUnit> sortedList = new List<apRenderUnit>();
+			if(_tmpSortedList == null)
+			{
+				_tmpSortedList = new List<apRenderUnit>();
+			}
+			_tmpSortedList.Clear();
 
 			apRenderUnit curRenderUnit = null;
 
@@ -748,16 +772,18 @@ namespace AnyPortrait
 				RefreshRenderUnitLevel(_rootRenderUnit, 0);//<< 여기서 _maxRenderUnitLevel를 계산한다.
 
 				//UI와 달리 여기서는 오름차순 (먼저 출력될 것 부터 가져온다.)
-				SortRenderUnitByLevelAndDepth(_rootRenderUnit, sortedList);
+				SortRenderUnitByLevelAndDepth(_rootRenderUnit, _tmpSortedList);
 			}
 
 
 			// < 중요 > sortedList를 바탕으로 여기서 _renderUnits_All을 다시 설정한다.
 			//여기서 렌더 유닛의 정렬이 완료된다.
 			_renderUnits_All.Clear();
-			for (int i = 0; i < sortedList.Count; i++)
+			int nSortedList = _tmpSortedList.Count;
+
+			for (int i = 0; i < nSortedList; i++)
 			{
-				curRenderUnit = sortedList[i];
+				curRenderUnit = _tmpSortedList[i];
 
 				_renderUnits_All.Add(curRenderUnit);//순서대로 입력한다.
 
@@ -775,53 +801,6 @@ namespace AnyPortrait
 				//1차로 Depth 값을 계산한다.
 				int curDepth = 0;//<0부터 시작 (Root가 0이다)
 
-				#region [미사용 코드] Depth 할당이 Root Mesh Group에서 일괄적으로 수행하도록 바뀌었으므로, 이 메시 그룹의 StartDepth를 구할 필요가 없다.
-				//int startDepth = 0;
-
-
-				////추가 22.8.17 [v1.4.2]
-				////만약 자신이 다른 메시 그룹의 자식이라면, 그때의 MeshGroup TF의 Depth를 받아야 한다.
-				//if (_parentMeshGroup != null)
-				//{
-				//	//Debug.LogWarning("Child MeshGroup에 속한 메시 그룹에서 Sort Render Unit을 호출했다. (" + _parentMeshGroup._name + ")");
-
-				//	apTransform_MeshGroup childMeshGroupTFInParent = _parentMeshGroup.GetMeshGroupTransformByMeshGroupID(_uniqueID);
-				//	if (childMeshGroupTFInParent != null)
-				//	{
-				//		startDepth = childMeshGroupTFInParent._depth;
-				//	}
-				//}
-
-				//curDepth = startDepth; 
-				#endregion
-
-				#region [미사용 코드] Depth 할당은 아래의 코드에서 옵션에 따라 수행한다.
-				//for (int iUnit = 0; iUnit < _renderUnits_All.Count; iUnit++)
-				//{
-				//	curRenderUnit = _renderUnits_All[iUnit];
-
-				//	// < TF에 Depth 할당하기 >
-				//	curDepth = curRenderUnit.SetDepth(curDepth);//여기서 잘못 들어가는게 문제. Depth를 고정값으로 넣으니 문제가 된다.
-
-				//	//curRenderUnit.SetDepthForSort(curDepth);//<<추가 >> 삭제 22.8.19 [v1.4.2]
-
-				//	if (curRenderUnit._meshGroupTransform != null
-				//		&& curRenderUnit._meshGroupTransform._meshGroup != null)
-				//	{
-				//		//렌더 유닛이 자식 메시 그룹일 때
-				//		//> Root Transform의 Depth를 변경
-				//		apMeshGroup childMeshGroup = curRenderUnit._meshGroupTransform._meshGroup;
-				//		if (childMeshGroup._rootMeshGroupTransform != null)
-				//		{
-				//			childMeshGroup._rootMeshGroupTransform._depth = curDepth;
-				//			//Debug.LogWarning("자식 메시 그룹 [" + childMeshGroup._name + "]의 루트 MGTF의 Depth를 변경 : " + curDepth);
-				//		}
-				//	}
-
-				//	curDepth++;
-				//} 
-				#endregion
-
 				//렌더 유닛의 GUI상에 보여지는 GUIIndex를 수정한다.
 				if (_rootRenderUnit != null)
 				{
@@ -835,107 +814,6 @@ namespace AnyPortrait
 				//계산된 _renderUnits_All 리스트 순서를 기반으로 Clipping Parent-Child를 정한다.
 				//bool isAnyClipping = RefreshAutoClipping();//이전
 				RefreshAutoClipping();//변경 v1.4.2
-
-				#region [미사용 코드] 해당 코드는 Refresh Auto Clipping 함수 내에서 동일하게 처리된다.
-				//if (isAnyClipping)
-				//{
-				//	//2차로 Depth 값을 계산한다.
-				//	//여기서는 Clipping의 Parent / Child가 같이 묶이도록 한다.
-
-				//	//[v1.4.2] 변경점
-				//	//- nextRenderUnits 삭제. 순서가 바뀌는게 아니므로 불필요
-				//	//List<apRenderUnit> nextRenderUnits = new List<apRenderUnit>();
-
-
-					
-				//	for (int iUnit = 0; iUnit < _renderUnits_All.Count; iUnit++)
-				//	{
-				//		apRenderUnit renderUnit = _renderUnits_All[iUnit];
-
-				//		//삭제
-				//		//if (nextRenderUnits.Contains(renderUnit))
-				//		//{
-				//		//	continue;
-				//		//}
-
-				//		//nextRenderUnits.Add(renderUnit);
-
-				//		if (renderUnit._unitType == apRenderUnit.UNIT_TYPE.Mesh
-				//			&& renderUnit._meshTransform != null)
-				//		{
-				//			apTransform_Mesh meshTransform = renderUnit._meshTransform;
-
-				//			//>>Child 위주로 수정을 하자
-				//			if (meshTransform._isClipping_Parent)
-				//			{
-				//				//Clip Mask Parent Mesh라면
-				//				//미리 Child를 넣어주자
-				//				if (meshTransform._clipChildMeshes.Count > 0)
-				//				{
-				//					for (int iClip = 0; iClip < meshTransform._clipChildMeshes.Count; iClip++)
-				//					{
-				//						apTransform_Mesh childMesh = meshTransform._clipChildMeshes[iClip]._meshTransform;
-				//						if (childMesh != null)
-				//						{
-				//							apRenderUnit childRenderUnit = GetRenderUnit(childMesh);
-
-				//							meshTransform._clipChildMeshes[iClip]._renderUnit = childRenderUnit;
-
-				//							//if (childRenderUnit != null)
-				//							//{
-				//							//	if (!nextRenderUnits.Contains(childRenderUnit))
-				//							//	{
-				//							//		nextRenderUnits.Add(childRenderUnit);
-				//							//	}
-				//							//}
-				//						}
-				//					}
-				//				}
-				//			}
-				//		}
-				//	}
-
-				//	//삭제 v1.4.2
-				//	//_renderUnits_All.Clear();
-				//	//for (int i = 0; i < nextRenderUnits.Count; i++)
-				//	//{
-				//	//	_renderUnits_All.Add(nextRenderUnits[i]);
-				//	//}
-
-
-				//	#region [미사용 코드]
-				//	////[v1.4.2] Depth를 할당하는 것은 옵션에 의해서만 동작하도록 만든다.
-				//	//if (depthAssignOption == DEPTH_ASSIGN.AssignDepth)
-				//	//{
-				//	//	//다시 Depth를 계산한다.
-
-				//	//	//curDepth = 0;//<0부터 시작 (Root가 0이므로) >> 버그 유발
-				//	//	curDepth = startDepth;//[v1.4.2] 2레벨 이상의 자식 메시 그룹에서의 Depth 미설정 버그
-
-				//	//	for (int iUnit = 0; iUnit < _renderUnits_All.Count; iUnit++)
-				//	//	{
-				//	//		curRenderUnit = _renderUnits_All[iUnit];
-				//	//		curDepth = curRenderUnit.SetDepth(curDepth);
-
-				//	//		if (curRenderUnit._meshGroupTransform != null
-				//	//		&& curRenderUnit._meshGroupTransform._meshGroup != null)
-				//	//		{
-				//	//			//렌더 유닛이 자식 메시 그룹일 때
-				//	//			//> Root Transform의 Depth를 변경
-				//	//			apMeshGroup childMeshGroup = curRenderUnit._meshGroupTransform._meshGroup;
-				//	//			if (childMeshGroup._rootMeshGroupTransform != null)
-				//	//			{
-				//	//				childMeshGroup._rootMeshGroupTransform._depth = curDepth;
-				//	//				//Debug.LogWarning("자식 메시 그룹 [" + childMeshGroup._name + "]의 루트 MGTF의 Depth를 변경 : " + curDepth);
-				//	//			}
-				//	//		}
-
-				//	//		curDepth++;
-				//	//	}
-				//	//} 
-				//	#endregion
-				//}
-				#endregion
 
 				//삭제 v1.4.2 : 위에서 이미 처리했다.
 				//Depth를 다시 넣어주자
@@ -996,32 +874,6 @@ namespace AnyPortrait
 			}
 
 
-			#region [미사용 코드] 불필요한 중복 할당
-			//_renderUnits_All 에 대해서 전체 Depth에 대해서 오름차순(-5, -4, -3, ...0, 1, 2, 3...)으로 정렬한다.
-			//Depth 값이 작을수록 뒤에 있기 때문에, 먼저 렌더링이 되어야 한다.
-
-			//삭제 v1.4.2 : 위에서 이미 다 정렬했다.
-			//sortedList.Clear();
-			//if (_rootRenderUnit != null)
-			//{
-			//	SortRenderUnitByLevelAndDepth(_rootRenderUnit, sortedList);
-			//}
-
-
-			////정렬된 순서에 맞게 Render Unit 리스트를 다시 설정한다.
-			//_renderUnits_All.Clear();
-
-			//for (int i = 0; i < sortedList.Count; i++)
-			//{
-			//	curRenderUnit = sortedList[i];
-			//	//curRenderUnit.SetDepthForSort(curRenderUnit.GetDepth());//삭제 22.8.19
-
-			//	curRenderUnit.SetExtraDepthChangedEvent(OnRenderUnitExtraDepthChanged);//추가 : Extra 옵션에 의해서 Depth가 바뀌는 이벤트를 할당한다.
-			//	_renderUnits_All.Add(curRenderUnit);
-			//} 
-			#endregion
-
-
 			//추가 12.2 : Sorted Buffer에 집어넣자
 			_sortedRenderBuffer.SetSortedRenderUnits(_renderUnits_All);
 		}
@@ -1035,14 +887,18 @@ namespace AnyPortrait
 		/// </summary>
 		private void SortRenderUnitsAndAssignDepthInRootMeshGroup()
 		{
-			List<apRenderUnit> sortedList = new List<apRenderUnit>();
+			if(_tmpSortedList == null)
+			{
+				_tmpSortedList = new List<apRenderUnit>();
+			}
+			_tmpSortedList.Clear();
 
 			// < Render Unit들을 정렬 >
 			//재귀적으로 같은 레벨의 RenderUnit들을 정렬하면서 SortedList에 넣는다.
 			//실질적인 정렬은 Root Render Unit을 기준으로 Child Render Unit 리스트를 정렬하는 것이다.
 			if (_rootRenderUnit != null)
 			{
-				SortRenderUnitByLevelAndDepth(_rootRenderUnit, sortedList);
+				SortRenderUnitByLevelAndDepth(_rootRenderUnit, _tmpSortedList);
 			}
 
 			apRenderUnit curRenderUnit = null;
@@ -1050,9 +906,11 @@ namespace AnyPortrait
 			// < 중요 > sortedList를 바탕으로 여기서 _renderUnits_All을 다시 설정한다.
 			//여기서 렌더 유닛의 정렬이 완료된다.
 			_renderUnits_All.Clear();
-			for (int i = 0; i < sortedList.Count; i++)
+
+			int nSortedList = _tmpSortedList.Count;
+			for (int i = 0; i < nSortedList; i++)
 			{
-				curRenderUnit = sortedList[i];
+				curRenderUnit = _tmpSortedList[i];
 				_renderUnits_All.Add(curRenderUnit);//순서대로 입력한다.
 			}
 
@@ -1165,28 +1023,68 @@ namespace AnyPortrait
 		/// <summary>
 		/// Clipping은 Refresh에서 Depth Sort 다음에 자동으로 다시 세팅되어야 한다.
 		/// </summary>
-		//public bool RefreshAutoClipping()
 		public void RefreshAutoClipping()//변경 v1.4.2 : 리턴이 필요없어졌다.
 		{
+			//v1.5.0 : 코드 최적화
+			//Level별 MeshTransform이 있는 RenderUnit 리스트를 만들자 
+			Dictionary<int, List<apRenderUnit>> level2MeshRenderUnits = new Dictionary<int, List<apRenderUnit>>();
+
+			int nRenderUnits = _renderUnits_All != null ? _renderUnits_All.Count : 0;
+			if(nRenderUnits == 0)
+			{
+				return;
+			}
+
+			apRenderUnit renderUnit = null;
+			List<apRenderUnit> renderUnitListPerLevel = null;
+			for (int i = 0; i < nRenderUnits; i++)
+			{
+				renderUnit = _renderUnits_All[i];
+				if(renderUnit._meshTransform == null)
+				{
+					//MeshTF가 아니라면 생략
+					continue;
+				}
+				int level = renderUnit._level;
+
+				//레벨 별 Render Unit 리스트를 만들고 저장한다.
+				renderUnitListPerLevel = null;
+				level2MeshRenderUnits.TryGetValue(level, out renderUnitListPerLevel);
+
+				if(renderUnitListPerLevel == null)
+				{
+					renderUnitListPerLevel = new List<apRenderUnit>();
+					level2MeshRenderUnits.Add(level, renderUnitListPerLevel);
+				}
+				renderUnitListPerLevel.Add(renderUnit);
+			}
+
 			//bool isAnyClipping = false;
 
 			//클리핑을 RenderUnit 기준으로 다시 돌리자
 			//RenderUnit의 Level은 정리된 상태여야 한다.
 			for (int iLevel = 0; iLevel <= _maxRenderUnitLevel; iLevel++)
 			{
-				List<apRenderUnit> subLevelRenderUnits = _renderUnits_All.FindAll(delegate (apRenderUnit a)
-				{
-					return a._meshTransform != null && a._level == iLevel;
-				});
+				//이전
+				//List<apRenderUnit> subLevelRenderUnits = _renderUnits_All.FindAll(delegate (apRenderUnit a)
+				//{
+				//	return a._meshTransform != null && a._level == iLevel;
+				//});
 
-				if (subLevelRenderUnits.Count == 0)
+				//변경
+				List<apRenderUnit> subLevelRenderUnits = null;
+				level2MeshRenderUnits.TryGetValue(iLevel, out subLevelRenderUnits);
+
+				int nSubLevelRenderUnits = subLevelRenderUnits != null ? subLevelRenderUnits.Count : 0;
+
+				if (nSubLevelRenderUnits == 0)
 				{
 					continue;
 				}
 
 
 				//1. 일단 Parent는 다시 초기화 한다. (여기서 클리핑 정보인 ClipMeshSet이 모두 초기화된다.)
-				for (int i = 0; i < subLevelRenderUnits.Count; i++)
+				for (int i = 0; i < nSubLevelRenderUnits; i++)
 				{
 					apTransform_Mesh meshTransform = subLevelRenderUnits[i]._meshTransform;
 					meshTransform.InitClipMeshAsParent();
@@ -1194,7 +1092,7 @@ namespace AnyPortrait
 
 				
 				//2. Clip-Child를 기준으로 다시 연결을 해주자
-				for (int i = 0; i < subLevelRenderUnits.Count; i++)
+				for (int i = 0; i < nSubLevelRenderUnits; i++)
 				{
 					apTransform_Mesh meshTransform = subLevelRenderUnits[i]._meshTransform;
 					if (meshTransform._isClipping_Child)
@@ -1204,7 +1102,7 @@ namespace AnyPortrait
 						//자신보다 Depth가 낮은 MeshTransform 중에서 "최대값"을 가진 MeshTransform을 찾는다.
 						apTransform_Mesh maskMesh = null;
 						int maxDepth = -1;
-						for (int iFind = 0; iFind < subLevelRenderUnits.Count; iFind++)
+						for (int iFind = 0; iFind < nSubLevelRenderUnits; iFind++)
 						{
 							apTransform_Mesh mt = subLevelRenderUnits[iFind]._meshTransform;
 							if (mt == meshTransform)
@@ -1229,7 +1127,11 @@ namespace AnyPortrait
 						if (maskMesh != null)
 						{
 							//Clipping Parent 메시 TF를 찾았다.
-							maskMesh.AddClippedChildMesh(meshTransform, GetRenderUnit(meshTransform));
+							//이전
+							//maskMesh.AddClippedChildMesh(meshTransform, GetRenderUnit(meshTransform));
+
+							//변경 v1.5.0
+							maskMesh.AddClippedChildMesh(meshTransform);
 						}
 						else
 						{
@@ -1240,86 +1142,7 @@ namespace AnyPortrait
 						}
 					}
 				}
-
 			}
-
-			#region [미사용 코드] ChildMeshTransform으로만 돈다면 버그가 있다.
-			////1. 일단 Parent는 다시 초기화 한다.
-			//for (int i = 0; i < _childMeshTransforms.Count; i++)
-			//{
-			//	apTransform_Mesh meshTransform = _childMeshTransforms[i];
-			//	meshTransform.InitClipMeshAsParent();
-			//}
-
-			////2. Clip-Child를 기준으로 다시 연결을 해주자
-			//for (int i = 0; i < _childMeshTransforms.Count; i++)
-			//{
-			//	apTransform_Mesh meshTransform = _childMeshTransforms[i];
-			//	if(meshTransform._isClipping_Child)
-			//	{
-			//		isAnyClipping = true;
-
-			//		//자신보다 Depth가 낮은 MeshTransform 중에서 "최대값"을 가진 MeshTransform을 찾는다.
-			//		apTransform_Mesh maskMesh = null;
-			//		int maxDepth = -1;
-			//		for (int iFind = 0; iFind < _childMeshTransforms.Count; iFind++)
-			//		{
-			//			apTransform_Mesh mt = _childMeshTransforms[iFind];
-			//			if(mt == meshTransform)
-			//			{
-			//				continue;
-			//			}
-			//			if(mt._isClipping_Child)
-			//			{
-			//				//이미 Child라면 Pass
-			//				continue;
-			//			}
-			//			if(mt._depth < meshTransform._depth)
-			//			{
-			//				if(maskMesh == null || maxDepth < mt._depth)
-			//				{
-			//					maskMesh = mt;
-			//					maxDepth = mt._depth;
-			//				}
-			//			}
-			//		}
-
-			//		bool isClipAddable = false;
-			//		if(maskMesh != null)
-			//		{
-			//			if(maskMesh._isClipping_Parent)
-			//			{
-			//				//이미 Parent이면 -> 추가된 Child가 3 미만이어야 한다.
-			//				int nChildMeshes = maskMesh.GetChildClippedMeshes();
-			//				if(nChildMeshes < 3)
-			//				{
-			//					isClipAddable = true;
-			//				}
-			//			}
-			//			else
-			//			{
-			//				isClipAddable = true;
-			//			}
-			//		}
-
-			//		if(isClipAddable)
-			//		{
-			//			maskMesh.AddClippedChildMesh(meshTransform, GetRenderUnit(meshTransform));
-			//		}
-			//		else
-			//		{
-			//			//마땅한 Mask Mesh를 찾지 못했다.
-			//			meshTransform._isClipping_Child = false;
-			//			meshTransform._clipParentMeshTransform = null;
-			//			meshTransform._clipIndexFromParent = -1;
-
-			//		}
-			//	}
-			//} 
-			#endregion
-
-
-			//return isAnyClipping;//더이상 리턴하지 않는다.
 		}
 
 
@@ -1598,30 +1421,36 @@ namespace AnyPortrait
 				targetSelectedModifier = linkRefreshRequest.Modifier;
 			}
 
-			//Debug.LogWarning(">> RefreshModifierLink : TargetModifier (" + (targetSelectedModifier != null ? targetSelectedModifier.DisplayName : "None") + ")");
-
 
 			//버그 수정 20.4.21 : 특정 모디파이어에 대해서만 갱신할 때는 모두 Clear하면 안된다.
-			if (targetSelectedModifier == null)
-			{
-				//특정 모디파이어없이 모두 삭제할 때
-				for (int i = 0; i < _renderUnits_All.Count; i++)
-				{
-					_renderUnits_All[i]._calculatedStack.ClearResultParams();
-					_renderUnits_All[i]._calculatedStack.ResetRenderVerts();
-				}
-			}
-			else
-			{
-				//특정 모디파이어에 대해서만 삭제할 때 
-				for (int i = 0; i < _renderUnits_All.Count; i++)
-				{
-					//특정 모디파이어에 대한 ResultParam만 초기화하자
-					_renderUnits_All[i]._calculatedStack.ClearResultParamsOfModifier(targetSelectedModifier);
-					_renderUnits_All[i]._calculatedStack.ResetRenderVerts();
-				}
-			}
+
 			
+			int nRenderUnits = _renderUnits_All != null ? _renderUnits_All.Count : 0;
+			if (nRenderUnits > 0)
+			{
+				apRenderUnit renderUnit = null;
+				if (targetSelectedModifier == null)
+				{
+					//특정 모디파이어없이 모두 삭제할 때
+					for (int i = 0; i < nRenderUnits; i++)
+					{
+						renderUnit = _renderUnits_All[i];
+						renderUnit._calculatedStack.ClearResultParams();
+						renderUnit._calculatedStack.ResetRenderVerts();
+					}
+				}
+				else
+				{
+					//특정 모디파이어에 대해서만 삭제할 때 
+					for (int i = 0; i < nRenderUnits; i++)
+					{
+						//특정 모디파이어에 대한 ResultParam만 초기화하자
+						renderUnit = _renderUnits_All[i];
+						renderUnit._calculatedStack.ClearResultParamsOfModifier(targetSelectedModifier);
+						renderUnit._calculatedStack.ResetRenderVerts();
+					}
+				}
+			}
 			
 			
 			//_modifierStack.ClearAllCalculateParams();//이전
@@ -1642,11 +1471,13 @@ namespace AnyPortrait
 		{
 			_modifierStack.ClearAllCalculateParams(targetSelectedModifier);
 
-			if(_childMeshGroupTransforms != null && _childMeshGroupTransforms.Count > 0)
+			int nChildMeshGroupTF = _childMeshGroupTransforms != null ? _childMeshGroupTransforms.Count : 0;
+			if(nChildMeshGroupTF > 0)
 			{
-				for (int i = 0; i < _childMeshGroupTransforms.Count; i++)
+				apTransform_MeshGroup childMeshGroupTransform = null;
+				for (int i = 0; i < nChildMeshGroupTF; i++)
 				{
-					apTransform_MeshGroup childMeshGroupTransform = _childMeshGroupTransforms[i];
+					childMeshGroupTransform = _childMeshGroupTransforms[i];
 					if(childMeshGroupTransform == null || childMeshGroupTransform._meshGroup == null)
 					{
 						continue;
@@ -1750,35 +1581,106 @@ namespace AnyPortrait
 
 		public apRenderUnit GetRenderUnit(apTransform_Mesh meshTransform)
 		{
-			return _renderUnits_All.Find(delegate (apRenderUnit a)
+			//추가 v1.5.0 > 이미 연결된 경우 빠른 갱신
+			if(meshTransform._linkedRenderUnit != null)
 			{
-				return a._meshTransform == meshTransform;
-			});
+				if(_renderUnits_All.Contains(meshTransform._linkedRenderUnit))
+				{
+					return meshTransform._linkedRenderUnit;
+				}
+			}
+
+			//이전 (GC 발생)
+			//return _renderUnits_All.Find(delegate (apRenderUnit a)
+			//{
+			//	return a._meshTransform == meshTransform;
+			//});
+
+			//변경 v1.5.0
+			s_GetRenderUnitByMeshTF_MeshTF = meshTransform;
+			return _renderUnits_All.Find(s_GetRenderUnitByMeshTF_Func);
 		}
+
+		private static apTransform_Mesh s_GetRenderUnitByMeshTF_MeshTF = null;
+		private static Predicate<apRenderUnit> s_GetRenderUnitByMeshTF_Func = FUNC_GetRenderUnitByMeshTF;
+		private static bool FUNC_GetRenderUnitByMeshTF(apRenderUnit a)
+		{
+			return a._meshTransform == s_GetRenderUnitByMeshTF_MeshTF;
+		}
+
 
 		public apRenderUnit GetRenderUnit(apTransform_MeshGroup meshGroupTransform)
 		{
-			return _renderUnits_All.Find(delegate (apRenderUnit a)
+			//추가 v1.5.0 > 이미 연결된 경우 빠른 갱신
+			if(meshGroupTransform._linkedRenderUnit != null)
 			{
-				return a._meshGroupTransform == meshGroupTransform;
-			});
+				if(_renderUnits_All.Contains(meshGroupTransform._linkedRenderUnit))
+				{
+					return meshGroupTransform._linkedRenderUnit;
+				}
+			}
+			//이전 (GC 발생)
+			//return _renderUnits_All.Find(delegate (apRenderUnit a)
+			//{
+			//	return a._meshGroupTransform == meshGroupTransform;
+			//});
+
+			//변경 v1.5.0
+			s_GetRenderUnitByMeshGroupTF_MeshGroupTF = meshGroupTransform;
+			return _renderUnits_All.Find(s_GetRenderUnitByMeshGroupTF_Func);
 		}
+
+		private static apTransform_MeshGroup s_GetRenderUnitByMeshGroupTF_MeshGroupTF = null;
+		private static Predicate<apRenderUnit> s_GetRenderUnitByMeshGroupTF_Func = FUNC_GetRenderUnitByMeshGroupTF;
+		private static bool FUNC_GetRenderUnitByMeshGroupTF(apRenderUnit a)
+		{
+			return a._meshGroupTransform == s_GetRenderUnitByMeshGroupTF_MeshGroupTF;
+		}
+
+
 
 		public apRenderUnit GetRenderUnit_NoRecursive(apTransform_Mesh meshTransform)
 		{
-			return _renderUnits_All.Find(delegate (apRenderUnit a)
-			{
-				return a._meshTransform == meshTransform && a._meshGroup == this;
-			});
+			//이전 (GC 발생)
+			//return _renderUnits_All.Find(delegate (apRenderUnit a)
+			//{
+			//	return a._meshTransform == meshTransform && a._meshGroup == this;
+			//});
+
+			//변경 v1.5.0
+			s_GetRenderUnit_NoRecursive_MeshTF = meshTransform;
+			s_GetRenderUnit_NoRecursive_This = this;
+			return _renderUnits_All.Find(s_GetRenderUnit_NoRecursive_MeshTF_Func);
 		}
 
 		public apRenderUnit GetRenderUnit_NoRecursive(apTransform_MeshGroup meshGroupTransform)
 		{
-			return _renderUnits_All.Find(delegate (apRenderUnit a)
-			{
-				return a._meshGroupTransform == meshGroupTransform && a._meshGroup == this;
-				;
-			});
+			//이전 (GC 발생)
+			//return _renderUnits_All.Find(delegate (apRenderUnit a)
+			//{
+			//	return a._meshGroupTransform == meshGroupTransform && a._meshGroup == this;
+			//});
+
+			//변경 v1.5.0
+			s_GetRenderUnit_NoRecursive_MeshGroupTF = meshGroupTransform;
+			s_GetRenderUnit_NoRecursive_This = this;
+			return _renderUnits_All.Find(s_GetRenderUnit_NoRecursive_MeshGroupTF_Func);
+		}
+
+		private static apTransform_Mesh s_GetRenderUnit_NoRecursive_MeshTF = null;
+		private static apTransform_MeshGroup s_GetRenderUnit_NoRecursive_MeshGroupTF = null;
+		private static apMeshGroup s_GetRenderUnit_NoRecursive_This = null;
+
+		private static Predicate<apRenderUnit> s_GetRenderUnit_NoRecursive_MeshTF_Func = FUNC_GetRenderUnit_NoRecursive_MeshTF;
+		private static bool FUNC_GetRenderUnit_NoRecursive_MeshTF(apRenderUnit a)
+		{
+			return a._meshTransform == s_GetRenderUnit_NoRecursive_MeshTF && a._meshGroup == s_GetRenderUnit_NoRecursive_This;
+		}
+
+		private static Predicate<apRenderUnit> s_GetRenderUnit_NoRecursive_MeshGroupTF_Func = FUNC_GetRenderUnit_NoRecursive_MeshGroupTF;
+		private static bool FUNC_GetRenderUnit_NoRecursive_MeshGroupTF(apRenderUnit a)
+		{
+			return a._meshGroupTransform == s_GetRenderUnit_NoRecursive_MeshGroupTF && a._meshGroup == s_GetRenderUnit_NoRecursive_This;
 		}
 
 
@@ -1794,9 +1696,16 @@ namespace AnyPortrait
 				return this;
 			}
 
-			for (int i = 0; i < _childMeshGroupTransforms.Count; i++)
+			int nChildMGTF = _childMeshGroupTransforms != null ? _childMeshGroupTransforms.Count : 0;
+			if(nChildMGTF == 0)
 			{
-				apTransform_MeshGroup childMeshGroupTransform = _childMeshGroupTransforms[i];
+				return null;
+			}
+
+			apTransform_MeshGroup childMeshGroupTransform = null;
+			for (int i = 0; i < nChildMGTF; i++)
+			{
+				childMeshGroupTransform = _childMeshGroupTransforms[i];
 				if (childMeshGroupTransform._meshGroup != null)
 				{
 					apMeshGroup resultMeshGroup = childMeshGroupTransform._meshGroup.FindParentMeshGroupOfMeshTransform(meshTransform);
@@ -1812,10 +1721,16 @@ namespace AnyPortrait
 
 		public apTransform_MeshGroup FindChildMeshGroupTransform(apMeshGroup childMeshGroup)
 		{
-
-			for (int i = 0; i < _childMeshGroupTransforms.Count; i++)
+			int nChildMGTF = _childMeshGroupTransforms != null ? _childMeshGroupTransforms.Count : 0;
+			if(nChildMGTF == 0)
 			{
-				apTransform_MeshGroup childMeshGroupTransform = _childMeshGroupTransforms[i];
+				return null;
+			}
+
+			apTransform_MeshGroup childMeshGroupTransform = null;
+			for (int i = 0; i < nChildMGTF; i++)
+			{
+				childMeshGroupTransform = _childMeshGroupTransforms[i];
 				if (childMeshGroupTransform._meshGroup != null)
 				{
 					if (childMeshGroupTransform._meshGroup == childMeshGroup)
@@ -1863,6 +1778,19 @@ namespace AnyPortrait
 
 		// Dpeth / Layer 관련 처리
 		//-----------------------------------------------------------------------
+
+		private static apRenderUnit s_changeRenderUnitDepth_RenderUnit = null;
+		private static bool FUNC_ChangeRenderUnitDepth_GetSameLevelRenderUnits(apRenderUnit a)
+		{
+			return (a != s_changeRenderUnitDepth_RenderUnit) && (a._parentRenderUnit == s_changeRenderUnitDepth_RenderUnit._parentRenderUnit);
+		}
+
+
+		private static int FUNC_SortRenderUnitByDepth_A_B(apRenderUnit a, apRenderUnit b)
+		{
+			return a.GetDepth() - b.GetDepth();
+		}
+
 		public void ChangeRenderUnitDepth(apRenderUnit renderUnit, int nextDepth)
 		{
 			if(renderUnit.GetDepth() == nextDepth)
@@ -1878,16 +1806,17 @@ namespace AnyPortrait
 			//>> nextDepth를 증감하여 다른 RenderUnit과 교체할 수 있도록 만든다.
 
 			//변경 : 레벨이 같은게 아니라 Parent가 같은 걸 찾아야 한다.
-			//renderUnit._parentRenderUnit
-			List<apRenderUnit> sameLevelRenderUnits = _renderUnits_All.FindAll(delegate (apRenderUnit a)
-			{
-				//return (a != renderUnit) && (a._level == renderUnit._level);//이전
-				return (a != renderUnit) && (a._parentRenderUnit == renderUnit._parentRenderUnit);
-			});
+			//이전 (GC 발생)
+			//List<apRenderUnit> sameLevelRenderUnits = _renderUnits_All.FindAll(delegate (apRenderUnit a)
+			//{
+			//	//return (a != renderUnit) && (a._level == renderUnit._level);//이전
+			//	return (a != renderUnit) && (a._parentRenderUnit == renderUnit._parentRenderUnit);
+			//});
 
+			//변경 v1.5.0
+			s_changeRenderUnitDepth_RenderUnit = renderUnit;
+			List<apRenderUnit> sameLevelRenderUnits = _renderUnits_All.FindAll(FUNC_ChangeRenderUnitDepth_GetSameLevelRenderUnits);
 
-			//Debug.Log("같은 레벨의 렌더 유닛들 : " + sameLevelRenderUnits.Count);
-			
 
 			bool isIncrease = false;
 
@@ -1909,20 +1838,16 @@ namespace AnyPortrait
 
 			//변경
 			//>일단 오름차순으로 정렬
-			sameLevelRenderUnits.Sort(delegate(apRenderUnit a, apRenderUnit b)
-			{
-				return a.GetDepth() - b.GetDepth();
-			});
-
-			//디버그
-
-			//Debug.Log("-----------------------------------");
-			//for (int i = 0; i < sameLevelRenderUnits.Count; i++)
+			//이전 (GC 발생)
+			//sameLevelRenderUnits.Sort(delegate(apRenderUnit a, apRenderUnit b)
 			//{
-			//	Debug.Log("[" + i + "] " + sameLevelRenderUnits[i].Name + " (Depth : " + sameLevelRenderUnits[i].GetDepth() + ")");
-			//}
-			//Debug.Log("-----------------------------------");
+			//	return a.GetDepth() - b.GetDepth();
+			//});
 
+			//변경 v1.5.0
+			sameLevelRenderUnits.Sort(FUNC_SortRenderUnitByDepth_A_B);
+
+			
 			//시작지점을 찾는다.
 			//증가시 : CurDepth보다 큰 최소값 Cur - Start ->>>
 			//감소시 : CurDepth보다 작은 최대값 <<<- Start - Cur
@@ -2190,26 +2115,6 @@ namespace AnyPortrait
 			//나머지는 Sort가 알아서 할 것이다.
 			SetDirtyToSort();
 			SortRenderUnits(true, DEPTH_ASSIGN.AssignDepth);//Render Unit 정렬후 Depth도 수정하자
-
-			
-			//Debug.LogWarning("이동 결과 : -----------------------------------");
-			//for (int iUnit = 0; iUnit < _renderUnits_All.Count; iUnit++)
-			//{
-			//	//Debug.Log("Depth [" + curDepth + "]");
-			//	apRenderUnit unit = _renderUnits_All[iUnit];
-			//	if(unit == renderUnit)
-			//	{
-			//		//Debug.LogError(unit.Name + " : " + unit.GetDepth() + " (" + unit.DepthForOnlySort + ")");
-			//		Debug.LogError(unit.Name + " : " + unit.GetDepth());
-			//	}
-			//	else
-			//	{
-			//		//Debug.Log(unit.Name + " : " + unit.GetDepth() + " (" + unit.DepthForOnlySort + ")");
-			//		Debug.Log(unit.Name + " : " + unit.GetDepth());
-			//	}
-				
-			//}
-			//Debug.LogWarning("-------------------------------------------");
 		}
 
 
@@ -2293,10 +2198,14 @@ namespace AnyPortrait
 				return;
 			}
 
-			sortedRenderUnits.Sort(delegate(apRenderUnit a, apRenderUnit b)
-			{
-				return a.GetDepth() - b.GetDepth();//오름차순
-			});
+			//이전 (GC 발생)
+			//sortedRenderUnits.Sort(delegate(apRenderUnit a, apRenderUnit b)
+			//{
+			//	return a.GetDepth() - b.GetDepth();//오름차순
+			//});
+
+			//변경 v1.5.0
+			sortedRenderUnits.Sort(FUNC_SortRenderUnitByDepth_A_B);
 
 
 			//이동이 불가능해진 Parent RenderUnit들을 리스트로 모으자
@@ -2588,31 +2497,178 @@ namespace AnyPortrait
 			}
 		}
 
+
+
+		// [v1.5.0] IK 업데이트를 위한 IK Run Node를 초기화
+		//-----------------------------------------------------------------------
+		/// <summary>
+		/// IK가 동작하는 본들을 Run Node로서 등록하거나 갱신한다.
+		/// IK Chain이 갱신될 때 항상 호출되어야 한다.
+		/// </summary>
+		public void RefreshBoneIKRunNodes()
+		{
+			if(_boneIKRunNodes == null) { _boneIKRunNodes = new List<apBoneIKRunNode>(); }
+			_boneIKRunNodes.Clear();
+
+			int nBoneListSets = _boneListSets != null ? _boneListSets.Count : 0;
+
+			if(nBoneListSets == 0)
+			{
+				return;
+			}
+
+			BoneListSet curBoneSet = null;
+			apBone curRootBone = null;
+			for (int iSet = 0; iSet < nBoneListSets; iSet++)
+			{
+				curBoneSet = _boneListSets[iSet];
+				int nRoots = curBoneSet._bones_Root != null ? curBoneSet._bones_Root.Count : 0;
+				if(nRoots == 0)
+				{
+					continue;
+				}
+
+				//Root부터 Child로 재귀적으로 IK가 수행되어야 하는 Bone들을 Run Node로 등록한다.
+				for (int iRoot = 0; iRoot < nRoots; iRoot++)
+				{
+					curRootBone = curBoneSet._bones_Root[iRoot];
+					RegisterIKBonesToRunNodesRecursive(curRootBone);
+				}
+			}
+
+			int nRunNodes = _boneIKRunNodes.Count;
+			if(nRunNodes == 0)
+			{
+				return;
+			}
+
+			//Run Node가 2개 이상이라면, 정렬을 해야한다.
+			//- 기본적으론 Index의 오름차순이다. (Root > Child 순서)
+			//- 단, Order 값이 다르다면 Order값이 작은게 먼저 수행된다.
+			if(nRunNodes > 1)
+			{
+				_boneIKRunNodes.Sort(SortCompareRunNodes);
+			}
+
+			//디버그 테스트
+			//apBoneIKRunNode curRunNode = null;
+			//Debug.Log("---- Run Node 갱신 ----");
+			//for (int i = 0; i < nRunNodes; i++)
+			//{
+			//	curRunNode = _boneIKRunNodes[i];
+			//	Debug.Log("[" + i + " / " + curRunNode._depth + "] " + curRunNode._linkedBone._name);
+			//}
+		}
+
+		private void RegisterIKBonesToRunNodesRecursive(apBone curBone)
+		{
+			apBone chainRootBone = null;
+			if(curBone.IsIKCalculatable(out chainRootBone))
+			{
+				//IK Controller가 동작하면 Run Node에 넣자
+				int curIndex = _boneIKRunNodes.Count;
+				_boneIKRunNodes.Add(new apBoneIKRunNode(curBone, curIndex, chainRootBone));
+			}
+
+			//자식 본도 IK 여부를 검사하여 리스트에 넣자
+			int nChildBones = curBone._childBones != null ? curBone._childBones.Count : 0;
+			if(nChildBones == 0)
+			{
+				return;
+			}
+
+			apBone childBone = null;
+			for (int iChild = 0; iChild < nChildBones; iChild++)
+			{
+				childBone = curBone._childBones[iChild];
+				RegisterIKBonesToRunNodesRecursive(childBone);
+			}
+		}
+
+		private int SortCompareRunNodes(apBoneIKRunNode nodeA, apBoneIKRunNode nodeB)
+		{
+			if(nodeA._depth != nodeB._depth)
+			{
+				return nodeA._depth - nodeB._depth;//Order의 오름차순
+			}
+			//그 외에는 Index 순서
+			return nodeA._index - nodeB._index;
+		}
+
+
+
+
+
 		// Get Transform
 		//-----------------------------------------------------------------------
 		public apTransform_Mesh GetMeshTransform(int uniqueID)
 		{
-			return _childMeshTransforms.Find(delegate (apTransform_Mesh a)
-			{
-				return a._transformUniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _childMeshTransforms.Find(delegate (apTransform_Mesh a)
+			//{
+			//	return a._transformUniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetMeshTF_UniqueID = uniqueID;
+			return _childMeshTransforms.Find(s_GetMeshTFByID_Func);
 		}
+
+		private static int s_GetMeshTF_UniqueID = -1;
+		private static Predicate<apTransform_Mesh> s_GetMeshTFByID_Func = FUNC_GetMeshTFByID;
+		private static bool FUNC_GetMeshTFByID(apTransform_Mesh a)
+		{
+			return a._transformUniqueID == s_GetMeshTF_UniqueID;
+		}
+
+
 
 		public apTransform_MeshGroup GetMeshGroupTransform(int uniqueID)
 		{
-			return _childMeshGroupTransforms.Find(delegate (apTransform_MeshGroup a)
-			{
-				return a._transformUniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _childMeshGroupTransforms.Find(delegate (apTransform_MeshGroup a)
+			//{
+			//	return a._transformUniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetMeshGroupTF_UniqueID = uniqueID;
+			return _childMeshGroupTransforms.Find(s_GetMeshGroupTFByID_Func);
 		}
+
+
+		private static int s_GetMeshGroupTF_UniqueID = -1;
+		private static Predicate<apTransform_MeshGroup> s_GetMeshGroupTFByID_Func = FUNC_GetMeshGroupTFByID;
+		private static bool FUNC_GetMeshGroupTFByID(apTransform_MeshGroup a)
+		{
+			return a._transformUniqueID == s_GetMeshGroupTF_UniqueID;
+		}
+
+
+
 
 		public apTransform_MeshGroup GetMeshGroupTransformByMeshGroupID(int meshGroupID)
 		{
-			return _childMeshGroupTransforms.Find(delegate (apTransform_MeshGroup a)
-			{
-				return a._meshGroupUniqueID == meshGroupID;
-			});
+			//이전 (GC 발생)
+			//return _childMeshGroupTransforms.Find(delegate (apTransform_MeshGroup a)
+			//{
+			//	return a._meshGroupUniqueID == meshGroupID;
+			//});
+
+			//변경 v1.5.0
+			s_GetMeshGroupTF_MeshGroupID = meshGroupID;
+			return _childMeshGroupTransforms.Find(s_GetMeshGroupTFByMeshGroupID_Func);
 		}
+
+
+		private static int s_GetMeshGroupTF_MeshGroupID = -1;
+		private static Predicate<apTransform_MeshGroup> s_GetMeshGroupTFByMeshGroupID_Func = FUNC_GetMeshGroupTFByMeshGroupID;
+		private static bool FUNC_GetMeshGroupTFByMeshGroupID(apTransform_MeshGroup a)
+		{
+			return a._meshGroupUniqueID == s_GetMeshGroupTF_MeshGroupID;
+		}
+
+
 
 		/// <summary>
 		/// Mesh Transform을 가져온다.
@@ -2622,33 +2678,51 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apTransform_Mesh GetMeshTransformRecursive(int uniqueID)
 		{
-			apTransform_Mesh result = _childMeshTransforms.Find(delegate (apTransform_Mesh a)
-			{
-				return a._transformUniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//apTransform_Mesh result = _childMeshTransforms.Find(delegate (apTransform_Mesh a)
+			//{
+			//	return a._transformUniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0 : GC를 방생시키지 않기
+			s_FindMeshTFParam_UniqueID = uniqueID;
+			apTransform_Mesh result = _childMeshTransforms.Find(s_FindMeshTF_Func);
+
 			if (result != null)
 			{
 				return result;
 			}
 			//만약 없다면 -> ChildMeshGroup을 뒤져서 찾아보자
-			if (_childMeshGroupTransforms.Count > 0)
+			int nChildMeshGroupTFs = _childMeshGroupTransforms != null ? _childMeshGroupTransforms.Count : 0;
+			if(nChildMeshGroupTFs == 0)
 			{
-				apMeshGroup childMeshGroup = null;
-				for (int i = 0; i < _childMeshGroupTransforms.Count; i++)
+				return null;
+			}
+
+			apMeshGroup childMeshGroup = null;
+			for (int i = 0; i < nChildMeshGroupTFs; i++)
+			{
+				childMeshGroup = _childMeshGroupTransforms[i]._meshGroup;
+				if (childMeshGroup != null && childMeshGroup != this)
 				{
-					childMeshGroup = _childMeshGroupTransforms[i]._meshGroup;
-					if (childMeshGroup != null && childMeshGroup != this)
+					result = childMeshGroup.GetMeshTransformRecursive(uniqueID);
+					if (result != null)
 					{
-						result = childMeshGroup.GetMeshTransformRecursive(uniqueID);
-						if (result != null)
-						{
-							return result;
-						}
+						return result;
 					}
 				}
 			}
 			return null;
 		}
+
+		private static int s_FindMeshTFParam_UniqueID = -1;
+		private static Predicate<apTransform_Mesh> s_FindMeshTF_Func = FUNC_FindMeshTF;
+		private static bool FUNC_FindMeshTF(apTransform_Mesh a)
+		{
+			return a._transformUniqueID == s_FindMeshTFParam_UniqueID;
+		}
+
+
 
 		/// <summary>
 		/// MeshGroup Transform을 가져온다.
@@ -2666,61 +2740,116 @@ namespace AnyPortrait
 				}
 			}
 
-			apTransform_MeshGroup result = _childMeshGroupTransforms.Find(delegate (apTransform_MeshGroup a)
-			{
-				return a._transformUniqueID == uniqueID;
-			});
+			//이전 : GC 발생
+			//apTransform_MeshGroup result = _childMeshGroupTransforms.Find(delegate (apTransform_MeshGroup a)
+			//{
+			//	return a._transformUniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0 : GC 발생 방지
+			s_FindMeshGroupTFParam_UniqueID = uniqueID;
+			apTransform_MeshGroup result = _childMeshGroupTransforms.Find(s_FindMeshGroupTF_Func);
+
 			if (result != null)
 			{
 				return result;
 			}
 			//만약 없다면 -> ChildMeshGroup을 뒤져서 찾아보자
-			if (_childMeshGroupTransforms.Count > 0)
+			int nChildMeshGroupTFs = _childMeshGroupTransforms != null ? _childMeshGroupTransforms.Count : 0;
+			if(nChildMeshGroupTFs == 0)
 			{
-				apMeshGroup childMeshGroup = null;
-				for (int i = 0; i < _childMeshGroupTransforms.Count; i++)
+				return null;
+			}
+
+			apMeshGroup childMeshGroup = null;
+			for (int i = 0; i < nChildMeshGroupTFs; i++)
+			{
+				childMeshGroup = _childMeshGroupTransforms[i]._meshGroup;
+				if (childMeshGroup != null && childMeshGroup != this)
 				{
-					childMeshGroup = _childMeshGroupTransforms[i]._meshGroup;
-					if (childMeshGroup != null && childMeshGroup != this)
+					result = childMeshGroup.GetMeshGroupTransformRecursive(uniqueID);
+					if (result != null)
 					{
-						result = childMeshGroup.GetMeshGroupTransformRecursive(uniqueID);
-						if (result != null)
-						{
-							return result;
-						}
+						return result;
 					}
 				}
 			}
+
 			return null;
 		}
 
+		private static int s_FindMeshGroupTFParam_UniqueID = -1;
+		private static Predicate<apTransform_MeshGroup> s_FindMeshGroupTF_Func = FUNC_FindMeshGroupTF;
+		private static bool FUNC_FindMeshGroupTF(apTransform_MeshGroup a)
+		{
+			return a._transformUniqueID == s_FindMeshGroupTFParam_UniqueID;
+		}
+
+
+
 		public apRenderUnit GetRenderUnit(int transformID, bool isMeshType)
 		{
-			return _renderUnits_All.Find(delegate (apRenderUnit a)
-			{
-				if (isMeshType)
-				{
-					if (a._unitType == apRenderUnit.UNIT_TYPE.Mesh && a._meshTransform != null)
-					{
-						if (a._meshTransform._transformUniqueID == transformID)
-						{
-							return true;
-						}
-					}
-				}
-				else
-				{
-					if (a._unitType == apRenderUnit.UNIT_TYPE.GroupNode && a._meshGroupTransform != null)
-					{
-						if (a._meshGroupTransform._transformUniqueID == transformID)
-						{
-							return true;
-						}
-					}
-				}
-				return false;
-			});
+			//이전 (GC 발생)
+			//return _renderUnits_All.Find(delegate (apRenderUnit a)
+			//{
+			//	if (isMeshType)
+			//	{
+			//		if (a._unitType == apRenderUnit.UNIT_TYPE.Mesh && a._meshTransform != null)
+			//		{
+			//			if (a._meshTransform._transformUniqueID == transformID)
+			//			{
+			//				return true;
+			//			}
+			//		}
+			//	}
+			//	else
+			//	{
+			//		if (a._unitType == apRenderUnit.UNIT_TYPE.GroupNode && a._meshGroupTransform != null)
+			//		{
+			//			if (a._meshGroupTransform._transformUniqueID == transformID)
+			//			{
+			//				return true;
+			//			}
+			//		}
+			//	}
+			//	return false;
+			//});
+
+			//변경 v1.5.0 : GC 발생 안함
+			s_GetRenderUnit_TransformID = transformID;
+			s_GetRenderUnit_IsMeshType = isMeshType;
+			return _renderUnits_All.Find(s_GetRenderUnit_Func);
 		}
+
+
+		private static int s_GetRenderUnit_TransformID = -1;
+		private static bool s_GetRenderUnit_IsMeshType = false;
+		private static Predicate<apRenderUnit> s_GetRenderUnit_Func = FUNC_GetRenderUnit;
+		private static bool FUNC_GetRenderUnit(apRenderUnit a)
+		{
+			if (s_GetRenderUnit_IsMeshType)
+			{
+				if (a._unitType == apRenderUnit.UNIT_TYPE.Mesh && a._meshTransform != null)
+				{
+					if (a._meshTransform._transformUniqueID == s_GetRenderUnit_TransformID)
+					{
+						return true;
+					}
+				}
+			}
+			else
+			{
+				if (a._unitType == apRenderUnit.UNIT_TYPE.GroupNode && a._meshGroupTransform != null)
+				{
+					if (a._meshGroupTransform._transformUniqueID == s_GetRenderUnit_TransformID)
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
 
 
 		//추가
@@ -2756,6 +2885,7 @@ namespace AnyPortrait
 				}
 			}
 
+			//TODO : 여기서부터
 			//Child로 검색 시작
 			for (int i = 0; i < _childMeshGroupTransforms.Count; i++)
 			{
@@ -2867,14 +2997,19 @@ namespace AnyPortrait
 		{
 			List<apBone> sortedBones = new List<apBone>();
 
-			_boneList_Root.Sort(delegate (apBone a, apBone b)
-			{
-				if(a._depth == b._depth)
-				{
-					return string.Compare(a._name, b._name);
-				}
-				return a._depth - b._depth;
-			});
+			//이전 (GC 발생)
+			//_boneList_Root.Sort(delegate (apBone a, apBone b)
+			//{
+			//	if(a._depth == b._depth)
+			//	{
+			//		return string.Compare(a._name, b._name);
+			//	}
+			//	return a._depth - b._depth;
+			//});
+
+			//변경 v1.5.0
+			_boneList_Root.Sort(FUNC_SortBoneListByLevelAndDepth);
+
 
 			//재귀적으로 Sort한다.
 			for (int i = 0; i < _boneList_Root.Count; i++)
@@ -2892,6 +3027,17 @@ namespace AnyPortrait
 			}
 		}
 
+		private static int FUNC_SortBoneListByLevelAndDepth(apBone a, apBone b)
+		{
+			if(a._depth == b._depth)
+			{
+				return string.Compare(a._name, b._name);
+			}
+			return a._depth - b._depth;
+		}
+
+
+
 		/// <summary>
 		/// 재귀적으로 Bone을 정렬한다. ChildBone의 순서도 바뀐다.
 		/// </summary>
@@ -2905,14 +3051,18 @@ namespace AnyPortrait
 			if(nextBone._childBones != null && nextBone._childBones.Count > 0)
 			{
 				//Name과 Depth 기준으로 Child 정렬
-				nextBone._childBones.Sort(delegate (apBone a, apBone b)
-				{
-					if (a._depth == b._depth)
-					{
-						return string.Compare(a._name, b._name);
-					}
-					return a._depth - b._depth;
-				});
+				//이전 (GC 발생)
+				//nextBone._childBones.Sort(delegate (apBone a, apBone b)
+				//{
+				//	if (a._depth == b._depth)
+				//	{
+				//		return string.Compare(a._name, b._name);
+				//	}
+				//	return a._depth - b._depth;
+				//});
+
+				//변경 v1.5.0
+				nextBone._childBones.Sort(FUNC_SortBoneListByLevelAndDepth);
 
 				//ID도 재정렬
 				nextBone._childBoneIDs.Clear();
@@ -2931,6 +3081,8 @@ namespace AnyPortrait
 		}
 
 
+		
+
 		/// <summary>
 		/// Bone Depth를 바꾼다.
 		/// </summary>
@@ -2943,10 +3095,17 @@ namespace AnyPortrait
 				return;
 			}
 			
-			List<apBone> sameLevelBones = _boneList_All.FindAll(delegate (apBone a)
-			{
-				return (a != bone) && (a._level == bone._level);
-			});
+			//이전 (GC 발생)
+			//List<apBone> sameLevelBones = _boneList_All.FindAll(delegate (apBone a)
+			//{
+			//	return (a != bone) && (a._level == bone._level);
+			//});
+
+			//변경 v1.5.0
+			s_changeBoneDepth_TargetBone = bone;
+			List<apBone> sameLevelBones = _boneList_All.FindAll(FUNC_ChangeBoneDepth_FindSameLevelBones);
+
+
 
 			bool isIncrease = false;
 			if(bone._depth == nextDepth || sameLevelBones.Count == 0)
@@ -2961,10 +3120,18 @@ namespace AnyPortrait
 			else						{ isIncrease = false; }
 
 			//이제 해당 Depth를 가지는 다른 Bone과 "자리 바꿈"을 해야한다.
-			if(!sameLevelBones.Exists(delegate(apBone a)
-			{
-				return a != bone && a._depth == nextDepth;
-			}))
+			//이전 (GC 발생)
+			//bool isExist = sameLevelBones.Exists(delegate(apBone a)
+			//{
+			//	return a != bone && a._depth == nextDepth;
+			//});
+
+			//변경 v1.5.0
+			s_changeBoneDepth_TargetBone = bone;
+			s_changeBoneDepth_Depth = nextDepth;
+			bool isExist = sameLevelBones.Exists(FUNC_ChangeBoneDepth_ExistAsDepth);
+
+			if(!isExist)
 			{
 				int optDepth = nextDepth;
 				apBone optBone = null;
@@ -3045,7 +3212,17 @@ namespace AnyPortrait
 
 		}
 
+		private static apBone s_changeBoneDepth_TargetBone = null;
+		private static bool FUNC_ChangeBoneDepth_FindSameLevelBones(apBone a)
+		{
+			return (a != s_changeBoneDepth_TargetBone) && (a._level == s_changeBoneDepth_TargetBone._level);
+		}
 
+		private static int s_changeBoneDepth_Depth = -1;
+		private static bool FUNC_ChangeBoneDepth_ExistAsDepth(apBone a)
+		{
+			return a != s_changeBoneDepth_TargetBone && a._depth == s_changeBoneDepth_Depth;
+		}
 
 		/// <summary>
 		/// v1.4.2 : 여러개의 본들의 Depth를 일괄적으로 변경한다.
@@ -3128,14 +3305,20 @@ namespace AnyPortrait
 			}
 
 			//오름차순으로 정렬하자
-			sortedBones.Sort(delegate(apBone a, apBone b)
-			{
-				if(a._depth == b._depth)
-				{
-					return string.Compare(a._name, b._name);
-				}
-				return a._depth - b._depth;
-			});
+			//이전 (GC 발생)
+			//sortedBones.Sort(delegate(apBone a, apBone b)
+			//{
+			//	if(a._depth == b._depth)
+			//	{
+			//		return string.Compare(a._name, b._name);
+			//	}
+			//	return a._depth - b._depth;
+			//});
+
+			//변경 v1.5.0
+			sortedBones.Sort(FUNC_SortBoneListByLevelAndDepth);
+
+			
 
 			//이동이 중간에 멈추는 것을 감지할 리스트 (부모 기준)
 			List<apBone> completedParentBones = new List<apBone>();
@@ -3288,21 +3471,6 @@ namespace AnyPortrait
 			if (renderUnit._meshGroupTransform != null &&
 				renderUnit._meshGroupTransform._meshGroup != null)
 			{
-				//<BONE_EDIT> 이전 코드
-				//if (renderUnit._meshGroupTransform._meshGroup == this)
-				//{
-				//	//자기 자신은 제외한다.
-				//}
-				//else
-				//{
-				//	List<apBone> boneList = renderUnit._meshGroupTransform._meshGroup._boneList_All;
-				//	if (boneList != null && boneList.Count > 0)
-				//	{
-				//		//본이 있다!
-				//		_childMeshGroupTransformsWithBones.Add(renderUnit._meshGroupTransform);
-				//	}
-				//}
-
 				curBoneList_All = renderUnit._meshGroupTransform._meshGroup._boneList_All;
 				curBoneList_Root = renderUnit._meshGroupTransform._meshGroup._boneList_Root;
 
@@ -3354,47 +3522,27 @@ namespace AnyPortrait
 		/// </summary>
 		private void ReadyToUpdateBones()
 		{
-			//if(!_isBoneUpdatable)
-			//{
-			//	return;
-			//}
-
-			//<BONE_EDIT> 이전 코드
-			//if (_boneList_Root.Count > 0)
-			//{
-			//	for (int i = 0; i < _boneList_Root.Count; i++)
-			//	{
-			//		_boneList_Root[i].ReadyToUpdate(true);
-			//	}
-			//}
-
-			//if (_childMeshGroupTransformsWithBones.Count > 0)
-			//{
-			//	for (int i = 0; i < _childMeshGroupTransformsWithBones.Count; i++)
-			//	{
-			//		apTransform_MeshGroup transformWithBones = _childMeshGroupTransformsWithBones[i];
-
-			//		for (int iBone = 0; iBone < transformWithBones._meshGroup._boneList_Root.Count; iBone++)
-			//		{
-			//			transformWithBones._meshGroup._boneList_Root[iBone].ReadyToUpdate(true);
-			//		}
-			//	}
-			//}
-
 			//>> 수정된 코드 : BoneListSet으로 통합
-			if(_boneListSets.Count > 0)
+			int nBoneSets = _boneListSets != null ? _boneListSets.Count : 0;
+			if(nBoneSets == 0)
 			{
-				BoneListSet boneSet = null;
-				for (int iSet = 0; iSet < _boneListSets.Count; iSet++)
+				return;
+			}
+
+			BoneListSet boneSet = null;
+			for (int iSet = 0; iSet < nBoneSets; iSet++)
+			{
+				boneSet = _boneListSets[iSet];
+
+				int nBoneRoot = boneSet._bones_Root != null ? boneSet._bones_Root.Count : 0;
+				if(nBoneRoot == 0)
 				{
-					boneSet = _boneListSets[iSet];
-					if(boneSet._bones_Root.Count > 0)
-					{
-						for (int iBone = 0; iBone < boneSet._bones_Root.Count; iBone++)
-						{
-							boneSet._bones_Root[iBone].ReadyToUpdate(true);
-						}
-					}
+					continue;
+				}
+
+				for (int iBone = 0; iBone < nBoneRoot; iBone++)
+				{
+					boneSet._bones_Root[iBone].ReadyToUpdate(true);
 				}
 			}
 		}
@@ -3402,6 +3550,7 @@ namespace AnyPortrait
 
 		/// <summary>
 		/// 본 업데이트를 한다. 이 함수를 호출하면 각 본의 WorldMatrix가 완성된다.
+		/// (IK 연산도 한다)
 		/// </summary>
 		public void UpdateBonesWorldMatrix()
 		{
@@ -3411,106 +3560,87 @@ namespace AnyPortrait
 				return;
 			}
 
-			//<BONE_EDIT> 이전 코드
-			#region [미사용 코드 : BONE_EDIT]
-			//if (_boneList_Root.Count > 0)
-			//{
-			//	for (int i = 0; i < _boneList_Root.Count; i++)
-			//	{
-			//		_boneList_Root[i].MakeWorldMatrix(true);
-			//	}
-			//}
-
-			////추가
-			//if(_isUpdate_BoneIKMatrix)
-			//{
-			//	//Bone Matrix의 IK를 업데이트 해야한다면
-			//	//bool isAnyIKCalculated = false;
-			//	for (int i = 0; i < _boneList_Root.Count; i++)
-			//	{
-			//		if(_boneList_Root[i].CalculateIK(true))
-			//		{
-			//			//isAnyIKCalculated = true;
-			//		}
-			//	}
-
-
-			//	for (int i = 0; i < _boneList_Root.Count; i++)
-			//	{
-			//		_boneList_Root[i].MakeWorldMatrixForIK(true, false);
-			//	}
-			//}
-
-			////Debug.Log("Update Bones World Matrix [" + _name + "] Child MeshGroup of Bones (" + _childMeshGroupTransformsWithBones.Count + " / " + _isBoneUpdatable + ")");
-
-			//if (_childMeshGroupTransformsWithBones.Count > 0)
-			//{
-			//	for (int i = 0; i < _childMeshGroupTransformsWithBones.Count; i++)
-			//	{
-			//		apTransform_MeshGroup transformWithBones = _childMeshGroupTransformsWithBones[i];
-
-			//		for (int iBone = 0; iBone < transformWithBones._meshGroup._boneList_Root.Count; iBone++)
-			//		{
-			//			transformWithBones._meshGroup._boneList_Root[iBone].MakeWorldMatrix(true);
-			//		}
-
-			//		if(_isUpdate_BoneIKMatrix)
-			//		{
-			//			//추가 : 자식 MeshGroup에 대해서도 IK 계산
-			//			for (int iBone = 0; iBone < transformWithBones._meshGroup._boneList_Root.Count; iBone++)
-			//			{
-			//				transformWithBones._meshGroup._boneList_Root[iBone].CalculateIK(true);
-			//			}
-
-			//			for (int iBone = 0; iBone < transformWithBones._meshGroup._boneList_Root.Count; iBone++)
-			//			{
-			//				transformWithBones._meshGroup._boneList_Root[iBone].MakeWorldMatrixForIK(true, false);
-			//			}
-			//		}
-
-			//	}
-			//} 
-			#endregion
-
 			//변경 : Bone List Set 이용
-			if(_boneListSets.Count == 0)
+			int nBoneSets = _boneListSets != null ? _boneListSets.Count : 0;
+			if(nBoneSets == 0)
 			{
 				//Debug.LogError("Bone List Set > 0");
 				return;
 			}
 
+
+			// 1. 먼저 기본 World Matrix를 만든다.
 			BoneListSet boneSet = null;
-			
-			for (int iSet = 0; iSet < _boneListSets.Count; iSet++)
+			for (int iSet = 0; iSet < nBoneSets; iSet++)
 			{
 				boneSet = _boneListSets[iSet];
-				if(boneSet._bones_Root.Count == 0)
+
+				int nRoots = boneSet._bones_Root != null ? boneSet._bones_Root.Count : 0;
+				if (nRoots == 0)
 				{
 					continue;
 				}
 
 				//1. World Matrix 업데이트
-				for (int iRootBone = 0; iRootBone < boneSet._bones_Root.Count; iRootBone++)
+				for (int iRootBone = 0; iRootBone < nRoots; iRootBone++)
 				{
 					boneSet._bones_Root[iRootBone].MakeWorldMatrix(true);
 				}
+			}
 
-				//2. IK가 설정된 경우, IK 업데이트
-				if (_isUpdate_BoneIKMatrix)
+			 //(IK가 설정된 경우에)
+			if (_isUpdate_BoneIKMatrix)
+			{
+				//[v1.5.0] IK Run Node를 이용해서 IK 연산을 하자
+				int nRunNodes = _boneIKRunNodes != null ? _boneIKRunNodes.Count : 0;
+
+				// 2. IK 연산을 한다.
+				//업데이트 방식
+				apPortrait.IK_METHOD IKMethod = _parentPortrait._IKMethod;
+
+				//추가 20.7.9 : 지글본때문에 물리 옵션을 여기서도 받아야 한다.
+				bool isPhysicsSupport = _parentPortrait._isPhysicsPlay_Editor && _parentPortrait._isPhysicsSupport_Editor;
+				float tPhysicDelta = _parentPortrait.PhysicsDeltaTime;
+
+				apBoneIKRunNode curNode = null;
+
+				//[v1.5.0]
+				//Calculate를 하기 전에 Init Pose Flag를 초기화한다.
+				for (int iNode = 0; iNode < nRunNodes; iNode++)
 				{
-					for (int iRootBone = 0; iRootBone < boneSet._bones_Root.Count; iRootBone++)
+					curNode = _boneIKRunNodes[iNode];
+					curNode.ResetInitPoseFlag();
+				}
+				
+				for (int iNode = 0; iNode < nRunNodes; iNode++)
+				{
+					curNode = _boneIKRunNodes[iNode];
+
+					bool isIKCalculated = curNode.CalculateIK(IKMethod);// < 중요 > IK Controller 연산을 한다.
+
+					if(isIKCalculated)
 					{
-						boneSet._bones_Root[iRootBone].CalculateIK(true);
+						//IK 연산이 발생했다면
+						//여기에 관련된 Bone들(부모 > 자식)의 Matrix를 한번 갱신할 필요가 있다.
+						curNode.MakeMatrixIK();
+					}
+				}
+
+				// 3. IK를 포함하여 다시 World Matrix를 업데이트한다.
+				for (int iSet = 0; iSet < nBoneSets; iSet++)
+				{
+					boneSet = _boneListSets[iSet];
+
+					int nRoots = boneSet._bones_Root != null ? boneSet._bones_Root.Count : 0;
+					if (nRoots == 0)
+					{
+						continue;
 					}
 
-
-					//추가 20.7.9 : 지글본때문에 물리 옵션을 여기서도 받아야 한다.
-					bool isPhysicsSupport = _parentPortrait._isPhysicsPlay_Editor && _parentPortrait._isPhysicsSupport_Editor;
-					float tPhysicDelta = _parentPortrait.PhysicsDeltaTime;
-
-					for (int iRootBone = 0; iRootBone < boneSet._bones_Root.Count; iRootBone++)
+					//1. World Matrix 업데이트
+					for (int iRootBone = 0; iRootBone < nRoots; iRootBone++)
 					{
-						boneSet._bones_Root[iRootBone].MakeWorldMatrixForIK(true, false, isPhysicsSupport, tPhysicDelta);
+						boneSet._bones_Root[iRootBone].MakeWorldMatrixForIK_WithJiggle(true, false, isPhysicsSupport, tPhysicDelta);
 					}
 				}
 			}
@@ -3527,20 +3657,23 @@ namespace AnyPortrait
 		/// <param name="isBoneRiggingTest"></param>
 		public void SetBoneRiggingTest(bool isBoneRiggingTest)
 		{
-			//<BONE_EDIT>
-			//for (int i = 0; i < _boneList_All.Count; i++)
-			//{
-			//	apBone bone = _boneList_All[i];
-			//	bone.SetRiggingTest(isBoneRiggingTest);
-			//}
-
 			//>> Bone Set을 이용하자
 			//모든 Bone에 적용
 			BoneListSet boneSet = null;
-			for (int iSet = 0; iSet < _boneListSets.Count; iSet++)
+			int nBoneSets = _boneListSets != null ? _boneListSets.Count : 0;
+			if(nBoneSets == 0) { return; }
+
+			for (int iSet = 0; iSet < nBoneSets; iSet++)
 			{
 				boneSet = _boneListSets[iSet];
-				for (int iBone = 0; iBone < boneSet._bones_All.Count; iBone++)
+
+				int nBones = boneSet._bones_All != null ? boneSet._bones_All.Count : 0;
+				if(nBones == 0)
+				{
+					continue;
+				}
+
+				for (int iBone = 0; iBone < nBones; iBone++)
 				{
 					boneSet._bones_All[iBone].SetRiggingTest(isBoneRiggingTest);
 				}
@@ -3552,83 +3685,63 @@ namespace AnyPortrait
 		/// </summary>
 		public void ResetRiggingTestPose()
 		{
-			//<BONE_EDIT>
-			//for (int i = 0; i < _boneList_All.Count; i++)
-			//{
-			//	apBone bone = _boneList_All[i];
-			//	bone.ResetRiggingTestPose();
-			//}
-			//for (int i = 0; i < _boneList_Root.Count; i++)
-			//{
-			//	apBone rootBone = _boneList_Root[i];
-			//	rootBone.MakeWorldMatrix(true);
-			//}
-
 			//>> Bone Set으로 변경
 			BoneListSet boneSet = null;
-			for (int iSet = 0; iSet < _boneListSets.Count; iSet++)
+
+			int nBoneSets = _boneListSets != null ? _boneListSets.Count : 0;
+			if(nBoneSets == 0)
+			{
+				return;
+			}
+
+			for (int iSet = 0; iSet < nBoneSets; iSet++)
 			{
 				boneSet = _boneListSets[iSet];
-				for (int iBone = 0; iBone < boneSet._bones_All.Count; iBone++)
+
+				int nBoneAll = boneSet._bones_All != null ? boneSet._bones_All.Count : 0;
+				if (nBoneAll > 0)
 				{
-					boneSet._bones_All[iBone].ResetRiggingTestPose();
+					for (int iBone = 0; iBone < nBoneAll; iBone++)
+					{
+						boneSet._bones_All[iBone].ResetRiggingTestPose();
+					}
+				}
+				
+				int nBoneRoot = boneSet._bones_Root != null ? boneSet._bones_Root.Count : 0;
+				if (nBoneRoot > 0)
+				{
+					for (int iRoot = 0; iRoot < nBoneRoot; iRoot++)
+					{
+						boneSet._bones_Root[iRoot].MakeWorldMatrix(true);
+					}
 				}
 
-				for (int iRoot = 0; iRoot < boneSet._bones_Root.Count; iRoot++)
-				{
-					boneSet._bones_Root[iRoot].MakeWorldMatrix(true);
-				}
+				
 			}
 		}
-
-		#region [미사용 코드]
-		///// <summary>
-		///// Bone GUI Visible을 갱신한다.
-		///// </summary>
-		//public void RefreshBoneGUIVisible()
-		//{
-		//	//<BONE_EDIT>
-		//	//if (_boneList_Root.Count > 0)
-		//	//{
-		//	//	for (int i = 0; i < _boneList_Root.Count; i++)
-		//	//	{
-		//	//		_boneList_Root[i].RefreshGUIVisibleRecursive();
-		//	//	}
-		//	//}
-
-		//	//>>BoneSet으로 변경
-		//	BoneListSet boneSet = null;
-		//	for (int iSet = 0; iSet < _boneListSets.Count; iSet++)
-		//	{
-		//		boneSet = _boneListSets[iSet];
-		//		for (int iRoot = 0; iRoot < boneSet._bones_Root.Count; iRoot++)
-		//		{
-		//			boneSet._bones_Root[iRoot].RefreshGUIVisibleRecursive();
-		//		}
-		//	}
-		//} 
-		#endregion
 
 		/// <summary>
 		/// Bone GUI Visible을 리셋하여 모두 보이게 만든다.
 		/// </summary>
 		public void ResetBoneGUIVisible()
 		{
-			//<BONE_EDIT>
-			//if (_boneList_Root.Count > 0)
-			//{
-			//	for (int i = 0; i < _boneList_Root.Count; i++)
-			//	{
-			//		_boneList_Root[i].ResetGUIVisibleRecursive();
-			//	}
-			//}
-
-			//>>BoneSet으로 변경
 			BoneListSet boneSet = null;
-			for (int iSet = 0; iSet < _boneListSets.Count; iSet++)
+			int nBoneSets = _boneListSets != null ? _boneListSets.Count : 0;
+			if(nBoneSets == 0)
+			{
+				return;
+			}
+
+			for (int iSet = 0; iSet < nBoneSets; iSet++)
 			{
 				boneSet = _boneListSets[iSet];
-				for (int iRoot = 0; iRoot < boneSet._bones_Root.Count; iRoot++)
+
+				int nBoneRoot = boneSet._bones_Root != null ? boneSet._bones_Root.Count : 0;
+				if(nBoneRoot == 0)
+				{
+					continue;
+				}
+				for (int iRoot = 0; iRoot < nBoneRoot; iRoot++)
 				{
 					boneSet._bones_Root[iRoot].ResetGUIVisibleRecursive(false);
 				}
@@ -3642,21 +3755,26 @@ namespace AnyPortrait
 		/// <param name="exceptBone"></param>
 		public void SetBoneGUIVisibleAll(bool isVisible, apBone exceptBone)
 		{
-			//<BONE_EDIT>
-			//if (_boneList_Root.Count > 0)
-			//{
-			//	for (int i = 0; i < _boneList_Root.Count; i++)
-			//	{
-			//		_boneList_Root[i].SetGUIVisibleWithExceptBone(isVisible, true, exceptBone);
-			//	}
-			//}
-			
 			//>>BoneSet으로 변경
 			BoneListSet boneSet = null;
-			for (int iSet = 0; iSet < _boneListSets.Count; iSet++)
+
+			int nBoneSets = _boneListSets != null ? _boneListSets.Count : 0;
+			if(nBoneSets == 0)
+			{
+				return;
+			}
+
+			for (int iSet = 0; iSet < nBoneSets; iSet++)
 			{
 				boneSet = _boneListSets[iSet];
-				for (int iRoot = 0; iRoot < boneSet._bones_Root.Count; iRoot++)
+
+				int nBoneRoot = boneSet._bones_Root != null ? boneSet._bones_Root.Count : 0;
+				if(nBoneRoot == 0)
+				{
+					continue;
+				}
+
+				for (int iRoot = 0; iRoot < nBoneRoot; iRoot++)
 				{
 					boneSet._bones_Root[iRoot].SetGUIVisibleWithExceptBone(isVisible, true, exceptBone);
 				}
@@ -3675,10 +3793,24 @@ namespace AnyPortrait
 			}
 
 			BoneListSet boneSet = null;
-			for (int iSet = 0; iSet < _boneListSets.Count; iSet++)
+
+			int nBoneSets = _boneListSets != null ? _boneListSets.Count : 0;
+			if(nBoneSets == 0)
+			{
+				return;
+			}
+
+			for (int iSet = 0; iSet < nBoneSets; iSet++)
 			{
 				boneSet = _boneListSets[iSet];
-				for (int iRoot = 0; iRoot < boneSet._bones_Root.Count; iRoot++)
+
+				int nBoneRoot = boneSet._bones_Root != null ? boneSet._bones_Root.Count : 0;
+				if(nBoneRoot == 0)
+				{
+					continue;
+				}
+
+				for (int iRoot = 0; iRoot < nBoneRoot; iRoot++)
 				{
 					boneSet._bones_Root[iRoot].SetJiggleTest(velocityValue);
 				}
@@ -3690,15 +3822,24 @@ namespace AnyPortrait
 		//---------------------------------------------------------------------------
 		public apBone GetBone(int uniqueID)
 		{
-			if (_boneList_All != null && _boneList_All.Count > 0)
+			int nBoneAll = _boneList_All != null ? _boneList_All.Count : 0;
+			if(nBoneAll == 0)
 			{
-				return _boneList_All.Find(delegate (apBone a)
-				{
-					return a._uniqueID == uniqueID;
-				});
+				return null;
 			}
-			return null;
+
+			//이전 (GC 발생)
+			//return _boneList_All.Find(delegate (apBone a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_getBoneByID_UniqueID = uniqueID;
+			return _boneList_All.Find(s_GetBoneByID_Func);
 		}
+
+		
 
 
 		/// <summary>
@@ -3710,12 +3851,19 @@ namespace AnyPortrait
 		public apBone GetBoneRecursive(int uniqueID)
 		{
 			apBone resultBone = null;
-			if (_boneList_All != null && _boneList_All.Count > 0)
+
+			int nBoneAll = _boneList_All != null ? _boneList_All.Count : 0;
+			if(nBoneAll > 0)
 			{
-				resultBone = _boneList_All.Find(delegate (apBone a)
-				{
-					return a._uniqueID == uniqueID;
-				});
+				//이전 (GC 발생)
+				//resultBone = _boneList_All.Find(delegate (apBone a)
+				//{
+				//	return a._uniqueID == uniqueID;
+				//});
+
+				//변경 v1.5.0
+				s_getBoneByID_UniqueID = uniqueID;
+				resultBone = _boneList_All.Find(s_GetBoneByID_Func);
 
 				if (resultBone != null)
 				{
@@ -3726,11 +3874,13 @@ namespace AnyPortrait
 
 
 			//없으면 Child에서 찾자
-			if (_childMeshGroupTransforms != null && _childMeshGroupTransforms.Count > 0)
+			int nChildMeshGroupTFs = _childMeshGroupTransforms != null ? _childMeshGroupTransforms .Count : 0;
+			if(nChildMeshGroupTFs > 0)
 			{
-				for (int i = 0; i < _childMeshGroupTransforms.Count; i++)
+				apMeshGroup childMeshGroup = null;
+				for (int i = 0; i < nChildMeshGroupTFs; i++)
 				{
-					apMeshGroup childMeshGroup = _childMeshGroupTransforms[i]._meshGroup;
+					childMeshGroup = _childMeshGroupTransforms[i]._meshGroup;
 					if (childMeshGroup != null)
 					{
 						resultBone = childMeshGroup.GetBoneRecursive(uniqueID);
@@ -3745,30 +3895,13 @@ namespace AnyPortrait
 			return null;
 		}
 
-		///// <summary>
-		///// BoneID로 Bone 객체를 가져온다.
-		///// Child MeshGroup의 것들도 모두 검색한다.
-		///// GetBoneRecursive()과 동일한 결과를 리턴하지만 BoneSet을 활용하여 조금 더 빠르다. (아주 약간)
-		///// </summary>
-		///// <param name="uniqueID"></param>
-		///// <returns></returns>
-		//public apBone GetBoneUsingBoneSet(int uniqueID)
-		//{
-		//	BoneListSet boneSet = null;
-		//	for (int iSet = 0; iSet < _boneListSets.Count; iSet++)
-		//	{
-		//		boneSet = _boneListSets[iSet];
-		//		apBone resultBone = boneSet._bones_All.Find(delegate (apBone a)
-		//		{
-		//			return a._uniqueID == uniqueID;
-		//		});
-		//		if(resultBone != null)
-		//		{
-		//			return resultBone;
-		//		}
-		//	}
-		//	return null;
-		//}
+		private static int s_getBoneByID_UniqueID = -1;
+		private static Predicate<apBone> s_GetBoneByID_Func = FUNC_GetBoneByID;
+		private static bool FUNC_GetBoneByID(apBone a)
+		{
+			return a._uniqueID == s_getBoneByID_UniqueID;
+		}
+
 
 
 		// GUI

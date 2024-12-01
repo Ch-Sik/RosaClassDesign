@@ -248,6 +248,7 @@ namespace AnyPortrait
 
 			GUIStyle guiStyle_None = new GUIStyle(GUIStyle.none);
 			guiStyle_None.normal.textColor = GUI.skin.label.normal.textColor;
+			guiStyle_None.alignment = TextAnchor.MiddleLeft;
 
 			GUIStyle guiStyle_Selected = new GUIStyle(GUIStyle.none);
 			if(EditorGUIUtility.isProSkin)
@@ -258,6 +259,7 @@ namespace AnyPortrait
 			{
 				guiStyle_Selected.normal.textColor = Color.white;
 			}
+			guiStyle_Selected.alignment = TextAnchor.MiddleLeft;
 			
 
 			GUIStyle guiStyle_Center = new GUIStyle(GUIStyle.none);

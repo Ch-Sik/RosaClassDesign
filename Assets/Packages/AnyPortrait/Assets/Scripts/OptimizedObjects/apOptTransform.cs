@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -192,17 +192,14 @@ namespace AnyPortrait
 
 		//추가 12.5 : Extra 옵션
 		
-		[NonSerialized]
-		private bool _isExtraTextureChanged = false;
-		
-		[NonSerialized]
-		private apOptTextureData _extraTextureData = null;
+		[NonSerialized] private bool _isExtraTextureChanged = false;
+		[NonSerialized] private apOptTextureData _extraTextureData = null;
+		[NonSerialized] private bool _isExtraTextureChanged_Prev = false;
+		[NonSerialized] private apOptTextureData _extraTextureData_Prev = null;
 
-		[NonSerialized]
-		private bool _isExtraTextureChanged_Prev = false;
-
-		[NonSerialized]
-		private apOptTextureData _extraTextureData_Prev = null;
+		//추가 v1.5.0
+		//Extra Option에 변경된 상태에서 외부 스크립트로 텍스쳐가 변경된 경우
+		[NonSerialized] private Texture2D _extraTexture_Prev = null;
 
 		//삭제 20.4.21
 		//[NonSerialized]
@@ -253,6 +250,33 @@ namespace AnyPortrait
 
 		/// <summary>Bones (Root Only)</summary>
 		public apOptBone[] _boneList_Root = null;
+
+
+		//[v1.5.0] 에디터에서의 BoneListSet처럼
+		//Opt에서도 동일하게 클래스를 만들어서 사용하자
+		//All은 없고 Root만 있다.
+		public class OptBoneListSet
+		{
+			public apOptTransform _optTransform = null;
+			public apOptBone[] _bones_Root = null;
+			public int _nRootBones = 0;
+
+			public OptBoneListSet(apOptTransform optTransform, apOptBone[] rootBones)
+			{
+				_optTransform = optTransform;
+				_bones_Root = rootBones;//배열 그대로 참조
+				_nRootBones = _bones_Root != null ? _bones_Root.Length : 0;
+			}
+		}
+
+		[NonSerialized, NonBackupField] private List<OptBoneListSet> _boneListSet = null;
+		[NonSerialized, NonBackupField] private int _nBoneListSets = 0;
+
+
+		//[v1.5.0] 추가 : IK 연산 순서를 자유롭게 하기 위해 별도의 래퍼 리스트를 활용한다.
+		[NonSerialized, NonBackupField] private List<apOptBoneIKRunNode> _boneIKRunNodes = null;
+		[NonSerialized, NonBackupField] private int _nBoneIKRunNodes = 0;
+
 
 		/// <summary>[Please do not use it]</summary>
 		public bool _isBoneUpdatable = false;
@@ -336,6 +360,7 @@ namespace AnyPortrait
 
 			_isExtraTextureChanged_Prev = false;//추가
 			_extraTextureData_Prev = null;
+			_extraTexture_Prev = null;//v1.5.0
 
 			//업데이트 안합니더
 			this.enabled = false;
@@ -400,20 +425,13 @@ namespace AnyPortrait
 
 		public void ReadyToUpdate()
 		{
-			//1. Child Mesh와 기본 Reday
-			//삭제 21.5.23 : 미사용 함수
-			//if (_childMesh != null)
-			//{
-			//	_childMesh.ReadyToUpdate();
-			//}
-
-			//2. Calculate Stack Ready
+			//Calculate Stack Ready
 			if (_calculatedStack != null)
 			{
 				_calculatedStack.ReadyToCalculate();
 			}
 
-			//3. 몇가지 변수 초기화
+			//몇가지 변수 초기화
 			_meshColor2X = new Color(0.5f, 0.5f, 0.5f, 1.0f);
 			_isAnyColorCalculated = false;
 
@@ -423,15 +441,9 @@ namespace AnyPortrait
 			//추가 11.30 : Extra Option
 			_isExtraTextureChanged = false;
 			_extraTextureData = null;
-
-			//Editor에서는 기본 matrix가 들어가지만, 여기서는 아예 Transform(Mono)에 들어가기 때문에 Identity가 된다.
-			//_matrix_TF_Cal_ToWorld = apMatrix3x3.identity;
-			//_calculateTmpMatrix.SetIdentity();
-
-
+			
 			//변경
 			//[Parent World x To Parent x Local TF] 조합으로 변경
-
 			if (_matrix_TF_ParentWorld == null)				{ _matrix_TF_ParentWorld = new apMatrix(); }
 			if (_matrix_TF_ParentWorld_NonModified == null)	{ _matrix_TF_ParentWorld_NonModified = new apMatrix(); }
 			if (_matrix_TF_ToParent == null)				{ _matrix_TF_ToParent = new apMatrix(); }
@@ -442,13 +454,10 @@ namespace AnyPortrait
 
 			_matrix_TF_ParentWorld.SetIdentity();
 			_matrix_TF_ParentWorld_NonModified.SetIdentity();
-			//_matrix_TF_ToParent.SetIdentity();
 			_matrix_TF_LocalModified.SetIdentity();
 
 			//Editor에서는 기본 matrix가 들어가지만, 여기서는 아예 Transform(Mono)에 들어가기 때문에 Identity가 된다.
 			_matrix_TF_ToParent.SetMatrix(_defaultMatrix, true);
-
-			//Debug.Log("Opt Transform<ToParent> (" + this._name + ") : " + _matrix_TF_ToParent.ToString());
 
 			_matrix_TFResult_World.SetIdentity();
 
@@ -481,41 +490,16 @@ namespace AnyPortrait
 		/// </summary>
 		public void UpdateCalculate_Pre()
 		{
-
-			//#if UNITY_EDITOR
-			//			Profiler.BeginSample("Transform - 1. Stack Calculate");
-			//#endif
-
-			//1. Calculated Stack 업데이트
+			//Calculated Stack 업데이트
 			if (_calculatedStack != null)
 			{
 				_calculatedStack.Calculate_Pre();
 			}
 
-			//#if UNITY_EDITOR
-			//			Profiler.EndSample();
-			//#endif
-
-
-			//#if UNITY_EDITOR
-			//			Profiler.BeginSample("Transform - 2. Matrix / Color");
-			//#endif
-
 			//2. Calculated의 값 적용 + 계층적 Matrix 적용
 			if (CalculatedStack.MeshWorldMatrixWrap != null)
 			{
-				//변경전
-				//_calclateTmpMatrix.SRMultiply(_calculatedStack.MeshWorldMatrixWrap, true);
-				//_matrix_TF_Cal_ToWorld = _calculateTmpMatrix.MtrxToSpace;
-
-				//변경후
 				_matrix_TF_LocalModified.SetMatrix(_calculatedStack.MeshWorldMatrixWrap, true);
-
-				//if(_calculatedStack.MeshWorldMatrixWrap.Scale2.magnitude < 0.8f)
-				//{
-				//	Debug.Log(name + " : Low Scale : " + _calculatedStack.MeshWorldMatrixWrap.Scale2);
-				//}
-
 			}
 
 			if (CalculatedStack.IsAnyColorCalculated)
@@ -535,7 +519,6 @@ namespace AnyPortrait
 				_isAnyColorCalculated = true;
 			}
 
-
 			//추가 11.30 : Extra Option
 			if (_calculatedStack.IsExtraDepthChanged)
 			{
@@ -554,8 +537,33 @@ namespace AnyPortrait
 				}
 			}
 
-			if (_isExtraTextureChanged_Prev != _isExtraTextureChanged ||
-				_extraTextureData_Prev != _extraTextureData)
+			//v1.5.0
+			bool isExtraTextureCalculatable = false;//이번 프레임에서 Extra 텍스쳐를 교체해야한다면 true (복구 포함)
+			
+			if(_isExtraTextureChanged_Prev != _isExtraTextureChanged
+				|| _extraTextureData_Prev != _extraTextureData)
+			{
+				//Extra Changed의 ON <-> OFF가 바뀌었다.
+				isExtraTextureCalculatable = true;
+			}
+			else if(_isExtraTextureChanged && _extraTextureData != null)
+			{
+				//[v1.5.0 추가]
+				//Extra 옵션이 계속 켜진 상태
+				if(_extraTextureData.RuntimeTexture != _extraTexture_Prev)
+				{
+					//Extra 텍스쳐가 외부 스크립트에 의해서 바뀌었다.
+					isExtraTextureCalculatable = true;
+				}
+				else if (_childMesh != null && !_childMesh.IsExtraAdapted())
+				{
+					//외부에서 강제로 Mesh의 텍스쳐가 Reset되었다면
+					isExtraTextureCalculatable = true;
+				}
+			}
+
+
+			if (isExtraTextureCalculatable)
 			{
 #if UNITY_EDITOR
 				if (Application.isPlaying)
@@ -569,20 +577,16 @@ namespace AnyPortrait
 						{
 							//> 텍스쳐 교체 이벤트가 발생했다.
 							//현재 처리중인 텍스쳐를 먼저 저장한 뒤, 교체
-							//이전
-							//_extraDefaultTexture = _childMesh.GetCurrentMainTextureExceptExtra();
-							//_childMesh.SetExtraChangedTexture(_extraTextureData._texture);
-
-							//변경 20.4.21
-							_childMesh.SetExtraChangedTexture(_extraTextureData._texture);
+							
+							//변경 v1.5.0
+							Texture2D extraTexture = _extraTextureData.RuntimeTexture;//외부 스크립트에 의해 바뀌는 것도 고려한 Get 함수
+							_childMesh.SetExtraChangedTexture(extraTexture);
+							_extraTexture_Prev = extraTexture;//v1.5.0 : 현재 적용된 Extra 텍스쳐 저장
 						}
 						else
 						{
 							//>텍스쳐를 해지해야한다. 저장했던 값으로 되돌린다.
-							//이전
-							//_childMesh.SetExtraChangedTexture(_extraDefaultTexture);
-							//Debug.LogError(">> Return Texture [" + _extraDefaultTexture.name + "]");
-
+							
 							//변경 20.4.20 : 복구 함수를 아예 이용하자
 							_childMesh.RestoreFromExtraTexture();
 						}
@@ -598,18 +602,12 @@ namespace AnyPortrait
 				else
 				{
 					_extraTextureData_Prev = null;
+					_extraTexture_Prev = null;//v1.5.0 : 텍스쳐 초기화
 				}
 			}
 
-
-
 			if (_parentTransform != null)
 			{
-				//변경 전
-				//_calculateTmpMatrix.SRMultiply(_parentTransform.CalculatedTmpMatrix, true);
-				//_matrix_TF_Cal_ToWorld = _calculateTmpMatrix.MtrxToSpace;
-
-				//변경 후
 				_matrix_TF_ParentWorld.SetMatrix(_parentTransform._matrix_TFResult_World, true);
 				_matrix_TF_ParentWorld_NonModified.SetMatrix(_parentTransform._matrix_TFResult_WorldWithoutMod, true);
 
@@ -637,21 +635,11 @@ namespace AnyPortrait
 			//MakeTransformMatrix(); < 이 함수 부분
 			//World Matrix를 만든다.
 
-
-			//추가 20.8.6 : RMultiply 전에 함수를 호출해야한다. [RMultiply Scale 이슈]
-			//변경 20.10.29 : 호출 순서와 RMul대신 SetMatrix로 변경
-			//_matrix_TFResult_World.OnBeforeRMultiply();
-			//_matrix_TFResult_World.RMultiply(_matrix_TF_ToParent, false);
-
 			//>>변경 20.10.29
 			_matrix_TFResult_World.SetMatrix(_matrix_TF_ToParent, false);//첫 계산이므로 RMul대신 Set
 			_matrix_TFResult_World.OnBeforeRMultiply();//이걸 Set 다음에 호출했어야 한다.
 
-
 			_matrix_TFResult_World.RMultiply(_matrix_TF_LocalModified, false);//<<[R]
-
-			//기존
-			//_matrix_TFResult_World.RMultiply(_matrix_TF_ParentWorld);//<<[R]
 
 			//변경 20.8.10 : 리깅 적용 여부에 따라서 다르다.
 			if (_isIgnoreParentModWorldMatrixByRigging)
@@ -666,29 +654,6 @@ namespace AnyPortrait
 			}
 
 			_matrix_TFResult_World.MakeMatrix();
-			
-			//if(gameObject.name.Contains("Debug"))
-			//{
-			//	Debug.Log("Default : " + _matrix_TF_ToParent.ToString());
-			//	Debug.Log("Mod : " + _matrix_TF_LocalModified.ToString());
-			//	Debug.Log("> World Matrix : " + _matrix_TFResult_World.ToString());
-			//}
-
-			//주석 20.8.10
-			////추가 2.25 : Flipped
-			//if(_isFlippedRoot_X || _isFlippedRoot_Y)
-			//{
-			//	//일단 적용하지 말자
-			//	//string prevMat = _matrix_TFResult_World.ToString();
-			//	//_matrix_TFResult_World.RScale((_isFlippedRoot_X ? -1 : 1), (_isFlippedRoot_Y ? -1 : 1));
-			//	//_matrix_TFResult_World.RMultiply(apMatrix.TRS(Vector2.zero, 0.0f, new Vector2((_isFlippedRoot_X ? -1 : 1), (_isFlippedRoot_Y ? -1 : 1))));
-			//	//string nextMat = _matrix_TFResult_World.ToString();
-
-			//	//Debug.Log("Flipped : " + prevMat + " >> " + nextMat);
-			//}
-
-			//_matrix_TFResult_WorldWithoutMod.SRMultiply(_matrix_TF_ToParent, true);//ToParent는 넣지 않는다.
-			//_matrix_TFResult_WorldWithoutMod.SRMultiply(_matrix_TF_ParentWorld, true);//<<[SR]
 
 			//Without Mod는 계산하지 않았을 경우에만 계산한다.
 			//바뀌지 않으므로
@@ -696,40 +661,17 @@ namespace AnyPortrait
 			{
 				//추가 20.8.6 : RMultiply 전에 함수를 호출해야한다. [RMultiply Scale 이슈]
 				//변경 20.10.29 : 호출 순서와 RMul대신 SetMatrix로 변경
-
-				//_matrix_TFResult_WorldWithoutMod.OnBeforeRMultiply();
-				//_matrix_TFResult_WorldWithoutMod.RMultiply(_matrix_TF_ToParent, false);//<<[R]
-
 				_matrix_TFResult_WorldWithoutMod.SetMatrix(_matrix_TF_ToParent, false);//Set으로 변경 (처음이므로)
 				_matrix_TFResult_WorldWithoutMod.OnBeforeRMultiply();//순서 변경
-				
-
-
 
 				_matrix_TFResult_WorldWithoutMod.RMultiply(_matrix_TF_ParentWorld_NonModified, false);//<<[R]
 				_matrix_TFResult_WorldWithoutMod.MakeMatrix(true);
 
-				//추가 2.25 : Flipped > 마저 삭제 20.8.10 (코드가 원래 동작 안하던뎅..)
-				//if(_isFlippedRoot_X || _isFlippedRoot_Y)
-				//{
-				//	//여기서 적용하지 말자
-				//	//_matrix_TFResult_WorldWithoutMod.RScale((_isFlippedRoot_X ? -1 : 1), (_isFlippedRoot_Y ? -1 : 1));
-				//	//_matrix_TFResult_World.RMultiply(apMatrix.TRS(Vector2.zero, 0.0f, new Vector2((_isFlippedRoot_X ? -1 : 1), (_isFlippedRoot_Y ? -1 : 1))));
-				//}
-
 				//리깅용 단축식을 추가한다.
 				if (_childMesh != null)
 				{
-					//이전
-					//_vertLocal2MeshWorldMatrix = _matrix_TFResult_WorldWithoutMod.MtrxToSpace;
-					//_vertLocal2MeshWorldMatrix *= _childMesh._matrix_Vert2Mesh;
-					
 					//변경 21.5.25
 					_vertLocal2MeshWorldMatrix.SetAndMultiply(ref _matrix_TFResult_WorldWithoutMod._mtrxToSpace, ref _childMesh._matrix_Vert2Mesh);
-
-					//이전
-					//_vertWorld2MeshLocalMatrix = _childMesh._matrix_Vert2Mesh_Inverse;
-					//_vertWorld2MeshLocalMatrix *= _matrix_TFResult_WorldWithoutMod.MtrxToLowerSpace;
 					
 					//변경 21.5.25
 					_vertWorld2MeshLocalMatrix.SetAndMultiply(ref _childMesh._matrix_Vert2Mesh_Inverse, ref _matrix_TFResult_WorldWithoutMod._mtrxToLowerSpace);
@@ -765,12 +707,9 @@ namespace AnyPortrait
 					_isCamOrthoCorrection = true;
 
 					Matrix4x4 orthoConvertMatrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(zRatio, zRatio, 1));
-					//_convert2TargetMatrix4x4 = _childMesh.transform.worldToLocalMatrix * curCamera.cameraToWorldMatrix * orthoConvertMatrix * curCamera.worldToCameraMatrix * _childMesh.transform.localToWorldMatrix;
 					_convert2TargetMatrix4x4 = _childMesh.transform.worldToLocalMatrix 
-						//* curCamera.cameraToWorldMatrix 
 						* mainCamera.WorldToCameraMatrix.inverse
 						* orthoConvertMatrix 
-						//* curCamera.worldToCameraMatrix 
 						* mainCamera.WorldToCameraMatrix
 						* _childMesh.transform.localToWorldMatrix;
 
@@ -834,12 +773,6 @@ namespace AnyPortrait
 				_isExternalUpdate_Rotation = false;
 				_isExternalUpdate_Scaling = false;
 			}
-			
-			
-
-
-
-
 
 			//추가 : 소켓도 만들어준다.
 			//Vert World를 아직 계산하지 않았지만 Socket 처리에는 문제가 없다.
@@ -850,13 +783,7 @@ namespace AnyPortrait
 				_socketTransform.localScale = new Vector3(_matrix_TFResult_World._scale.x, _matrix_TFResult_World._scale.y, 1.0f);
 			}
 
-//#if UNITY_EDITOR
-//			Profiler.EndSample();
-//#endif
-
-
 			//[MeshUpdate]는 Post Update로 전달
-
 			//3. 자식 호출
 			//자식 객체도 업데이트를 한다.
 			if (_childTransforms != null)
@@ -877,46 +804,17 @@ namespace AnyPortrait
 		/// </summary>
 		public void UpdateCalculate_Post()
 		{
-
-//#if UNITY_EDITOR
-//			Profiler.BeginSample("Transform - 1. Stack Calculate");
-//#endif
-
 			//1. Calculated Stack 업데이트
 			if (_calculatedStack != null)
 			{
 				_calculatedStack.Calculate_Post();
 			}
 
-//#if UNITY_EDITOR
-//			Profiler.EndSample();
-//#endif
-
-
-//#if UNITY_EDITOR
-//			Profiler.BeginSample("Transform - 3. Mesh Update");
-//#endif
-
-			////3. Mesh 업데이트 - 중요
-			////실제 Vertex의 위치를 적용
-			//if (_childMesh != null)
-			//{
-			//	_childMesh.UpdateCalculate(_calculatedStack.IsRigging,
-			//								_calculatedStack.IsVertexLocal,
-			//								_calculatedStack.IsVertexWorld,
-			//								_isVisible,
-			//								_isCamOrthoCorrection);
-			//}
-
 			//변경 20.4.2. UpdateCalculate는 뒤로 미루고, Visibility만 먼저 게산해둔다.
 			if (_childMesh != null)
 			{
 				_childMesh.UpdateVisibility(_isVisible);
 			}
-
-//#if UNITY_EDITOR
-//			Profiler.EndSample();
-//#endif
 
 			//3. 자식 호출
 			//자식 객체도 업데이트를 한다.
@@ -999,22 +897,21 @@ namespace AnyPortrait
 
 		//본 관련 업데이트 코드
 		public void ReadyToUpdateBones()
-		{
-			//if(!_isBoneUpdatable)
-			//{
-			//	return;
-			//}
-			if (_boneList_Root != null)
+		{	
+			int nBones = _boneList_Root != null ? _boneList_Root.Length : 0;
+			int nChildTFs = _childTransforms != null ? _childTransforms.Length : 0;
+
+			if (nBones > 0)
 			{
-				for (int i = 0; i < _boneList_Root.Length; i++)
+				for (int i = 0; i < nBones; i++)
 				{
 					_boneList_Root[i].ReadyToUpdate(true);
 				}
 			}
 
-			if (_childTransforms != null)
+			if (nChildTFs > 0)
 			{
-				for (int i = 0; i < _childTransforms.Length; i++)
+				for (int i = 0; i < nChildTFs; i++)
 				{
 					_childTransforms[i].ReadyToUpdateBones();
 				}
@@ -1024,42 +921,121 @@ namespace AnyPortrait
 
 		public void UpdateBonesWorldMatrix(float tDelta, bool isPhysics, bool isTeleportFrame)
 		{
-			if (_boneList_Root != null)
+			//[v1.5.0] 변경 
+			//- 업데이트를 에디터와 동일하게 BoneListSet을 이용하는 것으로 변경
+			//- IK를 Run Node를 이용하는 것으로 변경
+			if(_nBoneListSets == 0)
 			{
-				//1. World Matrix 처리
-				for (int i = 0; i < _boneList_Root.Length; i++)
-				{
-					_boneList_Root[i].MakeWorldMatrix(true);
-				}
+				return;
+			}
 
-				//2. Calculate IK 처리
-				for (int i = 0; i < _boneList_Root.Length; i++)
-				{
-					_boneList_Root[i].CalculateIK(true);
-				}
+			OptBoneListSet boneSet = null;
 
-				//3. World Matrix + IK 처리
-				for (int i = 0; i < _boneList_Root.Length; i++)
+			//1. 먼저 기본 World Matrix를 만든다.
+			for (int iSet = 0; iSet < _nBoneListSets; iSet++)
+			{
+				boneSet = _boneListSet[iSet];
+				for (int iRoot = 0; iRoot < boneSet._nRootBones; iRoot++)
 				{
-					_boneList_Root[i].MakeWorldMatrixForIK(true, false, isPhysics, isTeleportFrame, tDelta);
-				}
-
-				//추가 : 모든 WorldMatrix를 만들면 이 함수를 호출해야 한다.
-				for (int i = 0; i < _boneList_Root.Length; i++)
-				{
-					_boneList_Root[i].UpdatePostRecursive();
+					boneSet._bones_Root[iRoot].MakeWorldMatrix(true);
 				}
 			}
 
-			
-
-			if (_childTransforms != null)
+			//2. IK를 업데이트한다.
+			//[v1.5.0] Run Node를 이용해서 업데이트를 한다.
+			if(_nBoneIKRunNodes > 0)
 			{
-				for (int i = 0; i < _childTransforms.Length; i++)
+				apPortrait.IK_METHOD IKMethod = _portrait._IKMethod;
+				apOptBoneIKRunNode curNode = null;
+
+				//[v1.5.0]
+				//Calculate를 하기 전에 Init Pose Flag를 초기화한다.
+				for (int iNode = 0; iNode < _nBoneIKRunNodes; iNode++)
 				{
-					_childTransforms[i].UpdateBonesWorldMatrix(tDelta, isPhysics, isTeleportFrame);
+					curNode = _boneIKRunNodes[iNode];
+					curNode.ResetInitPoseFlag();
+				}
+
+
+				for (int iNode = 0; iNode < _nBoneIKRunNodes; iNode++)
+				{
+					curNode = _boneIKRunNodes[iNode];
+					bool isIKCalculated = curNode.CalculateIK(IKMethod);
+
+					if(isIKCalculated)
+					{
+						//IK 연산이 발생했다면
+						//여기에 관련된 Bone들의 Matrix를 한번 갱신할 필요가 있다.
+						curNode.MakeMatrixIK();
+					}
 				}
 			}
+
+			//3. IK 이후에 다시 World Matrix를 갱신해야한다.
+			for (int iSet = 0; iSet < _nBoneListSets; iSet++)
+			{
+				boneSet = _boneListSet[iSet];
+
+				for (int iRoot = 0; iRoot < boneSet._nRootBones; iRoot++)
+				{
+					boneSet._bones_Root[iRoot].MakeWorldMatrixForIK_WithJiggle(true, false, isPhysics, isTeleportFrame, tDelta);
+				}
+			}
+
+			//4. World Matrix 생성 이후에 후처리를 해야한다.
+			for (int iSet = 0; iSet < _nBoneListSets; iSet++)
+			{
+				boneSet = _boneListSet[iSet];
+
+				for (int iRoot = 0; iRoot < boneSet._nRootBones; iRoot++)
+				{
+					boneSet._bones_Root[iRoot].UpdatePostRecursive();
+				}
+			}
+
+
+			#region [미사용 코드] 이전 방식
+			////이전 코드
+			//int nBones = _boneList_Root != null ? _boneList_Root.Length : 0;
+			//if (nBones > 0)
+			//{
+			//	apPortrait.IK_METHOD IKMethod = _portrait._IKMethod;
+
+			//	//1. World Matrix 처리
+			//	for (int i = 0; i < nBones; i++)
+			//	{
+			//		_boneList_Root[i].MakeWorldMatrix(true);
+			//	}
+
+			//	//2. Calculate IK 처리
+			//	for (int i = 0; i < nBones; i++)
+			//	{
+			//		_boneList_Root[i].CalculateIK(IKMethod, true);
+			//	}
+
+			//	//3. World Matrix + IK 처리
+			//	for (int i = 0; i < nBones; i++)
+			//	{
+			//		_boneList_Root[i].MakeWorldMatrixForIK(true, false, isPhysics, isTeleportFrame, tDelta);
+			//	}
+
+			//	//추가 : 모든 WorldMatrix를 만들면 이 함수를 호출해야 한다.
+			//	for (int i = 0; i < nBones; i++)
+			//	{
+			//		_boneList_Root[i].UpdatePostRecursive();
+			//	}
+			//}
+
+
+			//int nChildTF = _childTransforms != null ? _childTransforms.Length : 0;
+			//if (nChildTF > 0)
+			//{
+			//	for (int i = 0; i < nChildTF; i++)
+			//	{
+			//		_childTransforms[i].UpdateBonesWorldMatrix(tDelta, isPhysics, isTeleportFrame);
+			//	}
+			//} 
+			#endregion
 		}
 		
 		/// <summary>
@@ -1092,46 +1068,131 @@ namespace AnyPortrait
 		/// <param name="isPhysics"></param>
 		public void UpdateBonesWorldMatrixAsSyncBones(float tDelta, bool isPhysics, bool isTeleportFrame)
 		{
-			if (_boneList_Root != null)
+			//[v1.5.0] 변경
+			//- BoneListSet을 이용하여 업데이트하는 것으로 변경
+			//- IK를 Run Node를 이용하는 것으로 변경
+			if(_nBoneListSets == 0)
 			{
-				//1. World Matrix 처리
-				for (int i = 0; i < _boneList_Root.Length; i++)
-				{
-					//_boneList_Root[i].MakeWorldMatrix(true);
-					_boneList_Root[i].MakeWorldMatrixAsSyncBones(true);//Sync 용
-				}
+				return;
+			}
 
-				//2. Calculate IK 처리
-				for (int i = 0; i < _boneList_Root.Length; i++)
-				{
-					//_boneList_Root[i].CalculateIK(true);
-					_boneList_Root[i].CalculateIKAsSyncBones(true);//Sync 용
-				}
+			OptBoneListSet boneSet = null;
 
-				//3. World Matrix + IK 처리
-				for (int i = 0; i < _boneList_Root.Length; i++)
-				{
-					//_boneList_Root[i].MakeWorldMatrixForIK(true, false, isPhysics, tDelta);
-					_boneList_Root[i].MakeWorldMatrixForIKAsSyncBones(true, false, isPhysics, isTeleportFrame, tDelta);//Sync 용
-				}
+			//1. 먼저 기본 World Matrix를 만든다.
+			for (int iSet = 0; iSet < _nBoneListSets; iSet++)
+			{
+				boneSet = _boneListSet[iSet];
 
-				//추가 : 모든 WorldMatrix를 만들면 이 함수를 호출해야 한다.
-				for (int i = 0; i < _boneList_Root.Length; i++)
+				//1. World Matrix 업데이트
+				for (int iRoot = 0; iRoot < boneSet._nRootBones; iRoot++)
 				{
-					//_boneList_Root[i].UpdatePostRecursive();
-					_boneList_Root[i].UpdatePostRecursiveAsSyncBones();//Sync 용
+					//boneSet._bones_Root[iRoot].MakeWorldMatrix(true);//기본
+					boneSet._bones_Root[iRoot].MakeWorldMatrixAsSyncBones(true);//Sync 용
 				}
 			}
 
-			
-
-			if (_childTransforms != null)
+			//2. IK를 업데이트한다.
+			//[v1.5.0] Run Node를 이용해서 업데이트를 한다.
+			if(_nBoneIKRunNodes > 0)
 			{
-				for (int i = 0; i < _childTransforms.Length; i++)
+				apPortrait.IK_METHOD IKMethod = _portrait._IKMethod;
+				apOptBoneIKRunNode curNode = null;
+
+				//[v1.5.0]
+				//Calculate를 하기 전에 Init Pose Flag를 초기화한다.
+				for (int iNode = 0; iNode < _nBoneIKRunNodes; iNode++)
 				{
-					_childTransforms[i].UpdateBonesWorldMatrixAsSyncBones(tDelta, isPhysics, isTeleportFrame);
+					curNode = _boneIKRunNodes[iNode];
+					curNode.ResetInitPoseFlag();
+				}
+
+
+				for (int iNode = 0; iNode < _nBoneIKRunNodes; iNode++)
+				{
+					curNode = _boneIKRunNodes[iNode];
+					bool isIKCalculated = curNode.CalculateIK(IKMethod);
+
+					if(isIKCalculated)
+					{
+						//IK 연산이 발생했다면 여기에 관련된 Bone들의 Matrix를 한번 갱신할 필요가 있다.
+						//curNode.MakeMatrixIK();//기본
+						curNode.MakeMatrixIKAsSync();//Sync용
+					}
 				}
 			}
+
+
+			//3. IK 이후에 다시 World Matrix를 갱신해야한다.
+			for (int iSet = 0; iSet < _nBoneListSets; iSet++)
+			{
+				boneSet = _boneListSet[iSet];
+
+				for (int iRoot = 0; iRoot < boneSet._nRootBones; iRoot++)
+				{
+					//boneSet._bones_Root[iRoot].MakeWorldMatrixForIK_WithJiggle(true, false, isPhysics, isTeleportFrame, tDelta);//기본
+					boneSet._bones_Root[iRoot].MakeWorldMatrixForIKAsSyncBones_WithJiggle(true, false, isPhysics, isTeleportFrame, tDelta);//Sync용
+				}
+			}
+
+			//4. World Matrix 생성 이후에 후처리를 해야한다.
+			for (int iSet = 0; iSet < _nBoneListSets; iSet++)
+			{
+				boneSet = _boneListSet[iSet];
+
+				for (int iRoot = 0; iRoot < boneSet._nRootBones; iRoot++)
+				{
+					//boneSet._bones_Root[iRoot].UpdatePostRecursive();//기본
+					boneSet._bones_Root[iRoot].UpdatePostRecursiveAsSyncBones();//Sync용
+				}
+			}
+
+
+			#region [미사용 코드] 이전 방식
+			////이전 방식
+			//int nBones = _boneList_Root != null ? _boneList_Root.Length : 0;
+			//if (nBones > 0)
+			//{
+			//	apPortrait.IK_METHOD IKMethod = _portrait._IKMethod;
+
+			//	//1. World Matrix 처리
+			//	for (int i = 0; i < nBones; i++)
+			//	{
+			//		//_boneList_Root[i].MakeWorldMatrix(true);
+			//		_boneList_Root[i].MakeWorldMatrixAsSyncBones(true);//Sync 용
+			//	}
+
+			//	//2. Calculate IK 처리
+			//	for (int i = 0; i < nBones; i++)
+			//	{
+			//		//_boneList_Root[i].CalculateIK(true);
+			//		_boneList_Root[i].CalculateIKAsSyncBones(IKMethod, true);//Sync 용
+			//	}
+
+			//	//3. World Matrix + IK 처리
+			//	for (int i = 0; i < nBones; i++)
+			//	{
+			//		//_boneList_Root[i].MakeWorldMatrixForIK(true, false, isPhysics, tDelta);
+			//		_boneList_Root[i].MakeWorldMatrixForIKAsSyncBones(true, false, isPhysics, isTeleportFrame, tDelta);//Sync 용
+			//	}
+
+			//	//추가 : 모든 WorldMatrix를 만들면 이 함수를 호출해야 한다.
+			//	for (int i = 0; i < nBones; i++)
+			//	{
+			//		//_boneList_Root[i].UpdatePostRecursive();
+			//		_boneList_Root[i].UpdatePostRecursiveAsSyncBones();//Sync 용
+			//	}
+			//}
+
+
+			//int nChildTF = _childTransforms != null ? _childTransforms.Length : 0;
+			//if (nChildTF > 0)
+			//{
+			//	for (int i = 0; i < nChildTF; i++)
+			//	{
+			//		_childTransforms[i].UpdateBonesWorldMatrixAsSyncBones(tDelta, isPhysics, isTeleportFrame);
+			//	}
+			//} 
+			#endregion
 		}
 
 
@@ -1203,36 +1264,6 @@ namespace AnyPortrait
 		}
 
 
-		//public void DebugBoneMatrix()
-		//{
-		//	//if (string.Equals(this.name, "Body"))
-		//	//{
-		//	//	Debug.Log("Transform Reset");
-		//	//	Debug.Log("[ _matrix_TF_ParentWorld : " + _matrix_TF_ParentWorld.ToString() + "]");
-		//	//	Debug.Log("[ _matrix_TF_ParentWorld_NonModified : " + _matrix_TF_ParentWorld_NonModified.ToString() + "]");
-		//	//	Debug.Log("[ _matrix_TF_ToParent : " + _matrix_TF_ToParent.ToString() + "]");
-		//	//	Debug.Log("[ _matrix_TF_LocalModified : " + _matrix_TF_LocalModified.ToString() + "]");
-		//	//	Debug.Log("[ _matrix_TFResult_World : " + _matrix_TFResult_World.ToString() + "]");
-		//	//	Debug.Log("[ _matrix_TFResult_WorldWithoutMod : " + _matrix_TFResult_WorldWithoutMod.ToString() + "]");
-		//	//}
-
-		//	if (_boneList_Root != null && _boneList_Root.Length > 0)
-		//	{
-		//		for (int i = 0; i < _boneList_Root.Length; i++)
-		//		{
-		//			_boneList_Root[i].DebugBoneMatrix();
-		//		}
-		//	}
-
-		//	if (_childTransforms != null)
-		//	{
-		//		for (int i = 0; i < _childTransforms.Length; i++)
-		//		{
-		//			_childTransforms[i].DebugBoneMatrix();
-		//		}
-		//	}
-		//}
-
 	
 
 		public void UpdateMaskMeshes()
@@ -1244,9 +1275,10 @@ namespace AnyPortrait
 			
 
 			//자식 객체도 업데이트를 한다.
-			if (_childTransforms != null)
+			int nChildTFs = _childTransforms != null ? _childTransforms.Length : 0;
+			if (nChildTFs > 0)
 			{
-				for (int i = 0; i < _childTransforms.Length; i++)
+				for (int i = 0; i < nChildTFs; i++)
 				{
 					_childTransforms[i].UpdateMaskMeshes();
 				}
@@ -1556,6 +1588,9 @@ namespace AnyPortrait
 					}
 				}
 			}
+
+			//[v1.5.0] IK가 적용된 본들을 Run Node에서 초기화를 하자
+			InitBoneSetsAndIKRunNodes();
 		}
 
 
@@ -1595,6 +1630,9 @@ namespace AnyPortrait
 					}
 				}
 			}
+
+			//[v1.5.0] IK가 적용된 본들을 Run Node에서 초기화를 하자
+			InitBoneSetsAndIKRunNodes();
 		}
 
 
@@ -2105,5 +2143,123 @@ namespace AnyPortrait
 
 			_childMesh.SetSortingOrder(sortingOrder);
 		}
+
+
+		// [v1.5.0] Bone IK와 빠른 Bone 순회를 위한 초기화 함수
+		//-----------------------------------------------------------------------
+		/// <summary>
+		/// BoneSetList를 생성하고
+		/// IK가 동작하는 본들을 Run Node로서 등록하거나 갱신한다.
+		/// IK Chain이 갱신될 때 항상 호출되어야 한다.
+		/// </summary>
+		public void InitBoneSetsAndIKRunNodes()
+		{
+			if(_boneListSet == null) { _boneListSet = new List<OptBoneListSet>(); }
+			_boneListSet.Clear();
+			_nBoneListSets = 0;
+
+			if (_boneIKRunNodes == null) { _boneIKRunNodes = new List<apOptBoneIKRunNode>(); }
+			_boneIKRunNodes.Clear();
+			_nBoneIKRunNodes = 0;
+
+			//BoneListSet을 생성하자 (재귀적)
+			MakeBoneListSetsRecursive(_boneListSet);
+			_nBoneListSets = _boneListSet.Count;
+
+			if(_nBoneListSets == 0)
+			{
+				//본이 자신~자식 포함해서 아무도 없네용
+				return;
+			}
+			//본들을 부모>자식 순서로 RunNode에 넣는다.
+			OptBoneListSet curBoneListSet = null;
+			apOptBone curRootBone = null;
+			for (int iBoneSet = 0; iBoneSet < _nBoneListSets; iBoneSet++)
+			{
+				curBoneListSet = _boneListSet[iBoneSet];
+				int nRootBones = curBoneListSet._bones_Root != null ? curBoneListSet._bones_Root.Length : 0;
+
+				if(nRootBones == 0)
+				{
+					continue;
+				}
+				for (int iRootBone = 0; iRootBone < nRootBones; iRootBone++)
+				{
+					curRootBone = curBoneListSet._bones_Root[iRootBone];
+
+					//Root Bone으로 부터 재귀적으로 찾아서 넣는다.
+					RegisterIKBonesToRunNodesRecursive(curRootBone);
+				}
+			}
+			
+
+			_nBoneIKRunNodes = _boneIKRunNodes.Count;
+
+			//Run Node가 2개 이상이라면, 정렬을 해야한다.
+			//- 기본적으론 Index의 오름차순이다. (Root > Child 순서)
+			//- 단, Order 값이 다르다면 Order값이 작은게 먼저 수행된다.
+			if(_nBoneIKRunNodes > 1)
+			{
+				_boneIKRunNodes.Sort(SortCompareRunNodes);
+			}
+		}
+
+		private void MakeBoneListSetsRecursive(List<OptBoneListSet> targetList)
+		{
+			int nRoots = _boneList_Root != null ? _boneList_Root.Length : 0;
+			int nChild = _childTransforms != null ? _childTransforms.Length : 0;
+
+			//본이 있는 경우에만 추가함
+			if(nRoots > 0)
+			{
+				OptBoneListSet newBoneSet = new OptBoneListSet(this, _boneList_Root);
+				targetList.Add(newBoneSet);
+			}
+
+			if(nChild > 0)
+			{
+				for (int i = 0; i < nChild; i++)
+				{
+					_childTransforms[i].MakeBoneListSetsRecursive(targetList);
+				}
+			}
+		}
+
+
+		private void RegisterIKBonesToRunNodesRecursive(apOptBone curBone)
+		{
+			apOptBone chainRootBone = null;
+			if(curBone.IsIKCalculatable(out chainRootBone))
+			{
+				//IK Controller가 동작하면 Run Node에 넣자
+				int curIndex = _boneIKRunNodes.Count;
+				_boneIKRunNodes.Add(new apOptBoneIKRunNode(curBone, curIndex, chainRootBone));
+			}
+
+			//자식 본도 IK 여부를 검사하여 리스트에 넣자
+			int nChildBones = curBone._childBones != null ? curBone._childBones.Length : 0;
+			if(nChildBones == 0)
+			{
+				return;
+			}
+
+			apOptBone childBone = null;
+			for (int iChild = 0; iChild < nChildBones; iChild++)
+			{
+				childBone = curBone._childBones[iChild];
+				RegisterIKBonesToRunNodesRecursive(childBone);
+			}
+		}
+
+		private int SortCompareRunNodes(apOptBoneIKRunNode nodeA, apOptBoneIKRunNode nodeB)
+		{
+			if(nodeA._depth != nodeB._depth)
+			{
+				return nodeA._depth - nodeB._depth;//Order의 오름차순
+			}
+			//그 외에는 Index 순서
+			return nodeA._index - nodeB._index;
+		}
+
 	}
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -745,6 +745,7 @@ namespace AnyPortrait
 					{
 						DrawSmoothLine(curveA, curveB, graphColorA, graphColorB, posA, posB);
 						isCurveChanged = DrawSmoothLineControlPoints(curveA, curveB, posA, posB);//<<커브를 수정할 수 있다.
+						
 					}
 					break;
 
@@ -899,8 +900,7 @@ namespace AnyPortrait
 						if (_leftBtnStatus == apMouse.MouseBtnStatus.Down)
 						{
 							if (IsMouseInLayout(_mousePos))
-							{
-								apEditorUtil.SetEditorDirty();
+							{	
 								//이전 : 포인트 영역을 클릭해야만 선택한다.
 								//근데 영역이 좀 좁다.
 								//if (IsMouseInButton(_mousePos, smoothA_Pos, pointSize, pointSize))
@@ -969,8 +969,6 @@ namespace AnyPortrait
 
 						if (!_isLockMouse)
 						{
-							apEditorUtil.SetEditorDirty();
-
 							if (_selectedCurveKey == curveA)
 							{
 								Vector2 nextPos_Ratio = new Vector2(

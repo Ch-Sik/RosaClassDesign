@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -562,60 +562,81 @@ namespace AnyPortrait
 
 		// 버텍스 Refresh / Link
 		//---------------------------------------------------
-		
+
 		public void LinkVertices()//변경 20.3.30 : 내용이 Refresh보다는 Link에 해당한다.
 		{
-			if (_transform_Mesh._mesh != null)
+			if (_transform_Mesh == null)
 			{
-				bool isSameVerts = true;
-				if (_vertices.Count == 0 || _vertices.Count != _transform_Mesh._mesh._vertexData.Count)
+				return;
+			}
+			if (_transform_Mesh._mesh == null)
+			{
+				return;
+			}
+
+			bool isSameVerts = true;
+
+			int nVerts = _vertices != null ? _vertices.Count : 0;
+
+			List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
+			int nMeshVertCount = meshVertList != null ? meshVertList.Count : 0;
+
+			if (nVerts == 0 || nVerts != nMeshVertCount)
+			{
+				isSameVerts = false;
+			}
+			else
+			{
+				//전부 비교해볼까나..
+				//빠르게 단순 링크를 시도해보고, 한번이라도 실패하면 다시 리스트를 만들어야한다.
+				
+
+				apVertex meshVert = null;
+				apModifiedVertex modVert = null;
+				for (int i = 0; i < nMeshVertCount; i++)
 				{
-					isSameVerts = false;
-				}
-				else
-				{
-					//전부 비교해볼까나..
-					//빠르게 단순 링크를 시도해보고, 한번이라도 실패하면 다시 리스트를 만들어야한다.
-					List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
-					apVertex meshVert = null;
-					apModifiedVertex modVert = null;
-					for (int i = 0; i < meshVertList.Count; i++)
+					meshVert = meshVertList[i];
+					modVert = _vertices[i];
+
+					if (modVert._vertexUniqueID != meshVert._uniqueID)
 					{
-						meshVert = meshVertList[i];
-						modVert = _vertices[i];
-
-						if (modVert._vertexUniqueID != meshVert._uniqueID)
-						{
-							//버텍스 리스트 갱신이 필요하다
-							isSameVerts = false;
-							break;
-						}
-
-						modVert.Link(this, _transform_Mesh._mesh, meshVert);
+						//버텍스 리스트 갱신이 필요하다
+						isSameVerts = false;
+						break;
 					}
+
+					modVert.Link(this, _transform_Mesh._mesh, meshVert);
 				}
+			}
 
-				if (!isSameVerts)
+			if (!isSameVerts)
+			{
+				//유효한 Vertex만 찾아서 넣어준다.
+				//유효하면 - Link
+				//유효하지 않다면 - Pass (Link 안된거 삭제)
+				//없는건 - Add
+				//순서는.. Index를 넣어서
+
+				//1. 일단 기존 데이터 복사 - 없어진 Vertex를 빼자
+				if (nVerts > 0)
 				{
-					//유효한 Vertex만 찾아서 넣어준다.
-					//유효하면 - Link
-					//유효하지 않다면 - Pass (Link 안된거 삭제)
-					//없는건 - Add
-					//순서는.. Index를 넣어서
+					apModifiedVertex modVert = null;
 
-
-
-					//1. 일단 기존 데이터 복사 - 없어진 Vertex를 빼자
-					if (_vertices.Count != 0)
+					if (nMeshVertCount > 0)
 					{
-						apModifiedVertex modVert = null;
-						for (int i = 0; i < _vertices.Count; i++)
+						for (int i = 0; i < nVerts; i++)
 						{
 							modVert = _vertices[i];
-							apVertex existVert = _transform_Mesh._mesh._vertexData.Find(delegate (apVertex a)
-							{
-								return a._uniqueID == modVert._vertexUniqueID;
-							});
+
+							//이전 (GC 발생)
+							//apVertex existVert = _transform_Mesh._mesh._vertexData.Find(delegate (apVertex a)
+							//{
+							//	return a._uniqueID == modVert._vertexUniqueID;
+							//});
+
+							//변경 v1.5.0
+							s_FindVertex_ID = modVert._vertexUniqueID;
+							apVertex existVert = meshVertList.Find(s_FindVertexByID_Func);
 
 							if (existVert != null)
 							{
@@ -630,22 +651,47 @@ namespace AnyPortrait
 						}
 
 						//이제 존재하지 않는 Vertex에 대해서는 삭제
-						_vertices.RemoveAll(delegate (apModifiedVertex a)
+						//이전 (GC 발생)
+						//_vertices.RemoveAll(delegate (apModifiedVertex a)
+						//{
+						//	return a._vertex == null;
+						//});
+
+						//변경 v1.5.0
+						_vertices.RemoveAll(s_FindNullModVert_Func);
+					}
+					else
+					{
+						//원본이 버텍스가 없넹..
+						if(_vertices == null)
 						{
-							return a._vertex == null;
-						});
+							_vertices = new List<apModifiedVertex>();
+						}
+						_vertices.Clear();
+					}
+					
 
-						List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
-						apVertex meshVert = null;
+					
 
-						for (int i = 0; i < meshVertList.Count; i++)
+					apVertex meshVert = null;
+
+					if (nMeshVertCount > 0)
+					{
+						for (int i = 0; i < nMeshVertCount; i++)
 						{
 							meshVert = meshVertList[i];
 							//해당 Vertex가 있었는가
-							bool isLinked = _vertices.Exists(delegate (apModifiedVertex a)
-							{
-								return a._vertex == meshVert;
-							});
+
+							//이전 (GC 발생)
+							//bool isLinked = _vertices.Exists(delegate (apModifiedVertex a)
+							//{
+							//	return a._vertex == meshVert;
+							//});
+
+							//변경 v1.5.0
+							s_FindModVert_SrcVertex = meshVert;
+							bool isLinked = _vertices.Exists(s_FindModVertBySrcVertex_Func);
+
 
 							//없으면 추가
 							if (!isLinked)
@@ -657,22 +703,29 @@ namespace AnyPortrait
 								_vertices.Add(newVert);//<<새로 추가할 리스트에 넣어준다.
 							}
 						}
-
-						//Vertex Index에 맞게 정렬
-						_vertices.Sort(delegate (apModifiedVertex a, apModifiedVertex b)
-						{
-							return a._vertIndex - b._vertIndex;
-						});
 					}
-					else
+					
+
+					//Vertex Index에 맞게 정렬
+					//이전 (GC 발생)
+					//_vertices.Sort(delegate (apModifiedVertex a, apModifiedVertex b)
+					//{
+					//	return a._vertIndex - b._vertIndex;
+					//});
+
+					//변경 v1.5.0
+					_vertices.Sort(s_SortModVert_Func);
+				}
+				else
+				{
+					//2. 아예 리스트가 없을 때
+					_vertices.Clear();
+
+					apVertex meshVert = null;
+
+					if (nMeshVertCount > 0)
 					{
-						//2. 아예 리스트가 없을 때
-						_vertices.Clear();
-
-						List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
-						apVertex meshVert = null;
-
-						for (int i = 0; i < meshVertList.Count; i++)
+						for (int i = 0; i < nMeshVertCount; i++)
 						{
 							meshVert = meshVertList[i];
 
@@ -683,108 +736,92 @@ namespace AnyPortrait
 							_vertices.Add(newVert);//<<새로 추가할 리스트에 넣어준다.
 						}
 					}
+					
 				}
+			}
 
-				//추가 22.3.20 [v1.4.0] Pin 링크
-				bool isSamePins = true;
-				int nModPins = _pins != null ? _pins.Count : 0;
-				int nSrcPins = 0;
-				if(_transform_Mesh._mesh._pinGroup != null)
-				{
-					nSrcPins = _transform_Mesh._mesh._pinGroup.NumPins;
-				}
-				if(nModPins != nSrcPins)
-				{
-					//개수가 다르다면
-					isSamePins = false;
-				}
-				else if(nModPins > 0)
-				{
-					//개수가 같다면
-					//바로 Link를 하되, 하나라도 다르다면 다시 전부 링크하자
-					List<apMeshPin> srcPins = _transform_Mesh._mesh._pinGroup._pins_All;
-					apMeshPin curSrcPin = null;
-					apModifiedPin curModPin = null;
+			//추가 22.3.20 [v1.4.0] Pin 링크
+			bool isSamePins = true;
+			int nModPins = _pins != null ? _pins.Count : 0;
+			int nSrcPins = 0;
 
-					for (int i = 0; i < nModPins; i++)
+
+			List<apMeshPin> srcPins = null;
+			if (_transform_Mesh._mesh._pinGroup != null)
+			{
+				nSrcPins = _transform_Mesh._mesh._pinGroup.NumPins;
+				srcPins = _transform_Mesh._mesh._pinGroup._pins_All;
+			}
+
+			if (nModPins != nSrcPins)
+			{
+				//개수가 다르다면
+				isSamePins = false;
+			}
+			else if (nModPins > 0)
+			{
+				//개수가 같다면
+				//바로 Link를 하되, 하나라도 다르다면 다시 전부 링크하자
+				
+				apMeshPin curSrcPin = null;
+				apModifiedPin curModPin = null;
+
+				for (int i = 0; i < nModPins; i++)
+				{
+					curSrcPin = srcPins[i];
+					curModPin = _pins[i];
+
+					if (curSrcPin._uniqueID != curModPin._pinUniqueID)
 					{
-						curSrcPin = srcPins[i];
-						curModPin = _pins[i];
-
-						if(curSrcPin._uniqueID != curModPin._pinUniqueID)
-						{
-							//서로 다른 ID. 리스트를 다시 갱신하자
-							isSamePins = false;
-							break;
-						}
-
-						//링크
-						curModPin.Link(this, _transform_Mesh._mesh, curSrcPin);
+						//서로 다른 ID. 리스트를 다시 갱신하자
+						isSamePins = false;
+						break;
 					}
+
+					//링크
+					curModPin.Link(this, _transform_Mesh._mesh, curSrcPin);
 				}
+			}
 
-				if(!isSamePins)
+			if (!isSamePins)
+			{
+				//개수가 다르다면 기존걸 백업하고 다시 링크
+				if (nModPins > 0)
 				{
-					//개수가 다르다면 기존걸 백업하고 다시 링크
-					if(nModPins > 0)
+					//이전 핀 데이터가 있다면 이전
+					List<apModifiedPin> prevPins = _pins;
+					_pins = new List<apModifiedPin>();
+
+					if (nSrcPins > 0)
 					{
-						//이전 핀 데이터가 있다면 이전
-						List<apModifiedPin> prevPins = _pins;
-						_pins = new List<apModifiedPin>();
+						apMeshPin curSrcPin = null;
+						apModifiedPin existModPin = null;
 
-						if(nSrcPins > 0)
+						for (int i = 0; i < nSrcPins; i++)
 						{
-							List<apMeshPin> srcPins = _transform_Mesh._mesh._pinGroup._pins_All;
+							curSrcPin = srcPins[i];
+
+							//이 핀에 해당되는 핀을 찾자
 							
-							apMeshPin curSrcPin = null;
-							apModifiedPin existModPin = null;
+							//이전 (GC 발생)
+							//existModPin = prevPins.Find(delegate (apModifiedPin a)
+							//{
+							//	return a._pinUniqueID == curSrcPin._uniqueID;
+							//});
 
-							for (int i = 0; i < nSrcPins; i++)
+							//변경 v1.5.0
+							s_FindPin_ID = curSrcPin._uniqueID;
+							existModPin = prevPins.Find(s_FindModPinByID_Func);
+
+
+							if (existModPin != null)
 							{
-								curSrcPin = srcPins[i];
-
-								//이 핀에 해당되는 핀을 찾자
-								existModPin = prevPins.Find(delegate(apModifiedPin a)
-								{
-									return a._pinUniqueID == curSrcPin._uniqueID;
-								});
-								if(existModPin != null)
-								{
-									//이전의 핀 데이터가 존재한다.
-									existModPin.Link(this, _transform_Mesh._mesh, curSrcPin);
-									_pins.Add(existModPin);
-								}
-								else
-								{
-									//새로운 핀 데이터를 만들어서 추가하자
-									apModifiedPin newModPin = new apModifiedPin();
-									newModPin.Init(curSrcPin._uniqueID, curSrcPin);
-									newModPin.Link(this, _transform_Mesh._mesh, curSrcPin);
-									_pins.Add(newModPin);
-								}
+								//이전의 핀 데이터가 존재한다.
+								existModPin.Link(this, _transform_Mesh._mesh, curSrcPin);
+								_pins.Add(existModPin);
 							}
-						}
-
-					}
-					else
-					{
-						//이전 핀 데이터가 없다.
-						if(_pins == null)
-						{
-							_pins = new List<apModifiedPin>();
-						}
-						_pins.Clear();
-
-						if(nSrcPins > 0)
-						{
-							List<apMeshPin> srcPins = _transform_Mesh._mesh._pinGroup._pins_All;
-							
-							apMeshPin curSrcPin = null;
-
-							for (int i = 0; i < nSrcPins; i++)
+							else
 							{
-								curSrcPin = srcPins[i];
-
 								//새로운 핀 데이터를 만들어서 추가하자
 								apModifiedPin newModPin = new apModifiedPin();
 								newModPin.Init(curSrcPin._uniqueID, curSrcPin);
@@ -793,31 +830,128 @@ namespace AnyPortrait
 							}
 						}
 					}
-					
+
 				}
+				else
+				{
+					//이전 핀 데이터가 없다.
+					if (_pins == null)
+					{
+						_pins = new List<apModifiedPin>();
+					}
+					_pins.Clear();
+
+					if (nSrcPins > 0)
+					{
+						apMeshPin curSrcPin = null;
+
+						for (int i = 0; i < nSrcPins; i++)
+						{
+							curSrcPin = srcPins[i];
+
+							//새로운 핀 데이터를 만들어서 추가하자
+							apModifiedPin newModPin = new apModifiedPin();
+							newModPin.Init(curSrcPin._uniqueID, curSrcPin);
+							newModPin.Link(this, _transform_Mesh._mesh, curSrcPin);
+							_pins.Add(newModPin);
+						}
+					}
+				}
+
 			}
 		}
 
 
-		//public void RefreshVertexRigs(apPortrait portrait)
+		private static int s_FindVertex_ID = -1;
+		private static Predicate<apVertex> s_FindVertexByID_Func = FUNC_FindVertexByID;
+		private static bool FUNC_FindVertexByID(apVertex a)
+		{
+			return a._uniqueID == s_FindVertex_ID;
+		}
+
+		private static Predicate<apModifiedVertex> s_FindNullModVert_Func = FUNC_FindNullModVert;
+		private static bool FUNC_FindNullModVert(apModifiedVertex a)
+		{
+			return a._vertex == null;
+		}
+
+		private static apVertex s_FindModVert_SrcVertex = null;
+		private static Predicate<apModifiedVertex> s_FindModVertBySrcVertex_Func = FUNC_FindModVertBySrcVertex;
+		private static bool FUNC_FindModVertBySrcVertex(apModifiedVertex a)
+		{
+			return a._vertex == s_FindModVert_SrcVertex;
+		}
+
+		private static Comparison<apModifiedVertex> s_SortModVert_Func = FUNC_SortModVert;
+		private static int FUNC_SortModVert(apModifiedVertex a, apModifiedVertex b)
+		{
+			return a._vertIndex - b._vertIndex;
+		}
+
+
+		private static int s_FindPin_ID = -1;
+		private static Predicate<apModifiedPin> s_FindModPinByID_Func = FUNC_FindModPinByID;
+		private static bool FUNC_FindModPinByID(apModifiedPin a)
+		{
+			return a._pinUniqueID == s_FindPin_ID;
+		}
+
+		private static Predicate<apModifiedVertexRig> s_FindNullModVertRig_Func = FUNC_FindNullModVertRig;
+		private static bool FUNC_FindNullModVertRig(apModifiedVertexRig a)
+		{
+			return a._vertex == null;
+		}
+		
+		private static apVertex s_FindModVertRig_SrcVertex = null;
+		private static Predicate<apModifiedVertexRig> s_FindModVertRigBySrcVertex_Func = FUNC_FindModVertRigBySrcVertex;
+		private static bool FUNC_FindModVertRigBySrcVertex(apModifiedVertexRig a)
+		{
+			return a._vertex == s_FindModVertRig_SrcVertex;
+		}
+
+		private static Comparison<apModifiedVertexRig> s_SortModVertRig_Func = FUNC_SortModVertRig;
+		private static int FUNC_SortModVertRig(apModifiedVertexRig a, apModifiedVertexRig b)
+		{
+			return a._vertIndex - b._vertIndex;
+		}
+
+
+
 		public void LinkVertexRigs(apPortrait portrait)//변경 20.3.20 : 이 함수는 Refresh보다 Link에 해당한다.
 		{
-			//Debug.LogWarning("LinkVertexRigs");
-			if (_transform_Mesh._mesh != null)
+			if(_transform_Mesh == null)
 			{
-				bool isSameVerts = true;
-				if (_vertRigs.Count == 0 || _vertRigs.Count != _transform_Mesh._mesh._vertexData.Count)
+				return;
+			}
+
+			if(_transform_Mesh._mesh == null)
+			{
+				return;
+			}
+
+
+			bool isSameVerts = true;
+
+			int nVertRigs = _vertRigs != null ? _vertRigs.Count : 0;
+
+			List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
+			int nMeshVerts = meshVertList != null ? meshVertList.Count : 0;
+
+			if (nVertRigs == 0 || nVertRigs != nMeshVerts)
+			{
+				isSameVerts = false;
+			}
+			else
+			{
+				//전부 비교해볼까나..
+				//빠르게 단순 링크를 시도해보고, 한번이라도 실패하면 다시 리스트를 만들어야한다.
+				
+				apVertex meshVert = null;
+				apModifiedVertexRig modVertRig = null;
+
+				if (nMeshVerts > 0)
 				{
-					isSameVerts = false;
-				}
-				else
-				{
-					//전부 비교해볼까나..
-					//빠르게 단순 링크를 시도해보고, 한번이라도 실패하면 다시 리스트를 만들어야한다.
-					List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
-					apVertex meshVert = null;
-					apModifiedVertexRig modVertRig = null;
-					for (int i = 0; i < meshVertList.Count; i++)
+					for (int i = 0; i < nMeshVerts; i++)
 					{
 						meshVert = meshVertList[i];
 						modVertRig = _vertRigs[i];
@@ -834,30 +968,41 @@ namespace AnyPortrait
 						modVertRig.LinkWeightPair(portrait, _meshGroupOfModifier);
 					}
 				}
+			}
 
-				if (!isSameVerts)
+			if (!isSameVerts)
+			{
+				//<메시의 버텍스의 개수나 종류, 순서가 저장된것과 다른 경우>
+
+				//유효한 Vertex만 찾아서 넣어준다.
+				//유효하면 - Link
+				//유효하지 않다면 - Pass (Link 안된거 삭제)
+				//없는건 - Add
+				//순서는.. Index를 넣어서
+
+
+
+				//1. 일단 기존 데이터 복사 - 없어진 Vertex를 빼자
+				if (nVertRigs != 0)
 				{
-					//<메시의 버텍스의 개수나 종류, 순서가 저장된것과 다른 경우>
+					apModifiedVertexRig modVertRig = null;
 
-					//유효한 Vertex만 찾아서 넣어준다.
-					//유효하면 - Link
-					//유효하지 않다면 - Pass (Link 안된거 삭제)
-					//없는건 - Add
-					//순서는.. Index를 넣어서
-
-
-
-					//1. 일단 기존 데이터 복사 - 없어진 Vertex를 빼자
-					if (_vertRigs.Count != 0)
+					if (nMeshVerts > 0)
 					{
-						apModifiedVertexRig modVertRig = null;
-						for (int i = 0; i < _vertRigs.Count; i++)
+						for (int i = 0; i < nVertRigs; i++)
 						{
 							modVertRig = _vertRigs[i];
-							apVertex existVert = _transform_Mesh._mesh._vertexData.Find(delegate (apVertex a)
-							{
-								return a._uniqueID == modVertRig._vertexUniqueID;
-							});
+
+							//이전 (GC 발생)
+							//apVertex existVert = _transform_Mesh._mesh._vertexData.Find(delegate (apVertex a)
+							//{
+							//	return a._uniqueID == modVertRig._vertexUniqueID;
+							//});
+
+							//변경 v1.5.0
+							s_FindVertex_ID = modVertRig._vertexUniqueID;
+							apVertex existVert = meshVertList.Find(s_FindVertexByID_Func);
+
 
 							if (existVert != null)
 							{
@@ -873,50 +1018,82 @@ namespace AnyPortrait
 						}
 
 						//이제 존재하지 않는 Vertex에 대해서는 삭제
-						_vertRigs.RemoveAll(delegate (apModifiedVertexRig a)
-						{
-							return a._vertex == null;
-						});
+						//이전 (GC 발생)
+						//_vertRigs.RemoveAll(delegate (apModifiedVertexRig a)
+						//{
+						//	return a._vertex == null;
+						//});
 
-						List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
-						apVertex meshVert = null;
-
-						for (int i = 0; i < meshVertList.Count; i++)
-						{
-							meshVert = meshVertList[i];
-							//해당 Vertex가 있었는가
-							bool isLinked = _vertRigs.Exists(delegate (apModifiedVertexRig a)
-							{
-								return a._vertex == meshVert;
-							});
-
-							//없으면 추가
-							if (!isLinked)
-							{
-								apModifiedVertexRig newVertRig = new apModifiedVertexRig();
-								newVertRig.Init(meshVert._uniqueID, meshVert);
-								newVertRig.Link(this, _transform_Mesh._mesh, meshVert);
-								newVertRig.LinkWeightPair(portrait, _meshGroupOfModifier);
-
-								_vertRigs.Add(newVertRig);//<<새로 추가할 리스트에 넣어준다.
-							}
-						}
-
-						//Vertex Index에 맞게 정렬
-						_vertRigs.Sort(delegate (apModifiedVertexRig a, apModifiedVertexRig b)
-						{
-							return a._vertIndex - b._vertIndex;
-						});
+						//변경 v1.5.0
+						_vertRigs.RemoveAll(s_FindNullModVertRig_Func);
 					}
 					else
 					{
-						//2. 아예 리스트가 없을 때
+						//원본이 버텍스가 없넹..
+						if(_vertRigs == null)
+						{
+							_vertRigs = new List<apModifiedVertexRig>();
+						}
 						_vertRigs.Clear();
+					}
+					
 
-						List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
-						apVertex meshVert = null;
 
-						for (int i = 0; i < meshVertList.Count; i++)
+
+					apVertex meshVert = null;
+
+					for (int i = 0; i < nMeshVerts; i++)
+					{
+						meshVert = meshVertList[i];
+						//해당 Vertex가 있었는가
+
+						//이전 (GC 발생)
+						//bool isLinked = _vertRigs.Exists(delegate (apModifiedVertexRig a)
+						//{
+						//	return a._vertex == meshVert;
+						//});
+
+						//변경 v1.5.0
+						s_FindModVertRig_SrcVertex = meshVert;
+						bool isLinked = _vertRigs.Exists(s_FindModVertRigBySrcVertex_Func);
+
+
+						//없으면 추가
+						if (!isLinked)
+						{
+							apModifiedVertexRig newVertRig = new apModifiedVertexRig();
+							newVertRig.Init(meshVert._uniqueID, meshVert);
+							newVertRig.Link(this, _transform_Mesh._mesh, meshVert);
+							newVertRig.LinkWeightPair(portrait, _meshGroupOfModifier);
+
+							_vertRigs.Add(newVertRig);//<<새로 추가할 리스트에 넣어준다.
+						}
+					}
+
+					//Vertex Index에 맞게 정렬
+					//이전 (GC 발생)
+					//_vertRigs.Sort(delegate (apModifiedVertexRig a, apModifiedVertexRig b)
+					//{
+					//	return a._vertIndex - b._vertIndex;
+					//});
+
+					//변경 v1.5.0
+					_vertRigs.Sort(s_SortModVertRig_Func);
+				}
+				else
+				{
+					//2. 아예 리스트가 없을 때
+					if(_vertRigs == null)
+					{
+						_vertRigs = new List<apModifiedVertexRig>();
+					}
+					_vertRigs.Clear();
+
+					apVertex meshVert = null;
+
+					if (nMeshVerts > 0)
+					{
+						for (int i = 0; i < nMeshVerts; i++)
 						{
 							meshVert = meshVertList[i];
 
@@ -928,21 +1105,14 @@ namespace AnyPortrait
 							_vertRigs.Add(newVertRig);//<<새로 추가할 리스트에 넣어준다.
 						}
 					}
-
 				}
 
-				//int nRefreshedRenverVerts = 0;
-				for (int i = 0; i < _vertRigs.Count; i++)
-				{
-					_vertRigs[i].CheckAndLinkModMeshAndRenderVertex(this);
-					//bool isRefreshed = _vertRigs[i].CheckAndLinkModMeshAndRenderVertex(this);
-					//if(isRefreshed)
-					//{
-					//	nRefreshedRenverVerts++;
-					//}
-				}
+			}
 
-				//Debug.Log("[" + nRefreshedRenverVerts + "] 개의 RenderVert가 유효함");
+			nVertRigs = _vertRigs != null ? _vertRigs.Count : 0;
+			for (int i = 0; i < nVertRigs; i++)
+			{
+				_vertRigs[i].CheckAndLinkModMeshAndRenderVertex(this);
 			}
 		}
 
@@ -968,7 +1138,13 @@ namespace AnyPortrait
 			if (_transform_Mesh._mesh != null)
 			{
 				bool isSameVerts = true;
-				if (_vertWeights.Count == 0 || _vertWeights.Count != _transform_Mesh._mesh._vertexData.Count)
+
+				int nVertWeights = _vertWeights != null ? _vertWeights.Count : 0;
+				
+				List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
+				int nMeshVerts = meshVertList != null ? meshVertList.Count : 0;
+
+				if (nVertWeights == 0 || nVertWeights != nMeshVerts)
 				{
 					isSameVerts = false;
 				}
@@ -976,10 +1152,10 @@ namespace AnyPortrait
 				{
 					//전부 비교해볼까나..
 					//빠르게 단순 링크를 시도해보고, 한번이라도 실패하면 다시 리스트를 만들어야한다.
-					List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
+					
 					apVertex meshVert = null;
 					apModifiedVertexWeight modVertWeight = null;
-					for (int i = 0; i < meshVertList.Count; i++)
+					for (int i = 0; i < nMeshVerts; i++)
 					{
 						meshVert = meshVertList[i];
 						modVertWeight = _vertWeights[i];
@@ -1003,46 +1179,73 @@ namespace AnyPortrait
 					//순서는.. Index를 넣어서
 
 					//1. 일단 기존 데이터 복사 - 없어진 Vertex를 빼자
-					if (_vertWeights.Count != 0)
+					if (nVertWeights > 0)
 					{
-						apModifiedVertexWeight modVertWeight = null;
-						for (int i = 0; i < _vertWeights.Count; i++)
+						if(nMeshVerts > 0)
 						{
-							modVertWeight = _vertWeights[i];
-							apVertex existVert = _transform_Mesh._mesh._vertexData.Find(delegate (apVertex a)
+							apModifiedVertexWeight modVertWeight = null;
+							for (int i = 0; i < nVertWeights; i++)
 							{
-								return a._uniqueID == modVertWeight._vertexUniqueID;
-							});
+								modVertWeight = _vertWeights[i];
 
-							if (existVert != null)
-							{
-								//유효하다면 Link
-								modVertWeight.Link(this, _transform_Mesh._mesh, existVert);
+								// 이전 (GC 발생)
+								// apVertex existVert = _transform_Mesh._mesh._vertexData.Find(delegate (apVertex a)
+								// {
+								// 	return a._uniqueID == modVertWeight._vertexUniqueID;
+								// });
+
+								// 변경 v1.5.0
+								s_FindVertex_ID = modVertWeight._vertexUniqueID;
+								apVertex existVert = meshVertList.Find(s_FindVertexByID_Func);
+
+								if (existVert != null)
+								{
+									//유효하다면 Link
+									modVertWeight.Link(this, _transform_Mesh._mesh, existVert);
+								}
+								else
+								{
+									//유효하지 않다면.. Unlink -> 나중에 삭제됨
+									modVertWeight._vertex = null;
+								}
 							}
-							else
-							{
-								//유효하지 않다면.. Unlink -> 나중에 삭제됨
-								modVertWeight._vertex = null;
-							}
+
+							//이제 존재하지 않는 Vertex에 대해서는 삭제
+							//이전 (GC 발생)
+							// _vertWeights.RemoveAll(delegate (apModifiedVertexWeight a)
+							// {
+							// 	return a._vertex == null;
+							// });
+
+							//변경 v1.5.0
+							_vertWeights.RemoveAll(s_FindNullModWeight_Func);
 						}
-
-						//이제 존재하지 않는 Vertex에 대해서는 삭제
-						_vertWeights.RemoveAll(delegate (apModifiedVertexWeight a)
+						else
 						{
-							return a._vertex == null;
-						});
+							if(_vertWeights == null)
+							{
+								_vertWeights = new List<apModifiedVertexWeight>();
+							}
+							_vertWeights.Clear();
+						}
+						
 
-						List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
+						
 						apVertex meshVert = null;
 
-						for (int i = 0; i < meshVertList.Count; i++)
+						for (int i = 0; i < nMeshVerts; i++)
 						{
 							meshVert = meshVertList[i];
 							//해당 Vertex가 있었는가
-							bool isLinked = _vertWeights.Exists(delegate (apModifiedVertexWeight a)
-							{
-								return a._vertex == meshVert;
-							});
+							//이전 (GC 발생)
+							// bool isLinked = _vertWeights.Exists(delegate (apModifiedVertexWeight a)
+							// {
+							// 	return a._vertex == meshVert;
+							// });
+							
+							//변경 v1.5.0
+							s_FindModVertWeight_Vertex = meshVert;
+							bool isLinked = _vertWeights.Exists(s_FindModVertWeightBySrcVertex_Func);
 
 							//없으면 추가
 							if (!isLinked)
@@ -1058,20 +1261,22 @@ namespace AnyPortrait
 						}
 
 						//Vertex Index에 맞게 정렬
-						_vertWeights.Sort(delegate (apModifiedVertexWeight a, apModifiedVertexWeight b)
-						{
-							return a._vertIndex - b._vertIndex;
-						});
+						//이전 (GC 발생)
+						// _vertWeights.Sort(delegate (apModifiedVertexWeight a, apModifiedVertexWeight b)
+						// {
+						// 	return a._vertIndex - b._vertIndex;
+						// });
+
+						//변경 v1.5.0
+						_vertWeights.Sort(s_SortVertWeight_Func);
 					}
 					else
 					{
 						//2. 아예 리스트가 없을 때
 						_vertWeights.Clear();
 
-						List<apVertex> meshVertList = _transform_Mesh._mesh._vertexData;
 						apVertex meshVert = null;
-
-						for (int i = 0; i < meshVertList.Count; i++)
+						for (int i = 0; i < nMeshVerts; i++)
 						{
 							meshVert = meshVertList[i];
 
@@ -1084,12 +1289,11 @@ namespace AnyPortrait
 							_vertWeights.Add(newVertWeight);//<<새로 추가할 리스트에 넣어준다.
 						}
 					}
-
 				}
 
-				for (int i = 0; i < _vertWeights.Count; i++)
+				nVertWeights = _vertWeights != null ? _vertWeights.Count : 0;
+				for (int i = 0; i < nVertWeights; i++)
 				{
-					//_vertWeights[i].RefreshModMeshAndWeights(this);//이전
 					_vertWeights[i].LinkModMeshAndWeights(this);
 				}
 			}
@@ -1099,6 +1303,27 @@ namespace AnyPortrait
 				RefreshVertexWeight_Physics(true);
 			}
 		}
+
+		private static Predicate<apModifiedVertexWeight> s_FindNullModWeight_Func = FUNC_FindNullModWeight;
+		private static bool FUNC_FindNullModWeight(apModifiedVertexWeight a)
+		{
+			return a._vertex == null;
+		}
+
+		private static apVertex s_FindModVertWeight_Vertex = null;
+		private static Predicate<apModifiedVertexWeight> s_FindModVertWeightBySrcVertex_Func = FUNC_FindModVertWeightBySrcVertex;
+		private static bool FUNC_FindModVertWeightBySrcVertex(apModifiedVertexWeight a)
+		{
+			return a._vertex == s_FindModVertWeight_Vertex;
+		}
+
+		private static Comparison<apModifiedVertexWeight> s_SortVertWeight_Func = FUNC_SortVertWeight;
+		private static int FUNC_SortVertWeight(apModifiedVertexWeight a, apModifiedVertexWeight b)
+		{
+			return a._vertIndex - b._vertIndex;
+		}
+
+
 
 		//Physics/Volume 모디파이어의 Refresh 함수
 		//Link 관련 내용은 제외한다. (20.3.30)
@@ -1112,11 +1337,16 @@ namespace AnyPortrait
 			}
 			//Debug.Log("<<< RefreshVertexWeights >>>");
 			if (_transform_Mesh._mesh != null)
-			{	
-				for (int i = 0; i < _vertWeights.Count; i++)
+			{
+				int nVertWeights = _vertWeights != null ? _vertWeights.Count : 0;
+				if(nVertWeights > 0)
 				{
-					_vertWeights[i].RefreshModMeshAndWeights_Check(this);
+					for (int i = 0; i < nVertWeights; i++)
+					{
+						_vertWeights[i].RefreshModMeshAndWeights_Check(this);
+					}
 				}
+				
 			}
 			//물리 관련 Refresh를 한번 더 한다.
 			if (isPhysics)
@@ -1132,14 +1362,22 @@ namespace AnyPortrait
 		/// </summary>
 		private void RefreshVertexWeight_Physics(bool isForceRefresh)
 		{
-			if (_transform_Mesh == null || _transform_Mesh._mesh == null || _vertWeights.Count == 0)
+			if (_transform_Mesh == null
+				|| _transform_Mesh._mesh == null)
 			{
 				return;
 			}
+
+			int nVertWeights = _vertWeights != null ? _vertWeights.Count : 0;
+			if(nVertWeights == 0)
+			{
+				return;
+			}
+
 			bool isAnyChanged = false;
 			apModifiedVertexWeight vertWeight = null;
 			float bias = 0.001f;
-			for (int iVW = 0; iVW < _vertWeights.Count; iVW++)
+			for (int iVW = 0; iVW < nVertWeights; iVW++)
 			{
 				vertWeight = _vertWeights[iVW];
 				bool isNextEnabled = false;
@@ -1163,12 +1401,12 @@ namespace AnyPortrait
 				return;
 			}
 
-			for (int iVW = 0; iVW < _vertWeights.Count; iVW++)
+			for (int iVW = 0; iVW < nVertWeights; iVW++)
 			{
 				vertWeight = _vertWeights[iVW];
 				vertWeight.RefreshModMeshAndWeights_Check(this);
 			}
-			for (int iVW = 0; iVW < _vertWeights.Count; iVW++)
+			for (int iVW = 0; iVW < nVertWeights; iVW++)
 			{
 				vertWeight = _vertWeights[iVW];
 				vertWeight.RefreshLinkedVertex();
@@ -1179,10 +1417,15 @@ namespace AnyPortrait
 		//------------------------------------------
 		public void ResetValues()
 		{
-			for (int i = 0; i < _vertices.Count; i++)
+			int nVerts = _vertices != null ? _vertices.Count : 0;
+			if(nVerts > 0)
 			{
-				_vertices[i]._deltaPos = Vector2.zero;
-			}			
+				for (int i = 0; i < nVerts; i++)
+				{
+					_vertices[i]._deltaPos = Vector2.zero;
+				}
+			}
+			
 			_transformMatrix.SetIdentity();
 			_meshColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
 			_isVisible = true;
@@ -1221,7 +1464,8 @@ namespace AnyPortrait
 									List<apModifiedVertex> selectedModVerts,
 									List<apModifiedPin> selectedModPins)
 		{
-			if(isResetVerts)
+			int nVerts = _vertices != null ? _vertices.Count : 0;
+			if(isResetVerts && nVerts > 0)
 			{
 				//버텍스 리셋
 				if(isSelectedVertPinOnly)
@@ -1230,7 +1474,7 @@ namespace AnyPortrait
 					if(selectedModVerts != null)
 					{
 						apModifiedVertex curModVert = null;
-						for (int i = 0; i < _vertices.Count; i++)
+						for (int i = 0; i < nVerts; i++)
 						{
 							curModVert = _vertices[i];
 							if(selectedModVerts.Contains(curModVert))
@@ -1243,7 +1487,7 @@ namespace AnyPortrait
 				else
 				{
 					//전체 버텍스를 리셋할 때
-					for (int i = 0; i < _vertices.Count; i++)
+					for (int i = 0; i < nVerts; i++)
 					{
 						_vertices[i]._deltaPos = Vector2.zero;
 					}			
@@ -1525,10 +1769,22 @@ namespace AnyPortrait
 			{
 				return null;
 			}
-			return _vertWeights.Find(delegate (apModifiedVertexWeight a)
-			{
-				return a._vertexUniqueID == vertex._uniqueID;
-			});
+			//이전 (GC 발생)
+			// return _vertWeights.Find(delegate (apModifiedVertexWeight a)
+			// {
+			// 	return a._vertexUniqueID == vertex._uniqueID;
+			// });
+
+			//변경 v1.5.0
+			s_FindVertWeight_ID = vertex._uniqueID;
+			return _vertWeights.Find(s_FindVertWeightByID_Func);
+		}
+
+		private static int s_FindVertWeight_ID = -1;
+		private static Predicate<apModifiedVertexWeight> s_FindVertWeightByID_Func = FUNC_FindVertWeightByID;
+		private static bool FUNC_FindVertWeightByID(apModifiedVertexWeight a)
+		{
+			return a._vertexUniqueID == s_FindVertWeight_ID;
 		}
 
 		// 비교 관련

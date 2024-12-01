@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -214,50 +214,125 @@ namespace AnyPortrait
 		}
 
 
-		public apVertex GetVertex(int index)
-		{
-			return _vertexData.Find(delegate (apVertex a)
-				{
-					return a._index == index;
-				});
-		}
+		//삭제 v1.5.0
+		//public apVertex GetVertex(int index)
+		//{
+		//	return _vertexData.Find(delegate (apVertex a)
+		//		{
+		//			return a._index == index;
+		//		});
+		//}
 
 		public apVertex GetVertexByUniqueID(int uniqueID)
 		{
-			return _vertexData.Find(delegate (apVertex a)
-				{
-					return a._uniqueID == uniqueID;
-				});
+			//이전 (GC 발생)
+			//return _vertexData.Find(delegate (apVertex a)
+			//	{
+			//		return a._uniqueID == uniqueID;
+			//	});
+
+			//변경 v1.5.0
+			s_GetVertex_ID = uniqueID;
+			return _vertexData.Find(s_GetVertexByID_Func);
 		}
+
+
+		private static int s_GetVertex_ID = -1;
+		private static Predicate<apVertex> s_GetVertexByID_Func = FUNC_GetVertexByID;
+		private static bool FUNC_GetVertexByID(apVertex a)
+		{
+			return a._uniqueID == s_GetVertex_ID;
+		}
+
+
 
 
 		public apMeshEdge GetEdgeByUniqueID(int vertUniqueID1, int vertUniqueID2)
 		{
-			return _edges.Find(delegate (apMeshEdge a)
-			{
-				return a.IsSameEdge(vertUniqueID1, vertUniqueID2);
-			});
+			//이전 (GC 발생)
+			//return _edges.Find(delegate (apMeshEdge a)
+			//{
+			//	return a.IsSameEdge(vertUniqueID1, vertUniqueID2);
+			//});
+
+			//변경 (v1.5.0)
+			s_GetEdge_VertID1 = vertUniqueID1;
+			s_GetEdge_VertID2 = vertUniqueID2;
+			return _edges.Find(s_GetEdgeByID_Func);
 		}
 
-		public void LinkEdgeAndVertex()
+		private static int s_GetEdge_VertID1 = -1;
+		private static int s_GetEdge_VertID2 = -1;
+		private static Predicate<apMeshEdge> s_GetEdgeByID_Func = FUNC_GetEdgeByID;
+		private static bool FUNC_GetEdgeByID(apMeshEdge a)
 		{
-			for (int iEdge = 0; iEdge < _edges.Count; iEdge++)
-			{
-				int vID1 = _edges[iEdge]._vertID_1;
-				int vID2 = _edges[iEdge]._vertID_2;
+			return a.IsSameEdge(s_GetEdge_VertID1, s_GetEdge_VertID2);
+		}
 
-				_edges[iEdge]._vert1 = GetVertexByUniqueID(vID1);
-				_edges[iEdge]._vert2 = GetVertexByUniqueID(vID2);
-			}
-			_edges.RemoveAll(delegate (apMeshEdge a)
-			{
-				return a._vert1 == null || a._vert2 == null;
-			});
 
-			for (int i = 0; i < _polygons.Count; i++)
+
+		public void LinkEdgeAndVertex()
+		{			
+			int nEdges = _edges != null ? _edges.Count : 0;
+			if(nEdges > 0)			
 			{
-				_polygons[i].Link(this);
+				apMeshEdge edge = null;
+				bool isValidVert1 = false;
+				bool isValidVert2 = false;
+
+				for (int iEdge = 0; iEdge < nEdges; iEdge++)
+				{
+					edge = _edges[iEdge];
+					int vID1 = edge._vertID_1;
+					int vID2 = edge._vertID_2;
+					
+					//v1.5.0, 무조건 vertex를 할당하지 말고 조건에 안맞는 경우만 할당하자
+					isValidVert1 = false;
+					isValidVert2 = false;
+					
+					if(edge._vert1 != null && edge._vert1._uniqueID == vID1)
+					{
+						isValidVert1 = true;						
+					}
+
+					if(edge._vert2 != null && edge._vert2._uniqueID == vID2)
+					{
+						isValidVert2 = true;						
+					}
+					
+					if(!isValidVert1)
+					{
+						edge._vert1 = GetVertexByUniqueID(vID1);
+					}
+					if(!isValidVert2)
+					{
+						edge._vert2 = GetVertexByUniqueID(vID2);
+					}
+				}
 			}
+			
+
+			//이전 (GC 발생)
+			//_edges.RemoveAll(delegate (apMeshEdge a)
+			//{
+			//	return a._vert1 == null || a._vert2 == null;
+			//});
+
+			//변경 (v1.5.0)
+			_edges.RemoveAll(s_RemoveInvalidEdges_Func);
+
+
+			int nPolygons = _polygons != null ? _polygons.Count : 0;
+			if(nPolygons > 0)
+			{
+				apMeshPolygon polygon = null;
+				for (int i = 0; i < nPolygons; i++)
+				{
+					polygon = _polygons[i];
+					polygon.Link(this);
+				}
+			}
+			
 
 
 			//추가 22.2.26 (1.4.0) : Pin도 링크하자
@@ -269,6 +344,13 @@ namespace AnyPortrait
 			_pinGroup.Link(_portrait, this);
 
 		}
+
+		private static Predicate<apMeshEdge> s_RemoveInvalidEdges_Func = FUNC_RemoveInvalidEdges;
+		private static bool FUNC_RemoveInvalidEdges(apMeshEdge a)
+		{
+			return a._vert1 == null || a._vert2 == null;
+		}
+
 
 
 
@@ -463,22 +545,38 @@ namespace AnyPortrait
 			return false;
 		}
 
-		private apMeshEdge GetEdge(int vertIndex1, int vertIndex2)
-		{
-			return _edges.Find(delegate (apMeshEdge a)
-			{
-				return (a._vert1._index == vertIndex1 && a._vert2._index == vertIndex2)
-				|| (a._vert2._index == vertIndex1 && a._vert1._index == vertIndex2);
-			});
-		}
+		//삭제 v1.5.0
+		//private apMeshEdge GetEdge(int vertIndex1, int vertIndex2)
+		//{
+		//	return _edges.Find(delegate (apMeshEdge a)
+		//	{
+		//		return (a._vert1._index == vertIndex1 && a._vert2._index == vertIndex2)
+		//		|| (a._vert2._index == vertIndex1 && a._vert1._index == vertIndex2);
+		//	});
+		//}
 
 		private apMeshEdge GetEdge(apVertex vert1, apVertex vert2)
 		{
-			return _edges.Find(delegate (apMeshEdge a)
-			{
-				return (a._vert1 == vert1 && a._vert2 == vert2)
-				|| (a._vert1 == vert2 && a._vert2 == vert1);
-			});
+			//이전 (GC 발생)
+			//return _edges.Find(delegate (apMeshEdge a)
+			//{
+			//	return (a._vert1 == vert1 && a._vert2 == vert2)
+			//	|| (a._vert1 == vert2 && a._vert2 == vert1);
+			//});
+
+			//변경 (v1.5.0)
+			s_GetEdge_Vert1 = vert1;
+			s_GetEdge_Vert2 = vert2;
+			return _edges.Find(s_GetEdgeByVerts_Func);
+		}
+
+		private static apVertex s_GetEdge_Vert1 = null;
+		private static apVertex s_GetEdge_Vert2 = null;
+		private static Predicate<apMeshEdge> s_GetEdgeByVerts_Func = FUNC_GetEdgeByVerts;
+		private static bool FUNC_GetEdgeByVerts(apMeshEdge a)
+		{
+			return (a._vert1 == s_GetEdge_Vert1 && a._vert2 == s_GetEdge_Vert2)
+			|| (a._vert1 == s_GetEdge_Vert2 && a._vert2 == s_GetEdge_Vert1);
 		}
 
 
@@ -2157,10 +2255,18 @@ namespace AnyPortrait
 				// 4-2) Next -> End에 해당하는 Edge가 있으면 => Polygon 완성
 				// 4-3) Next -> End에 해당하는 Edge가 없으면 Next Vert를 Start로 삼아서 2) 반복
 
-				apMeshEdge lastEdge = _edges.Find(delegate (apMeshEdge a)
-				{
-					return a.IsSameEdge(nextVert, endVert);
-				});
+				//이전 (GC 발생)
+				//apMeshEdge lastEdge = _edges.Find(delegate (apMeshEdge a)
+				//{
+				//	return a.IsSameEdge(nextVert, endVert);
+				//});
+
+				//변경 (v1.5.0)
+				s_GetLastEdge_Vert1 = nextVert;
+				s_GetLastEdge_Vert2 = endVert;
+				apMeshEdge lastEdge = _edges.Find(s_GetLastEdge_Func);
+
+
 
 				if (lastEdge != null)
 				{
@@ -2231,6 +2337,16 @@ namespace AnyPortrait
 			return results;
 
 		}
+
+
+		private static apVertex s_GetLastEdge_Vert1 = null;
+		private static apVertex s_GetLastEdge_Vert2 = null;
+		private static Predicate<apMeshEdge> s_GetLastEdge_Func = FUNC_GetLastEdge;
+		private static bool FUNC_GetLastEdge(apMeshEdge a)
+		{
+			return a.IsSameEdge(s_GetLastEdge_Vert1, s_GetLastEdge_Vert2);
+		}
+
 
 
 		#region [미사용 코드] Edge가 임시 변수일 때의 코드

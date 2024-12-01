@@ -110,11 +110,18 @@ namespace AnyPortrait
 
 
 		//추가 21.6.3 : 작업 편의를 위한 가이드라인들
-		[NonBackupField, SerializeField]
+		[NonBackupField, SerializeField, HideInInspector]
 		private apGuideLines _guideLines = new apGuideLines();
 		public apGuideLines GuideLines { get { if (_guideLines == null) { _guideLines = new apGuideLines(); } return _guideLines; } }
 
 
+		//추가 v1.5.0 : 컨트롤 파라미터 스냅샷
+		[NonBackupField, SerializeField, HideInInspector]
+		private apControlParamValueSnapShot _controlParamSnapShot = null;
+		public apControlParamValueSnapShot ControlParamSnapShot
+		{
+			get { if (_controlParamSnapShot == null) { _controlParamSnapShot = new apControlParamValueSnapShot(); } return _controlParamSnapShot; }
+		}
 
 
 		//Runtime 계열 Members
@@ -426,11 +433,26 @@ namespace AnyPortrait
 		{
 			None = 0,
 			Billboard = 1,
-			UpFixed = 2,
-			LocalUpFixed = 3
+			UpFixed = 2
 		}
 		[SerializeField, HideInInspector]
 		public BILLBOARD_TYPE _billboardType = BILLBOARD_TYPE.None;
+
+		//추가 v1.5.0 : 빌보드시 부모의 Rotation을 적용할지 여부.
+		public enum BILLBOARD_PARENT_ROTATION : int
+		{	
+			Ignore = 0,
+			//단순히 부모의 Rotation을 더한다. (Pitch-Yaw-Roll 처럼 동작한다.)
+			PitchYawRoll = 1,
+			//Up 벡터만 같도록 회전시킨다.
+			SyncUpVector = 2,
+		}
+
+		[SerializeField]
+		public BILLBOARD_PARENT_ROTATION _billboardParentRotation = BILLBOARD_PARENT_ROTATION.Ignore;
+
+
+
 		[NonSerialized]
 		public Transform _transform = null;
 
@@ -467,6 +489,25 @@ namespace AnyPortrait
 		[SerializeField]
 		public VR_RT_SIZE _vrRenderTextureSize = VR_RT_SIZE.ByMeshSettings;
 
+		//추가 v1.5.0 : 카메라 자동 갱신 모드
+		//기본적으론 현재 카메라가 유효하지 않게 된 경우만 갱신을 하는데, 옵션에 따라선 항상 모든 씬 카메라를 모니터링한다.
+		//이 옵션은 Bake로 설정할 수 있고, 스크립트로 변경 가능하다.
+		/// <summary>
+		/// How to check camera changes
+		/// </summary>
+		public enum CAMERA_CHECK_MODE : int
+		{
+			/// <summary>
+			/// Cameras are checked again only if the current camera becomes invalid. (default)
+			/// </summary>
+			CurrentCameraMainly = 0,
+			/// <summary>
+			/// Always check all cameras in the scene.
+			/// </summary>
+			AllSceneCameras = 1,
+		}
+		[SerializeField] public CAMERA_CHECK_MODE _cameraCheckMode = CAMERA_CHECK_MODE.CurrentCameraMainly;
+
 
 
 		//추가 19.9.24 : 빌보드인 경우, 카메라의 SortMode를 강제로 Orthographic 고정할 것인지 여부 (기본값은 True)
@@ -478,11 +519,28 @@ namespace AnyPortrait
 		{
 			Off = 0, On = 1, TwoSided = 2, ShadowsOnly = 3
 		}
-		[SerializeField]
-		public SHADOW_CASTING_MODE _meshShadowCastingMode = SHADOW_CASTING_MODE.Off;
-		[SerializeField]
-		public bool _meshReceiveShadow = false;
+		[SerializeField] public SHADOW_CASTING_MODE _meshShadowCastingMode = SHADOW_CASTING_MODE.Off;
+		[SerializeField] public bool _meshReceiveShadow = false;
 
+
+		//추가 v1.5.0 : Light Probe/Reflection Probe 옵션
+		public enum LIGHT_PROBE_USAGE : int
+		{
+			Off = 0,
+			BlendProbes = 1,
+			UseProxyVolume = 2,
+			CustomProvided = 3
+		}
+		[SerializeField] public LIGHT_PROBE_USAGE _meshLightProbeUsage = LIGHT_PROBE_USAGE.Off;//기본값은 끄기
+
+		public enum REFLECTION_PROBE_USAGE : int
+		{
+			Off = 0,
+			BlendProbes = 1,
+			BlendProbesAndSkybox = 2,
+			Simple = 3
+		}
+		[SerializeField] public REFLECTION_PROBE_USAGE _meshReflectionProbeUsage = REFLECTION_PROBE_USAGE.Off;
 
 
 		//Unity 2017 이상 : Timeline 연동 : 별도의 함수 없이 바로 시작
@@ -668,10 +726,24 @@ namespace AnyPortrait
 		[SerializeField] public bool _isTeleportCorrectionOption = false;
 		/// <summary>텔레포트인지 판정하는 이동 거리</summary>
 		[SerializeField] public float _teleportMovementDist = 10.0f;
+		
+		//[v1.5.0] 텔레포트 옵션에 크기/회전 추가하고, 각각 체크 여부 옵션가짐		
+		[SerializeField] public float _teleportRotationOffset = 30.0f;
+		[SerializeField] public float _teleportScaleOffset = 0.2f;
+		[SerializeField] public bool _teleportPositionEnabled = true;
+		[SerializeField] public bool _teleportRotationEnabled = true;
+		[SerializeField] public bool _teleportScaleEnabled = true;
 
 		[NonSerialized] private bool _isTeleportChecked = false;//이전에 텔레포트가 체크되었는가.
 		[NonSerialized] private Vector3 _teleportCheck_PosPrev = Vector3.zero;//이전 프레임에서의 텔레포트
+
+		//[v1.5.0]
+		[NonSerialized] private Vector3 _teleportCheck_ScalePrev = Vector3.one;//[v1.5.0] 텔레포트의 스케일 체크
+		[NonSerialized] private Vector3 _teleportCheck_RotationPrev = Vector3.zero;//[v1.5.0] 텔레포트의 회전 체크
+
+
 		[NonSerialized] public bool _isCurrentTeleporting = false;//현재 프레임에서 텔레포트가 발생했는가
+		[NonSerialized] private int _preventPhysicsCount = 0;//v1.4.9 : 특정 상황에서 일정 프레임동안 물리가 비활성
 
 		[NonSerialized] public bool _isPhysicsEnabledInPrevFrame = false;//이전 프레임에서 물리가 유효하게 동작했는가
 
@@ -690,6 +762,22 @@ namespace AnyPortrait
 			FixedFrames_Sync = 2,//동기화된 고정 프레임
 		}
 		[SerializeField] public MESH_UPDATE_FREQUENCY _meshRefreshRateOption = MESH_UPDATE_FREQUENCY.EveryFrames;
+
+		//추가 v1.4.9
+		//메시 갱신 빈도가 TimeScale에 영향을 받을지 여부
+		//- TimeScale에 영향을 받지 않으면 화면 전체 갱신 비율이 일관되게 낮아지는 효과
+		//- TimeScale에 영향르 받으면 가속된 애니메이션에 맞추어 갱신 FPS도 빨라져서 고정 FPS 애니메이션으로 보이는 효과
+		public enum FIXED_UPDATE_FPS_SCALE_OPTION : int
+		{
+			/// <summary>낮은 FPS로 업데이트될 때, FPS는 변하지 않는다. (기본값)</summary>
+			Fixed = 0,
+			/// <summary>낮은 FPS로 업데이트될 때, FPS가 TimeScale에 영향을 받는다.</summary>
+			ChangedByTimeScale = 1,
+		}
+		[SerializeField] public FIXED_UPDATE_FPS_SCALE_OPTION _meshRefreshFPSScaleOption = FIXED_UPDATE_FPS_SCALE_OPTION.Fixed;
+	
+
+
 		/// <summary>
 		/// 메시 갱신 방식이 고정 프레임인 경우의 FPS (최소 1, 최대 60)
 		/// </summary>
@@ -779,7 +867,37 @@ namespace AnyPortrait
 		[NonSerialized] private Vector3 _rootMotion_RequestedPos = Vector3.zero;
 
 
+		//추가 [v1.5.0] IK 처리 알고리즘 - 에디터/런타임 별개 지정 가능
+		public enum IK_METHOD : int
+		{
+			FABRIK = 0,//v1.5.0에서 추가된 버전. 꼬임 현상이 적고 속도가 빠르다.
+			CCD = 1,//이전 버전의 IK 처리 방식
+		}
 
+		//v1.5.0 추가 : IK 처리 방식 (런타임)
+		[SerializeField] public IK_METHOD _IKMethod = IK_METHOD.CCD;//기본은 이전 버전에서 제작한 사람들을 위해서 기본값은 CCD 유지. 대신 새로 생성할땐 FABRIK을 지정한다.
+
+		//v1.5.0 추가 : 보이지 않는 메시를 업데이트하기 여부 (물리 움직임의 일관성을 위함)
+		public enum INVISIBLE_MESH_UPDATE : int
+		{
+			//업데이트하지 않음 (기본값)
+			NotUpdate = 0,
+			//보이지 않더라도 업데이트를 한다. (물리 효과를 자주 사용하는 경우에 선택 가능)
+			Update = 1,
+		}
+		[SerializeField] public INVISIBLE_MESH_UPDATE _invisibleMeshUpdate = INVISIBLE_MESH_UPDATE.NotUpdate;
+
+
+		//v1.5.1 추가 : 클리핑 메시 업데이트 타이밍을 변경할 수 있다.
+		public enum CLIPPING_MESH_UPDATE : int
+		{
+			/// <summary>Update에서 처리한다. (기본값)</summary>
+			InUpdateRoutine = 0,
+			/// <summary>렌더링 직전에 처리한다. (비동기 시스템 대비용)</summary>
+			BeforeRendering = 1,
+		}
+
+		[SerializeField] public CLIPPING_MESH_UPDATE _clippingMeshUpdate = CLIPPING_MESH_UPDATE.InUpdateRoutine;
 
 
 
@@ -866,6 +984,49 @@ namespace AnyPortrait
 				apOptSharedMaterial.I.OnPortraitDestroyed(this);
 				_optBatchedMaterial.Clear(true);
 #if UNITY_EDITOR
+			}
+#endif
+		}
+
+
+
+
+		//Enable / Disable 이벤트
+		private void OnEnable()
+		{
+			//v1.5.1 : Clipping 메시 업데이트 (Unity 2017부터)
+#if UNITY_2017_1_OR_NEWER
+			if(_clippingMeshUpdate == CLIPPING_MESH_UPDATE.BeforeRendering)
+			{
+#if UNITY_EDITOR
+				if(Application.isPlaying)
+				{
+#endif
+					Application.onBeforeRender -= OnUpdateMaskMeshBeforeRendering;
+					Application.onBeforeRender += OnUpdateMaskMeshBeforeRendering;
+
+#if UNITY_EDITOR
+				}
+#endif
+			}
+#endif
+		}
+
+
+		private void OnDisable()
+		{
+			//v1.5.1 : Clipping 메시 업데이트 해제
+#if UNITY_2017_1_OR_NEWER
+			if(_clippingMeshUpdate == CLIPPING_MESH_UPDATE.BeforeRendering)
+			{
+#if UNITY_EDITOR
+				if(Application.isPlaying)
+				{
+#endif
+					Application.onBeforeRender -= OnUpdateMaskMeshBeforeRendering;
+#if UNITY_EDITOR
+				}
+#endif
 			}
 #endif
 		}
@@ -1337,7 +1498,16 @@ namespace AnyPortrait
 					else
 					{
 						//업데이트되지 않는 프레임이다.
+#if UNITY_2017_1_OR_NEWER
+						//2017부터는 옵션에 따라 Mask Mesh 갱신 여부 설정 (렌더링 전에 시행할 수도 있다.)
+						if(_clippingMeshUpdate == CLIPPING_MESH_UPDATE.InUpdateRoutine)
+						{
+							_curPlayingOptRootUnit.UpdateTransformsOnlyMaskMesh();
+						}
+#else
+						//2017 전에는 옵션 무관하게 여기서 바로 Mask Mesh 갱신
 						_curPlayingOptRootUnit.UpdateTransformsOnlyMaskMesh();
+#endif				
 					}
 				}
 			}
@@ -1425,7 +1595,21 @@ namespace AnyPortrait
 					case MESH_UPDATE_FREQUENCY.FixedFrames_NotSync:
 						{
 							// [ 메시 갱신 빈도가 "고정 프레임 + 동기화 안됨"인 경우
-							_tMeshRefreshTimer += Time.unscaledDeltaTime;
+
+							//[v1.4.8] 옵션에 따라 타이머가 다르게 동작한다.
+							if(_meshRefreshFPSScaleOption == FIXED_UPDATE_FPS_SCALE_OPTION.Fixed)
+							{
+								//고정이라면 > Unscaled Delta Time을 기준으로 타이머 게산
+								_tMeshRefreshTimer += Time.unscaledDeltaTime;
+							}
+							else
+							{
+								//v1.4.8에서 추가
+								//가변이라면 > CalculateDeltaTime() 함수에서 연산된 Delta Time을 이용하여 타이머 계산
+								_tMeshRefreshTimer += _tCurUpdate;
+							}
+
+							
 							int refreshFPS = Mathf.Clamp(_meshRefreshRateFPS, MESH_REFRESH_FPS_MIN, MESH_REFRESH_FPS_MAX);
 							float secPerFrame = 1.0f / (float)refreshFPS;
 							if(_tMeshRefreshTimer > secPerFrame)
@@ -1695,7 +1879,16 @@ namespace AnyPortrait
 								expectedVel.x = Mathf.Clamp(expectedVel.x, -100.0f, 100.0f);
 								expectedVel.y = Mathf.Clamp(expectedVel.y, -100.0f, 100.0f);
 
-								Vector2 curVelocity = _rootMotionValidated_BaseCom_Rigidbody2D.velocity;//현재 속도
+								
+								//현재 속도
+								//[v1.5.1] Unity 6용 분기
+#if UNITY_6000_0_OR_NEWER
+								Vector2 curVelocity = _rootMotionValidated_BaseCom_Rigidbody2D.linearVelocity;
+#else
+								Vector2 curVelocity = _rootMotionValidated_BaseCom_Rigidbody2D.velocity;
+#endif
+
+								
 
 								//[X 축 - 옵션에 따라 조정]
 								if(isVelocityCorrection_X)
@@ -1730,7 +1923,14 @@ namespace AnyPortrait
 								}
 
 								//속도 보정
+								//[v1.5.1] Unity 6용 분기
+#if UNITY_6000_0_OR_NEWER
+								_rootMotionValidated_BaseCom_Rigidbody2D.linearVelocity = curVelocity;
+#else
 								_rootMotionValidated_BaseCom_Rigidbody2D.velocity = curVelocity;
+#endif
+								
+								
 							}
 
 							//위치 이동
@@ -1753,7 +1953,14 @@ namespace AnyPortrait
 								expectedVel.y = Mathf.Clamp(expectedVel.y, -100.0f, 100.0f);
 								expectedVel.z = Mathf.Clamp(expectedVel.z, -100.0f, 100.0f);
 
-								Vector3 curVelocity = _rootMotionValidated_BaseCom_Rigidbody3D.velocity;//현재 속도
+								//현재 속도
+								//[v1.5.1] Unity 6용 분기
+#if UNITY_6000_0_OR_NEWER
+								Vector3 curVelocity = _rootMotionValidated_BaseCom_Rigidbody3D.linearVelocity;
+#else
+								Vector3 curVelocity = _rootMotionValidated_BaseCom_Rigidbody3D.velocity;
+#endif
+
 
 								//[X/Z 축 - 옵션에 따라 조정] > 3D에서는 Z 축도 X옵션에 포함시킨다.
 								if(isVelocityCorrection_X)
@@ -1790,7 +1997,13 @@ namespace AnyPortrait
 								}
 
 								//속도 보정
+								//[v1.5.1] Unity 6용 분기
+#if UNITY_6000_0_OR_NEWER
+								_rootMotionValidated_BaseCom_Rigidbody3D.linearVelocity = curVelocity;
+#else
 								_rootMotionValidated_BaseCom_Rigidbody3D.velocity = curVelocity;
+#endif
+								
 							}
 
 							//위치 이동
@@ -2066,7 +2279,16 @@ namespace AnyPortrait
 					}
 					else
 					{
+#if UNITY_2017_1_OR_NEWER
+						//2017부터는 옵션에 따라 Mask Mesh 갱신 여부 설정 (렌더링 전에 시행할 수도 있다.)
+						if(_clippingMeshUpdate == CLIPPING_MESH_UPDATE.InUpdateRoutine)
+						{
+							_curPlayingOptRootUnit.UpdateTransformsOnlyMaskMesh();
+						}
+#else
+						//2017 전에는 옵션 무관하게 여기서 바로 Mask Mesh 갱신
 						_curPlayingOptRootUnit.UpdateTransformsOnlyMaskMesh();
+#endif
 					}
 				}
 
@@ -2093,26 +2315,85 @@ namespace AnyPortrait
 				
 			}
 
-			if (_isTeleportCorrectionOption && _transform != null)
+			if(_preventPhysicsCount > 0)
+			{
+				//Debug.Log("물리 방지 카운트 [" + _preventPhysicsCount + "]");
+				_isCurrentTeleporting = true;
+				_preventPhysicsCount -= 1;
+			}
+
+			if (_isTeleportCorrectionOption
+				&& _transform != null
+				&& (_teleportPositionEnabled || _teleportRotationEnabled || _teleportScaleEnabled)//세부 옵션이 있다.
+				)
 			{
 				//텔레포트 보정 옵션이 켜져있고 텔레포트를 체크할 수 있는 상황이라면
-				if (_isTeleportChecked)
+				//v1.5.0 : 옵션에 따라 위치, 회전, 크기 비교를 한다.
+				if(_teleportPositionEnabled)
 				{
-					//이전의 위치가 저장되었다면
-					//체크를 하자
+					// [ 위치 비교 ]
 					Vector3 curPos = _transform.position;
-					if (Mathf.Abs(curPos.x - _teleportCheck_PosPrev.x) > _teleportMovementDist
-						|| Mathf.Abs(curPos.y - _teleportCheck_PosPrev.y) > _teleportMovementDist
-						|| Mathf.Abs(curPos.z - _teleportCheck_PosPrev.z) > _teleportMovementDist)
+
+					if (_isTeleportChecked)
 					{
-						//텔레포트가 발생했다!
-						_isCurrentTeleporting = true;
+						//이전의 위치가 저장되었다면
+						if (Mathf.Abs(curPos.x - _teleportCheck_PosPrev.x) > _teleportMovementDist
+							|| Mathf.Abs(curPos.y - _teleportCheck_PosPrev.y) > _teleportMovementDist
+							|| Mathf.Abs(curPos.z - _teleportCheck_PosPrev.z) > _teleportMovementDist)
+						{
+							//텔레포트가 발생했다!
+							_isCurrentTeleporting = true;
+						}
 					}
+
+					//위치 저장
+					_teleportCheck_PosPrev = _transform.position;
 				}
 
-				//현재 위치를 저장하자
+				if(_teleportRotationEnabled)
+				{
+					// [ 회전 각도 비교 ]
+					Vector3 curRotationAngle = _transform.rotation.eulerAngles;
+
+					if (_isTeleportChecked && !_isCurrentTeleporting)
+					{
+						//이전의 각도가 저장되었다면 + 이전 단계에서 아직 텔레포트가 발생하지 않았다면
+						if (Mathf.Abs(curRotationAngle.x - _teleportCheck_RotationPrev.x) > _teleportRotationOffset
+							|| Mathf.Abs(curRotationAngle.y - _teleportCheck_RotationPrev.y) > _teleportRotationOffset
+							|| Mathf.Abs(curRotationAngle.z - _teleportCheck_RotationPrev.z) > _teleportRotationOffset)
+						{
+							//텔레포트가 발생했다!
+							_isCurrentTeleporting = true;
+						}
+					}
+
+					//각도 저장
+					_teleportCheck_RotationPrev = curRotationAngle;
+				}
+
+				if(_teleportScaleEnabled)
+				{
+					// [ 크기 비교 ] - World이므로 Lossy Scale을 체크한다.
+					Vector3 curLossyScale = _transform.lossyScale;
+
+					if (_isTeleportChecked && !_isCurrentTeleporting)
+					{
+						//이전의 크기가 저장되었다면 + 이전 단계에서 아직 텔레포트가 발생하지 않았다면
+						if (Mathf.Abs(curLossyScale.x - _teleportCheck_ScalePrev.x) > _teleportScaleOffset
+							|| Mathf.Abs(curLossyScale.y - _teleportCheck_ScalePrev.y) > _teleportScaleOffset
+							|| Mathf.Abs(curLossyScale.z - _teleportCheck_ScalePrev.z) > _teleportScaleOffset)
+						{
+							//텔레포트가 발생했다!
+							_isCurrentTeleporting = true;
+						}
+					}
+
+					//크기 저장
+					_teleportCheck_ScalePrev = curLossyScale;
+				}
+
+				//한번이라도 이 코드가 수행되었다면 _teleportCheck_PosPrev 등의 변수에 값이 저장되었을 것이다.
 				_isTeleportChecked = true;
-				_teleportCheck_PosPrev = _transform.position;
 			}
 
 			//물리 연산 활성화 여부를 저장한다. (다음 프레임에서 써먹기 위함)
@@ -2231,6 +2512,24 @@ namespace AnyPortrait
 			_initStatus = INIT_STATUS.Ready;
 		}
 #endif
+
+
+
+		//v1.5.1 : 클리핑 마스크 업데이트를 렌더링 직전에 수행하기
+		private void OnUpdateMaskMeshBeforeRendering()
+		{
+			if(_initStatus != INIT_STATUS.Completed)
+			{
+				return;
+			}
+			if(_curPlayingOptRootUnit == null)
+			{
+				return;
+			}
+
+			_curPlayingOptRootUnit.UpdateTransformsOnlyMaskMesh();
+		}
+
 
 		// Event
 		//-----------------------------------------------------
@@ -2376,6 +2675,14 @@ namespace AnyPortrait
 				_transform = transform;
 			}
 			_posW_Prev1F = _transform.position;
+
+
+			//v1.4.9 : 루트유닛이 바뀌면 한번이 아닌 3번의 프레임동안 물리가 비활성화된다.
+			//1번으로는 물리가 이상하게 작동하는 듯
+			if(_isCurrentRootUnitChanged)
+			{
+				_preventPhysicsCount = 3;
+			}
 		}
 
 		/// <summary>
@@ -2448,7 +2755,12 @@ namespace AnyPortrait
 				}
 			}
 
-
+			//v1.4.9 : 루트유닛이 바뀌면 한번이 아닌 3번의 프레임동안 물리가 비활성화된다.
+			//1번으로는 물리가 이상하게 작동하는 듯
+			if(_isCurrentRootUnitChanged)
+			{
+				_preventPhysicsCount = 3;
+			}
 		}
 
 
@@ -2479,6 +2791,14 @@ namespace AnyPortrait
 
 			//v1.4.7 : 루트 유닛이 변경되는 것을 체크한다.
 			_isCurrentRootUnitChanged = prevRootUnit != _curPlayingOptRootUnit;
+
+
+			//v1.4.9 : 루트유닛이 바뀌면 한번이 아닌 3번의 프레임동안 물리가 비활성화된다.
+			//1번으로는 물리가 이상하게 작동하는 듯
+			if(_isCurrentRootUnitChanged)
+			{
+				_preventPhysicsCount = 3;
+			}
 
 			//애니메이션은 모두 중지한다.
 			StopAll();
@@ -2814,8 +3134,12 @@ namespace AnyPortrait
 			//추가 22.7.7 : 텔레포트 관련 변수 초기화
 			_isTeleportChecked = false;//이전에 텔레포트가 체크되었는가.
 			_teleportCheck_PosPrev = Vector3.zero;//이전 프레임에서의 텔레포트
+			_teleportCheck_ScalePrev = Vector3.one;//[v1.5.0] 텔레포트의 스케일 체크
+			_teleportCheck_RotationPrev = Vector3.zero;//[v1.5.0] 텔레포트의 회전 체크
+
 			_isCurrentTeleporting = false;//현재 프레임에서 텔레포트가 발생했는가
 			_isPhysicsEnabledInPrevFrame = false;//이전에 물리 연산이 있었는가
+			_curPlayingOptRootUnit = null;
 
 			//추가 v1.4.7 : 루트유닛 변경에 따른 물리 튀는 문제 변수 초기화
 			_isCurrentRootUnitChanged = false;
@@ -2831,7 +3155,7 @@ namespace AnyPortrait
 			CleanUpMeshesCommandBuffers();
 
 			//추가 : 초기화시 카메라 갱신 로직 필요
-			CheckAndRefreshCameras();
+			CheckAndRefreshCameras(false);//false : 여기서는 카메라 변경(초기화>발견)시에도 커맨드 버퍼를 갱신하지 않는다. ShowRootUnit에서 버퍼가 생성될 것임
 
 			ShowRootUnit();
 
@@ -3201,8 +3525,12 @@ namespace AnyPortrait
 			//추가 22.7.7 : 텔레포트 관련 변수 초기화
 			_isTeleportChecked = false;//이전에 텔레포트가 체크되었는가.
 			_teleportCheck_PosPrev = Vector3.zero;//이전 프레임에서의 텔레포트
+			_teleportCheck_ScalePrev = Vector3.one;//[v1.5.0] 텔레포트의 스케일 체크
+			_teleportCheck_RotationPrev = Vector3.zero;//[v1.5.0] 텔레포트의 회전 체크
+
 			_isCurrentTeleporting = false;//현재 프레임에서 텔레포트가 발생했는가
 			_isPhysicsEnabledInPrevFrame = false;//이전에 물리 연산이 있었는가
+			_curPlayingOptRootUnit = null;
 
 			//추가 v1.4.7 : 루트유닛 변경에 따른 물리 튀는 문제 변수 초기화
 			_isCurrentRootUnitChanged = false;
@@ -3226,7 +3554,7 @@ namespace AnyPortrait
 			//}
 
 			//추가 : 초기화시 카메라 갱신 로직 필요
-			CheckAndRefreshCameras();
+			CheckAndRefreshCameras(false);//false : 초기화시엔 카메라 변경(초기화>발견)시에도 커맨드 버퍼를 리셋하지 않는다.
 
 			ShowRootUnit();
 
@@ -3476,8 +3804,12 @@ namespace AnyPortrait
 			//추가 22.7.7 : 텔레포트 관련 변수 초기화
 			_isTeleportChecked = false;//이전에 텔레포트가 체크되었는가.
 			_teleportCheck_PosPrev = Vector3.zero;//이전 프레임에서의 텔레포트
+			_teleportCheck_ScalePrev = Vector3.one;//[v1.5.0] 텔레포트의 스케일 체크
+			_teleportCheck_RotationPrev = Vector3.zero;//[v1.5.0] 텔레포트의 회전 체크
+
 			_isCurrentTeleporting = false;//현재 프레임에서 텔레포트가 발생했는가
 			_isPhysicsEnabledInPrevFrame = false;//이전에 물리 연산이 있었는가.
+			_curPlayingOptRootUnit = null;
 
 			//추가 v1.4.7 : 루트유닛 변경에 따른 물리 튀는 문제 변수 초기화
 			_isCurrentRootUnitChanged = false;
@@ -3501,7 +3833,7 @@ namespace AnyPortrait
 			//}
 
 			//추가 : 초기화시 카메라 갱신 로직 필요
-			CheckAndRefreshCameras();
+			CheckAndRefreshCameras(false);//false : 초기화시엔 카메라 변경(초기화 > 발견)시에도 커맨드 버퍼를 초기화하지 않는다.
 
 			ShowRootUnit();
 
@@ -5652,7 +5984,7 @@ namespace AnyPortrait
 				position = optBone._parentOptTransform._rootUnit._transform.InverseTransformPoint(position);
 			}
 
-			return optBone.RequestIK(position, Mathf.Clamp01(weight), isContinuous);
+			return optBone.RequestIK(position, Mathf.Clamp01(weight), isContinuous, _IKMethod);
 		}
 
 		/// <summary>
@@ -5703,43 +6035,24 @@ namespace AnyPortrait
 
 			if (space == Space.World) { position = optBone._parentOptTransform._rootUnit._transform.InverseTransformPoint(position); }
 
-
-
-
-
 			//이전
 			//float angle = Mathf.Atan2(position.y - optBone.PositionWithouEditing.y, position.x - optBone.PositionWithouEditing.x) * Mathf.Rad2Deg;
 			//angle -= optBone._defaultMatrix._angleDeg;
 
-			//변경
+			//변경 > 이것도 미사용
 			//IKSpace로 옮겨야 한다.
-			Vector2 targetPos = optBone._worldMatrix.ConvertForIK(position);
-			Vector2 startPos = optBone._worldMatrix.ConvertForIK(optBone.PositionWithouEditing);
-			//Vector2 startPos = optBone.PositionWithouEditing;
+			//Vector2 targetPos = optBone._worldMatrix.ConvertForIK(position);
+			//Vector2 startPos = optBone._worldMatrix.ConvertForIK(optBone.PositionWithouEditing);
+			
+			//float angle = Mathf.Atan2(targetPos.y - startPos.y, targetPos.x - startPos.x) * Mathf.Rad2Deg;
 
-			float angle = Mathf.Atan2(targetPos.y - startPos.y, targetPos.x - startPos.x) * Mathf.Rad2Deg;
+			//이전 : IK Angle에 넣어서 계산하기
+			// > 문제 : v1.5.0에서는 중첩된 IK 연산이 지원되면서 연산 순서가 중요해졌는데, 이 함수는 IK 연산보다 먼저 실행되면서 IK 결과가 덮어 씌워지게 된다.
+			//optBone.AddIKAngle(apUtil.AngleTo180(angle), 0.0f, weight);
 
-			//if (optBone._worldMatrix.Scale.y < 0.0f)
-			//{
-			//	angle += 90.0f;
-			//}
-			//else
-			//{
-			//	angle -= 90.0f;
-			//}
-			//angle -= optBone._defaultMatrix._angleDeg;
-			//angle -= 90.0f;
-			//angle = apUtil.AngleTo180(angle);
-
-			//Debug.LogError("SetBoneLookAt [" + optBone._name + "] ");
-			//Debug.Log("- World : " + optBone.PositionWithouEditing + " > " + position);
-			//Debug.Log("- IKSpace : " + startPos + " > " + targetPos);
-			//Debug.Log("- Result Angle " + angle + "( Before " + optBone._worldMatrix.Angle_IKSpace + ")");
-
-
-			//optBone.SetRotation(angle, weight);//TODO : Rotation이 아니라 IK Angle을 직접 건드려야 한다.
-			//optBone.AddIKAngle(apUtil.AngleTo180(angle - optBone._worldMatrix.Angle), 0.0f, weight);
-			optBone.AddIKAngle(apUtil.AngleTo180(angle), 0.0f, weight);
+			//다시 변경 v1.5.0
+			//입력값 그대로 넣은 후에 다른 연산이 끝난 후 연산한다.
+			optBone.SetLookAtExternal(position, weight);
 			return true;
 		}
 
@@ -6249,10 +6562,22 @@ namespace AnyPortrait
 			}
 
 			//실패시
-			return _optTextureData.Find(delegate (apOptTextureData a)
-			{
-				return string.Equals(a._name, optTextureName);
-			});
+			//이전 (GC 발생)
+			//return _optTextureData.Find(delegate (apOptTextureData a)
+			//{
+			//	return string.Equals(a._name, optTextureName);
+			//});
+
+			//변경 v1.5.0
+			s_GetOptTextureData_TextureName = optTextureName;
+			return _optTextureData.Find(s_GetOptTextureDataByName_Func);
+		}
+
+		private static string s_GetOptTextureData_TextureName = null;
+		private static Predicate<apOptTextureData> s_GetOptTextureDataByName_Func = FUNC_GetOptTextureDataByName;
+		private static bool FUNC_GetOptTextureDataByName(apOptTextureData a)
+		{
+			return string.Equals(a._name, s_GetOptTextureData_TextureName);
 		}
 
 
@@ -6277,6 +6602,9 @@ namespace AnyPortrait
 					//그렇지 않은 경우 (대다수)
 					_optBatchedMaterial.ResetAllProperties();
 				}
+
+				//추가 v1.5.0 : Extra 설정도 초기화하기 위해서 텍스쳐의 Extra 참조 데이터도 초기화한다.
+				ResetTextureForExtraOptionAll();
 
 #if UNITY_EDITOR
 			}
@@ -6314,6 +6642,9 @@ namespace AnyPortrait
 
 				_optBatchedMaterial.ResetProperties(targetTextureData._textureID);
 
+				//추가 v1.5.0 : Extra 설정도 초기화하기 위해서 텍스쳐의 Extra 참조 데이터도 초기화한다.
+				targetTextureData.SetRuntimeTexture(null);
+
 #if UNITY_EDITOR
 			}
 			catch(Exception ex)
@@ -6324,6 +6655,48 @@ namespace AnyPortrait
 			}
 #endif
 		}
+
+
+
+		//[추가 v1.5.0]
+		//메시의 이미지는 아니지만 Extra 옵션에 의해서 참조될 수 있는 텍스쳐 데이터를 초기화한다.
+		/// <summary>
+		/// Reset texture data referenced by Extra Option to initial values.
+		/// </summary>
+		public void ResetTextureForExtraOptionAll()
+		{
+			int nTextures = _optTextureData != null ? _optTextureData.Count : 0;
+			if(nTextures == 0)
+			{
+				return;
+			}
+
+			for (int i = 0; i < nTextures; i++)
+			{
+				_optTextureData[i].SetRuntimeTexture(null);
+			}
+		}
+
+		/// <summary>
+		/// Reset specific texture data referenced by the Extra Option to its initial value.
+		/// </summary>
+		/// <param name="optTextureName">Target Texture Name (same as "Image" Name of AnyPortrait Editor)</param>
+		public void ResetTextureForExtraOptionByName(string optTextureName)
+		{
+			int nTextures = _optTextureData != null ? _optTextureData.Count : 0;
+			if(nTextures == 0)
+			{
+				return;
+			}
+
+			apOptTextureData targetTextureData = GetOptTextureData(optTextureName);
+			if(targetTextureData != null)
+			{
+				targetTextureData.SetRuntimeTexture(null);
+			}
+		}
+
+
 
 
 		/// <summary>
@@ -6353,6 +6726,11 @@ namespace AnyPortrait
 
 				//변경 12.13 : Batch Material쪽으로 변경
 				_optBatchedMaterial.SetMeshImageAll(targetTextureData._textureID, texture);
+
+
+				//[v1.5.0 변경]
+				//일반 이미지의 경우, Extra Option을 대비하기 위해서도 텍스쳐를 교체할 필요가 있다.
+				targetTextureData.SetRuntimeTexture(texture);
 
 #if UNITY_EDITOR
 			}
@@ -7044,10 +7422,13 @@ namespace AnyPortrait
 		/// </summary>
 		public void CleanUpMeshesCommandBuffers()
 		{
-			for (int i = 0; i < _optMeshes.Count; i++)
+			int nOptMeshes = _optMeshes != null ? _optMeshes.Count : 0;
+			if(nOptMeshes > 0)
 			{
-				//_optMeshes[i].CleanUpMaskParent();//이전
-				_optMeshes[i].ClearCameraData();//변경
+				for (int i = 0; i < nOptMeshes; i++)
+				{
+					_optMeshes[i].ClearCameraData();
+				}
 			}
 		}
 
@@ -7059,19 +7440,33 @@ namespace AnyPortrait
 		{
 			if (isOnlyActiveRootUnit)
 			{
-				//RootUnit 단위로 Reset을 한다.
-				for (int i = 0; i < _optRootUnitList.Count; i++)
+				// [ 활성화된 루트 유닛만 갱신 ]
+				//RootUnit 단위로 Reset을 한다. ]
+				int nRootUnits = _optRootUnitList != null ? _optRootUnitList.Count : 0;
+				apOptRootUnit rootUnit = null;
+				if(nRootUnits > 0)
 				{
-					ResetMeshCommandBuffer(_optRootUnitList[i], _optRootUnitList[i] == _curPlayingOptRootUnit);
+					for (int i = 0; i < nRootUnits; i++)
+					{
+						rootUnit = _optRootUnitList[i];
+						bool isRegistToCamera = (rootUnit == _curPlayingOptRootUnit);
+						ResetMeshCommandBuffer(rootUnit, isRegistToCamera);
+					}
 				}
+				
 			}
 			else
 			{
-				//전부다 체크
-				for (int i = 0; i < _optMeshes.Count; i++)
+				// [ 모든 Opt Mesh 대상으로 갱신 ]				
+				int nOptMeshes = _optMeshes != null ? _optMeshes.Count : 0;
+				if(nOptMeshes > 0)
 				{
-					_optMeshes[i].ResetMaskParentSetting();
+					for (int i = 0; i < nOptMeshes; i++)
+					{
+						_optMeshes[i].ResetMaskParentSetting();
+					}
 				}
+				
 			}
 
 		}
@@ -9753,489 +10148,31 @@ namespace AnyPortrait
 		/// </summary>
 		public void ReadyToEdit()
 		{
-			//이전
-			#region [미사용 코드]
-			////ID 리스트 일단 리셋
-			//ClearRegisteredUniqueIDs();
-
-			////컨트롤 / 컨트롤 파라미터 리셋
-			//_controller.Ready(this);
-			//_controller.SetDefaultAll();
-
-
-			//for (int iTexture = 0; iTexture < _textureData.Count; iTexture++)
-			//{
-			//	_textureData[iTexture].ReadyToEdit(this);
-			//}
-
-			//_meshes.RemoveAll(delegate(apMesh a)
-			//{
-			//	return a == null;
-			//}); 
-			#endregion
-
-			//변경
+			//ID리셋 / 텍스쳐 준비 / Null 메시 삭제
 			ReadyToEdit_Step1();
 
-
-			//이전
-			#region [미사용 코드]
-			//for (int iMeshes = 0; iMeshes < _meshes.Count; iMeshes++)
-			//{
-			//	//내부 MeshComponent들의 레퍼런스를 연결하자
-			//	_meshes[iMeshes].ReadyToEdit(this);
-
-			//	//텍스쳐를 연결하자
-			//	int textureID = -1;
-
-			//	//이전 코드
-			//	//if (_meshes[iMeshes]._textureData != null)
-			//	//{
-			//	//	textureID = _meshes[iMeshes]._textureData._uniqueID;
-			//	//	_meshes[iMeshes]._textureData = GetTexture(textureID);
-			//	//}
-
-			//	//변경 코드 4.1
-			//	if (!_meshes[iMeshes].IsTextureDataLinked)//연결이 안된 경우
-			//	{
-			//		textureID = _meshes[iMeshes].LinkedTextureDataID;
-			//		_meshes[iMeshes].SetTextureData(GetTexture(textureID));
-			//	}
-
-			//	_meshes[iMeshes].LinkEdgeAndVertex();
-			//} 
-			#endregion
-
-			//변경
+			//메시 준비
 			ReadyToEdit_Step2();
 
-
-			//이전
-			#region [미사용 코드]
-			//_meshGroups.RemoveAll(delegate(apMeshGroup a)
-			//{
-			//	return a == null;
-			//});
-
-
-			////메시 그룹도 비슷하게 해주자
-			////1. 메시/메시 그룹을 먼저 연결
-			////2. Parent-Child는 그 다음에 연결 (Child 먼저 / Parent는 나중에)
-			//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
-			//{
-			//	apMeshGroup meshGroup = _meshGroups[iMeshGroup];
-
-			//	meshGroup.Init(this);
-
-			//	//1. Mesh 연결
-			//	for (int iChild = 0; iChild < meshGroup._childMeshTransforms.Count; iChild++)
-			//	{
-			//		meshGroup._childMeshTransforms[iChild].RegistIDToPortrait(this);//추가 : ID를 알려주자
-
-			//		int childIndex = meshGroup._childMeshTransforms[iChild]._meshUniqueID;
-			//		if (childIndex >= 0)
-			//		{
-			//			apMesh existMesh = GetMesh(childIndex);
-			//			if (existMesh != null)
-			//			{
-			//				meshGroup._childMeshTransforms[iChild]._mesh = existMesh;
-			//			}
-			//			else
-			//			{
-			//				meshGroup._childMeshTransforms[iChild]._mesh = null;
-			//			}
-			//		}
-			//		else
-			//		{
-			//			meshGroup._childMeshTransforms[iChild]._mesh = null;
-			//		}
-			//	}
-
-			//	//1-2. MeshGroup 연결
-			//	for (int iChild = 0; iChild < meshGroup._childMeshGroupTransforms.Count; iChild++)
-			//	{
-			//		meshGroup._childMeshGroupTransforms[iChild].RegistIDToPortrait(this);//추가 : ID를 알려주자
-
-			//		int childIndex = meshGroup._childMeshGroupTransforms[iChild]._meshGroupUniqueID;
-			//		if (childIndex >= 0)
-			//		{
-			//			apMeshGroup existMeshGroup = GetMeshGroup(childIndex);
-			//			if (existMeshGroup != null)
-			//			{
-			//				meshGroup._childMeshGroupTransforms[iChild]._meshGroup = existMeshGroup;
-			//			}
-			//			else
-			//			{
-			//				meshGroup._childMeshGroupTransforms[iChild]._meshGroup = null;
-			//			}
-			//		}
-			//		else
-			//		{
-			//			meshGroup._childMeshGroupTransforms[iChild]._meshGroup = null;
-			//		}
-			//	}
-			//}
-
-			//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
-			//{
-			//	apMeshGroup meshGroup = _meshGroups[iMeshGroup];
-
-			//	//2. 하위 MeshGroup 연결
-			//	for (int iChild = 0; iChild < meshGroup._childMeshGroupTransforms.Count; iChild++)
-			//	{
-			//		apTransform_MeshGroup childMeshGroupTransform = meshGroup._childMeshGroupTransforms[iChild];
-
-			//		if (childMeshGroupTransform._meshGroupUniqueID >= 0)
-			//		{
-			//			apMeshGroup existMeshGroup = GetMeshGroup(childMeshGroupTransform._meshGroupUniqueID);
-			//			if (existMeshGroup != null)
-			//			{
-			//				childMeshGroupTransform._meshGroup = existMeshGroup;
-
-			//				childMeshGroupTransform._meshGroup._parentMeshGroupID = meshGroup._uniqueID;
-			//				childMeshGroupTransform._meshGroup._parentMeshGroup = meshGroup;
-
-
-			//			}
-			//			else
-			//			{
-			//				childMeshGroupTransform._meshGroup = null;
-			//			}
-			//		}
-			//		else
-			//		{
-			//			childMeshGroupTransform._meshGroup = null;
-			//		}
-			//	}
-
-			//	//다만, 없어진 Mesh Group은 정리해주자
-			//	meshGroup._childMeshTransforms.RemoveAll(delegate (apTransform_Mesh a)
-			//	{
-			//		return a._mesh == null;
-			//	});
-			//	meshGroup._childMeshGroupTransforms.RemoveAll(delegate (apTransform_MeshGroup a)
-			//	{
-			//		return a._meshGroup == null;
-			//	});
-			//} 
-			#endregion
-
-			//변경
+			//메시 그룹 기본 연결
 			ReadyToEdit_Step3();
 
-
-
-			//이전
-			#region [미사용 코드]
-			//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
-			//{
-			//	apMeshGroup meshGroup = _meshGroups[iMeshGroup];
-
-			//	//추가) Clipping Layer를 위해서 Mesh Transform끼리 연결을 해준다.
-			//	for (int iChild = 0; iChild < meshGroup._childMeshTransforms.Count; iChild++)
-			//	{
-			//		//연결하기 전에
-			//		//Child는 초기화해준다.
-			//		apTransform_Mesh meshTransform = meshGroup._childMeshTransforms[iChild];
-			//		meshTransform._isClipping_Child = false;
-			//		meshTransform._clipIndexFromParent = -1;
-			//		meshTransform._clipParentMeshTransform = null;
-
-			//		if (meshTransform._clipChildMeshes == null)
-			//		{
-			//			meshTransform._clipChildMeshes = new List<apTransform_Mesh.ClipMeshSet>();
-			//		}
-
-			//		meshTransform._clipChildMeshes.RemoveAll(delegate (apTransform_Mesh.ClipMeshSet a)
-			//		{
-			//			//조건에 맞지 않는 Clipping Child를 삭제한다.
-			//			//1. ID가 맞지 않다.
-			//			//2. MeshGroup에 존재하지 않다.
-			//			return a._transformID < 0 || (meshGroup.GetMeshTransform(a._transformID) == null);
-			//		});
-
-
-			//		//추가 19.6.9 : Material Set 연결
-			//		if (meshTransform._isUseDefaultMaterialSet)
-			//		{
-			//			//Default MatSet을 사용하는 경우
-			//			meshTransform._linkedMaterialSet = GetDefaultMaterialSet();
-			//			if (meshTransform._linkedMaterialSet != null)
-			//			{
-			//				meshTransform._materialSetID = meshTransform._linkedMaterialSet._uniqueID;
-			//			}
-			//		}
-			//		else
-			//		{
-			//			//별도의 MatSet을 설정한 경우
-			//			if (meshTransform._materialSetID >= 0)
-			//			{
-			//				meshTransform._linkedMaterialSet = GetMaterialSet(meshTransform._materialSetID);
-			//				if (meshTransform._linkedMaterialSet == null)
-			//				{
-			//					//존재하지 않는 Material Set
-			//					meshTransform._materialSetID = -1;
-			//					//Debug.LogError("Material Set 잘못 연결 후 초기화");
-			//				}
-			//			}
-			//			else
-			//			{
-			//				meshTransform._linkedMaterialSet = null;
-			//			}
-
-			//			//만약 연결이 안된다면 > Default를 찾아서 무조건 연결한다.
-			//			if (meshTransform._linkedMaterialSet == null)
-			//			{
-			//				meshTransform._linkedMaterialSet = GetDefaultMaterialSet();
-			//				if (meshTransform._linkedMaterialSet != null)
-			//				{
-			//					meshTransform._materialSetID = meshTransform._linkedMaterialSet._uniqueID;
-			//				}
-			//			}
-			//		}
-			//	}
-
-			//	for (int iChild = 0; iChild < meshGroup._childMeshTransforms.Count; iChild++)
-			//	{
-			//		apTransform_Mesh meshTransform = meshGroup._childMeshTransforms[iChild];
-			//		if (meshTransform._isClipping_Parent)
-			//		{
-			//			//최대 3개의 하위 Mesh를 검색해서 연결한다.
-			//			//찾은 이후엔 Sort를 해준다.
-
-			//			for (int iClip = 0; iClip < meshTransform._clipChildMeshes.Count; iClip++)
-			//			{
-			//				apTransform_Mesh.ClipMeshSet clipSet = meshTransform._clipChildMeshes[iClip];
-			//				int childMeshID = clipSet._transformID;
-			//				apTransform_Mesh childMeshTF = meshGroup.GetMeshTransform(childMeshID);
-			//				if (childMeshTF != null)
-			//				{
-			//					clipSet._meshTransform = childMeshTF;
-			//					clipSet._renderUnit = meshGroup.GetRenderUnit(childMeshTF);
-			//				}
-			//				else
-			//				{
-			//					clipSet._meshTransform = null;
-			//					clipSet._transformID = -1;
-			//					clipSet._renderUnit = null;
-			//				}
-			//			}
-
-			//			meshTransform._clipChildMeshes.RemoveAll(delegate(apTransform_Mesh.ClipMeshSet a)
-			//			{
-			//				return a._transformID < 0;
-			//			});
-
-
-			//		}
-			//		else
-			//		{
-			//			meshTransform._clipChildMeshes.Clear();
-
-
-			//		}
-
-			//		meshTransform.SortClipMeshTransforms();
-			//	}
-
-			//} 
-			#endregion
-
-			//변경
+			//클리핑 레이어 연결
 			ReadyToEdit_Step4();
 
-
-			//이전
-			#region [미사용 코드]
-			//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
-			//{
-			//	apMeshGroup meshGroup = _meshGroups[iMeshGroup];
-
-			//	//2. 상위 MeshGroup 연결
-			//	int parentUniqueID = meshGroup._parentMeshGroupID;
-			//	if (parentUniqueID >= 0)
-			//	{
-			//		meshGroup._parentMeshGroup = GetMeshGroup(parentUniqueID);
-			//		if (meshGroup._parentMeshGroup == null)
-			//		{
-			//			meshGroup._parentMeshGroupID = -1;
-			//		}
-			//	}
-			//	else
-			//	{
-			//		meshGroup._parentMeshGroup = null;
-			//	}
-			//}
-
-			////Bone 연결 
-			//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
-			//{
-			//	apMeshGroup meshGroup = _meshGroups[iMeshGroup];
-
-			//	//Root 리스트는 일단 날리고 BoneAll 리스트를 돌면서 필요한걸 넣어주자
-			//	//이후엔 Root -> Child 방식으로 순회
-			//	meshGroup._boneList_Root.Clear();
-			//	if (meshGroup._boneList_All != null)
-			//	{
-			//		for (int iBone = 0; iBone < meshGroup._boneList_All.Count; iBone++)
-			//		{
-			//			apBone bone = meshGroup._boneList_All[iBone];
-
-			//			//먼저 ID를 ID Manager에 등록한다.
-			//			RegistUniqueID(apIDManager.TARGET.Bone, bone._uniqueID);
-
-			//			apBone parentBone = null;
-			//			if (bone._parentBoneID >= 0)
-			//			{
-			//				parentBone = meshGroup.GetBone(bone._parentBoneID);
-			//			}
-
-			//			bone.Link(meshGroup, parentBone, this);
-
-			//			if (parentBone == null)
-			//			{
-			//				//Parent가 없다면 Root 본이다.
-			//				meshGroup._boneList_Root.Add(bone);
-			//			}
-			//		}
-
-			//		//추가 5.9 : Bone의 Check Validation 함수를 호출해야 한다.
-			//		for (int iBone = 0; iBone < meshGroup._boneList_All.Count; iBone++)
-			//		{
-			//			meshGroup._boneList_All[iBone].CheckIKControllerValidation();
-			//		}
-			//	}
-
-
-			//	int curBoneIndex = 0;
-			//	for (int iRoot = 0; iRoot < meshGroup._boneList_Root.Count; iRoot++)
-			//	{
-			//		apBone rootBone = meshGroup._boneList_Root[iRoot];
-			//		//TODO : MeshGroup이 Transform으로 있는 경우에 Transform Matrix를 넣어줘야한다.
-			//		rootBone.LinkRecursive(0);
-			//		curBoneIndex = rootBone.SetBoneIndex(curBoneIndex) + 1;
-			//	}
-			//}
-
-			////본 계층 / IK Chain도 다시 점검
-			//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
-			//{
-			//	apMeshGroup meshGroup = _meshGroups[iMeshGroup];
-
-			//} 
-			#endregion
-
-			//변경
+			//부모-자식 메시 그룹 연결 / Bone 준비
 			ReadyToEdit_Step5();
 
-			//이전
-			#region [미사용 코드]
-			////Render Unit도 체크해주자
-			//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
-			//{
-			//	apMeshGroup meshGroup = _meshGroups[iMeshGroup];
-			//	//meshGroup.SetAllRenderUnitForceUpdate();
-			//	meshGroup.RefreshForce();
-			//	meshGroup.SortRenderUnits(true);
-			//	meshGroup.SortBoneListByLevelAndDepth();
-			//} 
-			#endregion
-
-			//변경
+			//Render Unit 연결
 			ReadyToEdit_Step6();
 
-
-			//이전
-			#region [미사용 코드]
-			////Anim Clip 준비도 하자
-			//_animClips.RemoveAll(delegate(apAnimClip a)
-			//{
-			//	return 
-			//	a == null || //Null이거나
-			//	(a._targetMeshGroupID >= 0 && GetMeshGroup(a._targetMeshGroupID) == null);//TargetMeshGroup ID는 있는데, MeshGroup은 존재하지 않는 경우
-			//});
-
-			//for (int i = 0; i < _animClips.Count; i++)
-			//{
-			//	_animClips[i].LinkEditor(this);
-			//	_animClips[i].RemoveUnlinkedTimeline();
-			//} 
-			#endregion
-
-			//변경
+			//Anim Clip 준비
 			ReadyToEdit_Step7();
 
-			//이전
-			#region [미사용 코드]
-			////5. Modifier 세팅
-			//LinkAndRefreshInEditor(false, apUtil.LinkRefresh.Set_AllObjects(null)); 
-			#endregion
-
-
-
-			//변경
+			//모디파이어 준비 (LinkAndRefreshInEditor)
 			ReadyToEdit_Step8();
 
-			//이전
-			#region [미사용 코드]
-			//// Main MeshGroup 연결
-			//// 수정) "다중" MainMeshGroup으로 변경
-
-			//if (_mainMeshGroupList == null)		{ _mainMeshGroupList = new List<apMeshGroup>(); }
-			//else								{ _mainMeshGroupList.Clear(); }
-
-			//if (_mainMeshGroupIDList == null)
-			//{
-			//	_mainMeshGroupIDList = new List<int>();
-			//}
-
-
-			//for (int iMGID = 0; iMGID < _mainMeshGroupIDList.Count; iMGID++)
-			//{
-			//	int mainMeshGroupID = _mainMeshGroupIDList[iMGID];
-			//	bool isValidMeshGroupID = false;
-
-			//	if (mainMeshGroupID >= 0)
-			//	{
-			//		apMeshGroup mainMeshGroup = GetMeshGroup(mainMeshGroupID);
-			//		if (mainMeshGroup != null)
-			//		{
-			//			if (!_mainMeshGroupList.Contains(mainMeshGroup))
-			//			{
-			//				_mainMeshGroupList.Add(mainMeshGroup);
-			//				isValidMeshGroupID = true;
-			//			}
-			//		}
-			//	}
-			//	if (!isValidMeshGroupID)
-			//	{
-			//		_mainMeshGroupIDList[iMGID] = -1;//<<이건 삭제하자
-			//	}
-			//}
-
-			////일단 유효하지 못한 ID는 삭제하자
-			//_mainMeshGroupIDList.RemoveAll(delegate (int a)
-			//{
-			//	return a < 0;
-			//});
-
-
-			//_rootUnits.Clear();
-
-			//for (int iMainMesh = 0; iMainMesh < _mainMeshGroupList.Count; iMainMesh++)
-			//{
-			//	apMeshGroup meshGroup = _mainMeshGroupList[iMainMesh];
-
-			//	apRootUnit newRootUnit = new apRootUnit();
-
-			//	newRootUnit.SetPortrait(this);
-			//	newRootUnit.SetMeshGroup(meshGroup);
-
-			//	_rootUnits.Add(newRootUnit);
-			//} 
-			#endregion
-
-			//변경
+			//Root Unit 연결
 			ReadyToEdit_Step9();
 		}
 
@@ -10485,13 +10422,13 @@ namespace AnyPortrait
 							if (childMeshTF != null)
 							{
 								clipSet._meshTransform = childMeshTF;
-								clipSet._renderUnit = meshGroup.GetRenderUnit(childMeshTF);
+								//clipSet._renderUnit = meshGroup.GetRenderUnit(childMeshTF);//삭제 v1.5.0
 							}
 							else
 							{
 								clipSet._meshTransform = null;
 								clipSet._transformID = -1;
-								clipSet._renderUnit = null;
+								//clipSet._renderUnit = null;//삭제 v1.5.0
 							}
 						}
 
@@ -10717,7 +10654,7 @@ namespace AnyPortrait
 		public void ReadyToEdit_Step8()
 		{
 			//5. Modifier 세팅
-			LinkAndRefreshInEditor(false, apUtil.LinkRefresh.Set_AllObjects(null));
+			LinkAndRefreshInEditor(true, apUtil.LinkRefresh.Set_AllObjects(null));
 
 			
 		}
@@ -10802,14 +10739,14 @@ namespace AnyPortrait
 											//, apAnimClip targetAnimClip
 											)
 		{
+			//UnityEngine.Profiling.Profiler.BeginSample("AnyPortrait Link And Refresh In Editor");
 			
-			//Debug.Log("LinkAndRefreshInEditor (isResetLink : " + isResetLink + " / MeshGroup : " + (curSelectedMeshGroup != null) + " / AnimClip : " + (targetAnimClip != null) + ")");
-			//Debug.Log("LinkAndRefreshInEditor (isResetLink : " + isResetLink + " / Request : " + (linkRefreshRequest != null ? linkRefreshRequest.ToString() : "Null") + ")");
-
 			//4.1 리셋이 필요한지 검사한다.
 			//겸사겸사 불필요한 데이터도 삭제한다.
 
+			//UnityEngine.Profiling.Profiler.BeginSample("Link 1 - Remove null");
 			
+			//노트 v1.5.0 : 이 대리자 코드는 GC를 발생시키지 않는다.
 			int nTextureRemoved = _textureData.RemoveAll(delegate(apTextureData a)
 			{
 				return a == null;
@@ -10827,18 +10764,23 @@ namespace AnyPortrait
 				return a == null;
 			});
 
+			//UnityEngine.Profiling.Profiler.EndSample();
+
+
+			//UnityEngine.Profiling.Profiler.BeginSample("Link 2 - Remove Null Mod");
+
 			//TODO : 단순히 MeshGroup을 루틴을 돌아서 처리하면, Root Mesh Group보다 Child Mesh Group이 나중에 처리되서,
 			//Root Mesh Group의 Link가 다 끊기게 된다.
 			//따라서 Child 부터 처리를 해야한다.
 			//<REV_MG>
 			List<apMeshGroup> revMeshGroups = GetReverseMeshGroupList(_meshGroups);
+			int nRevMeshGroups = revMeshGroups != null ? revMeshGroups.Count : 0;
 
 			int nModRemoved = 0;
 
 			//<REV_MG>
 			apMeshGroup curMeshGroup = null;
-			//for (int i = 0; i < _meshGroups.Count; i++)
-			for (int i = 0; i < revMeshGroups.Count; i++)
+			for (int i = 0; i < nRevMeshGroups; i++)
 			{
 				curMeshGroup = revMeshGroups[i];
 
@@ -10867,7 +10809,7 @@ namespace AnyPortrait
 				}
 			}
 
-			
+			//UnityEngine.Profiling.Profiler.EndSample();
 			
 
 			//4.1 추가
@@ -10875,231 +10817,278 @@ namespace AnyPortrait
 			// ReadyToEdit와 같이 
 			if (isResetLink)
 			{
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 3 - Reset <체크>");
+
 				//변경. 이 코드를 isResetLink 안으로 이동시킴 (20.4.3)
 				//--------------------------------------
+
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 3-1");
+
 				_controller.Ready(this);
 
-				for (int iMesh = 0; iMesh < _meshes.Count; iMesh++)
+				int nMeshes = _meshes != null ? _meshes.Count : 0;
+				if(nMeshes > 0)
 				{
-					_meshes[iMesh].LinkEdgeAndVertex();
+					for (int iMesh = 0; iMesh < nMeshes; iMesh++)
+					{
+						_meshes[iMesh].LinkEdgeAndVertex();
+					}
 				}
+				
+
+				//UnityEngine.Profiling.Profiler.EndSample();
 				//--------------------------------------
 
+
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 3-2");
+
 				//텍스쳐도 리셋
-				for (int iTexture = 0; iTexture < _textureData.Count; iTexture++)
+				int nTextureData = _textureData != null ? _textureData.Count : 0;
+				if(nTextureData > 0)
 				{
-					_textureData[iTexture].ReadyToEdit(this);
-					//if(_textureData[iTexture]._image == null)//<<이게 Null이다.
-					//{
-					//	//Debug.LogError("?? Texture가 연결이 안되었는데용 [" + _textureData[iTexture]._name + "]");
-					//}
+					for (int iTexture = 0; iTexture < nTextureData; iTexture++)
+					{
+						_textureData[iTexture].ReadyToEdit(this);
+					}
 				}
-
 				
-				for (int iMeshes = 0; iMeshes < _meshes.Count; iMeshes++)
+
+				nMeshes = _meshes != null ? _meshes.Count : 0;
+				if(nMeshes > 0)
 				{
-					//내부 MeshComponent들의 레퍼런스를 연결하자
-					_meshes[iMeshes].ReadyToEdit(this);
+					apMesh mesh = null;
+					for (int iMeshes = 0; iMeshes < nMeshes; iMeshes++)
+					{
+						//내부 MeshComponent들의 레퍼런스를 연결하자
+						mesh = _meshes[iMeshes];
+						
+						mesh.ReadyToEdit(this);
 
-					//텍스쳐를 연결하자
-					int textureID = -1;
+						//텍스쳐를 연결하자
+						int textureID = mesh.LinkedTextureDataID;
+						mesh.SetTextureData(GetTexture(textureID));
 
-					//이전 코드
-					//if (_meshes[iMeshes]._textureData != null)
-					//{
-					//	textureID = _meshes[iMeshes]._textureData._uniqueID;
-					//	_meshes[iMeshes]._textureData = GetTexture(textureID);
-					//}
-					
-					//변경 코드 4.1
-					textureID = _meshes[iMeshes].LinkedTextureDataID;
-					_meshes[iMeshes].SetTextureData(GetTexture(textureID));
-
-					_meshes[iMeshes].LinkEdgeAndVertex();
+						mesh.LinkEdgeAndVertex();
+					}
 				}
+				
+
+
+				//UnityEngine.Profiling.Profiler.EndSample();
+
+
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 3-3");
 
 				//1. 메시/메시 그룹을 먼저 연결
 				//2. Parent-Child는 그 다음에 연결 (Child 먼저 / Parent는 나중에)
 				//<REV_MG>
-				//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)		
-				for (int iMeshGroup = 0; iMeshGroup < revMeshGroups.Count; iMeshGroup++)
+				for (int iMeshGroup = 0; iMeshGroup < nRevMeshGroups; iMeshGroup++)
 				{
-					//apMeshGroup meshGroup = _meshGroups[iMeshGroup];
 					apMeshGroup meshGroup = revMeshGroups[iMeshGroup];
 
 					meshGroup.Init(this);
 
-					meshGroup._childMeshTransforms.RemoveAll(delegate(apTransform_Mesh a)
+					int nChildMeshTFs = meshGroup._childMeshTransforms != null ? meshGroup._childMeshTransforms.Count : 0;
+					if(nChildMeshTFs > 0)
 					{
-						return a == null;
-					});
-
-					//1. Mesh 연결 + Clipping 연결
-					apTransform_Mesh meshTransform = null;
-					for (int iChild = 0; iChild < meshGroup._childMeshTransforms.Count; iChild++)
-					{
-						meshTransform = meshGroup._childMeshTransforms[iChild];
-						meshTransform.RegistIDToPortrait(this);//추가 : ID를 알려주자
-
-						int childIndex = meshTransform._meshUniqueID;
-						if (childIndex >= 0)
+						meshGroup._childMeshTransforms.RemoveAll(delegate(apTransform_Mesh a)
 						{
-							if (meshTransform._mesh == null)
+							return a == null;
+						});
+
+						//개수 변경
+						nChildMeshTFs = meshGroup._childMeshTransforms != null ? meshGroup._childMeshTransforms.Count : 0;
+
+						//1. Mesh 연결 + Clipping 연결
+						apTransform_Mesh meshTransform = null;
+						for (int iChild = 0; iChild < nChildMeshTFs; iChild++)
+						{
+							meshTransform = meshGroup._childMeshTransforms[iChild];
+							meshTransform.RegistIDToPortrait(this);//추가 : ID를 알려주자
+
+							int meshID = meshTransform._meshUniqueID;
+							if (meshID >= 0)
 							{
-								//Mesh가 연결 안된 경우
-								apMesh existMesh = GetMesh(childIndex);
-								if (existMesh != null)
+								if (meshTransform._mesh == null)
 								{
-									meshTransform._mesh = existMesh;
+									//Mesh가 연결 안된 경우
+									apMesh existMesh = GetMesh(meshID);
+									if (existMesh != null)
+									{
+										meshTransform._mesh = existMesh;
+									}
+									else
+									{
+										meshTransform._mesh = null;
+									}
 								}
-								else
+
+								//--------------
+								//추가) Clipping Layer를 위해서 Mesh Transform끼리 연결을 해준다.
+
+								
+								if (meshTransform._clipChildMeshes == null)
 								{
-									meshTransform._mesh = null;
-									//Debug.LogError("Mesh가 없는 MeshTransform 발견 : " + meshTransform._nickName);
+									meshTransform._clipChildMeshes = new List<apTransform_Mesh.ClipMeshSet>();
 								}
-							}
 
-							//--------------
-							//추가) Clipping Layer를 위해서 Mesh Transform끼리 연결을 해준다.
-
-							
-							if (meshTransform._clipChildMeshes == null)
-							{
-								meshTransform._clipChildMeshes = new List<apTransform_Mesh.ClipMeshSet>();
-							}
-
-							meshTransform._clipChildMeshes.RemoveAll(delegate (apTransform_Mesh.ClipMeshSet a)
-							{
-								//조건에 맞지 않는 Clipping Child를 삭제한다.
-								//1. ID가 맞지 않다.
-								//2. MeshGroup에 존재하지 않다.
-								return a._transformID < 0 || (meshGroup.GetMeshTransform(a._transformID) == null);
-							});
-							
-							//-------------
-						}
-						else
-						{
-							meshGroup._childMeshTransforms[iChild]._mesh = null;
-							//Debug.LogError("Mesh ID가 유효하지 않은 MeshTransform 발견 : " + meshGroup._childMeshTransforms[iChild]._nickName);
-						}
-
-						//추가 19.6.9 : Material Set 연결
-						if (meshTransform._isUseDefaultMaterialSet)
-						{
-							//기본값의 MatSet을 사용하자.
-							meshTransform._linkedMaterialSet = GetDefaultMaterialSet();
-							if(meshTransform._linkedMaterialSet != null)
-							{
-								//ID도 바꿔주자.
-								meshTransform._materialSetID = meshTransform._linkedMaterialSet._uniqueID;
-							}
-						}
-						else
-						{
-							if (meshTransform._materialSetID >= 0)
-							{
-								meshTransform._linkedMaterialSet = GetMaterialSet(meshTransform._materialSetID);
-								if (meshTransform._linkedMaterialSet == null)
+								meshTransform._clipChildMeshes.RemoveAll(delegate (apTransform_Mesh.ClipMeshSet a)
 								{
-									//존재하지 않는 Material Set
-									meshTransform._materialSetID = -1;
+									//조건에 맞지 않는 Clipping Child를 삭제한다.
+									//1. ID가 맞지 않다.
+									//2. MeshGroup에 존재하지 않다.
+									return a._transformID < 0 || (meshGroup.GetMeshTransform(a._transformID) == null);
+								});
+								
+								//-------------
+							}
+							else
+							{
+								//Mesh ID가 유효하지 않은 MeshTransform
+								meshTransform._mesh = null;
+							}
+
+							//추가 19.6.9 : Material Set 연결
+							if (meshTransform._isUseDefaultMaterialSet)
+							{
+								//기본값의 MatSet을 사용하자.
+								meshTransform._linkedMaterialSet = GetDefaultMaterialSet();
+								if(meshTransform._linkedMaterialSet != null)
+								{
+									//ID도 바꿔주자.
+									meshTransform._materialSetID = meshTransform._linkedMaterialSet._uniqueID;
 								}
 							}
 							else
 							{
-								meshTransform._linkedMaterialSet = null;
+								if (meshTransform._materialSetID >= 0)
+								{
+									meshTransform._linkedMaterialSet = GetMaterialSet(meshTransform._materialSetID);
+									if (meshTransform._linkedMaterialSet == null)
+									{
+										//존재하지 않는 Material Set
+										meshTransform._materialSetID = -1;
+									}
+								}
+								else
+								{
+									meshTransform._linkedMaterialSet = null;
+								}
 							}
 						}
-						
 					}
+
+					
 
 					
 
 
 					//1-2. MeshGroup 연결
-
-					meshGroup._childMeshGroupTransforms.RemoveAll(delegate(apTransform_MeshGroup a)
+					int nChildMeshGroupTFs = meshGroup._childMeshGroupTransforms != null ? meshGroup._childMeshGroupTransforms.Count : 0;
+					if(nChildMeshGroupTFs > 0)
 					{
-						return a == null;
-					});
+						meshGroup._childMeshGroupTransforms.RemoveAll(delegate(apTransform_MeshGroup a)
+						{
+							return a == null;
+						});
 
-					for (int iChild = 0; iChild < meshGroup._childMeshGroupTransforms.Count; iChild++)
-					{
-						meshGroup._childMeshGroupTransforms[iChild].RegistIDToPortrait(this);//추가 : ID를 알려주자
+						nChildMeshGroupTFs = meshGroup._childMeshGroupTransforms != null ? meshGroup._childMeshGroupTransforms.Count : 0;
 
-						int childIndex = meshGroup._childMeshGroupTransforms[iChild]._meshGroupUniqueID;
-						if (childIndex >= 0)
-						{	
-							if (meshGroup._childMeshGroupTransforms[iChild]._meshGroup == null)
-							{
-								//MeshGroup이 연결이 안된 경우
-								apMeshGroup existMeshGroup = GetMeshGroup(childIndex);
-								if (existMeshGroup != null)
+						apTransform_MeshGroup meshGroupTF = null;
+
+						for (int iChild = 0; iChild < nChildMeshGroupTFs; iChild++)
+						{
+							meshGroupTF = meshGroup._childMeshGroupTransforms[iChild];
+							meshGroupTF.RegistIDToPortrait(this);//추가 : ID를 알려주자
+
+							int meshGroupID = meshGroupTF._meshGroupUniqueID;
+							if (meshGroupID >= 0)
+							{	
+								if (meshGroupTF._meshGroup == null)
 								{
-									meshGroup._childMeshGroupTransforms[iChild]._meshGroup = existMeshGroup;
-								}
-								else
-								{
-									meshGroup._childMeshGroupTransforms[iChild]._meshGroup = null;
-									//Debug.LogError("MeshGroup이 없는 MeshGroupTransform 발견 : " + meshGroup._childMeshGroupTransforms[iChild]._nickName);
+									//MeshGroup이 연결이 안된 경우
+									apMeshGroup existMeshGroup = GetMeshGroup(meshGroupID);
+									if (existMeshGroup != null)
+									{
+										meshGroupTF._meshGroup = existMeshGroup;
+									}
+									else
+									{
+										meshGroupTF._meshGroup = null;
+										//Debug.LogError("MeshGroup이 없는 MeshGroupTransform 발견 : " + meshGroup._childMeshGroupTransforms[iChild]._nickName);
+									}
 								}
 							}
-						}
-						else
-						{
-							meshGroup._childMeshGroupTransforms[iChild]._meshGroup = null;
-							//Debug.LogError("MeshGroup ID가 유효하지 않은 MeshGroupTransform 발견 : " + meshGroup._childMeshGroupTransforms[iChild]._nickName);
-						}
+							else
+							{
+								//MeshGroup ID가 유효하지 않은 MeshGroupTransform 발견
+								meshGroupTF._meshGroup = null;
+							}
+						}						
 					}
 				}
 
+				//UnityEngine.Profiling.Profiler.EndSample();
+
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 3-4");
+
 				//<REV_MG>
-				//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
-				for (int iMeshGroup = 0; iMeshGroup < revMeshGroups.Count; iMeshGroup++)
+				for (int iMeshGroup = 0; iMeshGroup < nRevMeshGroups; iMeshGroup++)
 				{
-					//apMeshGroup meshGroup = _meshGroups[iMeshGroup];
 					apMeshGroup meshGroup = revMeshGroups[iMeshGroup];
 
 					//2. 하위 MeshGroup 연결
-					for (int iChild = 0; iChild < meshGroup._childMeshGroupTransforms.Count; iChild++)
+					int nChildMeshGroupTFs = meshGroup._childMeshGroupTransforms != null ? meshGroup._childMeshGroupTransforms.Count : 0;
+					if(nChildMeshGroupTFs > 0)
 					{
-						apTransform_MeshGroup childMeshGroupTransform = meshGroup._childMeshGroupTransforms[iChild];
-
-						if (childMeshGroupTransform._meshGroupUniqueID >= 0)
+						for (int iChild = 0; iChild < nChildMeshGroupTFs; iChild++)
 						{
-							apMeshGroup existMeshGroup = GetMeshGroup(childMeshGroupTransform._meshGroupUniqueID);
-							if (existMeshGroup != null)
-							{
-								childMeshGroupTransform._meshGroup = existMeshGroup;
+							apTransform_MeshGroup childMeshGroupTransform = meshGroup._childMeshGroupTransforms[iChild];
 
-								childMeshGroupTransform._meshGroup._parentMeshGroupID = meshGroup._uniqueID;
-								childMeshGroupTransform._meshGroup._parentMeshGroup = meshGroup;
+							if (childMeshGroupTransform._meshGroupUniqueID >= 0)
+							{
+								apMeshGroup existMeshGroup = GetMeshGroup(childMeshGroupTransform._meshGroupUniqueID);
+								if (existMeshGroup != null)
+								{
+									childMeshGroupTransform._meshGroup = existMeshGroup;
+
+									childMeshGroupTransform._meshGroup._parentMeshGroupID = meshGroup._uniqueID;
+									childMeshGroupTransform._meshGroup._parentMeshGroup = meshGroup;
+								}
+								else
+								{
+									childMeshGroupTransform._meshGroup = null;
+								}
 							}
 							else
 							{
 								childMeshGroupTransform._meshGroup = null;
 							}
 						}
-						else
-						{
-							childMeshGroupTransform._meshGroup = null;
-						}
 					}
+					
 
 					//다만, 없어진 Mesh Group은 정리해주자
-					meshGroup._childMeshTransforms.RemoveAll(delegate (apTransform_Mesh a)
+					int nChildMeshTFs = meshGroup._childMeshTransforms != null ? meshGroup._childMeshTransforms.Count : 0;
+					if(nChildMeshTFs > 0)
 					{
-						return a._mesh == null;
-					});
-					meshGroup._childMeshGroupTransforms.RemoveAll(delegate (apTransform_MeshGroup a)
+						meshGroup._childMeshTransforms.RemoveAll(delegate (apTransform_Mesh a)
+						{
+							return a._mesh == null;
+						});
+					}
+
+					nChildMeshGroupTFs = meshGroup._childMeshGroupTransforms != null ? meshGroup._childMeshGroupTransforms.Count : 0;					
+					if(nChildMeshGroupTFs > 0)
 					{
-						return a._meshGroup == null;
-					});
-					
+						meshGroup._childMeshGroupTransforms.RemoveAll(delegate (apTransform_MeshGroup a)
+						{
+							return a._meshGroup == null;
+						});
+					}
 				}
 
-
+				//UnityEngine.Profiling.Profiler.EndSample();
 
 				//Link에서 SortRenderUnit 변경사항 (v1.4.2)
 				//이전 : SortRenderUnit을 호출하여 RenderUnit / TF의 Depth를 갱신한 후 Clipping, RenderUnit 리셋과 같은 후속 처리를 한다.
@@ -11112,11 +11101,12 @@ namespace AnyPortrait
 
 				//참고 REV_MG는 Child > Root 순서로 호출되는 리스트다.
 
+
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 3-5");
+
 				//<REV_MG>
-				//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
-				for (int iMeshGroup = 0; iMeshGroup < revMeshGroups.Count; iMeshGroup++)
+				for (int iMeshGroup = 0; iMeshGroup < nRevMeshGroups; iMeshGroup++)
 				{
-					//apMeshGroup meshGroup = _meshGroups[iMeshGroup];
 					apMeshGroup meshGroup = revMeshGroups[iMeshGroup];
 
 					//기존 렌더유닛 검토 및 다시 생성) (위치 변경 v1.4.2)
@@ -11128,46 +11118,57 @@ namespace AnyPortrait
 
 					//추가 : Clipping 후속 처리를 한다.
 					apTransform_Mesh meshTransform = null;
-					for (int iChild = 0; iChild < meshGroup._childMeshTransforms.Count; iChild++)
+					int nChildMeshTFs = meshGroup._childMeshTransforms != null ? meshGroup._childMeshTransforms.Count : 0;
+					if(nChildMeshTFs > 0)
 					{
-						meshTransform = meshGroup._childMeshTransforms[iChild];
-
-						if (meshTransform._isClipping_Parent)
+						for (int iChild = 0; iChild < nChildMeshTFs; iChild++)
 						{
-							//Clipped Mesh를 검색해서 연결한다.
-							//찾은 이후엔 Sort를 해준다.
+							meshTransform = meshGroup._childMeshTransforms[iChild];
 
-							for (int iClip = 0; iClip < meshTransform._clipChildMeshes.Count; iClip++)
+							if (meshTransform._isClipping_Parent)
 							{
-								apTransform_Mesh.ClipMeshSet clipSet = meshTransform._clipChildMeshes[iClip];
-								int childMeshID = clipSet._transformID;
-								apTransform_Mesh childMeshTF = meshGroup.GetMeshTransform(childMeshID);
-								if (childMeshTF != null)
+								//Clipped Mesh를 검색해서 연결한다.
+								//찾은 이후엔 Sort를 해준다.
+								int nClipMeshes = meshTransform._clipChildMeshes != null ? meshTransform._clipChildMeshes.Count : 0;
+								if(nClipMeshes > 0)
 								{
-									clipSet._meshTransform = childMeshTF;
-									clipSet._renderUnit = meshGroup.GetRenderUnit(childMeshTF);
-								}
-								else
-								{
-									clipSet._meshTransform = null;
-									clipSet._transformID = -1;
-									clipSet._renderUnit = null;
+									for (int iClip = 0; iClip < nClipMeshes; iClip++)
+									{
+										apTransform_Mesh.ClipMeshSet clipSet = meshTransform._clipChildMeshes[iClip];
+										int childMeshID = clipSet._transformID;
+										apTransform_Mesh childMeshTF = meshGroup.GetMeshTransform(childMeshID);
+										if (childMeshTF != null)
+										{
+											clipSet._meshTransform = childMeshTF;
+											//clipSet._renderUnit = meshGroup.GetRenderUnit(childMeshTF);//삭제 v1.5.0
+										}
+										else
+										{
+											clipSet._meshTransform = null;
+											clipSet._transformID = -1;
+											//clipSet._renderUnit = null;//삭제 v1.5.0
+										}
+									}
+
+									meshTransform._clipChildMeshes.RemoveAll(delegate (apTransform_Mesh.ClipMeshSet a)
+									{
+										return a._transformID < 0;
+									});
 								}
 							}
-
-							meshTransform._clipChildMeshes.RemoveAll(delegate (apTransform_Mesh.ClipMeshSet a)
+							else
 							{
-								return a._transformID < 0;
-							});
+								if(meshTransform._clipChildMeshes == null)
+								{
+									meshTransform._clipChildMeshes = new List<apTransform_Mesh.ClipMeshSet>();
+								}
+								meshTransform._clipChildMeshes.Clear();//<<이건 일단 초기화 하지말자
+							}
 
+							meshTransform.SortClipMeshTransforms();
 						}
-						else
-						{
-							meshTransform._clipChildMeshes.Clear();//<<이건 일단 초기화 하지말자
-						}
-
-						meshTransform.SortClipMeshTransforms();
 					}
+					
 
 
 					//이전 >> 위치가 변경되었다 [v1.4.2]
@@ -11180,47 +11181,58 @@ namespace AnyPortrait
 					{
 						meshGroup._rootRenderUnit.ReadyToUpdate();
 					}
-					else
-					{
-						//Debug.LogError("Root Rendr Unit이 없다.");
-					}
-
-					
 				}
 
+
+				//UnityEngine.Profiling.Profiler.EndSample();
+
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 3-6");
 
 				//추가 [v1.4.2] Root Mesh Group에 대해 Depth를 갱신하는 Sorting을 여기서 하자
 				//Root Mesh Group만 체크하므로 [REV_MG]를 따르지 않는다.
-				for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
+				int nMeshGroups = _meshGroups != null ? _meshGroups.Count : 0;
+				if(nMeshGroups > 0)
 				{
-					apMeshGroup meshGroup = _meshGroups[iMeshGroup];
-					if(meshGroup._parentMeshGroup == null && meshGroup._parentMeshGroupID < 0)
+					for (int iMeshGroup = 0; iMeshGroup < nMeshGroups; iMeshGroup++)
 					{
-						//Root MeshGroup인 경우
-						//Sort 후 Depth 할당까지 하자
-						meshGroup.SortRenderUnits(true, apMeshGroup.DEPTH_ASSIGN.AssignDepth);
+						apMeshGroup meshGroup = _meshGroups[iMeshGroup];
+						if(meshGroup._parentMeshGroup == null && meshGroup._parentMeshGroupID < 0)
+						{
+							//Root MeshGroup인 경우
+							//Sort 후 Depth 할당까지 하자
+							meshGroup.SortRenderUnits(true, apMeshGroup.DEPTH_ASSIGN.AssignDepth);
+						}
 					}
 				}
+				
 
 				//Debug.LogWarning("<Link And Refresh In Editor> : Modifier Test");
 
-				
+				//UnityEngine.Profiling.Profiler.EndSample();
+
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 3-7");
 
 				//3. MeshGroup -> Modifier를 돌면서 삭제된 meshTransform / meshGroupTransform / Bone을 잡고 있는 경우 삭제한다.
 				//<REV_MG>
-				//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
-				for (int iMeshGroup = 0; iMeshGroup < revMeshGroups.Count; iMeshGroup++)
+				for (int iMeshGroup = 0; iMeshGroup < nRevMeshGroups; iMeshGroup++)
 				{
-					//apMeshGroup meshGroup = _meshGroups[iMeshGroup];
 					apMeshGroup meshGroup = revMeshGroups[iMeshGroup];
 
+					int nModifiers = meshGroup._modifierStack._modifiers != null ? meshGroup._modifierStack._modifiers.Count : 0;
+					if(nModifiers == 0)
+					{
+						continue;
+					}
+					
 					meshGroup._modifierStack._modifiers.RemoveAll(delegate(apModifierBase a)
 					{
 						return a == null;
 					});
 
+					//모디파이어 개수 다시 계산
+					nModifiers = meshGroup._modifierStack._modifiers != null ? meshGroup._modifierStack._modifiers.Count : 0;
 
-					for (int iMod = 0; iMod < meshGroup._modifierStack._modifiers.Count; iMod++)
+					for (int iMod = 0; iMod < nModifiers; iMod++)
 					{
 						apModifierBase modifier = meshGroup._modifierStack._modifiers[iMod];
 						if(modifier == null)
@@ -11233,7 +11245,14 @@ namespace AnyPortrait
 						//apMeshGroup meshGroupOfTransform = null;
 						apMeshGroup meshGroupOfBone = null;
 
-						for (int iPSG = 0; iPSG < modifier._paramSetGroup_controller.Count; iPSG++)
+						int nPSGs = modifier._paramSetGroup_controller != null ? modifier._paramSetGroup_controller.Count : 0;
+
+						if(nPSGs > 0)
+						{
+							continue;
+						}
+
+						for (int iPSG = 0; iPSG < nPSGs; iPSG++)
 						{
 							apModifierParamSetGroup modPSG = modifier._paramSetGroup_controller[iPSG];
 
@@ -11246,10 +11265,6 @@ namespace AnyPortrait
 								case apModifierParamSetGroup.SYNC_TARGET.Controller:
 									//Controller 체크해볼 필요 있다.
 									modPSG._keyControlParam = _controller.FindParam(modPSG._keyControlParamID);
-									//if (modPSG._keyControlParam == null)
-									//{
-									//	Debug.LogError("주의 : Modifier ParamSetGroup에서 Control Param이 없다.");
-									//}
 									
 									break;
 
@@ -11266,17 +11281,19 @@ namespace AnyPortrait
 										}
 									}
 									
-									//if(modPSG._keyAnimClip == null || modPSG._keyAnimTimeline == null || modPSG._keyAnimTimelineLayer == null)
-									//{
-									//	Debug.LogError("주의 : Modifier ParamSetGroup에서 AnimClip / TImeline / TimelineLayer가 연동이 안되었다.");
-									//}
 									break;
 							}
 
-							for (int iPS = 0; iPS < modPSG._paramSetList.Count; iPS++)
+							int nParamSets = modPSG._paramSetList != null ? modPSG._paramSetList.Count : 0;
+							if(nParamSets == 0)
+							{
+								continue;
+							}
+
+							for (int iPS = 0; iPS < nParamSets; iPS++)
 							{
 								apModifierParamSet modPS = modPSG._paramSetList[iPS];
-								
+
 								if (modPS._meshData != null)
 								{
 									//하위의 MeshGroup Transform이 삭제될 수 있도록
@@ -11284,14 +11301,6 @@ namespace AnyPortrait
 									//int nRemoved = modPS._meshData.RemoveAll(delegate (apModifiedMesh a)
 									modPS._meshData.RemoveAll(delegate (apModifiedMesh a)
 									{
-										//if (a._isRecursiveChildTransform)
-										//{
-										//	meshGroupOfTransform = GetMeshGroup(a._meshGroupUniqueID_Transform);
-										//}
-										//else
-										//{
-										//	meshGroupOfTransform = meshGroup;
-										//}
 										if (meshGroup != null)
 										{
 											if (a._isMeshTransform)
@@ -11301,10 +11310,8 @@ namespace AnyPortrait
 												if (a._transform_Mesh == null || a._transform_Mesh._mesh == null)
 												{
 													//Mesh Transform이 없다. 삭제
-													//Debug.LogError("ModMesh - Mesh : 삭제됨");
 													return true;
 												}
-
 											}
 											else
 											{
@@ -11313,20 +11320,13 @@ namespace AnyPortrait
 												if (a._transform_MeshGroup == null || a._transform_MeshGroup._meshGroup == null)
 												{
 													//MeshGroup Transform이 없다. 삭제
-													//Debug.LogError("ModMesh - MeshGroup : 삭제됨");
 													return true;
 												}
 											}
 										}
 
 										return false;
-
 									});
-									//if (nRemoved > 0)
-									//{
-									//	Debug.LogError("Modifier [" + modifier.DisplayName + "] ModMesh " + nRemoved + "개 삭제됨");
-
-									//}
 								}
 
 								//적절하지 않은 Bone Data를 삭제하자
@@ -11355,6 +11355,10 @@ namespace AnyPortrait
 					}
 				}
 				
+				//UnityEngine.Profiling.Profiler.EndSample();
+
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 3-8");
+
 				//Root Unit도 갱신하자
 				if (_mainMeshGroupList == null)		{ _mainMeshGroupList = new List<apMeshGroup>(); }
 				else								{ _mainMeshGroupList.Clear(); }
@@ -11391,13 +11395,23 @@ namespace AnyPortrait
 				});
 
 				//기존의 RootUnit중 삭제할 것 먼저 빼자
-				_rootUnits.RemoveAll(delegate(apRootUnit a)
+				if (_rootUnits == null)
+				{
+					_rootUnits = new List<apRootUnit>();
+				}
+				_rootUnits.RemoveAll(delegate (apRootUnit a)
 				{
 					//유효한 MeshGroup을 가지지 않는 경우
-					return a._childMeshGroup == null 
+					return a._childMeshGroup == null
 							|| !_meshGroups.Contains(a._childMeshGroup)
 							|| !_mainMeshGroupList.Contains(a._childMeshGroup);
 				});
+				
+
+
+				//UnityEngine.Profiling.Profiler.EndSample();
+
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 3-9");
 
 				//재활용을 위해서 리스트를 새로 만들자
 				List<apRootUnit> prevRootUnits = new List<apRootUnit>();
@@ -11413,10 +11427,17 @@ namespace AnyPortrait
 					apMeshGroup meshGroup = _mainMeshGroupList[iMainMesh];
 					
 					//재활용 가능한지 확인하자
-					apRootUnit existRootUnit = prevRootUnits.Find(delegate(apRootUnit a)
-					{
-						return a._childMeshGroup == meshGroup;
-					});
+					//이전 (GC 발생)
+					//apRootUnit existRootUnit = prevRootUnits.Find(delegate(apRootUnit a)
+					//{
+					//	return a._childMeshGroup == meshGroup;
+					//});
+
+					//변경 v1.5.0
+					s_LinkRefresh_RootUnitMeshGroup = meshGroup;
+					apRootUnit existRootUnit = prevRootUnits.Find(s_LinkRefresh_FindRootUnitByMeshGroup_Func);
+
+
 					if (existRootUnit != null)
 					{
 						//있다. 리스트에 넣자
@@ -11434,8 +11455,11 @@ namespace AnyPortrait
 						_rootUnits.Add(newRootUnit);
 					}
 				}
-				
 
+
+				//UnityEngine.Profiling.Profiler.EndSample();
+				
+				//UnityEngine.Profiling.Profiler.EndSample();
 			}
 			//isResetLink 끝-------------------
 			
@@ -11448,6 +11472,9 @@ namespace AnyPortrait
 			
 			bool isNeedToRefreshOtherMeshGroups = false;
 			apMeshGroup curSelectedMeshGroup = null;
+
+
+			//UnityEngine.Profiling.Profiler.BeginSample("Link 4");
 
 			//메시 그룹 링크 다시 확인하는 코드
 			//최적화 20.4.3 : 이 코드들이 에디터를 무겁게 한다.
@@ -11466,6 +11493,8 @@ namespace AnyPortrait
 					}
 
 					revMeshGroups = targetMeshGroups;//일부 메시 그룹만 선택을 한다.
+					nRevMeshGroups = revMeshGroups != null ? revMeshGroups.Count : 0;//개수도 다시 계산
+
 					//Debug.LogWarning("Cur MeshGroups : " + revMeshGroups.Count);
 				}
 
@@ -11487,39 +11516,50 @@ namespace AnyPortrait
 				isLinkAllMeshGroups = true;//Request가 없다면 모든 객체를 대상으로 Link 수행
 			}
 
+			//UnityEngine.Profiling.Profiler.EndSample();
 
+
+			//UnityEngine.Profiling.Profiler.BeginSample("Link 5");
 
 			//<REV_MG>
-			//for (int iMeshGroup = 0; iMeshGroup < _meshGroups.Count; iMeshGroup++)
-			for (int iMeshGroup = 0; iMeshGroup < revMeshGroups.Count; iMeshGroup++)
+			for (int iMeshGroup = 0; iMeshGroup < nRevMeshGroups; iMeshGroup++)
 			{
-				//apMeshGroup meshGroup = _meshGroups[iMeshGroup];
 				apMeshGroup meshGroup = revMeshGroups[iMeshGroup];
 
 				//meshGroup._modifierStack.RefreshAndSort(false);//이전
 				//첫 Link시, 잘못된 데이터가 있으면 삭제를 한다.
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 5-1 - Refresh And Sort");
+
 				meshGroup._modifierStack.RefreshAndSort(	apModifierStack.REFRESH_OPTION_ACTIVE.Keep,
 															apModifierStack.REFRESH_OPTION_REMOVE.RemoveNullModifiers);//변경 22.12.13
 
+				//UnityEngine.Profiling.Profiler.EndSample();
+
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 5-2 - Bone");
 
 				//Bone 연결 
 				//Root 리스트는 일단 날리고 BoneAll 리스트를 돌면서 필요한걸 넣어주자
 				//이후엔 Root -> Child 방식으로 순회
+				if(meshGroup._boneList_Root == null) { meshGroup._boneList_Root = new List<apBone>(); }
 				meshGroup._boneList_Root.Clear();
-				if (meshGroup._boneList_All != null)
+
+				int nBoneListAll = meshGroup._boneList_All != null ? meshGroup._boneList_All.Count : 0;
+				if(nBoneListAll > 0)
 				{
-					for (int iBone = 0; iBone < meshGroup._boneList_All.Count; iBone++)
+					apBone bone = null;
+					for (int iBone = 0; iBone < nBoneListAll; iBone++)
 					{
-						apBone bone = meshGroup._boneList_All[iBone];
+						bone = meshGroup._boneList_All[iBone];
 						if (bone._childBones == null)
 						{
 							bone._childBones = new List<apBone>();
 						}
 						bone._childBones.Clear();
 					}
-					for (int iBone = 0; iBone < meshGroup._boneList_All.Count; iBone++)
+
+					for (int iBone = 0; iBone < nBoneListAll; iBone++)
 					{
-						apBone bone = meshGroup._boneList_All[iBone];
+						bone = meshGroup._boneList_All[iBone];
 
 						apBone parentBone = null;
 						if (bone._parentBoneID >= 0)
@@ -11537,394 +11577,353 @@ namespace AnyPortrait
 					}
 
 					//추가 5.9 : Bone의 Check Validation 함수를 호출해야 한다.
-					for (int iBone = 0; iBone < meshGroup._boneList_All.Count; iBone++)
+					for (int iBone = 0; iBone < nBoneListAll; iBone++)
 					{
 						meshGroup._boneList_All[iBone].CheckIKControllerValidation();
 					}
 				}
 
-				int curBoneIndex = 0;
-				for (int iRoot = 0; iRoot < meshGroup._boneList_Root.Count; iRoot++)
-				{
-					apBone rootBone = meshGroup._boneList_Root[iRoot];
-					//TODO : MeshGroup이 Transform으로 있는 경우에 Transform Matrix를 넣어줘야한다.
-					rootBone.LinkRecursive(0);
-					curBoneIndex = rootBone.SetBoneIndex(curBoneIndex) + 1;
-				}
 
+				int curBoneIndex = 0;
+				int nRootBoneList = meshGroup._boneList_Root != null ? meshGroup._boneList_Root.Count : 0;
+				if(nRootBoneList > 0)
+				{
+					for (int iRoot = 0; iRoot < nRootBoneList; iRoot++)
+					{
+						apBone rootBone = meshGroup._boneList_Root[iRoot];
+						//TODO : MeshGroup이 Transform으로 있는 경우에 Transform Matrix를 넣어줘야한다.
+						rootBone.LinkRecursive(0);
+						curBoneIndex = rootBone.SetBoneIndex(curBoneIndex) + 1;
+					}
+				}
 				
+
+				//UnityEngine.Profiling.Profiler.EndSample();
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 5-3 - Modifier");
 
 				List<apModifierBase> modifiers = meshGroup._modifierStack._modifiers;
-				for (int iMod = 0; iMod < modifiers.Count; iMod++)
+				int nModifiers = modifiers != null ? modifiers.Count : 0;
+				if (nModifiers > 0)
 				{
-					apModifierBase mod = modifiers[iMod];
-
-					//추가 : Portrait를 연결해준다.
-					mod.LinkPortrait(this);
-
-
-
-					mod._meshGroup = GetMeshGroup(mod._meshGroupUniqueID);
-
-					//삭제 조건1 - MeshGroup이 없다
-					if (mod._meshGroup == null)
+					for (int iMod = 0; iMod < nModifiers; iMod++)
 					{
-						//Debug.LogError("No MeshGroup Modifier");
-						continue;
-					}
+						apModifierBase mod = modifiers[iMod];
 
-					//>> 최적화 20.4.3
-					if(isSkipAllAnimModifier && mod.IsAnimated)
-					{
-						//요청에 따라 Anim 모디파이어는 생략하자
-						continue;
-					}
+						//추가 : Portrait를 연결해준다.
+						mod.LinkPortrait(this);
 
-					
-					List<apModifierParamSetGroup> paramSetGroups = mod._paramSetGroup_controller;
-					for (int iPSGroup = 0; iPSGroup < paramSetGroups.Count; iPSGroup++)
-					{
-						apModifierParamSetGroup paramSetGroup = paramSetGroups[iPSGroup];
+						mod._meshGroup = GetMeshGroup(mod._meshGroupUniqueID);
 
-
-
-						//>> 최적화 20.4.3 : 만약 애니메이션 설정시, 해당 애니메이션에 관련된 것들만 갱신한다.
-						if (isSkipUnselectedAnimPSGs && mod.IsAnimated)
+						//삭제 조건1 - MeshGroup이 없다
+						if (mod._meshGroup == null)
 						{
-							if (paramSetGroup._keyAnimClip != linkRefreshRequest.AnimClip)
+							//Debug.LogError("No MeshGroup Modifier");
+							continue;
+						}
+
+						//>> 최적화 20.4.3
+						if (isSkipAllAnimModifier && mod.IsAnimated)
+						{
+							//요청에 따라 Anim 모디파이어는 생략하자
+							continue;
+						}
+
+
+						List<apModifierParamSetGroup> paramSetGroups = mod._paramSetGroup_controller;
+						int nPSGs = paramSetGroups != null ? paramSetGroups.Count : 0;
+						if (nPSGs > 0)
+						{
+							for (int iPSGroup = 0; iPSGroup < nPSGs; iPSGroup++)
 							{
-								
-								//특정 AnimClip을 제외한 다른 AnimClip에 대한 ParamSetGroup은 Link를 생략한다.
-								//Debug.LogError("Skip Link > " + paramSetGroup._keyAnimClip._name);
-								continue;
+								apModifierParamSetGroup paramSetGroup = paramSetGroups[iPSGroup];
+
+								//>> 최적화 20.4.3 : 만약 애니메이션 설정시, 해당 애니메이션에 관련된 것들만 갱신한다.
+								if (isSkipUnselectedAnimPSGs && mod.IsAnimated)
+								{
+									if (paramSetGroup._keyAnimClip != linkRefreshRequest.AnimClip)
+									{
+
+										//특정 AnimClip을 제외한 다른 AnimClip에 대한 ParamSetGroup은 Link를 생략한다.
+										continue;
+									}
+								}
+
+								int nParamSets = paramSetGroup._paramSetList != null ? paramSetGroup._paramSetList.Count : 0;
+
+								//List<apModifierParamSet> paramSets = mod._paramSetList;
+								//1. Key를 세팅해주자
+								switch (paramSetGroup._syncTarget)
+								{
+									case apModifierParamSetGroup.SYNC_TARGET.Static:
+										break;
+
+									case apModifierParamSetGroup.SYNC_TARGET.Controller:
+										paramSetGroup._keyControlParam = GetControlParam(paramSetGroup._keyControlParamID);
+										break;
+
+									case apModifierParamSetGroup.SYNC_TARGET.KeyFrame:
+										{
+											//AnimClip과 연동을 먼저 한다.
+											// ParamSetGroup -> AnimClip과 연동
+											paramSetGroup._keyAnimClip = GetAnimClip(paramSetGroup._keyAnimClipID);
+											if (paramSetGroup._keyAnimClip == null)
+											{
+												paramSetGroup._keyAnimClipID = -1;//<<삭제 하자
+												break;
+											}
+
+											paramSetGroup._keyAnimTimeline = paramSetGroup._keyAnimClip.GetTimeline(paramSetGroup._keyAnimTimelineID);
+
+											if (paramSetGroup._keyAnimTimeline == null)
+											{
+												paramSetGroup._keyAnimTimelineID = -1;
+												break;
+											}
+
+											paramSetGroup._keyAnimTimelineLayer = paramSetGroup._keyAnimTimeline.GetTimelineLayer(paramSetGroup._keyAnimTimelineLayerID);
+
+											if (paramSetGroup._keyAnimTimelineLayer == null)
+											{
+												paramSetGroup._keyAnimTimelineLayerID = -1;
+												break;
+											}
+
+											//추가) 상호 연동을 해주자
+											paramSetGroup._keyAnimTimelineLayer.LinkParamSetGroup(paramSetGroup);
+
+											//키프레임이면 여기서 한번더 링크를 해주자
+											
+											if (nParamSets > 0)
+											{
+												//[v1.5.0]
+												//버그로 인하여 "동일한 키프레임"을 가리키는 ParamSet이 생성되기도 한다.
+												//리스트를 만들어서 이미 동일한 키프레임의 경우 무효로 만들자
+												List<apAnimKeyframe> checkedKeyframes = new List<apAnimKeyframe>();
+
+												apModifierParamSet paramSet = null;
+												for (int iPS = 0; iPS < nParamSets; iPS++)
+												{
+													paramSet = paramSetGroup._paramSetList[iPS];
+													int keyframeID = paramSet._keyframeUniqueID;
+
+													apAnimKeyframe targetKeyframe = paramSetGroup._keyAnimTimelineLayer.GetKeyframeByID(keyframeID);
+													if (targetKeyframe != null)
+													{
+														if(!checkedKeyframes.Contains(targetKeyframe))
+														{
+															//연결되지 않은 키프레임이다.
+															paramSet.LinkSyncKeyframe(targetKeyframe);
+															checkedKeyframes.Add(targetKeyframe);
+														}
+														else
+														{
+															//Debug.LogError("에러 : 이미 연결이 완료된 키프레임에 다른 ModParamSet이 연결을 시도했다.");
+															paramSet._keyframeUniqueID = -1;//삭제 처리
+														}
+														
+													}
+													else
+													{
+														//못찾았다. > Keyframe 연동 에러
+														paramSet._keyframeUniqueID = -1;
+													}
+
+												}
+
+												//"키프레임 연동" 방식에서 비어있는 키프레임이라면?
+												paramSetGroup._paramSetList.RemoveAll(delegate (apModifierParamSet a)
+												{
+													return a._keyframeUniqueID < 0;
+												});
+											}
+										}
+										break;
+								}
+
+
+
+
+								List<apModifierParamSet> paramSets = paramSetGroup._paramSetList;
+								nParamSets = paramSetGroup._paramSetList != null ? paramSetGroup._paramSetList.Count : 0;
+								if (nParamSets > 0)
+								{
+									apModifierParamSet paramSet = null;
+									for (int iParamSet = 0; iParamSet < nParamSets; iParamSet++)
+									{
+										paramSet = paramSets[iParamSet];
+
+										//Link를 해주자
+										paramSet.LinkParamSetGroup(paramSetGroup);
+
+										List<apModifiedMesh> meshData = paramSet._meshData;
+										apTransform_Mesh meshTransform = null;
+										apTransform_MeshGroup meshGroupTransform = null;
+										apRenderUnit renderUnit = null;
+
+
+										//1. ModMesh
+										int nMeshData = meshData != null ? meshData.Count : 0;
+										if (nMeshData > 0)
+										{
+											for (int iMesh = 0; iMesh < meshData.Count; iMesh++)
+											{
+												apModifiedMesh modMesh = meshData[iMesh];
+
+												//추가 : Modifier의 meshGroup과 Transform의 MeshGroup을 분리한다.
+												apMeshGroup meshGroupOfTransform = null;
+
+												if (modMesh._isRecursiveChildTransform)
+												{
+													//Mesh Group 다시 링크 (다르다)
+													meshGroupOfTransform = GetMeshGroup(modMesh._meshGroupUniqueID_Transform);
+												}
+												else
+												{
+													//동일한 MeshGroup이다.
+													meshGroupOfTransform = meshGroup;
+												}
+
+												modMesh._meshGroupUniqueID_Modifier = meshGroup._uniqueID;
+
+
+
+												//변경 : 타입 대신 값을 보고 판단한다.
+												if (modMesh._transformUniqueID >= 0 && meshGroupOfTransform != null)
+												{
+													if (modMesh._isMeshTransform)
+													{
+														meshTransform = meshGroupOfTransform.GetMeshTransform(modMesh._transformUniqueID);
+
+														if (meshTransform != null)
+														{
+															renderUnit = meshGroup.GetRenderUnit(meshTransform);
+															modMesh.Link_MeshTransform(meshGroup, meshGroupOfTransform, meshTransform, renderUnit, this);
+														}
+													}
+													else
+													{
+														meshGroupTransform = meshGroupOfTransform.GetMeshGroupTransform(modMesh._transformUniqueID);
+
+														if (meshGroupTransform != null)
+														{
+															renderUnit = meshGroup.GetRenderUnit(meshGroupTransform);
+															modMesh.Link_MeshGroupTransform(meshGroup, meshGroupOfTransform, meshGroupTransform, renderUnit);
+														}
+													}
+												}
+											}
+
+
+											//int nRemove = paramSet._meshData.RemoveAll(delegate (apModifiedMesh a)
+											paramSet._meshData.RemoveAll(delegate (apModifiedMesh a)
+											{
+												return a._meshGroupOfModifier == null || a._meshGroupOfTransform == null;
+											});
+										}
+										
+
+
+										//---------------------------------------------------------------------------------
+										//2. Bone 연동을 하자
+
+										List<apModifiedBone> boneData = paramSet._boneData;
+										apModifiedBone modBone = null;
+
+										int nBoneData = boneData != null ? boneData.Count : 0;
+										if (nBoneData > 0)
+										{
+											for (int iModBone = 0; iModBone < nBoneData; iModBone++)
+											{
+												modBone = boneData[iModBone];
+												apMeshGroup meshGroupOfBone = GetMeshGroup(modBone._meshGropuUniqueID_Bone);
+												apMeshGroup meshGroupOfModifier = GetMeshGroup(modBone._meshGroupUniqueID_Modifier);
+												if (meshGroupOfBone == null || meshGroupOfModifier == null)
+												{
+													//Link Error : Mod Bone 링크 실패 [MeshGroup]
+													continue;
+												}
+
+												apBone bone = meshGroupOfBone.GetBone(modBone._boneID);
+												if (bone == null)
+												{
+													//Link Error : Mod Bone 링크 실패
+													continue;
+												}
+
+												meshGroupTransform = meshGroupOfModifier.GetMeshGroupTransformRecursive(modBone._transformUniqueID);
+												if (meshGroupTransform == null)
+												{
+													//Link Error : Mod Bone 링크 실패 [MeshGroup Transform]
+													continue;
+												}
+
+												renderUnit = meshGroupOfModifier.GetRenderUnit(meshGroupTransform._transformUniqueID, false);
+												if (renderUnit == null)
+												{
+													//Debug.LogError("Link Error : Mod Bone 링크 실패 [Render Unit]");
+													//continue;
+													//다시 체크 및 보정
+													if (meshGroupOfBone == meshGroupOfModifier)
+													{
+														meshGroupTransform = meshGroupOfModifier._rootMeshGroupTransform;
+													}
+													else
+													{
+														meshGroupTransform = meshGroupOfModifier.FindChildMeshGroupTransform(meshGroupOfBone);
+													}
+
+													if (meshGroupTransform != null)
+													{
+														renderUnit = meshGroupOfModifier.GetRenderUnit(meshGroupTransform._transformUniqueID, false);
+														//Debug.LogError("잘못된 ModBone 연결이 보정되었다.");
+														modBone.Init(meshGroupOfModifier._uniqueID, meshGroupOfBone._uniqueID, meshGroupTransform._transformUniqueID, bone);
+													}
+												}
+
+												modBone.Link(meshGroupOfModifier, meshGroupOfBone, bone, renderUnit, meshGroupTransform);
+											}
+
+											//연동 안된 ModBone은 삭제하자
+											//---------------------------------------------------------------------------------
+											boneData.RemoveAll(delegate (apModifiedBone a)
+											{
+												return a._bone == null || a._meshGroup_Bone == null || a._meshGroup_Modifier == null;
+											});
+										}
+										
+
+									}
+								}
 							}
 						}
-
-
-
-						//List<apModifierParamSet> paramSets = mod._paramSetList;
-						//1. Key를 세팅해주자
-						switch (paramSetGroup._syncTarget)
-						{
-							case apModifierParamSetGroup.SYNC_TARGET.Static:
-								break;
-
-							case apModifierParamSetGroup.SYNC_TARGET.Controller:
-								//paramSetGroup._keyControlParam = GetControlParam(paramSetGroup._keyControlParamName);
-								paramSetGroup._keyControlParam = GetControlParam(paramSetGroup._keyControlParamID);
-								break;
-
-							case apModifierParamSetGroup.SYNC_TARGET.KeyFrame:
-								{
-									//Debug.LogError("TODO : KeyFrame 방식 연동");
-									//추가 : AnimClip과 연동을 먼저 한다.
-									// ParamSetGroup -> AnimClip과 연동
-									paramSetGroup._keyAnimClip = GetAnimClip(paramSetGroup._keyAnimClipID);
-									if (paramSetGroup._keyAnimClip == null)
-									{
-										paramSetGroup._keyAnimClipID = -1;//<<삭제 하자
-										break;
-									}
-
-									paramSetGroup._keyAnimTimeline = paramSetGroup._keyAnimClip.GetTimeline(paramSetGroup._keyAnimTimelineID);
-
-									if (paramSetGroup._keyAnimTimeline == null)
-									{
-										paramSetGroup._keyAnimTimelineID = -1;
-										break;
-									}
-
-									paramSetGroup._keyAnimTimelineLayer = paramSetGroup._keyAnimTimeline.GetTimelineLayer(paramSetGroup._keyAnimTimelineLayerID);
-
-									if (paramSetGroup._keyAnimTimelineLayer == null)
-									{
-										paramSetGroup._keyAnimTimelineLayerID = -1;
-										break;
-									}
-
-									//추가) 상호 연동을 해주자
-									paramSetGroup._keyAnimTimelineLayer.LinkParamSetGroup(paramSetGroup);
-
-									//키프레임이면 여기서 한번더 링크를 해주자
-									for (int iPS = 0; iPS < paramSetGroup._paramSetList.Count; iPS++)
-									{
-										apModifierParamSet paramSet = paramSetGroup._paramSetList[iPS];
-										int keyframeID = paramSet._keyframeUniqueID;
-
-										apAnimKeyframe targetKeyframe = paramSetGroup._keyAnimTimelineLayer.GetKeyframeByID(keyframeID);
-										if (targetKeyframe != null)
-										{
-											paramSet.LinkSyncKeyframe(targetKeyframe);
-										}
-										else
-										{
-											//Debug.LogError("Keyframe 연동 에러 [" + keyframeID + "]");
-											paramSet._keyframeUniqueID = -1;//못찾았다.
-										}
-
-									}
-									int nPrevParamSet = paramSetGroup._paramSetList.Count;
-									//"키프레임 연동" 방식에서 비어있는 키프레임이라면?
-									int nRemoved = paramSetGroup._paramSetList.RemoveAll(delegate (apModifierParamSet a)
-									{
-										return a._keyframeUniqueID < 0;
-									});
-									if (nRemoved > 0)
-									{
-										//Debug.LogError(nPrevParamSet + "개 중 " + nRemoved + "개의 Keyframe 과 연동되지 못한 ParamSet 삭제");
-									}
-
-									//추가
-								}
-								break;
-						}
-
-
-
 						
-						List<apModifierParamSet> paramSets = paramSetGroup._paramSetList;
 
-						for (int iParamSet = 0; iParamSet < paramSets.Count; iParamSet++)
+
+						//mod.RefreshParamSet();
+						if (mod.IsAnimated)
 						{
-							apModifierParamSet paramSet = paramSets[iParamSet];
-
-							
-							//Link를 해주자
-							paramSet.LinkParamSetGroup(paramSetGroup);
-
-							
-							List<apModifiedMesh> meshData = paramSet._meshData;
-							apTransform_Mesh meshTransform = null;
-							apTransform_MeshGroup meshGroupTransform = null;
-							apRenderUnit renderUnit = null;
-
-							
-							//1. ModMesh
-							for (int iMesh = 0; iMesh < meshData.Count; iMesh++)
-							{
-								apModifiedMesh modMesh = meshData[iMesh];
-
-								//추가 : Modifier의 meshGroup과 Transform의 MeshGroup을 분리한다.
-								apMeshGroup meshGroupOfTransform = null;
-
-								if (modMesh._isRecursiveChildTransform)
-								{
-									//MeshGroup이 다르다
-									//Debug.Log("Link RecursiveChildTransform : " + modMesh._meshGroupUniqueID_Transform);
-
-									meshGroupOfTransform = GetMeshGroup(modMesh._meshGroupUniqueID_Transform);
-									//if (meshGroupOfTransform == null)
-									//{
-									//	Debug.LogError("Recursive Child Transfrom Missing");
-									//}
-								}
-								else
-								{
-									//동일한 MeshGroup이다.
-									meshGroupOfTransform = meshGroup;
-								}
-								
-								modMesh._meshGroupUniqueID_Modifier = meshGroup._uniqueID;
-
-
-								
-								//변경 : 타입 대신 값을 보고 판단한다.
-								if (modMesh._transformUniqueID >= 0 && meshGroupOfTransform != null)
-								{
-									if (modMesh._isMeshTransform)
-									{
-										meshTransform = meshGroupOfTransform.GetMeshTransform(modMesh._transformUniqueID);
-										
-										if (meshTransform != null)
-										{
-											renderUnit = meshGroup.GetRenderUnit(meshTransform);
-											//if(renderUnit == null)
-											//{
-											//	Debug.LogError("Render Unit이 없다. : " + meshTransform._nickName);
-											//}
-											modMesh.Link_MeshTransform(meshGroup, meshGroupOfTransform, meshTransform, renderUnit, this);
-										}
-										//else
-										//{
-										//	Debug.LogError("MeshTransform이 없다. : " + modMesh._transformUniqueID);
-										//}
-									}
-									else
-									{
-										meshGroupTransform = meshGroupOfTransform.GetMeshGroupTransform(modMesh._transformUniqueID);
-										
-										if (meshGroupTransform != null)
-										{
-											renderUnit = meshGroup.GetRenderUnit(meshGroupTransform);
-											//if(renderUnit == null)
-											//{
-											//	Debug.LogError("Render Unit이 없다. : " + meshTransform._nickName);
-											//}
-											modMesh.Link_MeshGroupTransform(meshGroup, meshGroupOfTransform, meshGroupTransform, renderUnit);
-										}
-										//else
-										//{
-										//	Debug.LogError("MeshTransform이 없다. : " + modMesh._transformUniqueID);
-										//}
-									}
-								}
-
-#region [미사용 코드]
-								//switch (modMesh._targetType)
-								//{
-								//	case apModifiedMesh.TARGET_TYPE.VertexWithMeshTransform:
-								//		{
-								//			meshTransform = meshGroup.GetMeshTransform(modMesh._transformUniqueID);
-								//			if (meshTransform != null)
-								//			{
-								//				renderUnit = meshGroup.GetRenderUnit(meshTransform);
-								//				modMesh.Link_VertexMorph(meshGroup, meshTransform, renderUnit);
-								//			}
-								//		}
-								//		break;
-
-								//	case apModifiedMesh.TARGET_TYPE.MeshTransformOnly:
-								//		{
-								//			meshTransform = meshGroup.GetMeshTransform(modMesh._transformUniqueID);
-								//			if (meshTransform != null)
-								//			{
-								//				renderUnit = meshGroup.GetRenderUnit(meshTransform);
-								//				modMesh.Link_MeshTransform(meshGroup, meshTransform, renderUnit);
-								//			}
-								//		}
-								//		break;
-
-								//	case apModifiedMesh.TARGET_TYPE.MeshGroupTransformOnly:
-								//		{
-								//			meshGroupTransform = meshGroup.GetMeshGroupTransform(modMesh._transformUniqueID);
-								//			if (meshGroupTransform != null)
-								//			{
-								//				renderUnit = meshGroup.GetRenderUnit(meshGroupTransform);
-								//				modMesh.Link_MeshGroupTransform(meshGroup, meshGroupTransform, renderUnit);
-								//			}
-								//		}
-								//		break;
-
-								//	case apModifiedMesh.TARGET_TYPE.Bone:
-								//		{
-								//			//TODO : Bone 처리도 해주자
-								//			modMesh.Link_Bone();
-								//		}
-								//		break;
-								//} 
-#endregion
-
-							}
-							
-							
-
-							//int nRemove = paramSet._meshData.RemoveAll(delegate (apModifiedMesh a)
-							paramSet._meshData.RemoveAll(delegate (apModifiedMesh a)
-							{
-								return a._meshGroupOfModifier == null || a._meshGroupOfTransform == null;
-							});
-							//if(nRemove > 0)
-							//{
-							//	Debug.LogError("Mesh Data가 삭제되었다. (1)");
-							//}
-
-							
-							//---------------------------------------------------------------------------------
-							//2. Bone 연동을 하자
-							List<apModifiedBone> boneData = paramSet._boneData;
-							apModifiedBone modBone = null;
-
-							for (int iModBone = 0; iModBone < boneData.Count; iModBone++)
-							{
-								modBone = boneData[iModBone];
-								apMeshGroup meshGroupOfBone = GetMeshGroup(modBone._meshGropuUniqueID_Bone);
-								apMeshGroup meshGroupOfModifier = GetMeshGroup(modBone._meshGroupUniqueID_Modifier);
-								if (meshGroupOfBone == null || meshGroupOfModifier == null)
-								{
-									//Debug.LogError("Link Error : Mod Bone 링크 실패 [MeshGroup]");
-									continue;
-								}
-
-								apBone bone = meshGroupOfBone.GetBone(modBone._boneID);
-								if (bone == null)
-								{
-									//Debug.LogError("Link Error : Mod Bone 링크 실패");
-									continue;
-								}
-
-								meshGroupTransform = meshGroupOfModifier.GetMeshGroupTransformRecursive(modBone._transformUniqueID);
-								//meshGroupTransform = meshGroupOfBone.GetMeshGroupTransform();
-								if (meshGroupTransform == null)
-								{
-									//Debug.LogError("Link Error : Mod Bone 링크 실패 [MeshGroup Transform]");
-									continue;
-								}
-
-								//renderUnit = meshGroupOfBone.GetRenderUnit(meshGroupTransform);
-								renderUnit = meshGroupOfModifier.GetRenderUnit(meshGroupTransform._transformUniqueID, false);
-								if (renderUnit == null)
-								{
-									//Debug.LogError("Link Error : Mod Bone 링크 실패 [Render Unit]");
-									//continue;
-									//다시 체크 및 보정
-									if (meshGroupOfBone == meshGroupOfModifier)
-									{
-										meshGroupTransform = meshGroupOfModifier._rootMeshGroupTransform;
-									}
-									else
-									{
-										meshGroupTransform = meshGroupOfModifier.FindChildMeshGroupTransform(meshGroupOfBone);
-									}
-
-									if (meshGroupTransform != null)
-									{
-										renderUnit = meshGroupOfModifier.GetRenderUnit(meshGroupTransform._transformUniqueID, false);
-										//Debug.LogError("잘못된 ModBone 연결이 보정되었다.");
-										modBone.Init(meshGroupOfModifier._uniqueID, meshGroupOfBone._uniqueID, meshGroupTransform._transformUniqueID, bone);
-									}
-								}
-
-								modBone.Link(meshGroupOfModifier, meshGroupOfBone, bone, renderUnit, meshGroupTransform);
-							}
-
-							//연동 안된 ModBone은 삭제하자
-							//---------------------------------------------------------------------------------
-							boneData.RemoveAll(delegate (apModifiedBone a)
-							{
-								return a._bone == null || a._meshGroup_Bone == null || a._meshGroup_Modifier == null;
-							});
-
+							//애니메이션 타입이라면 > 일부 AnimClip에 대한 처리하자.
+							mod.RefreshParamSet(linkRefreshRequest);//<<단순 변경시 linkRefreshRequest로 입력 되어야 한다.
+																	//mod.RefreshParamSet(null);//<<삭제시 이게 null로 입력되어야 한다.
+						}
+						else
+						{
+							mod.RefreshParamSet(null);
 						}
 					}
 
-					
-					//mod.RefreshParamSet();
-					if(mod.IsAnimated)
+					meshGroup._modifierStack._modifiers.RemoveAll(delegate (apModifierBase a)
 					{
-						//애니메이션 타입이라면 > 일부 AnimClip에 대한 처리하자.
-						mod.RefreshParamSet(linkRefreshRequest);//<<단순 변경시 linkRefreshRequest로 입력 되어야 한다.
-						//mod.RefreshParamSet(null);//<<삭제시 이게 null로 입력되어야 한다.
-					}
-					else
-					{
-						mod.RefreshParamSet(null);
-					}	
-					
+						return a._meshGroup == null;
+					});
 				}
-
 				
-				meshGroup._modifierStack._modifiers.RemoveAll(delegate (apModifierBase a)
-				{
-					return a._meshGroup == null;
-				});
-
-
+				//UnityEngine.Profiling.Profiler.EndSample();
 				//ModStack의 CalculateParam을 모두 지우고 다시 만들자
 				
 				//이 조건문 추가 20.4.3 : 모든 메시 그룹에 대해서 Refresh를 할 경우에만
 				//단, 여러개의 메시그룹을 대상으로 하는 경우에는 타겟을 제외한 나머지 객체는 Refresh를 해야한다.
-
-				
+				//UnityEngine.Profiling.Profiler.BeginSample("Link 5-4 - Refresh Link");
 
 				if(isLinkAllMeshGroups)
 				{
@@ -11939,14 +11938,21 @@ namespace AnyPortrait
 					meshGroup.RefreshModifierLink(linkRefreshRequest);
 				}
 
+				//UnityEngine.Profiling.Profiler.EndSample();
 			}
+
+
+			//UnityEngine.Profiling.Profiler.EndSample();
+			//UnityEngine.Profiling.Profiler.BeginSample("Link 6");
+
 			if(curSelectedMeshGroup != null && !isLinkAllMeshGroups)
 			{
 				//모든 메시 그룹을 대상으로 한게 아닌데 대상 메시 그룹이 있다면
 				curSelectedMeshGroup.RefreshModifierLink(linkRefreshRequest);
 			}
 
-
+			//UnityEngine.Profiling.Profiler.EndSample();
+			//UnityEngine.Profiling.Profiler.BeginSample("Link 7");
 
 			if (isSkipUnselectedAnimPSGs && linkRefreshRequest.AnimClip != null)
 			{
@@ -11957,13 +11963,23 @@ namespace AnyPortrait
 			else
 			{
 				//전체 검사
-				for (int i = 0; i < _animClips.Count; i++)
+				int nAnimClips = _animClips != null ? _animClips.Count : 0;
+				if (nAnimClips > 0)
 				{
-					_animClips[i].LinkEditor(this);
-					_animClips[i].RemoveUnlinkedTimeline();
+					apAnimClip animClip = null;
+					for (int i = 0; i < _animClips.Count; i++)
+					{
+						animClip = _animClips[i];
+						animClip.LinkEditor(this);
+						animClip.RemoveUnlinkedTimeline();
+					}
 				}
+				
 			}
 			
+
+			//UnityEngine.Profiling.Profiler.EndSample();
+			//UnityEngine.Profiling.Profiler.BeginSample("Link 8");
 			
 			//추가 9.30 : 만약, 선택한 MeshGroup에 하위 MeshGroup이 있다면,
 			//전체적으로 하위 MeshGroup으로의 연결을 다시 해야한다.
@@ -11975,26 +11991,35 @@ namespace AnyPortrait
 				if((curSelectedMeshGroup._childMeshGroupTransforms != null && curSelectedMeshGroup._childMeshGroupTransforms.Count > 0)
 					|| !isLinkAllMeshGroups)
 				{
+					//UnityEngine.Profiling.Profiler.BeginSample("Link 8-1");
 					curSelectedMeshGroup.LinkModMeshRenderUnits(linkRefreshRequest);
-					curSelectedMeshGroup.RefreshModifierLink(linkRefreshRequest);
-				}
-				
+					//UnityEngine.Profiling.Profiler.EndSample();
 
-				//if(curSelectedMeshGroup._childMeshGroupTransforms != null
-				//	&& curSelectedMeshGroup._childMeshGroupTransforms.Count > 0)
-				//{
-				//	//중요 : LinkAndRefreshInEditor 이후에는 다음 함수들을 꼭 호출해야한다.
-				//	curSelectedMeshGroup.LinkModMeshRenderUnits(linkRefreshRequest);
-				//	curSelectedMeshGroup.RefreshModifierLink(linkRefreshRequest);
-				//	//curSelectedMeshGroup._modifierStack.RefreshAndSort(true);//이건 필요 없는 듯 한다.
-				//}
+					//UnityEngine.Profiling.Profiler.BeginSample("Link 8-2");
+					curSelectedMeshGroup.RefreshModifierLink(linkRefreshRequest);
+					//UnityEngine.Profiling.Profiler.EndSample();
+				}
 			}
 
 
-			System.GC.Collect();
+			//UnityEngine.Profiling.Profiler.EndSample();
+
+			//삭제 v1.5.0 : GC.Collect는 너무 많은 성능 스파이크를 일으킨다.
+			//Debug.LogError("TODO : GC가 너무 커서 여기서 성능이 크게 떨어진다.");
+			//Debug.LogError("일반적인 작업에서는 GC를 호출하지 않고, 메뉴 전환시에 GC를 호출하자");
+			//System.GC.Collect();
+
+			//UnityEngine.Profiling.Profiler.EndSample();
+			
 		}
 
 
+		private static apMeshGroup s_LinkRefresh_RootUnitMeshGroup = null;
+		private static Predicate<apRootUnit> s_LinkRefresh_FindRootUnitByMeshGroup_Func = FUNC_LinkRefresh_FindRootUnitByMeshGroup;
+		private static bool FUNC_LinkRefresh_FindRootUnitByMeshGroup(apRootUnit a)
+		{
+			return a._childMeshGroup == s_LinkRefresh_RootUnitMeshGroup;
+		}
 
 
 
@@ -12005,6 +12030,10 @@ namespace AnyPortrait
 
 		// 참조용 리스트 관리
 		//----------------------------------------------------------------
+
+		//메모리 할당을 방지하는 변수
+		private List<apMeshGroup> _tmpReverseMeshGroups = null;
+
 		/// <summary>
 		/// 계층적으로 설계된 MeshGroup에 맞게 리스트를 다시 정리하여 리턴한다.
 		/// 인덱스 앞쪽에는 Child가 위치하고, 뒤로 갈 수록 Parent/Root가 나타난다.
@@ -12013,28 +12042,41 @@ namespace AnyPortrait
 		/// <returns></returns>
 		private List<apMeshGroup> GetReverseMeshGroupList(List<apMeshGroup> srcMeshGroups)
 		{
-			List<apMeshGroup> resultList = new List<apMeshGroup>();
-
-			for (int i = 0; i < srcMeshGroups.Count; i++)
+			if(_tmpReverseMeshGroups == null)
 			{
-				apMeshGroup curMeshGroup = srcMeshGroups[i];
-				if (!resultList.Contains(curMeshGroup))
+				_tmpReverseMeshGroups = new List<apMeshGroup>();
+			}
+			_tmpReverseMeshGroups.Clear();
+
+			int nSrcMeshGroups = srcMeshGroups != null ? srcMeshGroups.Count : 0;
+			if (nSrcMeshGroups > 0)
+			{
+				apMeshGroup curMeshGroup = null;
+				for (int i = 0; i < nSrcMeshGroups; i++)
 				{
-					FindReverseMeshGroupListRecursive(curMeshGroup, resultList);
+					curMeshGroup = srcMeshGroups[i];
+					if (!_tmpReverseMeshGroups.Contains(curMeshGroup))
+					{
+						FindReverseMeshGroupListRecursive(curMeshGroup, _tmpReverseMeshGroups);
+					}
 				}
 			}
-			return resultList;
+			
+			return _tmpReverseMeshGroups;
 		}
 
 
 		private void FindReverseMeshGroupListRecursive(apMeshGroup curMeshGroup, List<apMeshGroup> resultList)
 		{
-			if(curMeshGroup._childMeshGroupTransforms != null && curMeshGroup._childMeshGroupTransforms.Count > 0)
+			int nChildTFs = curMeshGroup._childMeshGroupTransforms != null ? curMeshGroup._childMeshGroupTransforms.Count : 0;
+			if(nChildTFs > 0)
 			{
-				for (int iChild = 0; iChild < curMeshGroup._childMeshGroupTransforms.Count; iChild++)
+				apTransform_MeshGroup childMeshGroupTransform = null;
+				apMeshGroup childMeshGroup = null;
+				for (int iChild = 0; iChild < nChildTFs; iChild++)
 				{
-					apTransform_MeshGroup childMeshGroupTransform = curMeshGroup._childMeshGroupTransforms[iChild];
-					apMeshGroup childMeshGroup = childMeshGroupTransform._meshGroup;
+					childMeshGroupTransform = curMeshGroup._childMeshGroupTransforms[iChild];
+					childMeshGroup = childMeshGroupTransform._meshGroup;
 					if (childMeshGroup != null && childMeshGroup != curMeshGroup)
 					{
 						FindReverseMeshGroupListRecursive(childMeshGroup, resultList);
@@ -12478,72 +12520,8 @@ namespace AnyPortrait
 
 		//카메라 관련
 		//-------------------------------------------------------------------------------------------------------
-		private void CheckAndRefreshCameras()
+		private void CheckAndRefreshCameras(bool isResetCommandBufferWhenCameraChanged = true)
 		{
-			#region [미사용 코드] 이전 방식 : 단일 카메라만 지원
-			//if(_billboardType == BILLBOARD_TYPE.None)
-			//{
-			//	_curCamera = null;
-			//	_curCameraTransform = null;
-			//	return;
-			//}
-
-			////빌보드라면 카메라를 계산해야한다.
-			////일단 카메라 검사
-			//if(_curCamera != null)
-			//{
-			//	//현재 카메라의 마스크가 현재 레이어를 참조하는가.
-			//	if(_curCamera.cullingMask == (_curCamera.cullingMask | (1 << gameObject.layer)) && _curCamera.enabled)
-			//	{
-			//		//유지
-			//	}
-			//	else
-			//	{
-			//		//문제가 있다.
-			//		_curCamera = null;
-			//		_curCameraTransform = null;
-
-
-			//	}
-			//}
-			//if(_curCamera == null)
-			//{
-			//	//씬에 있는 카메라를 가져온다.
-			//	Camera[] cameras = Camera.allCameras;
-			//	if(cameras == null || cameras.Length == 0)
-			//	{	
-			//		_curCamera = null;
-			//		_curCameraTransform = null;
-			//	}
-			//	else
-			//	{
-			//		Camera cam = null;
-			//		for (int i = 0; i < cameras.Length; i++)
-			//		{
-			//			cam = cameras[i];
-			//			if(!cam.enabled)
-			//			{
-			//				continue;
-			//			}
-			//			if(cam.cullingMask == (cam.cullingMask | (1 << gameObject.layer)))
-			//			{
-			//				_curCamera = cam;
-			//				_curCameraTransform = _curCamera.transform;
-			//				//Debug.LogError("Camera Changed >> " + _curCamera.gameObject.name);
-			//				break;
-			//			}
-			//		}
-			//	}
-			//}
-			////체크 후에도 카메라가 없다면 패스
-			//if(_curCamera == null)
-			//{
-			//	_zDepthOnPerspectiveCam = 0;
-			//	return;
-			//} 
-			#endregion
-
-
 			if(_mainCamera == null)
 			{
 				_mainCamera = new apOptMainCamera(this);
@@ -12554,51 +12532,90 @@ namespace AnyPortrait
 				_transform = transform;
 			}
 
+			//변경 v1.5.0
+			//Refresh의 단계를 세분화
+			//1. 빌보드 여부
+			//- 빌보드가 아닌 경우 : 카메라 갱신만 한다.
+			//- 빌보드인 경우 : 카메라의 Matrix 비교 및 재연산도 한다.
+
+			//2. 멀티 카메라 여부
+			//- 멀티 카메라가 아닌 경우 : "지금 카메라가 유효하지 않은 경우"만 갱신을 한다.
+			//- 멀티 카메라인 경우 : 항상 씬의 모든 카메라와 비교를 한다. < 이거 옵션으로 설정 가능 (기본 비활성)
+			//>> 이걸 멀티 카메라 여부 대신 옵션을 별도로 둔다.
+
+			bool isCameraChanged = false;
+
 			//변경 2019.9.24 : 멀티 카메라도 지원하도록 래핑
 			if(_billboardType == BILLBOARD_TYPE.None)
 			{
 				//빌보드가 아니라면 단순 카메라 리스트 검사(false, false)
-				_mainCamera.Refresh(false, false);
+				isCameraChanged = _mainCamera.Refresh(false, false, _cameraCheckMode);
+				if(isCameraChanged && isResetCommandBufferWhenCameraChanged)
+				{
+					//카메라가 변경되었다면 > 커맨드 버퍼를 갱신한다.
+					ResetMeshesCommandBuffers(false);
+				}
 				return;
 			}
-
 			
 			//빌보드라면 카메라의 매트릭스까지 계산(false, true)
-			_mainCamera.Refresh(false, true);
+			isCameraChanged = _mainCamera.Refresh(false, true, _cameraCheckMode);
+			if(isCameraChanged && isResetCommandBufferWhenCameraChanged)
+			{
+				//카메라가 변경되었다면 > 커맨드 버퍼를 갱신한다.
+				ResetMeshesCommandBuffers(false);
+			}
 
-			if(_billboardType == BILLBOARD_TYPE.Billboard)
+			//조건문 추가 v1.5.0 : 바라보는 카메라가 없는 경우에 갱신하면 안된다.
+			if(_mainCamera.GetNumberOfCamera() != apOptMainCamera.NumberOfCamera.None)
 			{
-				//전체 빌보드
-				//_transform.rotation = _curCameraTransform.rotation;//이전
-				_transform.rotation = _mainCamera.Rotation;//변경
-			}
-			else if(_billboardType == BILLBOARD_TYPE.UpFixed)
-			{
-				//Up 고정 빌보드
-				//_transform.rotation = Quaternion.LookRotation(_curCameraTransform.forward, Vector3.up);//이전
-				_transform.rotation = Quaternion.LookRotation(_mainCamera.Forward, Vector3.up);//변경
-			}
-			else
-			{
-				// local up 고정 빌보드
-				if (transform.parent != null)
-					_transform.rotation = Quaternion.LookRotation(_mainCamera.Forward, Vector3.up) * transform.parent.rotation;
+				if(_billboardType == BILLBOARD_TYPE.Billboard)
+				{
+					//전체 빌보드
+					_transform.rotation = _mainCamera.Rotation;
+				}
 				else
-					_transform.rotation = Quaternion.LookRotation(_mainCamera.Forward, Vector3.up);
+				{
+					//Up 고정 빌보드
+					_transform.rotation = Quaternion.LookRotation(_mainCamera.Forward, Vector3.up);//변경
+				}
+
+				//추가 v1.5.0
+				//옵션에 따라선, 부모 Transform의 Rotation을 더하거나 Up Vector를 맞춘다.
+				if(_billboardParentRotation != BILLBOARD_PARENT_ROTATION.Ignore)
+				{
+					//Ignore 외의 값을 갖는 경우
+					Transform parentTF = _transform.parent;
+					if(parentTF != null)
+					{
+						if(_billboardParentRotation == BILLBOARD_PARENT_ROTATION.PitchYawRoll)
+						{
+							//일반 더하기 연산 (Local) - Yaw-Pitch-Roll로 동작
+							//_transform.rotation *= parentTF.rotation;
+							_transform.rotation *= parentTF.localRotation;
+						}
+						else
+						{
+							//Up Vector 동기화
+							_transform.rotation = Quaternion.LookRotation(_mainCamera.Forward, parentTF.up);
+						}
+						
+					}
+				}
+				
+				
+				//카메라 좌표계에서의 Z값 (ZDepth)
+				//_zDepthOnPerspectiveCam = _curCamera.worldToCameraMatrix.MultiplyPoint3x4(_transform.position).z;//미사용 코드
+
+				//여기선 Orthographic SortMode로 해야한다.
+				//_curCamera.transparencySortMode = TransparencySortMode.Orthographic;
+
+				//추가 20.9.15
+				//Rotation 전용의 행렬/역행렬을 준비한다.
+				_rotationOnlyMatrixIfBillboard = Matrix4x4.TRS(Vector3.zero, _transform.rotation, Vector3.one);
+				_invRotationOnlyMatrixIfBillboard = _rotationOnlyMatrixIfBillboard.inverse;
 			}
-
 			
-			//카메라 좌표계에서의 Z값 (ZDepth)
-			//_zDepthOnPerspectiveCam = _curCamera.worldToCameraMatrix.MultiplyPoint3x4(_transform.position).z;//미사용 코드
-
-			//TODO : 옵션으로 설정
-			//여기선 Orthographic SortMode로 해야한다.
-			//_curCamera.transparencySortMode = TransparencySortMode.Orthographic;
-
-			//추가 20.9.15
-			//Rotation 전용의 행렬/역행렬을 준비한다.
-			_rotationOnlyMatrixIfBillboard = Matrix4x4.TRS(Vector3.zero, _transform.rotation, Vector3.one);
-			_invRotationOnlyMatrixIfBillboard = _rotationOnlyMatrixIfBillboard.inverse;
 		}
 
 		//추가. 업데이트가 끝나면 이 함수를 호출하자.
@@ -12612,22 +12629,7 @@ namespace AnyPortrait
 			_isCurrentRootUnitChanged = false;
 		}
 
-		
 
-
-
-		//이전
-		//public Camera GetCamera()
-		//{
-		//	return _curCamera;
-		//}
-
-		//public float GetZDepth()
-		//{
-		//	return _zDepthOnPerspectiveCam;
-		//}
-
-		//변경
 		/// <summary>
 		/// [Please do not use it] 
 		/// </summary>
@@ -12636,6 +12638,19 @@ namespace AnyPortrait
 		{
 			return _mainCamera;
 		}
+
+		//v1.5.0 추가
+		//: 실시간으로 카메라를 자동으로 감지하는 기능을 사용하고 있을 때,
+		//현재 카메라를 주로 감지할 지, 항상 모든 카메라를 감지할지 결정하는 옵션
+		/// <summary>
+		/// When using the automatic camera detection function, set whether to mainly check the current camera or always check all cameras.
+		/// </summary>
+		/// <param name="cameraCheckMode">How to check cameras</param>
+		public void SetCameraCheckMethod(CAMERA_CHECK_MODE cameraCheckMode)
+		{
+			_cameraCheckMode = cameraCheckMode;
+		}
+	
 
 
 		//카메라를 직접 지정하는 함수
@@ -12654,7 +12669,11 @@ namespace AnyPortrait
 			{
 				//기존에는 자동이 아니었는데 이번에 자동으로 갱신되도록 변경되었다.
 				//>> 강제로 갱신
-				_mainCamera.Refresh(true, _billboardType != BILLBOARD_TYPE.None);
+				bool isCameraChanged = _mainCamera.Refresh(true, _billboardType != BILLBOARD_TYPE.None, _cameraCheckMode);
+				if(isCameraChanged)
+				{
+					ResetMeshesCommandBuffers(false);
+				}
 			}
 		}
 
@@ -12673,7 +12692,13 @@ namespace AnyPortrait
 				return -1;
 			}
 
-			return _mainCamera.SetCameras(cameras);
+			int result = _mainCamera.SetCameras(cameras);
+
+			//추가 v1.5.0 : 이 함수를 호출하면 클리핑 마스크를 위한 커맨드 버퍼를 같이 갱신해야 한다.
+			//(사용자에게 맡기지만 말자)
+			ResetMeshesCommandBuffers(false);
+
+			return result;
 		}
 		
 
@@ -12707,10 +12732,22 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apTextureData GetTexture(int uniqueID)
 		{
-			return _textureData.Find(delegate (apTextureData a)
-			{
-				return a._uniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _textureData.Find(delegate (apTextureData a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetTexture_ID = uniqueID;
+			return _textureData.Find(s_GetTextureByID_Func);
+		}
+
+		private static int s_GetTexture_ID = -1;
+		private static Predicate<apTextureData> s_GetTextureByID_Func = FUNC_GetTextureByID;
+		private static bool FUNC_GetTextureByID(apTextureData a)
+		{
+			return a._uniqueID == s_GetTexture_ID;
 		}
 
 		/// <summary>
@@ -12720,11 +12757,24 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apMesh GetMesh(int uniqueID)
 		{
-			return _meshes.Find(delegate (apMesh a)
-			{
-				return a._uniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _meshes.Find(delegate (apMesh a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetMesh_ID = uniqueID;
+			return _meshes.Find(s_GetMeshByID_Func);
 		}
+
+		private static int s_GetMesh_ID = -1;
+		private static Predicate<apMesh> s_GetMeshByID_Func = FUNC_GetMeshByID;
+		private static bool FUNC_GetMeshByID(apMesh a)
+		{
+			return a._uniqueID == s_GetMesh_ID;
+		}
+
 
 		/// <summary>
 		/// [Please do not use it] (For Editor, not Runtime)
@@ -12733,10 +12783,22 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apMeshGroup GetMeshGroup(int uniqueID)
 		{
-			return _meshGroups.Find(delegate (apMeshGroup a)
-			{
-				return a._uniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _meshGroups.Find(delegate (apMeshGroup a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetMeshGroup_ID = uniqueID;
+			return _meshGroups.Find(s_GetMeshGroupByID_Func);
+		}
+
+		private static int s_GetMeshGroup_ID = -1;
+		private static Predicate<apMeshGroup> s_GetMeshGroupByID_Func = FUNC_GetMeshGroupByID;
+		private static bool FUNC_GetMeshGroupByID(apMeshGroup a)
+		{
+			return a._uniqueID == s_GetMeshGroup_ID;
 		}
 
 		/// <summary>
@@ -12746,10 +12808,22 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apControlParam GetControlParam(int uniqueID)
 		{
-			return _controller._controlParams.Find(delegate (apControlParam a)
-			{
-				return a._uniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _controller._controlParams.Find(delegate (apControlParam a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetControlParam_ID = uniqueID;
+			return _controller._controlParams.Find(s_GetControlParamByID_Func);
+		}
+
+		private static int s_GetControlParam_ID = -1;
+		private static Predicate<apControlParam> s_GetControlParamByID_Func = FUNC_GetControlParamByID;
+		private static bool FUNC_GetControlParamByID(apControlParam a)
+		{
+			return a._uniqueID == s_GetControlParam_ID;
 		}
 
 		/// <summary>
@@ -12759,11 +12833,26 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apControlParam GetControlParam(string controlParamName)
 		{
-			return _controller._controlParams.Find(delegate (apControlParam a)
-			{
-				return string.Equals(a._keyName, controlParamName);
-			});
+			//이전 (GC 발생)
+			//return _controller._controlParams.Find(delegate (apControlParam a)
+			//{
+			//	return string.Equals(a._keyName, controlParamName);
+			//});
+
+			//변경 v1.5.0
+			s_GetControlParam_Name = controlParamName;
+			return _controller._controlParams.Find(s_GetControlParamByName_Func);
 		}
+
+		private static string s_GetControlParam_Name = null;
+		private static Predicate<apControlParam> s_GetControlParamByName_Func = FUNC_GetControlParamByName;
+		private static bool FUNC_GetControlParamByName(apControlParam a)
+		{
+			return string.Equals(a._keyName, s_GetControlParam_Name);
+		}
+
+
+
 
 		/// <summary>
 		/// [Please do not use it] (For Editor, not Runtime)
@@ -12772,11 +12861,24 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apAnimClip GetAnimClip(int uniqueID)
 		{
-			return _animClips.Find(delegate (apAnimClip a)
-			{
-				return a._uniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _animClips.Find(delegate (apAnimClip a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetAnimClip_ID = uniqueID;
+			return _animClips.Find(s_GetAnimClipByID);
 		}
+
+		private static int s_GetAnimClip_ID = -1;
+		private static Predicate<apAnimClip> s_GetAnimClipByID = FUNC_GetAnimClipByID;
+		private static bool FUNC_GetAnimClipByID(apAnimClip a)
+		{
+			return a._uniqueID == s_GetAnimClip_ID;
+		}
+
 
 		// ID로 오브젝트 참조 - RealTime
 		//-------------------------------------------------------------------------------------------------------
@@ -12796,11 +12898,24 @@ namespace AnyPortrait
 			{
 				return null;
 			}
-			return _optTransforms.Find(delegate (apOptTransform a)
-			{
-				return a._transformID == transformID;
-			});
+			//이전 (GC 발생)
+			//return _optTransforms.Find(delegate (apOptTransform a)
+			//{
+			//	return a._transformID == transformID;
+			//});
+
+			//변경 v1.5.0
+			s_GetOptTransform_ID = transformID;
+			return _optTransforms.Find(s_GetOptTransformByID_Func);
 		}
+
+		private static int s_GetOptTransform_ID = -1;
+		private static Predicate<apOptTransform> s_GetOptTransformByID_Func = FUNC_GetOptTransformByID;
+		private static bool FUNC_GetOptTransformByID(apOptTransform a)
+		{
+			return a._transformID == s_GetOptTransform_ID;
+		}
+
 
 
 		/// <summary>
@@ -12813,26 +12928,32 @@ namespace AnyPortrait
 			//Debug.Log("GetOptTransformAsMeshGroup [" + meshGroupUniqueID + "]");
 			if (meshGroupUniqueID < 0)
 			{
-				Debug.LogError("ID < 0");
+				//Debug.LogError("ID < 0");
 				return null;
 			}
 			if (_optTransforms == null)
 			{
-				Debug.LogError("OptTranforms is Null");
+				//Debug.LogError("OptTranforms is Null");
 				return null;
 			}
 
-			//for (int i = 0; i < _optTransforms.Count; i++)
+			//이전 (GC 발생)
+			//return _optTransforms.Find(delegate (apOptTransform a)
 			//{
-			//	Debug.Log("[" + i + "] : " + _optTransforms[i]._transformID + " / " + _optTransforms[i]._meshGroupUniqueID);
-			//}
+			//	return a._meshGroupUniqueID == meshGroupUniqueID;
+			//});
 
-			return _optTransforms.Find(delegate (apOptTransform a)
-			{
-				return a._meshGroupUniqueID == meshGroupUniqueID;
-			});
+			//변경 v1.5.0
+			s_GetOptTransformAsMeshGroup_ID = meshGroupUniqueID;
+			return _optTransforms.Find(s_GetOptTransformAsMeshGroup_Func);
 		}
 
+		private static int s_GetOptTransformAsMeshGroup_ID = -1;
+		private static Predicate<apOptTransform> s_GetOptTransformAsMeshGroup_Func = FUNC_GetOptTransformAsMeshGroup;
+		private static bool FUNC_GetOptTransformAsMeshGroup(apOptTransform a)
+		{
+			return a._meshGroupUniqueID == s_GetOptTransformAsMeshGroup_ID;
+		}
 
 		/// <summary>
 		/// Get Root Unit with Index
@@ -12852,22 +12973,48 @@ namespace AnyPortrait
 			return _optRootUnitList[rootUnitIndex];
 		}
 
+		
+
 
 		//추가 19.6.3 : MaterialSet에 관련
 		public apMaterialSet GetMaterialSet(int uniqueID)
 		{
-			return _materialSets.Find(delegate(apMaterialSet a)
-			{
-				return a._uniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _materialSets.Find(delegate(apMaterialSet a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetMaterialSet_ID = uniqueID;
+			return _materialSets.Find(s_GetMaterialSetByID_Func);
 		}
+
+
+		private static int s_GetMaterialSet_ID = -1;
+		private static Predicate<apMaterialSet> s_GetMaterialSetByID_Func = FUNC_GetMaterialSetByID;
+		private static bool FUNC_GetMaterialSetByID(apMaterialSet a)
+		{
+			return a._uniqueID == s_GetMaterialSet_ID;
+		}
+
 
 		public apMaterialSet GetDefaultMaterialSet()
 		{
-			return _materialSets.Find(delegate (apMaterialSet a)
-			{
-				return a._isDefault;
-			});
+			//이전 (GC 발생)
+			//return _materialSets.Find(delegate (apMaterialSet a)
+			//{
+			//	return a._isDefault;
+			//});
+
+			//변경 v1.5.0
+			return _materialSets.Find(s_GetDefaultMaterialSet);
+		}
+
+		private static Predicate<apMaterialSet> s_GetDefaultMaterialSet = FUNC_GetDefaultMaterialSet;
+		private static bool FUNC_GetDefaultMaterialSet(apMaterialSet a)
+		{
+			return a._isDefault;
 		}
 
 

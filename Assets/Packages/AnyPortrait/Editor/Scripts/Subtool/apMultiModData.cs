@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -11,7 +11,6 @@
 *	In that case, the act could be subject to legal sanctions.
 */
 
-using NUnit.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -808,10 +807,8 @@ namespace AnyPortrait
 			SyncSelectedObjectToLinkUnit(subObjects);
 
 			//LinkData의 내용을 넣어주자
-			
 			apModifiedMesh curModMesh = null;
 			LinkUnit linkUnit = null;
-			
 			
 			for (int i = 0; i < paramSet._meshData.Count; i++)
 			{
@@ -857,7 +854,6 @@ namespace AnyPortrait
 					}
 				}
 			}
-
 
 			//마지막으로 결과를 정리하자.
 			return MakeResult();
@@ -1009,6 +1005,7 @@ namespace AnyPortrait
 			//전체 LinkUnit을 검색하자.
 			int nLinkUnits = _linkUnits_All.Count;
 			LinkUnit curLinkUnit = null;
+			
 			for (int iLU = 0; iLU < nLinkUnits; iLU++)
 			{
 				curLinkUnit = _linkUnits_All[iLU];
