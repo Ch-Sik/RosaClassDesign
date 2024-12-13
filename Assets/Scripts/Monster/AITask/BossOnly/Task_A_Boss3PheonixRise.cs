@@ -5,13 +5,15 @@ using Panda;
 using DG.Tweening;
 using Sirenix.OdinInspector;
 
-public class Task_A_RisingPheonix : Task_A_Base
+public class Task_A_Boss3PheonixRise : Task_A_Base
 {
     [SerializeField] GameObject previewObject;      // 공격 범위 미리보기 오브젝트
     [InfoBox("공격 데미지나 판정 범위 등은 공격 오브젝트 쪽으로 가서 수정할 것.")]
     [SerializeField] GameObject attackObject;       // 공격 오브젝트
     [InfoBox("보스방의 아래, 정가운데에 위치시킬 것")]
     [SerializeField] Transform bossroomCenter;
+    [Tooltip("지면에 착지하기까지 걸리는 시간")]
+    [SerializeField] float landingTime = 1f;
 
     Rigidbody2D _rigidbody;
     MonsterDamageInflictor _bodyDamageComponent;
@@ -28,11 +30,12 @@ public class Task_A_RisingPheonix : Task_A_Base
 
 
     [Task]
-    void RisingPheonix()
+    void PheonixRise()
     {
         ExecuteAttack();
     }
 
+    // 이 패턴은 PheonixFlyUp에서 이어서 시작
     protected override void OnStartupBegin()
     {
         Vector3 targetPosition = transform.position;
@@ -47,19 +50,8 @@ public class Task_A_RisingPheonix : Task_A_Base
             Debug.LogError("적(플레이어)를 찾을 수 없음!");
         }
 
-        DOTween.Sequence()
-            // 1. 위로 올라가기
-            .Append(_rigidbody.DOMoveY(transform.position.y + 20f, 1.5f))
-            // 2. 공격 판정 끄고, 저 멀리서 나타나기
-            .AppendCallback(()=>{
-                _bodyDamageComponent.attackEnabled = false;
-                transform.position = targetPosition + Vector3.forward * 20;
-            })
-            // 3. 지면 아래로 날아오기
-            // 여기 Transform으로 하는 게 맞는가? Lifecycle 주기가 좀 다른데;;
-            .Append(transform.DOMove(targetPosition + Vector3.down * 15, 1f))
-            // 4. 미리보기 오브젝트 활성화
-            .AppendCallback(() => { previewObject.SetActive(true); });
+        // 미리보기 오브젝트 활성화
+        previewObject.SetActive(true);;
     }
 
     protected override void OnStartupLast()
@@ -82,7 +74,7 @@ public class Task_A_RisingPheonix : Task_A_Base
     {
         DOTween.Sequence()
             // 6. 플레이어가 피할 수 있도록 약간의 여유 시간 주기
-            .AppendInterval(1f)
+            // .AppendInterval(1f)
             // 7. 미리보기 오브젝트 비활성화
             .AppendCallback(() => {
                 previewObject.SetActive(false);
@@ -108,7 +100,7 @@ public class Task_A_RisingPheonix : Task_A_Base
             transform.position = new Vector3(bossroomCenter.position.x - offsetFromCenter, transform.position.y, 0);
             LookAt2D(_target.transform.position);
             DOTween.Sequence()
-                .Append(_rigidbody.DOMoveY(_startPosition.y, 3f));
+                .Append(_rigidbody.DOMoveY(_startPosition.y, landingTime));
         }
         else
         {
@@ -116,7 +108,7 @@ public class Task_A_RisingPheonix : Task_A_Base
             transform.position = new Vector3(bossroomCenter.position.x + offsetFromCenter, transform.position.y, 0);
             LookAt2D(_target.transform.position);
             DOTween.Sequence()
-                .Append(_rigidbody.DOMoveY(_startPosition.y, 3f));
+                .Append(_rigidbody.DOMoveY(_startPosition.y, landingTime));
         }
     }
 }
