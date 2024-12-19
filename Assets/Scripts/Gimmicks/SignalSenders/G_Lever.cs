@@ -6,6 +6,47 @@ using UnityEngine;
 
 public class G_Lever : GimmickSignalSender
 {
+    #region State
+
+    public override void Init(int state)
+    { 
+        SetState(state);
+        switch (state)
+        {
+            case 0:
+                return;
+            case 1: // Active
+                ImmediateActiveLever();
+                return;
+            case 2: // InActive
+                ImmediateInactiveLever();
+                return;
+        }
+    }
+
+    private void ImmediateActiveLever()
+    {
+        isActive = true;
+
+        if (isOnce)
+        {
+            interactiveObject.canUse = false;
+            interactiveObject.OnInactive();
+        }
+
+        leverHandle.DORotate(new Vector3(0, 0, -90), 0f, RotateMode.LocalAxisAdd).SetRelative(true);
+    }
+
+    private void ImmediateInactiveLever()
+    {
+        isActive = false;
+
+        leverHandle.DORotate(new Vector3(0, 0, +90), 0f, RotateMode.LocalAxisAdd).SetRelative(true);
+    }
+
+    #endregion
+
+
     public bool isOnce = true;
     [SerializeField] Transform leverHandle;
 
@@ -41,7 +82,6 @@ public class G_Lever : GimmickSignalSender
     [Button]
     public void LeverAction()
     {
-
         if (onAct)
             return;
 
@@ -50,10 +90,12 @@ public class G_Lever : GimmickSignalSender
         {
             if (isOnce)
                 return;
+            SetState(2);
             InActiveLever();
         }
         else
         {
+            SetState(1);
             ActiveLever();
         }
     }

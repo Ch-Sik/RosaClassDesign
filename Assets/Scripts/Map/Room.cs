@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Linq;
-using Unity.VisualScripting;
-
-
+using System.Runtime.CompilerServices;
 
 
 #if UNITY_EDITOR
@@ -38,6 +36,15 @@ public class Room : MonoBehaviour
 
     public HashSet<Vector2Int> safePositions = new HashSet<Vector2Int>();
 
+    public List<GimmickSignalSender> senderRefs = new List<GimmickSignalSender>();
+    public List<GimmickSignalReceiver> receiverRefs = new List<GimmickSignalReceiver>();
+    public List<GimmickSignalConnector> connectorRefs = new List<GimmickSignalConnector>();
+
+    private void Awake()
+    {
+        MapManager.Instance.room = this;
+    }
+
     private void Start()
     {
         //Invoke("Init", 0.5f);
@@ -48,9 +55,75 @@ public class Room : MonoBehaviour
 
         safePositions = new HashSet<Vector2Int>(GetSafeLandingPosition());
     }
+    #region Save/Load
+    public (List<int>, List<int>, List<int>) GetAllGimmicksStates()
+    {
+        List<int> senders = new List<int>();
+        List<int> receivers = new List<int>();
+        List<int> connectors = new List<int>();
+
+        for (int i = 0; i < senderRefs.Count; i++)
+            senders.Add(senderRefs[i].GetState());
+        /*
+        for (int i = 0; i < receiverStates.Count; i++)
+            receivers.Add(receiverStates[i].GetState());
+        for (int i = 0; i < connectorStates.Count; i++)
+            connectors.Add(connectorStates[i].GetState());
+        */
+
+        return (senders, receivers, connectors);
+    }
+
+    private void GetAllGimmicks()
+    {
+        senderRefs = new List<GimmickSignalSender>();
+        receiverRefs = new List<GimmickSignalReceiver>();
+        connectorRefs = new List<GimmickSignalConnector>();
+
+        GameObject[] senders = GameObject.FindGameObjectsWithTag("Sender");
+        senders = senders.OrderBy(x => x.transform.position.magnitude).ToArray();
+        for (int i = 0; i < senders.Length; i++)
+            senderRefs.Add(senders[i].GetComponent<GimmickSignalSender>());
+
+        GameObject[] receivers = GameObject.FindGameObjectsWithTag("Receiver");
+        receivers = receivers.OrderBy(x => x.transform.position.magnitude).ToArray();
+        for (int i = 0; i < receivers.Length; i++)
+            receiverRefs.Add(receivers[i].GetComponent<GimmickSignalReceiver>());
+
+        GameObject[] connectors = GameObject.FindGameObjectsWithTag("Connector");
+        connectors = connectors.OrderBy(x => x.transform.position.magnitude).ToArray();
+        for (int i = 0; i < connectors.Length; i++)
+            connectorRefs.Add(connectors[i].GetComponent<GimmickSignalConnector>());
+    }
+
+    public void SetAllGimmickStates(List<int> senders, List<int> receivers, List<int> connectors)
+    {
+        GetAllGimmicks();
+
+        if (senders.Count != senderRefs.Count /*||
+            receivers.Count != receiverRefs.Count ||
+            connectors.Count != connectorRefs.Count*/
+            )
+        {
+            return;
+        }
+
+        for (int i = 0; i < senderRefs.Count; i++)
+            senderRefs[i].Init(senders[i]);
+        /*
+        for (int i = 0; i < receiverRefs.Count; i++)
+            receiverRefs[i].SetState(receivers[i]);
+        for (int i = 0; i < connectorRefs.Count; i++)
+            connectorRefs[i].SetState(connectors[i]);
+        */
+    }
+    #endregion
 
     public void Init()
     {
+        GetAllGimmicks();
+
+        //요청
         ClearTriggers();
         SetTriggers(roomData.topPorts);
         SetTriggers(roomData.botPorts);
@@ -308,13 +381,14 @@ public class Room : MonoBehaviour
     #region Event
     public void Enter(PortDirection direction, int index, float percentage,Vector3 playerPosition)
     {
-        //Debug.Log($"[{roomData.title}] [{direction}, {index}] 플레이어 입장");
+        Debug.Log($"[{roomData.title}] [{direction}, {index}] 플레이어 입장");
+        
         MapManager.Instance?.Enter(roomData, direction, index, percentage, playerPosition);
     }
 
     public void Exit(PortDirection direction, int index)
     {
-        //Debug.Log($"[{roomData.title}] [{direction}, {index}]플레이어 퇴장");
+        Debug.Log($"[{roomData.title}] [{direction}, {index}]플레이어 퇴장");
         MapManager.Instance?.Exit(roomData);
 
     }

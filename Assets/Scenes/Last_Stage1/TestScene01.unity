@@ -1021,7 +1021,7 @@ MonoBehaviour:
   cam: {fileID: 210034125}
   room: {fileID: 0}
   startPoint: {fileID: 2061483551}
-  startRoom: {fileID: 11400000, guid: 6856910e83052554bb94afff13a046e9, type: 2}
+  startRoom: {fileID: 11400000, guid: 8a42244a2d2c80f4fa9ee79fa8318dac, type: 2}
   currentRoom: {fileID: 0}
   oldRooms: []
   chapter: {fileID: 1838996231}
@@ -1052,10 +1052,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useSaveLoad: 1
-  useLocalSave: 1
+  useProjectSave: 1
   pathName: SaveFile
   flagPathName: Flag
-  mapPathame: Maps
+  mapPathName: Maps
   playerPathName: Player
 --- !u!1 &1047433009
 GameObject:

@@ -88,6 +88,37 @@ public class SaveLoadManager : MonoBehaviour
     #endregion
 
     #region Map
+    public void SaveMap(string sceneName, List<int> senders, List<int> receivers, List<int> connectors)
+    {
+        MapSaveData Data = new MapSaveData()
+        {
+            sceneName = sceneName,
+        };
+        Data.SaveSender(senders);
+        Data.SaveReceivers(receivers);
+        Data.SaveConnectors(connectors);
+
+        string filePath = GetPath(mapPathName) + $"/{sceneName}.json";
+        string json = JsonUtility.ToJson(Data);
+        File.WriteAllText(filePath, json);
+    }
+
+    public bool CanLoadMap(string sceneName) { return File.Exists(GetPath(mapPathName) + $"/{sceneName}.json"); }
+
+    public MapSaveData LoadMap(string sceneName)
+    {
+        string filePath = GetPath(mapPathName) + $"/{sceneName}.json";
+        if (!File.Exists(filePath))
+        {
+            Debug.LogError($"[Map Data] {filePath}를 찾을 수 없다.");
+            return null;
+        }
+
+        string json = File.ReadAllText(filePath);
+        MapSaveData Data = JsonUtility.FromJson<MapSaveData>(json);
+
+        return Data;
+    }
     #endregion
 
     #region Flag
@@ -115,7 +146,7 @@ public class SaveLoadManager : MonoBehaviour
     {
         string filePath = GetPath(flagPathName) + "/flag.json";
         if (!File.Exists(filePath)) {
-            Debug.LogError($"{filePath}를 찾을 수 없다.");
+            Debug.LogError($"[Flag Data] {filePath}를 찾을 수 없다.");
             return null;
         }
 
@@ -131,12 +162,72 @@ public class SaveLoadManager : MonoBehaviour
 }
 
 [Serializable]
-public class MapSaveData
+public class MapSaveData 
 {
-    public string MapName;
-    public List<GimmickSignalSender> a;
-    public List<GimmickSignalReceiver> b;
-    public List<GimmickSignalConnector> c;
+    public string sceneName;
+    public List<_MapSaveData> senders       = new List<_MapSaveData>();
+    public List<_MapSaveData> receivers     = new List<_MapSaveData>();
+    public List<_MapSaveData> connectors    = new List<_MapSaveData>();
+
+    public void SaveSender(List<int> states)
+    {
+        for (int i = 0; i < states.Count; i++)
+            senders.Add(new _MapSaveData(i, states[i]));
+    }
+
+    public void SaveReceivers(List<int> states)
+    {
+        for (int i = 0; i < states.Count; i++)
+            receivers.Add(new _MapSaveData(i, states[i]));
+    }
+
+    public void SaveConnectors(List<int> states)
+    {
+        for (int i = 0; i < states.Count; i++)
+            connectors.Add(new _MapSaveData(i, states[i]));
+    }
+
+    public List<int> LoadSenders()
+    {
+        List<int> l = new List<int>();
+
+        for (int i = 0; i < senders.Count; i++)
+            l.Add(senders[i].state);
+
+        return l;
+    }
+    public List<int> LoadReceivers()
+    {
+        List<int> l = new List<int>();
+
+        for (int i = 0; i < receivers.Count; i++)
+            l.Add(receivers[i].state);
+
+        return l;
+    }
+
+    public List<int> LoadConenctors()
+    {
+        List<int> l = new List<int>();
+
+        for (int i = 0; i < connectors.Count; i++)
+            l.Add(connectors[i].state);
+
+        return l;
+    }
+
+    [Serializable]
+    public class _MapSaveData
+    {
+        public int index;
+        public int state;
+
+        public _MapSaveData(int index, int state)
+        {
+            this.index = index;
+            this.state = state;
+        }
+    }
 }
 
 [Serializable]

@@ -8,6 +8,24 @@ using UnityEngine;
 
 public class G_MobCounter : GimmickSignalSender
 {
+    #region State
+
+    public override void Init(int state)
+    {
+        SetState(state);
+        switch (state)
+        {
+            case 0:
+                return;
+            case 1: // Active
+                return;
+            case 2: // InActive
+                return;
+        }
+    }
+
+    #endregion
+
     public int fullCount;
     public int deadMobCount;
     public List<MonsterState> mobs = new List<MonsterState>();

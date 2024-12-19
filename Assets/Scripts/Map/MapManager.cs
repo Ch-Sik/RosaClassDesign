@@ -60,13 +60,16 @@ public class MapManager : MonoBehaviour
     private void Init(SORoom startRoom)
     {
         Enter(startRoom);
+        
+        LoadScene();
 
         startPoint.GetComponent<SpriteRenderer>().enabled = false;
     }
 
     private SORoom FindStartRoom()
     {
-        SORoom room = GetComponent<Room>().roomData;
+        this.room = GetComponent<Room>();
+        SORoom room = this.room.roomData;
 
         return room;
     }
@@ -132,6 +135,9 @@ public class MapManager : MonoBehaviour
 
         oldRooms = new List<SORoom>(newRooms);
         */
+
+        SaveScene();
+
         SORoom oldRoom = currentRoom;
 
         //        currentRoom = ports[0].room;     //flag
@@ -313,6 +319,7 @@ public class MapManager : MonoBehaviour
                 PlayerRef.Instance.movement.wallClimbEnabled = true;
 
             chapter.text = room.scene.SceneName;
+            LoadScene();
         }
 
         /*
@@ -321,7 +328,6 @@ public class MapManager : MonoBehaviour
         foreach (GameObject obj in objects)
             obj.GetComponent<Room>()?.Init();
         */
-        LoadScene();
     }
 
     public void CloseScenes(List<SORoom> rooms)
@@ -337,19 +343,30 @@ public class MapManager : MonoBehaviour
 
     public void CloseScene(SORoom room)
     {
-        SaveScene();
-
         SceneField scene = room.scene;
 
         SceneManager.UnloadSceneAsync(scene);
     }
 
     public void SaveScene()
-    { 
+    {
+        //현재 룸에 대한 저장
+        List<int> senders = new List<int>();
+        List<int> receivers = new List<int>();
+        List<int> connectors = new List<int>();
+        (senders, receivers, connectors) = room.GetAllGimmicksStates();
+        SaveLoadManager.Instance.SaveMap(currentRoom.scene.SceneName, senders, receivers, connectors);
     }
 
     public void LoadScene()
     {
+        if (SaveLoadManager.Instance.CanLoadMap(currentRoom.scene.SceneName))
+        {
+            MapSaveData Data = SaveLoadManager.Instance.LoadMap(currentRoom.scene.SceneName);
+
+            if (Data != null)
+                room.SetAllGimmickStates(Data.LoadSenders(), Data.LoadReceivers(), Data.LoadConenctors());
+        }
     }
     #endregion
 }

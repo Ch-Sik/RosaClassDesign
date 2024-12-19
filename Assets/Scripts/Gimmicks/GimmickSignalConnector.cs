@@ -10,8 +10,9 @@ public class GimmickSignalConnector : MonoBehaviour
     public bool isActive = false;
     private bool curIsActive = false;
 
-    public void Start()
+    public void Awake()
     {
+        gameObject.tag = "Connector";
         Init();
     }
 
