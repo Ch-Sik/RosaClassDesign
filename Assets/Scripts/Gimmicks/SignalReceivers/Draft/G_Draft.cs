@@ -1,4 +1,3 @@
-using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -56,5 +55,17 @@ public class G_Draft : GimmickSignalReceiver
         {
             particles[i].SetActive(value);
         }
+    }
+
+    public override void ImmediateOnAct()
+    {
+        isActivated = true;
+        ToggleParticles(true);
+    }
+
+    public override void ImmediateOffAct()
+    {
+        isActivated = false;
+        ToggleParticles(false);
     }
 }

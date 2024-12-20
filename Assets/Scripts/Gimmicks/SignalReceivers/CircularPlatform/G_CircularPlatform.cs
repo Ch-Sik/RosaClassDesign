@@ -2,9 +2,6 @@ using DG.Tweening;
 using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class G_CircularPlatform : GimmickSignalReceiver
@@ -98,6 +95,16 @@ public class G_CircularPlatform : GimmickSignalReceiver
 
     [Button]
     public override void OnAct()
+    {
+        Move(true);
+    }
+
+    public override void ImmediateOnAct()
+    {
+        Move();
+    }
+
+    public override void ImmediateOffAct()
     {
         Move(true);
     }

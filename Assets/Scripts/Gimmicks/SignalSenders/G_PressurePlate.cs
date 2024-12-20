@@ -13,12 +13,13 @@ public class G_PressurePlate : GimmickSignalSender
         switch (state)
         {
             case 0:
-                return;
+                break;
             case 1: // Active
-                return;
+                break;
             case 2: // InActive
-                return;
+                break;
         }
+        ImmediateSendSignal();
     }
 
     #endregion

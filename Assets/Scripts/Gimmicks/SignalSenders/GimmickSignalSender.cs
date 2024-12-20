@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class GimmickSignalSender : MonoBehaviour
 {
-    [HideInInspector] public bool isActive = false;
+    public bool isActive = false;
     private GimmickSignalConnector handler;
 
     private void Awake()
@@ -20,6 +20,13 @@ public abstract class GimmickSignalSender : MonoBehaviour
     {
         if (handler != null)
             handler.Signal();
+    }
+
+    public void ImmediateSendSignal()
+    {
+        Debug.Log("전송");
+        if (handler != null)
+            handler.ImmediateSignal();
     }
 
     // 0 은 기본 상태, 그 외는 내부에서 상태를 정의함. 

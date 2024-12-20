@@ -14,14 +14,15 @@ public class G_Lever : GimmickSignalSender
         switch (state)
         {
             case 0:
-                return;
+                break;
             case 1: // Active
                 ImmediateActiveLever();
-                return;
+                break;
             case 2: // InActive
                 ImmediateInactiveLever();
-                return;
+                break;
         }
+        ImmediateSendSignal();
     }
 
     private void ImmediateActiveLever()

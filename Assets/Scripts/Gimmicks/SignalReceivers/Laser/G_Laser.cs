@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
 using DG.Tweening;
-using System.Threading;
 
 public class G_Laser : GimmickSignalReceiver
 {
@@ -155,5 +154,15 @@ public class G_Laser : GimmickSignalReceiver
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(point.position, 0.3f);
         Debug.DrawRay(point.position, point.up * laserMaxLength, Color.red);
+    }
+
+    public override void ImmediateOnAct()
+    {
+        ActivateLaser();
+    }
+
+    public override void ImmediateOffAct()
+    {
+        InactivateLaser();
     }
 }

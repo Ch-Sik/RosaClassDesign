@@ -54,6 +54,54 @@ public class MovePlatform : MonoBehaviour
         return false;
     }
 
+    public void ImmediateOnAct()
+    {
+        switch (type)
+        {
+            case MovePlatformType.OnOff:
+                canMove = true;
+                break;
+            case MovePlatformType.Once:
+                canMove = true;
+                break;
+            case MovePlatformType.Reverse:
+                Reverse();
+                break;
+            case MovePlatformType.EndPoint:
+                if (!isReverse)
+                    return;
+
+                canMove = true;
+                isArrive = false;
+                isReverse = false;
+                break;
+        }
+    }
+
+    public void ImmediateOffAct()
+    {
+        switch (type)
+        {
+            case MovePlatformType.OnOff:
+                canMove = false;
+                break;
+            case MovePlatformType.Once:
+                canMove = true;
+                break;
+            case MovePlatformType.Reverse:
+                Reverse();
+                break;
+            case MovePlatformType.EndPoint:
+                if (isReverse)
+                    return;
+
+                canMove = true;
+                isArrive = false;
+                isReverse = true;
+                break;
+        }
+    }
+
     [Button]
     public void OnAct()
     {

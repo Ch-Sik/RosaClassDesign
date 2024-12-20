@@ -126,4 +126,36 @@ public class G_Lotate : GimmickSignalReceiver
             transform.Rotate(0, 0, rotationSpeed * Time.deltaTime);
         }
     }
+
+    public override void ImmediateOnAct()
+    {
+        switch (type)
+        {
+            case LotateType.OnOff:
+                canMove = true;
+                break;
+            case LotateType.Once:
+                canMove = true;
+                break;
+            case LotateType.Reverse:
+                Reverse();
+                break;
+        }
+    }
+
+    public override void ImmediateOffAct()
+    {
+        switch (type)
+        {
+            case LotateType.OnOff:
+                canMove = false;
+                break;
+            case LotateType.Once:
+                canMove = true;
+                break;
+            case LotateType.Reverse:
+                Reverse();
+                break;
+        }
+    }
 }

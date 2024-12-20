@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using Com.LuisPedroFonseca.ProCamera2D;
+using Unity.VisualScripting.Antlr3.Runtime;
 
 /*
 [Serializable]
@@ -78,6 +79,16 @@ public class G_Door : GimmickSignalReceiver
     }
 
     public override void OffAct()
+    {
+    }
+
+    public override void ImmediateOnAct()
+    {
+        doorSprite.DOMoveY(2.5f, 0f).SetRelative(true);
+        col.enabled = false;
+    }
+
+    public override void ImmediateOffAct()
     {
     }
 }

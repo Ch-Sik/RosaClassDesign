@@ -16,12 +16,16 @@ public class G_MobCounter : GimmickSignalSender
         switch (state)
         {
             case 0:
-                return;
+                isActive = false;
+                break;
             case 1: // Active
-                return;
+                isActive = true;
+                break;
             case 2: // InActive
-                return;
+                isActive = false;
+                break;
         }
+        ImmediateSendSignal();
     }
 
     #endregion
@@ -40,10 +44,15 @@ public class G_MobCounter : GimmickSignalSender
 
     public void DieSignal(GameObject monster)
     {
+        //이미 클리어로 기록된다면,
+        if (GetState() == 1)
+            return;
+
         deadMobCount++;
 
         if (deadMobCount == fullCount)
         {
+            SetState(1);
             isActive = true;
             SendSignal();
         }

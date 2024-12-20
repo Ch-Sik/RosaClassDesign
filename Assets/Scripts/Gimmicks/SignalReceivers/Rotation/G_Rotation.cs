@@ -78,6 +78,41 @@ public class G_Rotation : GimmickSignalReceiver
         }
     }
 
+    public override void ImmediateOnAct()
+    {
+        switch (type)
+        {
+            case RotateType.OnOff:
+                canRotate = false;
+                break;
+            case RotateType.Once:
+                canRotate = true;
+                break;
+            case RotateType.Reverse:
+                Reverse();
+                break;
+        }
+    }
+
+    public override void ImmediateOffAct()
+    {
+        switch (type)
+        {
+            case RotateType.OnOff:
+                canRotate = true;
+                if (useAutoCinematic)
+                    Cinematic();
+                break;
+            case RotateType.Once:
+                canRotate = true;
+                StartCoroutine(Stop());
+                break;
+            case RotateType.Reverse:
+                Reverse();
+                break;
+        }
+    }
+
     public void Cinematic()
     {
         if (cinematics != null)

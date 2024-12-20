@@ -100,4 +100,20 @@ public class G_ImprisonDoor : GimmickSignalReceiver
     public override void OffAct()
     {
     }
+
+    public override void ImmediateOnAct()
+    {
+        if (isOpen)
+            return;
+
+        isClear = true;
+
+        doorSprite.DOMoveY(2.5f, 0f).SetRelative(true);
+        col.enabled = false;
+        isOpen = true;
+    }
+
+    public override void ImmediateOffAct()
+    {
+    }
 }

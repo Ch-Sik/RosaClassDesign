@@ -61,4 +61,40 @@ public class GimmickSignalConnector : MonoBehaviour
         for(int i = 0; i < gimmicks.Count; i++)
             gimmicks[i].OffAct();
     }
+
+    public void ImmediateSignal()
+    {
+        for (int i = 0; i < signals.Count; i++)
+            if (!signals[i].isActive)
+            {
+                isActive = false;
+                ImmediateChangeState();
+            }
+
+        isActive = true;
+        ImmediateChangeState();
+    }
+
+    public void ImmediateChangeState()
+    {
+        if (curIsActive == isActive)
+            return;
+
+        curIsActive = isActive;
+
+        if (isActive) ImmediateOnAct();
+        else ImmediateOffAct();
+    }
+
+    public void ImmediateOnAct()
+    {
+        for (int i = 0; i < gimmicks.Count; i++)
+            gimmicks[i].ImmediateOnAct();
+    }
+
+    public void ImmediateOffAct()
+    {
+        for (int i = 0; i < gimmicks.Count; i++)
+            gimmicks[i].ImmediateOffAct();
+    }
 }

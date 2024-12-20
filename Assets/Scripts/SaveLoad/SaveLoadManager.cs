@@ -205,7 +205,6 @@ public class MapSaveData
 
         return l;
     }
-
     public List<int> LoadConenctors()
     {
         List<int> l = new List<int>();
