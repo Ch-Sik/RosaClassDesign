@@ -56,11 +56,10 @@ public class Room : MonoBehaviour
         safePositions = new HashSet<Vector2Int>(GetSafeLandingPosition());
     }
     #region Save/Load
-    public (List<int>, List<int>, List<int>) GetAllGimmicksStates()
+    public List<int> GetAllGimmicksStates()
     {
         List<int> senders = new List<int>();
-        List<int> receivers = new List<int>();
-        List<int> connectors = new List<int>();
+
 
         for (int i = 0; i < senderRefs.Count; i++)
             senders.Add(senderRefs[i].GetState());
@@ -71,7 +70,7 @@ public class Room : MonoBehaviour
             connectors.Add(connectorStates[i].GetState());
         */
 
-        return (senders, receivers, connectors);
+        return senders;
     }
 
     private void GetAllGimmicks()
@@ -96,7 +95,7 @@ public class Room : MonoBehaviour
             connectorRefs.Add(connectors[i].GetComponent<GimmickSignalConnector>());
     }
 
-    public void SetAllGimmickStates(List<int> senders, List<int> receivers, List<int> connectors)
+    public void SetAllGimmickStates(List<int> senders)
     {
         GetAllGimmicks();
 
@@ -110,12 +109,6 @@ public class Room : MonoBehaviour
 
         for (int i = 0; i < senderRefs.Count; i++)
             senderRefs[i].Init(senders[i]);
-        /*
-        for (int i = 0; i < receiverRefs.Count; i++)
-            receiverRefs[i].SetState(receivers[i]);
-        for (int i = 0; i < connectorRefs.Count; i++)
-            connectorRefs[i].SetState(connectors[i]);
-        */
     }
     #endregion
 

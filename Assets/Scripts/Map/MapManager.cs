@@ -6,7 +6,8 @@ using UnityEngine.SceneManagement;
 using System.Linq;
 using Com.LuisPedroFonseca.ProCamera2D;
 using TMPro;
-using DG.Tweening;
+using Sirenix.OdinInspector;
+using UnityEditor.SearchService;
 
 
 public class MapManager : MonoBehaviour
@@ -43,10 +44,16 @@ public class MapManager : MonoBehaviour
     public List<SORoom> oldRooms = new List<SORoom>();
     public TextMeshProUGUI chapter;
     public TextMeshProUGUI position;
+    [ShowInInspector] private Dictionary<string, SORoom> rooms;
 
     private void Update()
     {
         position.text = $"{player.position.x.ToString("F1")} , {player.position.y.ToString("F1")}";
+    }
+
+    private void Awake()
+    {
+        LoadAllRooms();
     }
 
     private void Start()
@@ -64,6 +71,24 @@ public class MapManager : MonoBehaviour
         LoadScene();
 
         startPoint.GetComponent<SpriteRenderer>().enabled = false;
+    }
+
+    private int LoadAllRooms()
+    {
+        int cnt = 0;
+
+        rooms = new Dictionary<string, SORoom>();
+
+        SORoom[] _rooms = Resources.LoadAll<SORoom>("RoomDatas");
+        cnt = _rooms.Length;
+
+        for (int i = 0; i < _rooms.Length; i++)
+            if (rooms.ContainsKey(_rooms[i].scene.SceneName))
+                Debug.LogError($"[Duplicated Scene Name Error] 동일 이름의 씬이 둘 이상 존재하기에 딕셔너리 충돌 에러 발생 : {_rooms[i].scene.SceneName}");
+        else
+            rooms.Add(_rooms[i].scene.SceneName, _rooms[i]);
+
+        return cnt;
     }
 
     private SORoom FindStartRoom()
@@ -352,10 +377,9 @@ public class MapManager : MonoBehaviour
     {
         //현재 룸에 대한 저장
         List<int> senders = new List<int>();
-        List<int> receivers = new List<int>();
-        List<int> connectors = new List<int>();
-        (senders, receivers, connectors) = room.GetAllGimmicksStates();
-        SaveLoadManager.Instance.SaveMap(currentRoom.scene.SceneName, senders, receivers, connectors);
+
+        senders = room.GetAllGimmicksStates();
+        SaveLoadManager.Instance.SaveMap(currentRoom.scene.SceneName, senders);
     }
 
     public void LoadScene()
@@ -365,8 +389,25 @@ public class MapManager : MonoBehaviour
             MapSaveData Data = SaveLoadManager.Instance.LoadMap(currentRoom.scene.SceneName);
 
             if (Data != null)
-                room.SetAllGimmickStates(Data.LoadSenders(), Data.LoadReceivers(), Data.LoadConenctors());
+                room.SetAllGimmickStates(Data.LoadSenders());
         }
+    }
+
+    public bool OpenSceneBySceneNameWithPosition(string SceneName, Vector2 Position)
+    {
+        if (!rooms.ContainsKey(SceneName))
+        {
+            Debug.LogError($"[Scene Load Error] 해당 이름의 씬을 찾을 수 없다. : {SceneName}");
+            return false;
+        }
+
+        if (SceneManager.GetSceneByName(currentRoom.scene.SceneName).isLoaded)
+            CloseScene(currentRoom);
+        StartCoroutine(OpenScene(rooms[SceneName], Position));
+
+        PlayerRef.Instance.transform.position = Position;
+
+        return true;
     }
     #endregion
 }

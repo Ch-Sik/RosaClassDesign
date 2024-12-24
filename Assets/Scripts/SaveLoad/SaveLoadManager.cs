@@ -50,20 +50,6 @@ public class SaveLoadManager : MonoBehaviour
         MakeDirectoryHierarchy();
     }
 
-    private void MakeDirectoryHierarchy()
-    {
-#if UNITY_EDITOR
-        if (useProjectSave)
-            MakeDirectory($"{Application.dataPath}/{pathName}");
-        else
-            MakeDirectory($"{Application.persistentDataPath}/{pathName}");
-#else
-            MakeDirectory($"{Application.persistentDataPath}/{pathName}");
-#endif
-        MakeDirectory(GetPath(flagPathName));
-        MakeDirectory(GetPath(mapPathName));
-        MakeDirectory(GetPath(playerPathName));
-    }
 
     #region Utils
     //Path 병합해서 전달
@@ -85,18 +71,38 @@ public class SaveLoadManager : MonoBehaviour
         if (!Directory.Exists(path))
             Directory.CreateDirectory(path);
     }
+
+    private void MakeDirectoryHierarchy()
+    {
+#if UNITY_EDITOR
+        if (useProjectSave)
+            MakeDirectory($"{Application.dataPath}/{pathName}");
+        else
+            MakeDirectory($"{Application.persistentDataPath}/{pathName}");
+#else
+            MakeDirectory($"{Application.persistentDataPath}/{pathName}");
+#endif
+        MakeDirectory(GetPath(flagPathName));
+        MakeDirectory(GetPath(mapPathName));
+        MakeDirectory(GetPath(playerPathName));
+    }
     #endregion
 
     #region Map
-    public void SaveMap(string sceneName, List<int> senders, List<int> receivers, List<int> connectors)
+    [Button]
+    public void SaveCurrentMap()
+    {
+        MapManager.Instance.SaveScene();
+    }
+
+    //세이브 처리부 - MapLoader에서 자동 호출 됌.
+    public void SaveMap(string sceneName, List<int> senders)
     {
         MapSaveData Data = new MapSaveData()
         {
             sceneName = sceneName,
         };
         Data.SaveSender(senders);
-        Data.SaveReceivers(receivers);
-        Data.SaveConnectors(connectors);
 
         string filePath = GetPath(mapPathName) + $"/{sceneName}.json";
         string json = JsonUtility.ToJson(Data);
@@ -158,6 +164,37 @@ public class SaveLoadManager : MonoBehaviour
     #endregion
 
     #region Player
+    [Button]
+    public void SavePlayerData()
+    {
+        PlayerSaveData Data = new PlayerSaveData()
+        {
+            lastScene = MapManager.Instance.currentRoom.scene.SceneName,
+            lastPos = PlayerRef.Instance.transform.position
+        };
+
+        string filePath = GetPath(playerPathName) + "/player.json";
+        string json = JsonUtility.ToJson(Data);
+        File.WriteAllText(filePath, json);
+    }
+
+    [Button]
+    public void LoadPlayerData()
+    {
+        string filePath = GetPath(playerPathName) + "/player.json";
+        if (!File.Exists(filePath)) {
+            //초기 파일 생성
+            //Debug.LogError($"[Player Data] {filePath}를 찾을 수 없다.");
+            return;
+        }
+
+        string json = File.ReadAllText(filePath);
+        PlayerSaveData Data = JsonUtility.FromJson<PlayerSaveData>(json);
+
+        Debug.Log($"Data : {Data.lastScene}, Pos : {Data.lastPos}");
+
+        MapManager.Instance.OpenSceneBySceneNameWithPosition(Data.lastScene, Data.lastPos);
+    }
     #endregion
 }
 
@@ -166,25 +203,11 @@ public class MapSaveData
 {
     public string sceneName;
     public List<_MapSaveData> senders       = new List<_MapSaveData>();
-    public List<_MapSaveData> receivers     = new List<_MapSaveData>();
-    public List<_MapSaveData> connectors    = new List<_MapSaveData>();
 
     public void SaveSender(List<int> states)
     {
         for (int i = 0; i < states.Count; i++)
             senders.Add(new _MapSaveData(i, states[i]));
-    }
-
-    public void SaveReceivers(List<int> states)
-    {
-        for (int i = 0; i < states.Count; i++)
-            receivers.Add(new _MapSaveData(i, states[i]));
-    }
-
-    public void SaveConnectors(List<int> states)
-    {
-        for (int i = 0; i < states.Count; i++)
-            connectors.Add(new _MapSaveData(i, states[i]));
     }
 
     public List<int> LoadSenders()
@@ -193,24 +216,6 @@ public class MapSaveData
 
         for (int i = 0; i < senders.Count; i++)
             l.Add(senders[i].state);
-
-        return l;
-    }
-    public List<int> LoadReceivers()
-    {
-        List<int> l = new List<int>();
-
-        for (int i = 0; i < receivers.Count; i++)
-            l.Add(receivers[i].state);
-
-        return l;
-    }
-    public List<int> LoadConenctors()
-    {
-        List<int> l = new List<int>();
-
-        for (int i = 0; i < connectors.Count; i++)
-            l.Add(connectors[i].state);
 
         return l;
     }
@@ -238,5 +243,7 @@ public class FlagSaveData
 
 [Serializable]
 public class PlayerSaveData
-{ 
+{
+    public string lastScene;
+    public Vector2 lastPos;
 }
