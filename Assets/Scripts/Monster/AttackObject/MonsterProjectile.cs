@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -22,6 +23,11 @@ public class MonsterProjectile : MonoBehaviour
     [SerializeField, Tooltip("투사체가 벽에 닿았을 때 행동 설정")]
     protected ProjectileWallHitOption onWallHit = ProjectileWallHitOption.Destroy;
 
+    [SerializeField, Tooltip("수명 사용")]
+    private bool useLifetime = false;
+    [SerializeField, ShowIf("useLifetime")]
+    private float lifetime;
+
     [SerializeField]
     protected new Rigidbody2D rigidbody;
     [SerializeField]
@@ -29,7 +35,7 @@ public class MonsterProjectile : MonoBehaviour
     [SerializeField]
     private Animator animator;
 
-    public void InitProjectile(Vector2 direction)
+    public virtual void InitProjectile(Vector2 direction)
     {
         // 필요 컴포넌트 설정
         if(rigidbody == null)
@@ -47,6 +53,9 @@ public class MonsterProjectile : MonoBehaviour
             Debug.Assert(collider != null);
         }
 
+        // 만약 콜라이더 꺼져있다면 활성화
+        collider.enabled = true;
+
         // 기본 속도 설정
         rigidbody.velocity = direction * speedScale;
         // Debug.Log($"투사체 속도:{direction * speedScale}");
@@ -56,6 +65,17 @@ public class MonsterProjectile : MonoBehaviour
         {
             rigidbody.angularVelocity = Random.Range(-randomRotationRange, randomRotationRange);
         }
+
+        // 수명 옵션 사용시 수명 설정
+        if(useLifetime)
+        {
+            Invoke("OnLifetimeEnd", lifetime);
+        }
+    }
+
+    void OnLifetimeEnd()
+    {
+        DoDestroy(1f);
     }
 
     protected virtual void OnTriggerEnter2D(Collider2D collider)
@@ -65,6 +85,9 @@ public class MonsterProjectile : MonoBehaviour
         {
             switch(onWallHit)
             {
+                case ProjectileWallHitOption.Ignore:
+                    // Do nothing
+                    break;
                 case ProjectileWallHitOption.Disable:
                     rigidbody.velocity = Vector2.zero;
                     this.collider.enabled = false;

@@ -18,7 +18,7 @@ public class Task_CountCheck : MonoBehaviour
 
     // 쿨타임이 다 지났다면 Succeed, 남았다면 Fail
     [Task]
-    private bool CheckCountGEQ(string key, int value)
+    public bool CheckCountGEQ(string key, int value)
     {
         int count;
         if (blackboard.TryGet(key, out count) && count >= value)
@@ -29,7 +29,7 @@ public class Task_CountCheck : MonoBehaviour
 
     // '마지막 시전 이후 지난 시간'을 강제로 지정된 값으로 설정
     [Task]
-    private void ResetCount(string key)
+    public void ResetCount(string key)
     {
         blackboard.Set(key, 0);
         ThisTask.Succeed();
@@ -37,7 +37,7 @@ public class Task_CountCheck : MonoBehaviour
     }
 
     [Task]
-    private void AddCount(string key)
+    public void AddCount(string key)
     {
         int count;
         if(blackboard.TryGet(key, out count))
