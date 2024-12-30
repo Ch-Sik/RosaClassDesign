@@ -53694,6 +53694,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: LastBoss
       objectReference: {fileID: 0}
+    - target: {fileID: 1017914053216276494, guid: 893fee509f174304ba961a041670647e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -54463,6 +54467,14 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1260252353}
+    - target: {fileID: 2805880738015498677, guid: e4db85c9022104641ac05a4a77400067, type: 3}
+      propertyPath: scripts.Array.data[0]
+      value: 
+      objectReference: {fileID: 4900000, guid: 013c54c2b93e13b4fa1f902ca5f8f678, type: 3}
+    - target: {fileID: 2805880738015498677, guid: e4db85c9022104641ac05a4a77400067, type: 3}
+      propertyPath: sourceInfos.Array.data[0].isFoldout
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2892555614678477669, guid: e4db85c9022104641ac05a4a77400067, type: 3}
       propertyPath: m_Mesh
       value: 

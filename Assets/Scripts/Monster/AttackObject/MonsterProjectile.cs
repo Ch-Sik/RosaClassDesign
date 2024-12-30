@@ -28,6 +28,9 @@ public class MonsterProjectile : MonoBehaviour
     [SerializeField, ShowIf("useLifetime")]
     private float lifetime;
 
+    [SerializeField, Tooltip("로깅 옵션 사용")]
+    protected bool doLogging = false;
+
     [SerializeField]
     protected new Rigidbody2D rigidbody;
     [SerializeField]
@@ -37,6 +40,9 @@ public class MonsterProjectile : MonoBehaviour
 
     public virtual void InitProjectile(Vector2 direction)
     {
+        if(doLogging)
+            Debug.Log($"{gameObject.name} 투사체 발사");
+
         // 필요 컴포넌트 설정
         if(rigidbody == null)
         {
@@ -75,6 +81,8 @@ public class MonsterProjectile : MonoBehaviour
 
     void OnLifetimeEnd()
     {
+        if(doLogging)
+            Debug.Log($"{gameObject.name}: 투사체 수명 종료, 파괴 시퀀스 시작");
         DoDestroy(1f);
     }
 
@@ -83,6 +91,8 @@ public class MonsterProjectile : MonoBehaviour
         // 벽에 닿았다면
         if((1 << collider.gameObject.layer & blockingLayers) != 0)
         {
+            if(doLogging)
+                Debug.Log($"{gameObject.name}: 투사체 벽에 충돌함");
             switch(onWallHit)
             {
                 case ProjectileWallHitOption.Ignore:
@@ -124,7 +134,8 @@ public class MonsterProjectile : MonoBehaviour
 
         if(collider.gameObject.CompareTag("Player"))
         {
-            Debug.Log("몬스터 투사체 플레이어와 접촉");
+            if(doLogging)
+                Debug.Log("몬스터 투사체 플레이어와 접촉");
             rigidbody.velocity = Vector2.zero;
             this.collider.enabled = false;
             DoDestroy(1f);
@@ -132,7 +143,8 @@ public class MonsterProjectile : MonoBehaviour
 
         if(canDestroyMushroom && (collider.tag == "Mushroom"))
         {
-            Debug.Log("버섯 파괴 시전");
+            if(doLogging)
+                Debug.Log("버섯 파괴 시전");
             collider.GetComponent<MagicMushroom>().DoDestroy();
         }
     }

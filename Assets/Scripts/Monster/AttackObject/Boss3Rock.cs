@@ -25,14 +25,17 @@ public class Boss3Rock : MonsterProjectile
         
     }
 
-    protected override void OnTriggerEnter2D(Collider2D collider)
+    protected override void OnTriggerEnter2D(Collider2D other)
     {
-        base.OnTriggerEnter2D(collider);
+        base.OnTriggerEnter2D(other);
         // 버섯과 충돌했다면
-        if(collider.CompareTag("Mushroom"))
+        if(other.CompareTag("Mushroom"))
         {
             // 현재 진행중인 속도 초기화
             rigidbody.velocity = Vector2.zero;
+
+            // 더 이상 플레이어에게 데미지 입히지 않음
+            this.collider.enabled = false;
 
             // 철두루미쪽으로 돌아가기
             DOTween.Sequence()
