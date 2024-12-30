@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -54,6 +54,11 @@ namespace AnyPortrait
 		/// </summary>
 		public string _name = "";
 
+
+		//[추가 v1.5.0]
+		//외부 스크립트로 인게임 중에 텍스쳐를 변경할 수 있다. 이 값은 Extra에 의한 텍스쳐 변경시 사용된다.
+		private bool _isTextureChanged = false;
+		private Texture2D _changedTexture = null;
 
 
 		// Init
@@ -342,5 +347,40 @@ namespace AnyPortrait
 
 		// Get / Set
 		//---------------------------------------
+
+		//[추가 v1.5.0]
+		//외부 스크립트로 인게임 중에 텍스쳐를 변경할 수 있다. 이 값은 Extra에 의한 텍스쳐 변경시 사용된다.
+		/// <summary>
+		/// Extra 옵션에서 사용되는 텍스쳐. 외부 스크립트에 의해서 변경될 수도 있다.
+		/// </summary>
+		public Texture2D RuntimeTexture
+		{
+			get
+			{
+				if(_isTextureChanged)
+				{
+					return _changedTexture;
+				}
+				return _texture;
+			}
+		}
+
+		/// <summary>
+		/// Extra 옵션을 위해서 텍스쳐를 오버라이드한다.
+		/// </summary>
+		/// <param name="texture"></param>
+		public void SetRuntimeTexture(Texture2D texture)
+		{
+			if(texture == null)
+			{
+				_isTextureChanged = false;
+				_changedTexture = null;
+			}
+			else
+			{
+				_isTextureChanged = true;
+				_changedTexture = texture;
+			}
+		}
 	}
 }

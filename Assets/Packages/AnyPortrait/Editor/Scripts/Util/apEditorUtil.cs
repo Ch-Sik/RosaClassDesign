@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -18,10 +18,7 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 
-
 using AnyPortrait;
-//using System.CodeDom.Compiler;
-//using static System.Net.WebRequestMethods;
 
 namespace AnyPortrait
 {
@@ -1618,11 +1615,39 @@ namespace AnyPortrait
 
 
 
+		//삭제
+		//public static void SetEditorDirty()
+		//{
+		//	EditorSceneManager.MarkAllScenesDirty();
+		//}
 
-		public static void SetEditorDirty()
+		//변경 v1.5.0
+		//- 불필요하게 전체 Dirty를 하지 않도록 구분한다.
+		//- 가능하면 apPortrait만 Dirty를 하도록 하자. (부모가 Dirty를 하면 자식은 자동으로 적용)
+		//- 꼭 필요한 경우만 에디터 전체를 Dirty한다.
+		/// <summary>apPortrait를 Dirty한다.</summary>
+		public static void SetDirty(apEditor editor)
+		{
+			if(editor == null)
+			{
+				return;
+			}
+			if(editor._portrait == null)
+			{
+				return;
+			}
+			EditorUtility.SetDirty(editor._portrait);
+		}
+
+		/// <summary>
+		/// 현재 열린 모든 씬을 Dirty한다. 가능하면 하지 말자.
+		/// </summary>
+		public static void SetAllSceneDirty()
 		{
 			EditorSceneManager.MarkAllScenesDirty();
 		}
+
+
 
 		/// <summary>
 		/// Undo는 "같은 메뉴"에서만 가능하다. 메뉴를 전환할 때에는 Undo를 초기화해야한다.
@@ -1707,7 +1732,7 @@ namespace AnyPortrait
 				portrait._srcPrefabAssetForRestore = prefabObj;
 			}
 
-			SetEditorDirty();
+			EditorUtility.SetDirty(portrait);
 		}
 
 
@@ -1723,7 +1748,7 @@ namespace AnyPortrait
 			{
 				portrait._rootGameObjectAsPrefabInstanceForRestore = null;
 				portrait._srcPrefabAssetForRestore = null;
-				SetEditorDirty();
+				EditorUtility.SetDirty(portrait);
 			}
 
 #if UNITY_2021_1_OR_NEWER
@@ -1733,7 +1758,7 @@ namespace AnyPortrait
 			{
 				PrefabUtility.UnpackPrefabInstance(outerRootGameObject, PrefabUnpackMode.Completely, InteractionMode.UserAction);
 			}
-			SetEditorDirty();
+			EditorUtility.SetDirty(portrait);
 #else
 
 			//<< 유니티 2018.3 관련 API 분기 >>
@@ -1784,7 +1809,7 @@ namespace AnyPortrait
 #else
 			PrefabUtility.DisconnectPrefabInstance(rootGameObj);
 #endif
-			SetEditorDirty();
+			EditorUtility.SetDirty(portrait);
 #endif
 		}
 
@@ -2180,7 +2205,7 @@ namespace AnyPortrait
 			targetPortrait._rootGameObjectAsPrefabInstanceForRestore = rootGameObj;
 
 
-			SetEditorDirty();
+			EditorUtility.SetDirty(targetPortrait);
 		}
 
 
@@ -7389,6 +7414,7 @@ namespace AnyPortrait
 			Rotoscoping,
 			//AtlasExport
 			EditorPreferences,
+			CapturePref,
 		}
 		/// <summary>
 		/// 파일을 디렉토리로부터 "열거나 저장할 때", 해당 파일의 경로를 저장한다. 
@@ -7428,17 +7454,12 @@ namespace AnyPortrait
 		{
 			switch (filePathType)
 			{
-				case SAVED_LAST_FILE_PATH.PSD_ExternalFile:
-					return "AnyPortrait_LastFilePath__PSD_ExternalFile";
-				case SAVED_LAST_FILE_PATH.BackupFile:
-					return "AnyPortrait_LastFilePath__BackupFile";
-				case SAVED_LAST_FILE_PATH.BoneAnimExport:
-					return "AnyPortrait_LastFilePath__BoneAnimExport";
-				case SAVED_LAST_FILE_PATH.Rotoscoping:
-					return "AnyPortrait_LastFilePath__Rotoscoping";
-				//case SAVED_LAST_FILE_PATH.AtlasExport:		return "AnyPortrait_LastFilePath__AtlasExport";
-				case SAVED_LAST_FILE_PATH.EditorPreferences:
-					return "AnyPortrait_LastFilePath__EditorPreferences";
+				case SAVED_LAST_FILE_PATH.PSD_ExternalFile:		return "AnyPortrait_LastFilePath__PSD_ExternalFile";
+				case SAVED_LAST_FILE_PATH.BackupFile:			return "AnyPortrait_LastFilePath__BackupFile";
+				case SAVED_LAST_FILE_PATH.BoneAnimExport:		return "AnyPortrait_LastFilePath__BoneAnimExport";
+				case SAVED_LAST_FILE_PATH.Rotoscoping:			return "AnyPortrait_LastFilePath__Rotoscoping";
+				case SAVED_LAST_FILE_PATH.EditorPreferences:	return "AnyPortrait_LastFilePath__EditorPreferences";
+				case SAVED_LAST_FILE_PATH.CapturePref:			return "AnyPortrait_LastFilePath__CapturePref";
 
 			}
 			return "AnyPortrait_LastFilePath__Common";
@@ -7572,11 +7593,32 @@ namespace AnyPortrait
 
 			//유니티 2020부터 체크
 			//RenderPipelineAsset의 이름을 체크하자. 패키지가 설치되지 않을 수 있기 때문에
-#if UNITY_2020_1_OR_NEWER
-			if(UnityEngine.Rendering.GraphicsSettings.renderPipelineAsset != null)
+
+			//[v1.5.1] Unity 6용 분기
+			
+#if UNITY_6000_0_OR_NEWER
+			bool isRenderPipelineExist = false;
+			string strRenderPipelineTypeName = "";
+			if (UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline != null)
 			{
-				string renderPipelineAssetName = UnityEngine.Rendering.GraphicsSettings.renderPipelineAsset.GetType().FullName;
-				if(renderPipelineAssetName.Contains("Universal"))
+				strRenderPipelineTypeName = UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline.GetType().FullName;
+				isRenderPipelineExist = true;
+			}
+
+#elif UNITY_2020_1_OR_NEWER
+			bool isRenderPipelineExist = false;
+			string strRenderPipelineTypeName = "";
+			if (UnityEngine.Rendering.GraphicsSettings.renderPipelineAsset != null)
+			{
+				strRenderPipelineTypeName = UnityEngine.Rendering.GraphicsSettings.renderPipelineAsset.GetType().FullName;
+				isRenderPipelineExist = true;
+			}
+#endif
+
+#if UNITY_2020_1_OR_NEWER
+			if(isRenderPipelineExist)
+			{
+				if(strRenderPipelineTypeName.Contains("Universal"))
 				{
 					return RENDER_PIPELINE_ENV_RESULT.URP;
 				}
@@ -7586,12 +7628,14 @@ namespace AnyPortrait
 					return RENDER_PIPELINE_ENV_RESULT.Unknown;
 				}
 			}
+
 			return RENDER_PIPELINE_ENV_RESULT.BuiltIn;
 #else
 			return RENDER_PIPELINE_ENV_RESULT.Unknown;
 #endif
-
 		}
+
+		
 
 		/// <summary>
 		/// URP 렌더 파이프라인을 사용하고 있는가 (Unity 2022부터 체크)
@@ -7604,7 +7648,15 @@ namespace AnyPortrait
 
 			//유니티 2022부터 체크
 			//RenderPipelineAsset의 이름을 체크하자. 패키지가 설치되지 않을 수 있기 때문에
-#if UNITY_2022_1_OR_NEWER
+
+			//[v1.5.1] Unity 6용 분기
+#if UNITY_6000_0_OR_NEWER
+			if(UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline != null)
+			{
+				string renderPipelineAssetName = UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline.GetType().FullName;
+				return renderPipelineAssetName.Contains("Universal");
+			}
+#elif UNITY_2022_1_OR_NEWER
 			if(UnityEngine.Rendering.GraphicsSettings.renderPipelineAsset != null)
 			{
 				string renderPipelineAssetName = UnityEngine.Rendering.GraphicsSettings.renderPipelineAsset.GetType().FullName;

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -132,6 +132,8 @@ namespace AnyPortrait
 			MeshGroup_RemoveBone,
 			MeshGroup_RemoveAllBones,
 			MeshGroup_BoneSettingChanged,
+			MeshGroup_BoneIKRangeChanged,
+			MeshGroup_BoneJiggleRangeChanged,
 			MeshGroup_BoneDefaultEdit,
 			MeshGroup_AttachBoneToChild,
 			MeshGroup_DetachBoneFromChild,
@@ -367,6 +369,8 @@ namespace AnyPortrait
 			_undoLabels.Add(ACTION.MeshGroup_RemoveBone, "Remove Bone");
 			_undoLabels.Add(ACTION.MeshGroup_RemoveAllBones, "Remove All Bones");
 			_undoLabels.Add(ACTION.MeshGroup_BoneSettingChanged, "Bone Setting Changed");
+			_undoLabels.Add(ACTION.MeshGroup_BoneIKRangeChanged, "Bone IK Range Changed");
+			_undoLabels.Add(ACTION.MeshGroup_BoneJiggleRangeChanged, "Jiggle Range Changed");
 			_undoLabels.Add(ACTION.MeshGroup_BoneDefaultEdit, "Bone Edit");
 			_undoLabels.Add(ACTION.MeshGroup_AttachBoneToChild, "Attach Bone to Child");
 			_undoLabels.Add(ACTION.MeshGroup_DetachBoneFromChild, "Detach Bone from Child");
@@ -655,7 +659,7 @@ namespace AnyPortrait
 				{
 					//분절된 새로운 액션이다.
 					_isContinuousRecording = false;
-					Undo.IncrementCurrentGroup();//Group ID를 증가시킨다.
+					//Undo.IncrementCurrentGroup();//Group ID를 증가시킨다. > 삭제 v1.5.0
 					Undo.SetCurrentGroupName(_curGroupName);
 
 					//Debug.Log("+Undo ID : " + Undo.GetCurrentGroup());
@@ -685,9 +689,11 @@ namespace AnyPortrait
 				}
 			}
 
-			UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
 
-			
+			if(portrait != null)
+			{
+				EditorUtility.SetDirty(portrait);
+			}
 		}
 
 
@@ -709,6 +715,8 @@ namespace AnyPortrait
 			{
 				return;
 			}
+
+			
 
 			Undo.RegisterCompleteObjectUndo(targetObject, _curGroupName);
 			_curRecordingObjects.Add(targetObject);
@@ -848,7 +856,7 @@ namespace AnyPortrait
 
 			//Debug.Log("+Undo ID : " + Undo.GetCurrentGroup() + "[CorD]");
 
-			UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
+			//UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();//삭제
 
 			_curUndoRequestType = UNDO_REQUEST_TYPE.CreateOrDestroy;//생성/삭제 타입
 		}

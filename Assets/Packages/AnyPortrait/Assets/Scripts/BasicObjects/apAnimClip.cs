@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -1713,11 +1713,24 @@ namespace AnyPortrait
 
 		public apAnimControlParamResult GetControlParamResult(apControlParam targetControlParam)
 		{
-			return _controlParamResult.Find(delegate (apAnimControlParamResult a)
-			{
-				return a._targetControlParam == targetControlParam;
-			});
+			//return _controlParamResult.Find(delegate (apAnimControlParamResult a)
+			//{
+			//	return a._targetControlParam == targetControlParam;
+			//});
+
+			s_GetControlParamResult_TargetControlParam = targetControlParam;
+			return _controlParamResult.Find(s_GetControlParamResult_Func);
 		}
+
+
+		private static apControlParam s_GetControlParamResult_TargetControlParam = null;
+		private static Predicate<apAnimControlParamResult> s_GetControlParamResult_Func = FUNC_GetControlParamResult;
+		private static bool FUNC_GetControlParamResult(apAnimControlParamResult a)
+		{
+			return a._targetControlParam == s_GetControlParamResult_TargetControlParam;
+		}
+
+
 
 		//1.16 추가 : 속도 조절 함수
 		/// <summary>
@@ -1884,11 +1897,22 @@ namespace AnyPortrait
 
 		public apAnimTimeline GetTimeline(int timelineID)
 		{
-			return _timelines.Find(delegate (apAnimTimeline a)
-			{
-				return a._uniqueID == timelineID;
-			});
+			//return _timelines.Find(delegate (apAnimTimeline a)
+			//{
+			//	return a._uniqueID == timelineID;
+			//});
+
+			s_GetTimeline_ID = timelineID;
+			return _timelines.Find(s_GetTimeline_Func);
 		}
+
+		private static int s_GetTimeline_ID = -1;
+		private static Predicate<apAnimTimeline> s_GetTimeline_Func = FUNC_GetTimeline;
+		private static bool FUNC_GetTimeline(apAnimTimeline a)
+		{
+			return a._uniqueID == s_GetTimeline_ID;
+		}
+
 
 
 		public void SetOption_FPS(int fps)

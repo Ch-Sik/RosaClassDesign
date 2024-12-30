@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -706,6 +706,12 @@ namespace AnyPortrait
 
 		public apMeshTri()
 		{
+			int nVertIDs = _vertIDs != null ? _vertIDs.Length : 0;
+			int nVerts = _verts != null ? _verts.Length : 0;
+
+			if(nVertIDs != 3) { _vertIDs = new int[3]; }
+			if(nVerts != 3) { _verts = new apVertex[3]; }
+
 			for (int i = 0; i < 3; i++)
 			{
 				_vertIDs[i] = -1;
@@ -716,6 +722,9 @@ namespace AnyPortrait
 
 		public void Link(apVertex vert1, apVertex vert2, apVertex vert3)
 		{
+			int nVerts = _verts != null ? _verts.Length : 0;
+			if(nVerts != 3) { _verts = new apVertex[3]; }
+
 			_verts[0] = vert1;
 			_verts[1] = vert2;
 			_verts[2] = vert3;
@@ -723,6 +732,12 @@ namespace AnyPortrait
 
 		public void SetVertices(apVertex vert1, apVertex vert2, apVertex vert3)
 		{
+			int nVertIDs = _vertIDs != null ? _vertIDs.Length : 0;
+			int nVerts = _verts != null ? _verts.Length : 0;
+
+			if(nVertIDs != 3) { _vertIDs = new int[3]; }
+			if(nVerts != 3) { _verts = new apVertex[3]; }
+
 			Vector3 normal = Vector3.Cross((vert2._pos - vert1._pos),
 												(vert3._pos - vert1._pos));
 			if (normal.z > 0)
@@ -935,75 +950,323 @@ namespace AnyPortrait
 			_tris.Clear();
 		}
 
+
+		/// <summary>
+		/// 데이터가 유효한지 체크한다. (유효하면 true 리턴)
+		/// </summary>
+		/// <param name="mesh"></param>
+		/// <returns></returns>
+		private bool ValidateData(apMesh mesh)
+		{
+			if(mesh == null)
+			{
+				return false;
+			}
+			int nVertIDs = _vertIDs != null ? _vertIDs.Count : 0;
+			int nVertData = _verts != null ? _verts.Count : 0;
+			int nMeshVerts = mesh._vertexData != null ? mesh._vertexData.Count : 0;
+
+			int nEdgeIDs = _edgeIDs != null ? _edgeIDs.Count : 0;
+			int nEdgeData = _edges != null ? _edges.Count : 0;
+
+			//1. 데이터 길이가 일치하는지 확인한다.
+			if(nVertIDs != nVertData
+				|| nEdgeIDs != nEdgeData
+				|| nMeshVerts == 0)
+			{
+				//데이터 길이가 다르거나 원본 메시의 버텍스가 없다.
+				return false;
+			}
+
+			//2. Vert의 ID/데이터가 유효한지 체크한다.
+			if(nVertIDs > 0)
+			{
+				apVertex vert = null;
+				int vertID = -1;
+
+				for (int i = 0; i < nVertIDs; i++)
+				{
+					vert = _verts[i];
+					vertID = _vertIDs[i];
+
+					if(vert == null || vertID < 0)
+					{
+						//유효하지 않은 데이터
+						return false;
+					}
+
+					if(vert._uniqueID != vertID)
+					{
+						//ID가 맞지 않는다.
+						return false;
+					}
+
+					if(!mesh._vertexData.Contains(vert))
+					{
+						//원본 버텍스 리스트에 존재하지 않는다.
+						return false;
+					}
+				}
+			}
+
+			//3. Edge의 ID/데이터가 유효한지 체크한다.
+			if(nEdgeIDs > 0)
+			{
+				if(nVertIDs <= 1)
+				{
+					//Edge가 존재하는데 버텍스가 1개 이하라면 유효하지 않다.
+					return false;
+				}
+				IDPair edgeID = null;
+				apMeshEdge edge = null;
+
+				for (int i = 0; i < nEdgeIDs; i++)
+				{
+					edgeID = _edgeIDs[i];
+					edge = _edges[i];
+
+					if(edge == null || edgeID._ID1 < 0 || edgeID._ID2 < 0)
+					{
+						//유효하지 않은 데이터
+						return false;
+					}
+
+					if(edge._vert1 == null || edge._vert2 == null)
+					{
+						//버텍스가 연결되지 않았다.
+						return false;
+					}
+
+					if(edge._vertID_1 != edgeID._ID1
+					|| edge._vertID_2 != edgeID._ID2)
+					{
+						//ID가 일치하지 않는다.
+						return false;
+					}
+
+					if(!_verts.Contains(edge._vert1)
+						|| !_verts.Contains(edge._vert2))
+					{
+						return false;
+					}
+				}
+			}
+			int nHiddenEdges = _hidddenEdges != null ? _hidddenEdges.Count : 0;
+
+			//4. 숨겨진 Edge가 유효한지 체크한다.
+			if(nHiddenEdges > 0)
+			{
+				if(nVertIDs <= 1)
+				{
+					//Hidden Edge가 존재하는데 버텍스가 1개 이하라면 유효하지 않다.
+					return false;
+				}
+
+				apMeshEdge hiddenEdge = null;
+				for (int i = 0; i < nHiddenEdges; i++)
+				{
+					hiddenEdge = _hidddenEdges[i];
+
+					//데이터가 유효하지 않다.
+					if(hiddenEdge == null)
+					{
+						return false;
+					}
+
+					if(hiddenEdge._vert1 == null
+						|| hiddenEdge._vert2 == null
+						|| hiddenEdge._vertID_1 < 0
+						|| hiddenEdge._vertID_2 < 0)
+					{
+						//버텍스 정보가 유효하지 않다.
+						return false;
+					}
+
+					if(!_verts.Contains(hiddenEdge._vert1)
+						|| !_verts.Contains(hiddenEdge._vert2))
+					{
+						return false;
+					}
+				}
+			}
+
+			int nTris = _tris != null ? _tris.Count : 0;
+			//5. 인덱스 버퍼(Tri)를 체크한다.
+			if(nTris > 0)
+			{
+				if(nVertIDs <= 2)
+				{
+					//삼각형 데이터가 있는데 버텍스가 2개 이하면 실패
+					return false;					
+				}
+
+				apMeshTri tri = null;
+				apVertex vert1 = null;
+				apVertex vert2 = null;
+				apVertex vert3 = null;
+				int vertID_1 = -1;
+				int vertID_2 = -1;
+				int vertID_3 = -1;
+
+				for (int i = 0; i < nTris; i++)
+				{
+					tri = _tris[i];
+					if(tri == null)
+					{
+						return false;
+					}
+
+					vert1 = tri._verts[0];
+					vert2 = tri._verts[1];
+					vert3 = tri._verts[2];
+
+					vertID_1 = tri._vertIDs[0];
+					vertID_2 = tri._vertIDs[1];
+					vertID_3 = tri._vertIDs[2];
+
+					if(vert1 == null || vert2 == null || vert3 == null
+						|| vertID_1 < 0 || vertID_2 < 0 || vertID_3 < 0)
+					{
+						return false;
+					}
+
+					if(vert1._uniqueID != vertID_1
+					|| vert2._uniqueID != vertID_2
+					|| vert3._uniqueID != vertID_3)
+					{
+						//ID가 불일치한다.
+						return false;
+					}
+
+					if(!_verts.Contains(vert1)
+					|| !_verts.Contains(vert2)
+					|| !_verts.Contains(vert3))
+					{
+						//리스트에 없는 버텍스
+						return false;
+					}
+				}
+			}			
+
+			return true;
+		}
+
+		/// <summary>
+		/// Polygon의 데이터를 메시의 데이터를 기반으로 다시 생성/연결한다.
+		/// </summary>
+		/// <param name="mesh"></param>
+		/// <param name="isResetForce">유효성 테스트 없이 무조건 다시 리셋한다. 메시 편집 화면이나 초기화에서는 true를 입력하고 그 외에는 false를 권장</param>
 		public void Link(apMesh mesh)
 		{
+			//이전 : ID를 제외한 모든 데이터 초기화
+			//변경 v1.5.0 : 초기화가 필요한지 한번 검토한 후 필요하면 리셋
+			//유효성 테스트를 한다.
+			bool isValid = ValidateData(mesh);
+			if(isValid)
+			{
+				//이미 유효하다면 그냥 종료
+				return;
+			}
+
+			//유효하지 않다.
+			int nVertIDs = _vertIDs != null ? _vertIDs.Count : 0;
+			int nEdgeIDs = _edgeIDs != null ? _edgeIDs.Count : 0;
+
 			//Mesh에 속한 Vert와 Edge는 초기화 후 ID와 연결해준다.
 			//그 외에는 내부 Link를 호출한다.
+			if(_verts == null) { _verts = new List<apVertex>(); }
 			_verts.Clear();
+
+			if(_edges == null) { _edges = new List<apMeshEdge>(); }
 			_edges.Clear();
 
-			for (int i = 0; i < _vertIDs.Count; i++)
+			if(nVertIDs > 0)
 			{
-				apVertex vert = mesh.GetVertexByUniqueID(_vertIDs[i]);
-				if (vert != null)
+				apVertex vert = null;
+				for (int i = 0; i < nVertIDs; i++)
 				{
-					_verts.Add(vert);
+					vert = mesh.GetVertexByUniqueID(_vertIDs[i]);
+					if (vert != null)
+					{
+						_verts.Add(vert);
+					}
+					else
+					{
+						//?? 없는 Vert다.
+						_vertIDs[i] = -1;
+					}
 				}
-				else
-				{
-					//?? 없는 Vert다.
-					_vertIDs[i] = -1;
-				}
-			}
-			_vertIDs.RemoveAll(delegate (int a)
-			{
-				return a < 0;
-			});
 
-			for (int i = 0; i < _edgeIDs.Count; i++)
-			{
-				apMeshEdge edge = mesh.GetEdgeByUniqueID(_edgeIDs[i]._ID1, _edgeIDs[i]._ID2);
-				if (edge != null)
+				_vertIDs.RemoveAll(delegate (int a)
 				{
-					_edges.Add(edge);
-				}
-				else
-				{
-					_edgeIDs[i]._ID1 = -1;
-					_edgeIDs[i]._ID2 = -1;
-				}
+					return a < 0;
+				});
 			}
-			_edgeIDs.RemoveAll(delegate (IDPair a)
+
+			if(nEdgeIDs > 0)
 			{
-				return a._ID1 < 0 || a._ID2 < 0;
-			});
+				apMeshEdge edge = null;
+				IDPair edgeID = null;
+				for (int i = 0; i < nEdgeIDs; i++)
+				{
+					edgeID = _edgeIDs[i];		
+					edge = mesh.GetEdgeByUniqueID(edgeID._ID1, edgeID._ID2);
+
+					if (edge != null)
+					{
+						_edges.Add(edge);
+					}
+					else
+					{
+						edgeID._ID1 = -1;
+						edgeID._ID2 = -1;
+					}
+				}
+
+				_edgeIDs.RemoveAll(delegate (IDPair a)
+				{
+					return a._ID1 < 0 || a._ID2 < 0;
+				});
+			}
 
 			//나머지도 링크를 하자
-			for (int i = 0; i < _hidddenEdges.Count; i++)
+			int nHiddenEdges = _hidddenEdges != null ? _hidddenEdges.Count : 0;
+			if(nHiddenEdges > 0)
 			{
-				apMeshEdge hiddenEdge = _hidddenEdges[i];
-				apVertex vert1 = mesh.GetVertexByUniqueID(hiddenEdge._vertID_1);
-				apVertex vert2 = mesh.GetVertexByUniqueID(hiddenEdge._vertID_2);
-				hiddenEdge.Link(vert1, vert2);
+				apMeshEdge hiddenEdge = null;
+				for (int i = 0; i < nHiddenEdges; i++)
+				{
+					hiddenEdge = _hidddenEdges[i];
+					apVertex vert1 = mesh.GetVertexByUniqueID(hiddenEdge._vertID_1);
+					apVertex vert2 = mesh.GetVertexByUniqueID(hiddenEdge._vertID_2);
+					hiddenEdge.Link(vert1, vert2);
+				}
+				_hidddenEdges.RemoveAll(delegate (apMeshEdge a)
+				{
+					return a._vert1 == null || a._vert2 == null;
+				});
 			}
-			_hidddenEdges.RemoveAll(delegate (apMeshEdge a)
+			
+			int nTris = _tris != null ? _tris.Count : 0;
+			if(nTris > 0)
 			{
-				return a._vert1 == null || a._vert2 == null;
-			});
-
-			for (int i = 0; i < _tris.Count; i++)
-			{
-				apMeshTri tri = _tris[i];
-				apVertex vert1 = mesh.GetVertexByUniqueID(tri._vertIDs[0]);
-				apVertex vert2 = mesh.GetVertexByUniqueID(tri._vertIDs[1]);
-				apVertex vert3 = mesh.GetVertexByUniqueID(tri._vertIDs[2]);
-				tri.Link(vert1, vert2, vert3);
+				apMeshTri tri = null;
+				apVertex vert1 = null;
+				apVertex vert2 = null;
+				apVertex vert3 = null;
+				for (int i = 0; i < nTris; i++)
+				{
+					tri = _tris[i];
+					vert1 = mesh.GetVertexByUniqueID(tri._vertIDs[0]);
+					vert2 = mesh.GetVertexByUniqueID(tri._vertIDs[1]);
+					vert3 = mesh.GetVertexByUniqueID(tri._vertIDs[2]);
+					tri.Link(vert1, vert2, vert3);
+				}
+				_tris.RemoveAll(delegate (apMeshTri a)
+				{
+					return a._verts[0] == null || a._verts[1] == null || a._verts[2] == null;
+				});
 			}
-			_tris.RemoveAll(delegate (apMeshTri a)
-			{
-				return a._verts[0] == null || a._verts[1] == null || a._verts[2] == null;
-			});
-
 		}
 
 		public bool IsSamePolygon(List<apVertex> verts)
@@ -1783,11 +2046,18 @@ namespace AnyPortrait
 					}
 
 					//해당 Edge를 포함하는 Edge가 있는가
-					apMeshEdge thirdEdge = allEdges.Find(delegate (apMeshEdge a)
-					{
-						return a.IsSameEdge(noSharedVerts[0], noSharedVerts[1]);
-					});
+					//이전 (GC 발생)
+					//apMeshEdge thirdEdge = allEdges.Find(delegate (apMeshEdge a)
+					//{
+					//	return a.IsSameEdge(noSharedVerts[0], noSharedVerts[1]);
+					//});
 
+					//변경 v1.5.0
+					s_FindEdge_Vert1 = noSharedVerts[0];
+					s_FindEdge_Vert2 = noSharedVerts[1];
+					apMeshEdge thirdEdge = allEdges.Find(s_FindEdge_Func);
+
+					
 					if (thirdEdge == null)
 					{
 						continue;
@@ -1831,6 +2101,13 @@ namespace AnyPortrait
 			SortTriByDepth();
 		}
 
+		private static apVertex s_FindEdge_Vert1 = null;
+		private static apVertex s_FindEdge_Vert2 = null;
+		private static Predicate<apMeshEdge> s_FindEdge_Func = FUNC_FindEdge;
+		private static bool FUNC_FindEdge(apMeshEdge a)
+		{
+			return a.IsSameEdge(s_FindEdge_Vert1, s_FindEdge_Vert2);
+		}
 
 		public bool TurnHiddenEdge(apMeshEdge hiddenEdge)
 		{

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -484,18 +484,45 @@ namespace AnyPortrait
 
 		public apModifierParamSetGroup GetParamSetGroup(apControlParam keyControlParam)
 		{
-			return _paramSetGroup_controller.Find(delegate (apModifierParamSetGroup a)
-			{
-				return a._keyControlParam == keyControlParam;
-			});
+			//이전 (GC 발생)
+			//return _paramSetGroup_controller.Find(delegate (apModifierParamSetGroup a)
+			//{
+			//	return a._keyControlParam == keyControlParam;
+			//});
+
+			//변경 v1.5.0
+			s_GetParamSetGroup_ControlParam = keyControlParam;
+			return _paramSetGroup_controller.Find(s_GetParamSetGroupByControlParam_Func);
 		}
+
+
+		private static apControlParam s_GetParamSetGroup_ControlParam = null;
+		private static Predicate<apModifierParamSetGroup> s_GetParamSetGroupByControlParam_Func = FUNC_GetParamSetGroupByControlParam;
+		private static bool FUNC_GetParamSetGroupByControlParam(apModifierParamSetGroup a)
+		{
+			return a._keyControlParam == s_GetParamSetGroup_ControlParam;
+		}
+
 
 		public apModifierParamSetGroupAnimPack GetParamSetGroupAnimPack(apAnimClip animClip)
 		{
-			return _paramSetGroupAnimPacks.Find(delegate (apModifierParamSetGroupAnimPack a)
-			{
-				return a.LinkedAnimClip == animClip;
-			});
+			//이전 (GC 발생)
+			//return _paramSetGroupAnimPacks.Find(delegate (apModifierParamSetGroupAnimPack a)
+			//{
+			//	return a.LinkedAnimClip == animClip;
+			//});
+
+			//변경 v1.5.0
+			s_GetParamSetGroup_AnimClip = animClip;
+			return _paramSetGroupAnimPacks.Find(s_GetParamSetGroupByAnimClip_Func);
+		}
+
+
+		private static apAnimClip s_GetParamSetGroup_AnimClip = null;
+		private static Predicate<apModifierParamSetGroupAnimPack> s_GetParamSetGroupByAnimClip_Func = FUNC_GetParamSetGroupByAnimClip;
+		private static bool FUNC_GetParamSetGroupByAnimClip(apModifierParamSetGroupAnimPack a)
+		{
+			return a.LinkedAnimClip == s_GetParamSetGroup_AnimClip;
 		}
 
 		/// <summary>
@@ -503,16 +530,34 @@ namespace AnyPortrait
 		/// </summary>
 		public void SortParamSetGroups()
 		{
-			_paramSetGroup_controller.Sort(delegate (apModifierParamSetGroup a, apModifierParamSetGroup b)
+			if(_paramSetGroup_controller == null)
 			{
-				return a._layerIndex - b._layerIndex;
-			});
+				return;
+			}
 
-			for (int i = 0; i < _paramSetGroup_controller.Count; i++)
+			//이전 (아마도 GC 발생)
+			//_paramSetGroup_controller.Sort(delegate (apModifierParamSetGroup a, apModifierParamSetGroup b)
+			//{
+			//	return a._layerIndex - b._layerIndex;
+			//});
+
+			//변경 v1.5.0
+			_paramSetGroup_controller.Sort(s_SortParamSetGroups_Func);
+
+			int nPSGs = _paramSetGroup_controller.Count;
+			for (int i = 0; i < nPSGs; i++)
 			{
 				_paramSetGroup_controller[i]._layerIndex = i;
 			}
 		}
+
+		private static Comparison<apModifierParamSetGroup> s_SortParamSetGroups_Func = FUNC_SortParamSetGroups;
+		private static int FUNC_SortParamSetGroups(apModifierParamSetGroup a, apModifierParamSetGroup b)
+		{
+			return a._layerIndex - b._layerIndex;
+		}
+
+
 
 		public int GetNextParamSetLayerIndex()
 		{
@@ -541,18 +586,25 @@ namespace AnyPortrait
 			//해당 Index의 기존 객체에 대해서
 			//Increase이면 1 감소,
 			//Decrease이면 1 증가
-			for (int i = 0; i < _paramSetGroup_controller.Count; i++)
+			int nPSGs = _paramSetGroup_controller != null ? _paramSetGroup_controller.Count : 0;
+			if (nPSGs > 0)
 			{
-				apModifierParamSetGroup curParamSetGroup = _paramSetGroup_controller[i];
-
-				if (curParamSetGroup == paramSetGroup)
+				apModifierParamSetGroup curParamSetGroup = null;
+				for (int i = 0; i < nPSGs; i++)
 				{
-					continue;
-				}
+					curParamSetGroup = _paramSetGroup_controller[i];
 
-				if (curParamSetGroup._layerIndex == nextIndex)
-				{
-					if (isIncrese)
+					if (curParamSetGroup == paramSetGroup)
+					{
+						continue;
+					}
+
+					if (curParamSetGroup._layerIndex == nextIndex)
+					{
+						if (isIncrese)	{ curParamSetGroup._layerIndex--; }
+						else			{ curParamSetGroup._layerIndex++; }
+					}
+					else if (curParamSetGroup._layerIndex < nextIndex)
 					{
 						curParamSetGroup._layerIndex--;
 					}
@@ -561,17 +613,8 @@ namespace AnyPortrait
 						curParamSetGroup._layerIndex++;
 					}
 				}
-				else if (curParamSetGroup._layerIndex < nextIndex)
-				{
-					curParamSetGroup._layerIndex--;
-				}
-				else
-				{
-					curParamSetGroup._layerIndex++;
-				}
-
 			}
-
+			
 			//그리고 재정렬
 			SortParamSetGroups();
 		}
@@ -681,11 +724,18 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apCalculatedResultParam GetCalculatedResultParam(apRenderUnit targetRenderUnit)
 		{
-			return _calculatedResultParams.Find(delegate (apCalculatedResultParam a)
-			{
-				return a._targetRenderUnit == targetRenderUnit && a._targetBone == null;
-			});
+			//이전 (GC 발생)
+			//return _calculatedResultParams.Find(delegate (apCalculatedResultParam a)
+			//{
+			//	return a._targetRenderUnit == targetRenderUnit && a._targetBone == null;
+			//});
+
+			//변경 v1.5.0
+			s_GetCalResultParam_TargetRenderUnit = targetRenderUnit;
+			return _calculatedResultParams.Find(s_GetCalResultParamByTargetRenderUnit_Func);
 		}
+
+
 
 
 		/// <summary>
@@ -696,12 +746,40 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apCalculatedResultParam GetCalculatedResultParam_Bone(apRenderUnit targetRenderUnit, apBone bone, apRenderUnit ownerRenderUnit)
 		{
-			return _calculatedResultParams.Find(delegate (apCalculatedResultParam a)
-			{
-				//return a._targetRenderUnit == targetRenderUnit && a._targetBone == bone;
-				return a._targetRenderUnit == targetRenderUnit && a._targetBone == bone && a._ownerRenderUnit == ownerRenderUnit;
-			});
+			//이전 (GC 발생)
+			//return _calculatedResultParams.Find(delegate (apCalculatedResultParam a)
+			//{
+			//	//return a._targetRenderUnit == targetRenderUnit && a._targetBone == bone;
+			//	return a._targetRenderUnit == targetRenderUnit && a._targetBone == bone && a._ownerRenderUnit == ownerRenderUnit;
+			//});
+
+			//변경 v1.5.0
+			s_GetCalResultParam_TargetRenderUnit = targetRenderUnit;
+			s_GetCalResultParam_Bone = bone;
+			s_GetCalResultParam_OwnerRenderUnit = ownerRenderUnit;
+			return _calculatedResultParams.Find(s_GetCalResultParamByBone_Func);
 		}
+
+
+
+		private static apRenderUnit s_GetCalResultParam_TargetRenderUnit = null;
+		private static apBone s_GetCalResultParam_Bone = null;
+		private static apRenderUnit s_GetCalResultParam_OwnerRenderUnit = null;
+
+		private static Predicate<apCalculatedResultParam> s_GetCalResultParamByTargetRenderUnit_Func = FUNC_GetCalResultParamByTargetRenderUnit;
+		private static bool FUNC_GetCalResultParamByTargetRenderUnit(apCalculatedResultParam a)
+		{
+			return a._targetRenderUnit == s_GetCalResultParam_TargetRenderUnit && a._targetBone == null;
+		}
+
+		private static Predicate<apCalculatedResultParam> s_GetCalResultParamByBone_Func = FUNC_GetCalResultParamByBone;
+		private static bool FUNC_GetCalResultParamByBone(apCalculatedResultParam a)
+		{
+			return a._targetRenderUnit == s_GetCalResultParam_TargetRenderUnit
+				&& a._targetBone == s_GetCalResultParam_Bone
+				&& a._ownerRenderUnit == s_GetCalResultParam_OwnerRenderUnit;
+		}
+
 
 		// Functions
 		//----------------------------------------------
@@ -767,7 +845,6 @@ namespace AnyPortrait
 		/// <param name="isUseMeshDefaultColor">색상 기본값으로 메시 기본 값을 이용</param>
 		/// <returns></returns>
 		public apModifiedMesh AddMeshTransform(apMeshGroup meshGroup, apTransform_Mesh meshTransform, apModifierParamSet targetParamSet,
-												//bool isExclusive = false, bool isRecursiveAvailable = false, bool isRefreshLink = true, bool isUseMeshDefaultColor = true
 												bool isExclusive, bool isRecursiveAvailable, bool isRefreshLink
 												)
 		{
@@ -849,10 +926,16 @@ namespace AnyPortrait
 				return null;
 			}
 
-			apModifiedMesh modMesh = targetParamSet._meshData.Find(delegate (apModifiedMesh a)
-				{
-					return a.IsContains_MeshTransform(meshGroup, meshTransform, meshTransform._mesh);
-				});
+			//이전 (GC 발생)
+			//apModifiedMesh modMesh = targetParamSet._meshData.Find(delegate (apModifiedMesh a)
+			//{
+			//	return a.IsContains_MeshTransform(meshGroup, meshTransform, meshTransform._mesh);
+			//});
+
+			//변경 (v1.5.0)
+			s_GetModMesh_MeshGroup = meshGroup;
+			s_GetModMesh_MeshTF = meshTransform;
+			apModifiedMesh modMesh = targetParamSet._meshData.Find(s_GetModMesh_MeshTF_Func);
 
 
 			if (modMesh == null)
@@ -897,6 +980,27 @@ namespace AnyPortrait
 
 			return modMesh;
 		}
+
+
+		private static apMeshGroup s_GetModMesh_MeshGroup = null;
+		private static apTransform_Mesh s_GetModMesh_MeshTF = null;
+		private static apTransform_MeshGroup s_GetModMesh_MeshGroupTF = null;
+
+		private static Predicate<apModifiedMesh> s_GetModMesh_MeshTF_Func = FUNC_GetModMesh_MeshTF;
+		private static bool FUNC_GetModMesh_MeshTF(apModifiedMesh a)
+		{
+			return a.IsContains_MeshTransform(s_GetModMesh_MeshGroup, s_GetModMesh_MeshTF, s_GetModMesh_MeshTF._mesh);
+		}
+
+		private static Predicate<apModifiedMesh> s_GetModMesh_MeshGroupTF_Func = FUNC_GetModMesh_MeshGroupTF;
+		private static bool FUNC_GetModMesh_MeshGroupTF(apModifiedMesh a)
+		{
+			return a.IsContains_MeshGroupTransform(s_GetModMesh_MeshGroup, s_GetModMesh_MeshGroupTF);
+		}
+
+
+
+
 
 		/// <summary>
 		/// MeshGroupTransform을 해당 ParamSet에 ModMesh의 형태로 넣는다.
@@ -973,10 +1077,17 @@ namespace AnyPortrait
 				return null;
 			}
 
-			apModifiedMesh modMesh = targetParamSet._meshData.Find(delegate (apModifiedMesh a)
-			{
-				return a.IsContains_MeshGroupTransform(meshGroup, meshGroupTransform);
-			});
+			//이전 (GC 발생)
+			//apModifiedMesh modMesh = targetParamSet._meshData.Find(delegate (apModifiedMesh a)
+			//{
+			//	return a.IsContains_MeshGroupTransform(meshGroup, meshGroupTransform);
+			//});
+
+			//변경 v1.5.0
+			s_GetModMesh_MeshGroup = meshGroup;
+			s_GetModMesh_MeshGroupTF = meshGroupTransform;
+			apModifiedMesh modMesh = targetParamSet._meshData.Find(s_GetModMesh_MeshGroupTF_Func);
+
 
 			if (modMesh == null)
 			{
@@ -1067,10 +1178,16 @@ namespace AnyPortrait
 			}
 
 			//이미 존재하는지 확인
-			apModifiedBone modBone = targetParamSet._boneData.Find(delegate (apModifiedBone a)
-			{
-				return a._boneID == bone._uniqueID;
-			});
+			//이전 (GC 발생)
+			//apModifiedBone modBone = targetParamSet._boneData.Find(delegate (apModifiedBone a)
+			//{
+			//	return a._boneID == bone._uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetModBone_ID = bone._uniqueID;
+			apModifiedBone modBone = targetParamSet._boneData.Find(s_GetModBoneByID_Func);
+
 
 			if (modBone == null)
 			{
@@ -1088,6 +1205,14 @@ namespace AnyPortrait
 
 			return modBone;
 
+		}
+
+
+		private static int s_GetModBone_ID = -1;
+		private static Predicate<apModifiedBone> s_GetModBoneByID_Func = FUNC_GetModBoneByID;
+		private static bool FUNC_GetModBoneByID(apModifiedBone a)
+		{
+			return a._boneID == s_GetModBone_ID;
 		}
 		
 		
@@ -2273,10 +2398,6 @@ namespace AnyPortrait
 							{
 								defaultMatrixOfRenderUnit = _cal_curCalParam._targetRenderUnit._meshTransform._matrix_TF_ToParent;
 
-								//if(calParam._targetRenderUnit._meshTransform._nickName.Contains("Debug"))
-								//{
-								//	isDebug = true;
-								//}
 							}
 							else if(_cal_curCalParam._targetRenderUnit._meshGroupTransform != null)
 							{
@@ -2297,6 +2418,8 @@ namespace AnyPortrait
 
 							//ParamSetWeight를 추가
 							_cal_TotalParamSetWeight += _cal_ParamKeyValue._weight * _cal_ParamKeyValue._paramSet._overlapWeight;
+
+							
 
 
 							if (_cal_isExCalculatable_Transform)//<<추가
@@ -2529,16 +2652,13 @@ namespace AnyPortrait
 						//ModBone을 활용하는 타입인 경우
 						for (int iPV = 0; iPV < _cal_NumParamKeys; iPV++)
 						{
-							//paramKeyValue = calParam._paramKeyValues[iPV];
 							_cal_ParamKeyValue = _cal_SubParamKeyValueList[iPV];
-							//layerWeight = Mathf.Clamp01(paramKeyValue._keyParamSetGroup._layerWeight);
-
+							
 							// [ v1.4.7 삭제 : _isCalculated 삭제되고 계산된 리스트를 순회함 ]
 							//if (!_cal_ParamKeyValue._isCalculated) { continue; }
 
 							//ParamSetWeight를 추가
 							_cal_TotalParamSetWeight += _cal_ParamKeyValue._weight * _cal_ParamKeyValue._paramSet._overlapWeight;
-
 
 							//Weight에 맞게 Matrix를 만들자
 							if (_cal_isExCalculatable_Transform)
@@ -2567,9 +2687,6 @@ namespace AnyPortrait
 								//	tmpBoneIKWeight += paramKeyValue._weight * paramKeyValue._modifiedBone._boneIKController_MixWeight;
 								//}
 							}
-
-							//TODO : ModBone도 CalculateLog를 기록해야하나..
-
 
 							if (_cal_isFirstParam)
 							{
@@ -2610,8 +2727,6 @@ namespace AnyPortrait
 							_cal_TmpMatrix._angleDeg = _cal_Rotation180Correction_DeltaAngle;
 						}
 
-
-
 						//위치 변경 20.9.10
 						_cal_TmpMatrix.CalculateScale_FromAdd();
 					}
@@ -2639,8 +2754,6 @@ namespace AnyPortrait
 					{
 						_cal_curCalParam._totalParamSetGroupWeight_Color += _cal_LayerWeight;
 					}
-
-
 
 					if ((_cal_NumCalculated == 0 && _cal_IsColorProperty) || _cal_isBoneTarget)
 					{
@@ -4105,10 +4218,7 @@ namespace AnyPortrait
 
 					//추가 3.22
 					//Transfrom / Color Update 여부를 따로 결정한다.
-					//TF
-					//_cal_isExCalculatable_Transform = _cal_CurSubList._keyParamSetGroup.IsExCalculatable_Transform;
-					//_cal_isExCalculatable_Color = _cal_CurSubList._keyParamSetGroup.IsExCalculatable_Color;
-
+					
 					//Color Only
 					_cal_isExCalculatable_Transform = false;
 					_cal_isExCalculatable_Color = true;//Color는 무조건
@@ -4127,8 +4237,6 @@ namespace AnyPortrait
 					_cal_NumCalculated = 0;
 
 					//KeyParamSetGroup이 Color를 지원하는지 체크
-					//> TF
-					//_cal_TmpIsColoredKeyParamSetGroup = _cal_IsColorProperty && _cal_KeyParamSetGroup._isColorPropertyEnabled && !_cal_isBoneTarget && _cal_isExCalculatable_Color;
 					
 					//> Color Only에선 항상 true
 					_cal_TmpIsColoredKeyParamSetGroup = true;

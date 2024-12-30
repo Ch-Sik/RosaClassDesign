@@ -220,8 +220,9 @@ namespace AnyPortrait
 
 					//이전
 					//if (_parentPortrait._isForceCamSortModeToOrthographic)
-					//수정 21.1.15 : Billboard가 아닌 경우에도 Orthographic으로 고정되는 문제
-					if (_parentPortrait._isForceCamSortModeToOrthographic && _parentPortrait._billboardType != apPortrait.BILLBOARD_TYPE.None)
+					//수정 21.1.15 : Billboard가 아닌 경우에도 Orthographic으로 고정되는 문제. 빌보드일때만 고정하자
+					if (_parentPortrait._isForceCamSortModeToOrthographic
+						&& _parentPortrait._billboardType != apPortrait.BILLBOARD_TYPE.None)
 					{
 						//강제로 Orthographic으로 고정한다.
 						_cal_curSceneCamera.transparencySortMode = TransparencySortMode.Orthographic;
@@ -381,12 +382,16 @@ namespace AnyPortrait
 
 
 
-		public void Refresh(bool isRefreshForce, bool isRefreshMatrix)
+		//v1.5.0 변경
+		//- 카메라를 감지하는 방식 인자 추가
+		//- 카메라의 변경이 발생하면 true 리턴 (커맨드버퍼 갱신 위함)
+		public bool Refresh(	bool isRefreshForce,//강제로 갱신할 것인지 여부
+								bool isRefreshMatrix,
+								apPortrait.CAMERA_CHECK_MODE checkCameraMode)//v1.5.0 : 유효성 테스트를 할 때 씬의 모든 카메라와 비교를 한다.
 		{
 			//그대로 유지할지 확인
 			//- 카메라의 개수
 			//- 현재 카메라가 유효한지
-			
 
 			//자동 갱신 옵션이 꺼진 경우
 			if (!_isAutomaticRefresh)
@@ -395,7 +400,11 @@ namespace AnyPortrait
 				{
 					RefreshMatrix();
 				}
-				return;
+				else
+				{
+					RefreshForwardAndOrthographic();//v1.5.0 : 카메라의 Forward/Orthographic만 체크한다.
+				}
+				return false;
 			}
 
 			//씬의 카메라를 계속 참조하는건 옳지 않다.
@@ -403,19 +412,35 @@ namespace AnyPortrait
 
 			bool isNeedToRefresh = false;
 
+			//카메라 개수도 여기에 포함된다.
+			int nSceneCameras = Camera.allCamerasCount;
+
+			//강제로 변경하는 것이 아니라면 변경이 발생했는지 체크하자
 			if(!isRefreshForce)
 			{
+				//초기화 여부 체크
 				if (_numberOfCameraType == NumberOfCamera.None
 					|| _mainData == null
-					|| _cameraDataList.Count == 0
+					//|| _cameraDataList.Count == 0
+					|| _nCameras == 0
 					|| _refreshKey < 0)
 				{
 					//초기화 된 상태이거나 씬의 카메라 개수가 다르다면
 					isNeedToRefresh = true;
 				}
-				else
+
+				//v1.5.0
+				if(!isNeedToRefresh
+					&& nSceneCameras == 0)
 				{
-					//존재하는 카메라가 유효하지 않는다면
+					//만약 카메라 개수가 0개인데 데이터가 있다면
+					isNeedToRefresh = true;
+				}
+
+
+				if(!isNeedToRefresh)
+				{
+					//존재하는 카메라가 유효하지 않는지 체크
 					if (_numberOfCameraType == NumberOfCamera.Single)
 					{
 						if (!IsLookPortrait(_mainData._camera))
@@ -440,6 +465,34 @@ namespace AnyPortrait
 						}
 					}
 				}
+
+				//v1.5.0 추가 : 옵션에 따라선 Scene 카메라들을 지속적으로 검사한다. (보통 비활성화)
+				if(!isNeedToRefresh
+					&& checkCameraMode == apPortrait.CAMERA_CHECK_MODE.AllSceneCameras)
+				{
+					//모든 카메라를 상시 체크 (개수로 체크한다)
+					int nValidSceneCameras = 0;
+					if (nSceneCameras > 0)
+					{
+						Camera[] sceneCameras = Camera.allCameras;
+
+						for (int i = 0; i < nSceneCameras; i++)
+						{
+							_cal_curSceneCamera = sceneCameras[i];
+							if (_cal_curSceneCamera != null && IsLookPortrait(_cal_curSceneCamera))
+							{
+								nValidSceneCameras += 1;								
+							}
+						}
+					}
+
+					if(nValidSceneCameras != _nCameras)
+					{
+						//Debug.Log("유효한 카메라 개수가 변경됨 (자동 감지) : " + _nCameras + " > " + nValidSceneCameras);
+						isNeedToRefresh = true;
+					}
+
+				}
 			}
 
 			if (!isNeedToRefresh)
@@ -450,13 +503,15 @@ namespace AnyPortrait
 				{
 					RefreshMatrix();
 				}
+				else
+				{
+					RefreshForwardAndOrthographic();//v1.5.0 : 카메라의 Forward/Orthographic만 체크한다.
+				}
 				
-				return;
+				return false;//카메라가 변경되지 않았다.
 			}
 
 			//기존에 설정된 카메라가 아직 유효하다.
-			int nSceneCameras = Camera.allCamerasCount;
-			
 			if (nSceneCameras == 0)
 			{
 				//카메라가 없네요.
@@ -464,7 +519,7 @@ namespace AnyPortrait
 				{
 					Clear();
 				}
-				return;
+				return true;//카메라는 없으며, 커맨드 버퍼를 삭제해야한다.
 			}
 			
 			//다시 Refresh를 해야한다.
@@ -482,7 +537,7 @@ namespace AnyPortrait
 			{
 				Camera[] sceneCameras = Camera.allCameras;
 
-				for (int i = 0; i < sceneCameras.Length; i++)
+				for (int i = 0; i < nSceneCameras; i++)
 				{
 					_cal_curSceneCamera = sceneCameras[i];
 					if (_cal_curSceneCamera != null && IsLookPortrait(_cal_curSceneCamera))
@@ -496,7 +551,8 @@ namespace AnyPortrait
 						//if (_parentPortrait._isForceCamSortModeToOrthographic)
 
 						//수정 21.1.15 : Billboard가 아닌 경우에도 Orthographic으로 고정되는 문제
-						if (_parentPortrait._isForceCamSortModeToOrthographic && _parentPortrait._billboardType != apPortrait.BILLBOARD_TYPE.None)
+						if (_parentPortrait._isForceCamSortModeToOrthographic
+							&& _parentPortrait._billboardType != apPortrait.BILLBOARD_TYPE.None)
 						{
 							//강제로 Orthographic으로 고정한다.
 							_cal_curSceneCamera.transparencySortMode = TransparencySortMode.Orthographic;
@@ -572,8 +628,6 @@ namespace AnyPortrait
 									}
 									break;
 							}
-
-
 						}
 
 						_nRenderCameras = _renderCameraDataList.Count;
@@ -661,10 +715,10 @@ namespace AnyPortrait
 				if (_refreshKey > 9999) { _refreshKey = 10; }
 			}
 
-			if(isRefreshMatrix)
-			{
-				RefreshMatrix();
-			}
+			
+			RefreshMatrix();
+
+			return true;
 			
 		}
 
@@ -677,7 +731,6 @@ namespace AnyPortrait
 				return;
 			}
 
-
 			if (_numberOfCameraType == NumberOfCamera.Single)
 			{
 				//Single 방식이라면
@@ -685,14 +738,11 @@ namespace AnyPortrait
 
 				_isAllSameForward = true;
 				_isAllOrthographic = _mainData._camera.orthographic;
-
 			}
 			else
 			{
 				//Multiple 방식이라면
 				//평균 Transform을 계산해야한다.
-
-				//Vector3 centerPos = Vector3.zero;
 				_centerPos = Vector3.zero;
 
 				if (_dualCameraType == DualCameraType.LeftRight)
@@ -701,11 +751,9 @@ namespace AnyPortrait
 					//위치 : Center
 					//각도 : Lerp
 					//Forward Vector : Add
-
 					_centerPos = (_leftEyeData._transform.position * 0.5f) + (_rightEyeData._transform.position * 0.5f);
 					_centerRotation = Quaternion.Lerp(_leftEyeData._transform.rotation, _rightEyeData._transform.rotation, 0.5f);
-					_centerForward = (_leftEyeData._transform.forward * 0.5f + _rightEyeData._transform.forward * 0.5f);
-
+					_centerForward = (_leftEyeData._transform.forward * 0.5f) + (_rightEyeData._transform.forward * 0.5f);
 				}
 				else
 				{
@@ -713,7 +761,6 @@ namespace AnyPortrait
 					//위치 : Center
 					//각도 : Main
 					//Forward Vector : Main
-
 					for (int i = 0; i < _nCameras; i++)
 					{
 						_cal_curCamData = _cameraDataList[i];
@@ -725,8 +772,6 @@ namespace AnyPortrait
 
 					_centerRotation = _mainData._transform.rotation;
 				}
-
-
 
 				//- 위치는 평균의 중점
 				//- 각도/크기는 첫 카메라의 것을 이용
@@ -741,7 +786,7 @@ namespace AnyPortrait
 
 
 				//렌더 카메라를 확인하자
-				if (_nRenderCameras > 0)
+				if (_nRenderCameras <= 0)
 				{
 					_isAllSameForward = true;
 					_isAllOrthographic = true;
@@ -749,13 +794,17 @@ namespace AnyPortrait
 				else if (_nRenderCameras == 1)
 				{
 					_isAllSameForward = true;
-					_isAllOrthographic = _renderCameraDataList[0]._camera.orthographic;
+
+					_cal_curCamData = _renderCameraDataList[0];
+					_isAllOrthographic = _cal_curCamData._camera.orthographic;
 				}
 				else
 				{
 					_isAllSameForward = true;
-					_isAllOrthographic = _renderCameraDataList[0]._camera.orthographic;
-					_cal_Forward = _renderCameraDataList[0]._transform.forward;
+
+					_cal_curCamData = _renderCameraDataList[0];
+					_isAllOrthographic = _cal_curCamData._camera.orthographic;
+					_cal_Forward = _cal_curCamData._transform.forward;
 
 					for (int i = 1; i < _nRenderCameras; i++)
 					{
@@ -774,13 +823,93 @@ namespace AnyPortrait
 								_isAllSameForward = false;
 							}
 						}
+
+						if(!_isAllOrthographic && !_isAllSameForward)
+						{
+							break;
+						}
 					}
 				}
 			}
 
 			_zDepthToCam = _worldToCameraMatrix.MultiplyPoint3x4(_parentPortrait._transform.position).z;
-
 		}
+
+
+		/// <summary>
+		/// 추가 v1.5.0 : Refresh Matrix가 호출되지 않은 상황에서 카메라의 Orthographic과 Forward를 체크한다.
+		/// 클리핑 마스크 텍스쳐 사이즈 최적화 규칙을 체크하기 위함.
+		/// Refresh Matrix의 라이트 버전이다.
+		/// </summary>
+		private void RefreshForwardAndOrthographic()
+		{
+			switch(_numberOfCameraType)
+			{
+				case NumberOfCamera.None:
+					return;
+
+				case NumberOfCamera.Single:
+					{
+						// [ Single 방식 ]
+						_isAllSameForward = true;
+						_isAllOrthographic = _mainData._camera.orthographic;
+					}
+					break;
+
+				case NumberOfCamera.Multiple:
+					{
+						// [ Multiple 방식 ]
+						if (_nRenderCameras <= 0)
+						{
+							_isAllSameForward = true;
+							_isAllOrthographic = true;
+						}
+						else if (_nRenderCameras == 1)
+						{
+							_isAllSameForward = true;
+
+							_cal_curCamData = _renderCameraDataList[0];
+							_isAllOrthographic = _cal_curCamData._camera.orthographic;
+						}
+						else
+						{
+							_isAllSameForward = true;
+
+							_cal_curCamData = _renderCameraDataList[0];
+							_isAllOrthographic = _cal_curCamData._camera.orthographic;
+							_cal_Forward = _cal_curCamData._transform.forward;
+
+							for (int i = 1; i < _nRenderCameras; i++)
+							{
+								_cal_curCamData = _renderCameraDataList[i];
+
+								if (!_cal_curCamData._camera.orthographic)
+								{
+									_isAllOrthographic = false;
+								}
+
+								if (_isAllSameForward)
+								{
+									if (Mathf.Abs(_cal_curCamData._transform.forward.x - _cal_Forward.x) > 0.001f ||
+										Mathf.Abs(_cal_curCamData._transform.forward.y - _cal_Forward.y) > 0.001f ||
+										Mathf.Abs(_cal_curCamData._transform.forward.z - _cal_Forward.z) > 0.001f)
+									{
+										_isAllSameForward = false;
+									}
+								}
+
+								if(!_isAllOrthographic && !_isAllSameForward)
+								{
+									break;
+								}
+							}
+						}
+					}
+					break;
+			}
+		}
+
+
 
 		private bool IsLookPortrait(Camera camera)
 		{

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -45,6 +45,7 @@ namespace AnyPortrait
 		private string _str_ToggleWorkdspaceSize_HotKey = null;
 		private string _str_SettingsOfTherPortraitAndEditor = null;
 		private string _str_BakeToScene = null;
+		private string _str_CloseEditor = null;
 
 		private string _str_Ctrl = null;
 		private string _str_Command = null;
@@ -131,6 +132,7 @@ namespace AnyPortrait
 		private string _str_Gamma = null;
 		private string _str_Linear = null;
 		private string _str_QuestionMark = null;
+		private string _str_Tilde = null;
 
 		private string _str_SettingsOfMesh = null;
 		private string _str_MakeVerticesAndPolygons = null;
@@ -242,9 +244,11 @@ namespace AnyPortrait
 		private string _str_AnimTimelineSize_Medium = null;
 		private string _str_AnimTimelineSize_Large = null;
 		private string _str_AnimTimelineFit = null;
+		private string _str_AnimTimelineUnhideLayersTip = null;
 		private string _str_AnimTimelineFitTooltip = null;
 		private string _str_AnimTimelineAutoScrollTooltip = null;
 		private string _str_AnimTimelineAutoKeyTooltip = null;
+		private string _str_AnimTimelineStretch = null;
 		private string _str_AnimCurveTooltip_Linear = null;
 		private string _str_AnimCurveTooltip_Smooth = null;
 		private string _str_AnimCurveTooltip_Constant = null;
@@ -294,6 +298,7 @@ namespace AnyPortrait
 		private string _str_Vector = null;
 		private string _str_Texture = null;
 		private string _str_Color = null;
+		private string _str_Keyword = null;
 
 		private string _str_Num0 = null;
 		private string _str_Num1 = null;
@@ -396,6 +401,7 @@ namespace AnyPortrait
 			_str_ToggleWorkdspaceSize_HotKey = "Toogle Workspace Size";//단축키 추가되어야 함//(Alt+W)
 			_str_SettingsOfTherPortraitAndEditor = "Settings of the Portrait and Editor";
 			_str_BakeToScene = "Bake to Scene";
+			_str_CloseEditor = "Close the AnyPortrait editor.";
 
 			_str_Ctrl = "Ctrl";
 			_str_Command = "Command";
@@ -490,6 +496,7 @@ namespace AnyPortrait
 			_str_Linear = "Linear";
 
 			_str_QuestionMark = "?";
+			_str_Tilde = "~";
 
 			_str_SettingsOfMesh = "Settings of Mesh";
 			_str_MakeVerticesAndPolygons = "Make Vertices and Polygons";
@@ -505,7 +512,7 @@ namespace AnyPortrait
 
 			_str_MakeAThumbnail = "Make a Thumbnail";
 			_str_MakeAScreenshot = "Make a Screenshot";
-			_str_MakeAGIFAnimation = "Make a GIF Animation";
+			_str_MakeAGIFAnimation = "Make an Animation";
 			_str_MakeSpriteSheets = "Make Spritesheets";
 
 			_str_X = "X";
@@ -623,9 +630,11 @@ namespace AnyPortrait
 			_str_AnimTimelineSize_Large = "Timeline UI Size [Large]";
 
 			_str_AnimTimelineFit = " Fit";
+			_str_AnimTimelineUnhideLayersTip = "Unhide Timeline Layers";
 			_str_AnimTimelineFitTooltip = "Zoom to fit the animation length";
 			_str_AnimTimelineAutoScrollTooltip = "Scrolls automatically according to the frame of the animation";
 			_str_AnimTimelineAutoKeyTooltip = "When you move the object, keyframes are automatically created";
+			_str_AnimTimelineStretch = "Change the positions of selected keyframes.";
 
 			_str_AnimCurveTooltip_Linear = "Linear Curve";
 			_str_AnimCurveTooltip_Smooth = "Smooth Curve";
@@ -682,6 +691,7 @@ namespace AnyPortrait
 			_str_Vector = "Vector";
 			_str_Texture = "Texture";
 			_str_Color = "Color";
+			_str_Keyword = "Keyword";
 
 			_str_Num0 = "0";
 			_str_Num1 = "1";
@@ -772,6 +782,7 @@ namespace AnyPortrait
 		}
 		public string SettingsOfTherPortraitAndEditor { get { return _str_SettingsOfTherPortraitAndEditor; } }
 		public string BakeToScene { get { return _str_BakeToScene; } }
+		public string CloseEditor { get { return _str_CloseEditor; } }
 
 		public string GetHotkeyTooltip_BoneVisibility(apHotKeyMapping hotkeyMapping)
 		{
@@ -993,6 +1004,8 @@ namespace AnyPortrait
 
 		/// <summary> ? </summary>
 		public string QuestionMark { get { return _str_QuestionMark; } }
+		/// <summary> ~ </summary>
+		public string Tilde { get { return _str_Tilde; } }
 
 		public string SettingsOfMesh { get { return _str_SettingsOfMesh; } }
 		public string MakeVerticesAndPolygons { get { return _str_MakeVerticesAndPolygons; } }
@@ -1166,6 +1179,7 @@ namespace AnyPortrait
 
 		public string AnimTimelineFit { get { return _str_AnimTimelineFit; } }
 		public string AnimTimelineFitTooltip { get { return _str_AnimTimelineFitTooltip; } }
+		public string AnimTimelineUnhideLayersTip { get { return _str_AnimTimelineUnhideLayersTip; } }
 		public string AnimTimelineAutoScrollTooltip { get { return _str_AnimTimelineAutoScrollTooltip; } }
 		public string GetHotkeyTooltip_AnimTimelineAutoKeyTooltip(apHotKeyMapping hotkeyMapping)
 		{
@@ -1174,6 +1188,7 @@ namespace AnyPortrait
 			hotkeyMapping.AddHotkeyTextToWrapper(apHotKeyMapping.KEY_TYPE.Anim_ToggleAutoKey, _tooltipStr, true);
 			return _tooltipStr.ToString();
 		}
+		public string AnimTimelineStretchTip { get { return _str_AnimTimelineStretch; } }
 
 		public string AnimCurveTooltip_Linear { get { return _str_AnimCurveTooltip_Linear; } }
 		public string AnimCurveTooltip_Smooth { get { return _str_AnimCurveTooltip_Smooth; } }
@@ -1226,6 +1241,7 @@ namespace AnyPortrait
 		public string Vector		{ get { return _str_Vector; } }
 		public string Texture		{ get { return _str_Texture; } }
 		public string Color			{ get { return _str_Color; } }
+		public string Keyword		{ get { return _str_Keyword; } }
 
 		public string Num0 { get { return _str_Num0; } }
 		public string Num1 { get { return _str_Num1; } }

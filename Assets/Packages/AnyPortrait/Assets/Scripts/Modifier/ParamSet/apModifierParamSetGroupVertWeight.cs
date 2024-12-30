@@ -179,10 +179,22 @@ namespace AnyPortrait
 		//---------------------------------------------
 		public WeightedVertex GetWeightedVert(int vertUniqueID)
 		{
-			return _weightedVerts.Find(delegate (WeightedVertex a)
-			{
-				return a._uniqueID == vertUniqueID;
-			});
+			//이전 (GC 발생)
+			// return _weightedVerts.Find(delegate (WeightedVertex a)
+			// {
+			// 	return a._uniqueID == vertUniqueID;
+			// });
+
+			//변경 v1.5.0
+			s_FindWeightedVert_ID = vertUniqueID;
+			return _weightedVerts.Find(s_FindWeightedVert_Func);
+		}
+
+		private static int s_FindWeightedVert_ID = -1;
+		private static Predicate<WeightedVertex> s_FindWeightedVert_Func = FUNC_FindWeightedVert;
+		private static bool FUNC_FindWeightedVert(WeightedVertex a)
+		{
+			return a._uniqueID == s_FindWeightedVert_ID;
 		}
 	}
 }

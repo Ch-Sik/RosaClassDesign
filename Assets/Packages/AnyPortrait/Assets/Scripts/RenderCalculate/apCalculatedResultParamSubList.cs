@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -1046,20 +1046,21 @@ namespace AnyPortrait
 
 			_cpLerpAreaLastSelected.ReadyToCalculate();
 
-			float itpX = 0.0f;
-			float itpY = 0.0f;
-			float rectPosX_Min = _cpLerpAreaLastSelected._posLT.x;
-			float rectPosX_Max = _cpLerpAreaLastSelected._posRB.x;
-			float rectPosY_Min = _cpLerpAreaLastSelected._posLT.y;
-			float rectPosY_Max = _cpLerpAreaLastSelected._posRB.y;
+			float itpX_L = 0.0f;
+			float itpY_B = 0.0f;
+			float rectPosX_L = _cpLerpAreaLastSelected._posMin.x;
+			float rectPosX_R = _cpLerpAreaLastSelected._posMax.x;
+			float rectPosY_T = _cpLerpAreaLastSelected._posMax.y;
+			float rectPosY_B = _cpLerpAreaLastSelected._posMin.y;
 
-			itpX = 1.0f - Mathf.Clamp01((curValue.x - rectPosX_Min) / (rectPosX_Max - rectPosX_Min));
-			itpY = 1.0f - Mathf.Clamp01((curValue.y - rectPosY_Min) / (rectPosY_Max - rectPosY_Min));
+			itpX_L = 1.0f - Mathf.Clamp01((curValue.x - rectPosX_L) / (rectPosX_R - rectPosX_L));
+			itpY_B = 1.0f - Mathf.Clamp01((curValue.y - rectPosY_B) / (rectPosY_T - rectPosY_B));
 
-			_cpLerpAreaLastSelected._pointLT._calculatedWeight = itpX * itpY;
-			_cpLerpAreaLastSelected._pointRT._calculatedWeight = (1.0f - itpX) * itpY;
-			_cpLerpAreaLastSelected._pointLB._calculatedWeight = itpX * (1.0f - itpY);
-			_cpLerpAreaLastSelected._pointRB._calculatedWeight = (1.0f - itpX) * (1.0f - itpY);
+			_cpLerpAreaLastSelected._pointLT._calculatedWeight = itpX_L * (1.0f - itpY_B);
+			_cpLerpAreaLastSelected._pointRT._calculatedWeight = (1.0f - itpX_L) * (1.0f - itpY_B);
+			_cpLerpAreaLastSelected._pointLB._calculatedWeight = itpX_L * itpY_B;
+			_cpLerpAreaLastSelected._pointRB._calculatedWeight = (1.0f - itpX_L) * itpY_B;
+
 
 			//v1.4.7 : Total Weight 전달 (인자 추가)
 			_cpLerpAreaLastSelected._pointLT.CalculateITPWeight(ref _totalWeight);
@@ -1069,42 +1070,10 @@ namespace AnyPortrait
 
 
 			//삭제 v1.4.7 : Weight 계산은 위에서 (CalculateITPWeight) 바로 계산한다.
-			//_totalWeight = 0.0f;
-
-			//// 여러개의 키값을 사용할 거라면
-			//for (int i = 0; i < nSubParamKeyValues; i++)
-			//{
-			//	curParamKeyValue = _subParamKeyValues[i];
-
-			//	if (!curParamKeyValue._isCalculated)
-			//	{
-			//		curParamKeyValue._weight = 0.0f;
-			//		continue;
-			//	}
-
-			//	//변경
-			//	//Weight 시작값이 기본 1이 아니라, 거리에 따른 가중치로 바뀐다.
-			//	_totalWeight += curParamKeyValue._weight;
-			//}
-
-
-			//이전
-			//if (_totalWeight > 0.0f)
-			//{
-			//	for (int i = 0; i < nSubParamKeyValues; i++)
-			//	{
-			//		curParamKeyValue = _subParamKeyValues[i];
-			//		if (curParamKeyValue._isCalculated)
-			//		{
-			//			curParamKeyValue._weight /= _totalWeight;
-			//		}
-			//	}
-			//}
 
 			//변경 v1.4.7 : 모든 ParamKeyValue가 아닌 계산된 리스트만 골라서 나누자 (개수 차이가 크다)
 			if (_totalWeight > 0.0f)
 			{
-
 				if (_nCalculatedParamKeyValues > 0)
 				{
 					for (int i = 0; i < _nCalculatedParamKeyValues; i++)
@@ -2156,41 +2125,80 @@ namespace AnyPortrait
 				AddLerpPos(new Vector2(maxX, maxY), fPosXList, fPosYList, bias);
 
 				//2) 위치 정렬
-				fPosXList.Sort(delegate (float a, float b)
-				{
-					return (int)((a - b) * (1.0f / bias) * 1000.0f);
-				});
+				//이전
+				//fPosXList.Sort(delegate (float a, float b)
+				//{
+				//	return (int)((a - b) * (1.0f / bias) * 1000.0f);
+				//});
 
-				fPosYList.Sort(delegate (float a, float b)
-				{
-					return (int)((a - b) * (1.0f / bias) * 1000.0f);
-				});
+				//fPosYList.Sort(delegate (float a, float b)
+				//{
+				//	return (int)((a - b) * (1.0f / bias) * 1000.0f);
+				//});
+
+				//변경 v1.5.0
+				s_SortAreaAxis_Bias = bias;
+				fPosXList.Sort(s_SortAreaAxisWithBias_Func);
+				fPosYList.Sort(s_SortAreaAxisWithBias_Func);
+
 
 				//3) 좌표 순회하면서 포인트 추가
-				for (int iX = 0; iX < fPosXList.Count; iX++)
+				int nPosXList = fPosXList.Count;
+				int nPosYList = fPosYList.Count;
+				for (int iX = 0; iX < nPosXList; iX++)
 				{
-					for (int iY = 0; iY < fPosYList.Count; iY++)
+					for (int iY = 0; iY < nPosYList; iY++)
 					{
 						MakeVirtualLerpPoint(new Vector2(fPosXList[iX], fPosYList[iY]), bias);
 					}
 				}
 
-				apCalculatedLerpPoint pointLT = null;
-				apCalculatedLerpPoint pointRT = null;
+				
 				apCalculatedLerpPoint pointLB = null;
 				apCalculatedLerpPoint pointRB = null;
+				apCalculatedLerpPoint pointLT = null;
+				apCalculatedLerpPoint pointRT = null;
+
+				bool isLimit_L = false;
+				bool isLimit_R = false;
+				bool isLimit_T = false;
+				bool isLimit_B = false;
+
+				float posL = 0.0f;
+				float posR = 0.0f;
+				float posB = 0.0f;
+				float posT = 0.0f;
 
 				//4) 좌표 순회하면서 RectArea 만들기
-				for (int iX = 0; iX < fPosXList.Count - 1; iX++)
+				for (int iX = 0; iX < nPosXList - 1; iX++)
 				{
-					for (int iY = 0; iY < fPosYList.Count - 1; iY++)
-					{
-						pointLT = GetLerpPoint(new Vector2(fPosXList[iX], fPosYList[iY]), bias);
-						pointRT = GetLerpPoint(new Vector2(fPosXList[iX + 1], fPosYList[iY]), bias);
-						pointLB = GetLerpPoint(new Vector2(fPosXList[iX], fPosYList[iY + 1]), bias);
-						pointRB = GetLerpPoint(new Vector2(fPosXList[iX + 1], fPosYList[iY + 1]), bias);
+					posL = fPosXList[iX];
+					posR = fPosXList[iX + 1];
+					
+					isLimit_L = (iX == 0);
+					isLimit_R = (iX == (nPosXList - 2));//iX + 1 == nPosXList - 1
 
-						apCalculatedLerpArea lerpArea = new apCalculatedLerpArea(pointLT, pointRT, pointLB, pointRB);
+					for (int iY = 0; iY < nPosYList - 1; iY++)
+					{
+						posB = fPosYList[iY];
+						posT = fPosYList[iY + 1];
+						
+						isLimit_B = (iY == 0);
+						isLimit_T = (iY == (nPosYList - 2));//iX + 1 == nPosXList - 1
+
+						//pointLT = GetLerpPoint(new Vector2(fPosXList[iX], fPosYList[iY]), bias);
+						//pointRT = GetLerpPoint(new Vector2(fPosXList[iX + 1], fPosYList[iY]), bias);
+						//pointLB = GetLerpPoint(new Vector2(fPosXList[iX], fPosYList[iY + 1]), bias);
+						//pointRB = GetLerpPoint(new Vector2(fPosXList[iX + 1], fPosYList[iY + 1]), bias);
+						
+						pointLB = GetLerpPoint(new Vector2(posL, posB), bias);
+						pointRB = GetLerpPoint(new Vector2(posR, posB), bias);
+						pointLT = GetLerpPoint(new Vector2(posL, posT), bias);
+						pointRT = GetLerpPoint(new Vector2(posR, posT), bias);
+
+						apCalculatedLerpArea lerpArea = new apCalculatedLerpArea(
+							pointLT, pointRT, pointLB, pointRB,
+							isLimit_L, isLimit_R, isLimit_T, isLimit_B);
 
 						_cpLerpAreas.Add(lerpArea);
 					}
@@ -2198,44 +2206,96 @@ namespace AnyPortrait
 
 			}
 		}
-		private apCalculatedLerpPoint GetLerpPoint(int iPos)
+
+		private static float s_SortAreaAxis_Bias = 0.0f;
+		private static Comparison<float> s_SortAreaAxisWithBias_Func = FUNC_SortAreaAxisWithBias;
+		private static int FUNC_SortAreaAxisWithBias(float a, float b)
 		{
-			return _cpLerpPoints.Find(delegate (apCalculatedLerpPoint a)
-			{
-				return a._iPos == iPos;
-			});
+			return (int)((a - b) * (1.0f / s_SortAreaAxis_Bias) * 1000.0f);
 		}
 
-		private apCalculatedLerpPoint GetLerpPoint(float fPos, float bias)
-		{
-			return _cpLerpPoints.Find(delegate (apCalculatedLerpPoint a)
-			{
-				return Mathf.Abs(a._pos.x - fPos) < bias;
-			});
-		}
+		//삭제 v1.5.0 (미사용)
+		//private apCalculatedLerpPoint GetLerpPoint(int iPos)
+		//{
+		//	return _cpLerpPoints.Find(delegate (apCalculatedLerpPoint a)
+		//	{
+		//		return a._iPos == iPos;
+		//	});
+		//}
+
+		//private apCalculatedLerpPoint GetLerpPoint(float fPos, float bias)
+		//{
+		//	return _cpLerpPoints.Find(delegate (apCalculatedLerpPoint a)
+		//	{
+		//		return Mathf.Abs(a._pos.x - fPos) < bias;
+		//	});
+		//}
 
 		private apCalculatedLerpPoint GetLerpPoint(Vector2 vPos, float bias)
 		{
-			return _cpLerpPoints.Find(delegate (apCalculatedLerpPoint a)
-			{
-				return Mathf.Abs(a._pos.x - vPos.x) < bias &&
-						Mathf.Abs(a._pos.y - vPos.y) < bias;
-			});
+			//이전 (GC 발생)
+			//return _cpLerpPoints.Find(delegate (apCalculatedLerpPoint a)
+			//{
+			//	return Mathf.Abs(a._pos.x - vPos.x) < bias &&
+			//			Mathf.Abs(a._pos.y - vPos.y) < bias;
+			//});
+
+			//변경 v1.5.0
+			s_FindLerpPoint_Vector = vPos;
+			s_FindLerpPoint_Bias = bias;
+			return _cpLerpPoints.Find(s_FindLerpPointByVector_Func);
 		}
+
+		private static Vector2 s_FindLerpPoint_Vector = Vector2.zero;
+		private static float s_FindLerpPoint_Bias = 0.0f;
+		private static Predicate<apCalculatedLerpPoint> s_FindLerpPointByVector_Func = FUNC_FindLerpPointByVector;
+		private static bool FUNC_FindLerpPointByVector(apCalculatedLerpPoint a)
+		{
+			return Mathf.Abs(a._pos.x - s_FindLerpPoint_Vector.x) < s_FindLerpPoint_Bias &&
+					Mathf.Abs(a._pos.y - s_FindLerpPoint_Vector.y) < s_FindLerpPoint_Bias;
+		}
+
 
 		private void AddLerpPos(Vector2 pos, List<float> posXList, List<float> posYList, float bias)
 		{
-			if (!posXList.Exists(delegate (float a)
-			{ return Mathf.Abs(a - pos.x) < bias; }))
+			//이전 (GC 발생)
+			//bool isExistPosX = posXList.Exists(delegate (float a)
+			//{
+			//	return Mathf.Abs(a - pos.x) < bias;
+			//});
+
+			//변경 (v1.5.0)
+			s_ExistLerpPos_Point = pos.x;//X 부터 체크
+			s_ExistLerpPos_Bias = bias;
+			bool isExistPosX = posXList.Exists(s_ExistLerpPos_Func);
+
+			if (!isExistPosX)
 			{
 				posXList.Add(pos.x);
 			}
 
-			if (!posYList.Exists(delegate (float a)
-			{ return Mathf.Abs(a - pos.y) < bias; }))
+			//이전 (GC 발생)
+			//bool isExistPosY = posYList.Exists(delegate (float a)
+			//{
+			//	return Mathf.Abs(a - pos.y) < bias;
+			//});
+
+			//변경 v1.5.0
+			s_ExistLerpPos_Point = pos.y;//Y 체크 (Bias는 생략)
+			bool isExistPosY = posYList.Exists(s_ExistLerpPos_Func);
+
+			if (!isExistPosY)
 			{
 				posYList.Add(pos.y);
 			}
+		}
+
+		private static float s_ExistLerpPos_Point = 0.0f;
+		private static float s_ExistLerpPos_Bias = 0.0f;
+		private static Predicate<float> s_ExistLerpPos_Func = FUNC_ExistLerpPos;
+		private static bool FUNC_ExistLerpPos(float a)
+		{
+			return Mathf.Abs(a - s_ExistLerpPos_Point) < s_ExistLerpPos_Bias;
 		}
 
 		/// <summary>
@@ -2258,11 +2318,14 @@ namespace AnyPortrait
 
 			//실제 Control Param Key를 입력해야한다.
 
+			//이전 (GC 발생)
+			//List<apCalculatedLerpPoint> realLerpPoints = _cpLerpPoints.FindAll(delegate (apCalculatedLerpPoint a)
+			//{
+			//	return a._isRealPoint;
+			//});
 
-			List<apCalculatedLerpPoint> realLerpPoints = _cpLerpPoints.FindAll(delegate (apCalculatedLerpPoint a)
-			{
-				return a._isRealPoint;
-			});
+			//변경 v1.5.0
+			List<apCalculatedLerpPoint> realLerpPoints = _cpLerpPoints.FindAll(s_FindRealPoint_Func);
 
 			if (realLerpPoints.Count == 0)
 			{
@@ -2271,7 +2334,8 @@ namespace AnyPortrait
 
 			if (realLerpPoints.Count == 1)
 			{
-				newPoint.Addpoints(realLerpPoints[0], 1.0f);
+				newPoint.AddPoints(realLerpPoints[0], 1.0f);
+				newPoint.NormalizeWeights();
 				return newPoint;
 			}
 
@@ -2281,33 +2345,21 @@ namespace AnyPortrait
 
 			List<float> distList = new List<float>();
 			List<float> weightList = new List<float>();
-			float totalDist = 0.0f;
+			//float totalDist = 0.0f;
 			float totalWeight = 0.0f;
+
+			//Real 포인트들에 대해서 2개씩 짝을 지은 모든 경우의 수에 대해
+			//A <-> B의 거리비 (역수)를 입력하여 Weight를 점차 감산하는 식으로 계산한다.
+			//처음엔 Weight가 1로 시작하다가 거리 비에 의하여 줄어들고, 전체 Weight를 연산하여 Normalize한다.
 
 			apCalculatedLerpPoint lerpPoint = null;
 			for (int i = 0; i < realLerpPoints.Count; i++)
 			{
 				lerpPoint = realLerpPoints[i];
 				float dist = Vector2.Distance(pos, lerpPoint._pos);
-				totalDist += dist;
 
 				distList.Add(dist);
-			}
-
-			//float meanDist = totalDist / 2.0f;//<<이부분이 필요할까?
-
-			for (int i = 0; i < realLerpPoints.Count; i++)
-			{
 				weightList.Add(1.0f);
-
-				//if(distList[i] < meanDist)
-				//{
-				//	weightList.Add(1.0f);
-				//}
-				//else
-				//{
-				//	weightList.Add(-1.0f);
-				//}
 			}
 
 			apCalculatedLerpPoint curPoint = null;
@@ -2369,14 +2421,20 @@ namespace AnyPortrait
 					{
 						float pointWeight = weightList[i] / totalWeight;
 
-						newPoint.Addpoints(lerpPoint, pointWeight);
+						newPoint.AddPoints(lerpPoint, pointWeight);
 					}
 				}
 			}
 
+			newPoint.NormalizeWeights();//추가 v1.5.0
 			return newPoint;
 		}
 
+		private static Predicate<apCalculatedLerpPoint> s_FindRealPoint_Func = FUNC_FindRealPoint;
+		private static bool FUNC_FindRealPoint(apCalculatedLerpPoint a)
+		{
+			return a._isRealPoint;
+		}
 	}
 
 }

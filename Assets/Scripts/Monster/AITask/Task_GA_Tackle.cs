@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Sirenix.OdinInspector;
 using Panda;
 
 [RequireComponent(typeof(MonsterDamageInflictor))]
@@ -12,7 +13,7 @@ public class Task_GA_Tackle : Task_A_Base
     [SerializeField]
     protected MonsterDamageInflictor damageComponent;
 
-    [Header("공격 관련")]
+    [Title("공격 관련")]
     [SerializeField, Tooltip("돌진 패턴 공격력")]
     protected int tackleAttackPower;
     [SerializeField, Tooltip("돌진 속도 (m/s)")]
@@ -24,11 +25,15 @@ public class Task_GA_Tackle : Task_A_Base
     [SerializeField, Tooltip("돌진 후 브레이크 계수")]
     protected float recoveryDrag = 3.0f;
 
-    [Header("벽에 박았을 때 관련")]
+    [Title("벽에 박았을 때 관련")]
     [SerializeField, Tooltip("돌진 중 벽에 박았을 때 스턴 활성화")]
     protected bool wallStunEnabled;
     [SerializeField, Tooltip("돌진 중 벽에 박았을 떄 스턴 시간")]
     protected float wallStunDuration;
+
+    [Title("절벽 만났을 때 관련")]
+    [SerializeField, Tooltip("돌진 중 절벽 만났을 때 멈춤")]
+    protected bool cliffStopEnabled = false;
 
     protected Timer stunTimer = null;
     protected Vector2 tackleDir;
@@ -115,6 +120,17 @@ public class Task_GA_Tackle : Task_A_Base
                 Succeed();
                 return;
             }
+        }
+
+        // 블랙보드에서 절벽 마주침 정보 가져오기
+        bool isStuckAtCliff;
+        blackboard.TryGet(BBK.StuckAtCliff, out isStuckAtCliff);
+
+        // 절벽 만났을 경우 처리
+        if (cliffStopEnabled && isStuckAtCliff)
+        {
+            rigidbody.velocity = Vector2.zero;
+            SkipToRecovery();
         }
 
         // 돌진 도중 방향 전환 옵션 켜진경우, 돌진 도중에도 방향 계속 체크

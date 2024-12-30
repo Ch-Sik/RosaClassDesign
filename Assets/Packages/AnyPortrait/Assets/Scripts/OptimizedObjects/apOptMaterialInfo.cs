@@ -18,6 +18,10 @@ using System;
 
 using AnyPortrait;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace AnyPortrait
 {
 	/// <summary>
@@ -134,6 +138,25 @@ namespace AnyPortrait
 			}
 		}
 
+		//v1.5.1 추가 : 키워드를 설정할 수 있다.
+		[Serializable]
+		public class Property_Keyword
+		{
+			[SerializeField]
+			public string _name = "";
+
+			[SerializeField]
+			public bool _value = true;
+
+			public Property_Keyword() {}
+			public Property_Keyword(string name, bool value)
+			{
+				_name = name;
+				_value = value;
+			}
+		}
+
+
 
 
 		[SerializeField, NonBackupField]
@@ -150,6 +173,9 @@ namespace AnyPortrait
 
 		[SerializeField]
 		public Property_Color[] _props_Color = null;
+
+		[SerializeField]
+		public Property_Keyword[] _props_Keywords = null;//v1.5.1
 
 		//변경 21.12.22 : 예약된 프로퍼티를 const 변수로 빼자
 		private const string RESERVED_PROP__COLOR = "_Color";
@@ -193,6 +219,7 @@ namespace AnyPortrait
 			_props_Vector = null;
 			_props_Texture = null;
 			_props_Color = null;
+			_props_Keywords = null;
 		}
 
 		
@@ -285,17 +312,40 @@ namespace AnyPortrait
 			List<Property_Vector> list_Vector = new List<Property_Vector>();
 			List<Property_Texture> list_Texture = new List<Property_Texture>();
 			List<Property_Color> list_Color = new List<Property_Color>();
+			List<Property_Keyword> list_Keyword = new List<Property_Keyword>();
 
 			//테스트를 위해서 Material을 생성
-			Material mat_Test = new Material(_shader);
-
+			//Material mat_Test = new Material(_shader);
 			
+			//쉐이더의 프로퍼티를 찾자 (v1.5.1)
+			HashSet<string> shaderPropNames = new HashSet<string>();
+			
+			if(_shader != null)
+			{
+				int nShaderProps = ShaderUtil.GetPropertyCount(_shader);
+				if(nShaderProps > 0)
+				{
+					for (int iProp = 0; iProp < nShaderProps; iProp++)
+					{
+						string propName = ShaderUtil.GetPropertyName(_shader, iProp);
+						if(!shaderPropNames.Contains(propName))
+						{
+							//쉐이더의 프로퍼티를 등록하자
+							shaderPropNames.Add(propName);
+						}
+					}
+				}
+			}
+
+			HashSet<string> registeredProps = new HashSet<string>();
+			HashSet<string> registerdKeywords = new HashSet<string>();//키워드 타입은 별도로 처리
 
 
 			//3-1. 먼저 MaterialSet의 정보를 리스트로 저장한다.
 			if (srcMatSet != null)
 			{
-				for (int iSrcProp = 0; iSrcProp < srcMatSet._propertySets.Count; iSrcProp++)
+				int nProps = srcMatSet._propertySets != null ? srcMatSet._propertySets.Count : 0;
+				for (int iSrcProp = 0; iSrcProp < nProps; iSrcProp++)
 				{
 					apMaterialSet.PropertySet srcProp = srcMatSet._propertySets[iSrcProp];
 					if (srcProp._isReserved ||
@@ -304,13 +354,6 @@ namespace AnyPortrait
 						continue;
 					}
 
-					//이전
-					//if(	string.Equals(srcProp._name, "_Color") ||
-					//	string.Equals(srcProp._name, "_MainTex") ||
-					//	string.Equals(srcProp._name, "_MaskTex") ||
-					//	string.Equals(srcProp._name, "_MaskScreenSpaceOffset") ||
-					//	string.IsNullOrEmpty(srcProp._name))
-
 					//변경 21.12.22 : const 변수로 바뀌었으며, "병합용" 텍스쳐가 추가되었다.
 					if(	string.Equals(srcProp._name, RESERVED_PROP__COLOR) ||
 						string.Equals(srcProp._name, RESERVED_PROP__MAIN_TEX) ||
@@ -334,65 +377,239 @@ namespace AnyPortrait
 						continue;
 					}
 
-					//프로퍼티가 있는 경우에만
-					bool isHasProp = mat_Test.HasProperty(srcProp._name);
-					if (!isHasProp)
+					if(srcProp._propType == apMaterialSet.SHADER_PROP_TYPE.Keyword)
 					{
-						//없는 Property.
-						continue;
+						//키워드 타입이라면
+						bool isAlreadyRegisterd = registerdKeywords.Contains(srcProp._name);
+						if(isAlreadyRegisterd)
+						{
+							//이미 등록이 되었다.
+							continue;
+						}
+
+						//이 키워드를 등록하자
+						registerdKeywords.Add(srcProp._name);
+
+						//리스트에 추가한다.
+						AddProperty_Keyword(list_Keyword, srcProp._name, srcProp._value_Bool);
 					}
-
-
-					switch (srcProp._propType)
+					else
 					{
-						case apMaterialSet.SHADER_PROP_TYPE.Float:
-							AddProperty_Float(list_Float, srcProp._name, srcProp._value_Float);
-							break;
+						//일반 프로퍼티 타입이라면
+						//프로퍼티가 있는 경우에만
+						bool isHasProp = shaderPropNames.Contains(srcProp._name);//v1.5.1
+						if (!isHasProp)
+						{
+							//없는 Property.
+							continue;
+						}
 
-						case apMaterialSet.SHADER_PROP_TYPE.Int:
-							AddProperty_Int(list_Int, srcProp._name, srcProp._value_Int);
-							break;
+						//중복 체크를 한다.
+						bool isAlreadyRegistered = registeredProps.Contains(srcProp._name);
+						if(isAlreadyRegistered)
+						{
+							//이미 등록이 되었다.
+							continue;
+						}
 
-						case apMaterialSet.SHADER_PROP_TYPE.Vector:
-							AddProperty_Vector(list_Vector, srcProp._name, srcProp._value_Vector);
-							break;
+						//이 프로퍼티 이름을 등록하자
+						registeredProps.Add(srcProp._name);
 
-						case apMaterialSet.SHADER_PROP_TYPE.Texture:
-							if (srcProp._isCommonTexture)
-							{
-								//공통 텍스쳐인 경우
-								AddProperty_Texture(list_Texture, srcProp._name, srcProp._value_CommonTexture);
-							}
-							else
-							{
-								//TextureData에 해당하는 정보가 있는지 확인하자.
-								//없어도 null값을 넣는다. (null로 초기화하고 싶을 때도 있겠징...)
-								//Debug.Log("Bake > [" + textureDataID + "]");
-								apMaterialSet.PropertySet.ImageTexturePair imgTexPair = srcProp._imageTexturePairs.Find(delegate (apMaterialSet.PropertySet.ImageTexturePair a)
-								{	
-									//이전 [버그 : ImageTexturePair는 랜덤 ID로 구성된 반면, 파라미터인 textureDataID는 0, 1, 2로 증가하는 Opt ID이다.]
-									//return a._textureDataID == textureDataID;
-									return a._textureDataID == srcTextureDataID;
-								});
-								if (imgTexPair != null)
+						switch (srcProp._propType)
+						{
+							case apMaterialSet.SHADER_PROP_TYPE.Float:
+								AddProperty_Float(list_Float, srcProp._name, srcProp._value_Float);
+								break;
+
+							case apMaterialSet.SHADER_PROP_TYPE.Int:
+								AddProperty_Int(list_Int, srcProp._name, srcProp._value_Int);
+								break;
+
+							case apMaterialSet.SHADER_PROP_TYPE.Vector:
+								AddProperty_Vector(list_Vector, srcProp._name, srcProp._value_Vector);
+								break;
+
+							case apMaterialSet.SHADER_PROP_TYPE.Texture:
+								if (srcProp._isCommonTexture)
 								{
-									//Debug.Log(">> 제대로 적용됨 [" + srcProp._name + "] >> " + (imgTexPair._textureAsset != null ? imgTexPair._textureAsset.name : "Null"));
-									AddProperty_Texture(list_Texture, srcProp._name, imgTexPair._textureAsset);
+									//공통 텍스쳐인 경우
+									AddProperty_Texture(list_Texture, srcProp._name, srcProp._value_CommonTexture);
 								}
 								else
 								{
-									//Debug.LogError("Null 값이 적용되었다 [" + srcProp._name + "]");
-									AddProperty_Texture(list_Texture, srcProp._name, null);
+									//TextureData에 해당하는 정보가 있는지 확인하자.
+									//없어도 null값을 넣는다. (null로 초기화하고 싶을 때도 있겠징...)
+									//Debug.Log("Bake > [" + textureDataID + "]");
+									apMaterialSet.PropertySet.ImageTexturePair imgTexPair = srcProp._imageTexturePairs.Find(delegate (apMaterialSet.PropertySet.ImageTexturePair a)
+									{	
+										//이전 [버그 : ImageTexturePair는 랜덤 ID로 구성된 반면, 파라미터인 textureDataID는 0, 1, 2로 증가하는 Opt ID이다.]
+										//return a._textureDataID == textureDataID;
+										return a._textureDataID == srcTextureDataID;
+									});
+									if (imgTexPair != null)
+									{
+										//Debug.Log(">> 제대로 적용됨 [" + srcProp._name + "] >> " + (imgTexPair._textureAsset != null ? imgTexPair._textureAsset.name : "Null"));
+										AddProperty_Texture(list_Texture, srcProp._name, imgTexPair._textureAsset);
+									}
+									else
+									{
+										//Debug.LogError("Null 값이 적용되었다 [" + srcProp._name + "]");
+										AddProperty_Texture(list_Texture, srcProp._name, null);
+									}
 								}
-							}
-							break;
+								break;
 
-						case apMaterialSet.SHADER_PROP_TYPE.Color:
-							AddProperty_Color(list_Color, srcProp._name, srcProp._value_Color);
-							break;
+							case apMaterialSet.SHADER_PROP_TYPE.Color:
+								AddProperty_Color(list_Color, srcProp._name, srcProp._value_Color);
+								break;
+						}
 					}
-
 				}
+			}
+
+			//[추가 v1.5.1] 기본 레퍼런스 재질이 있다면, 그 값을 활용할 수 있다.
+			//단 이미 추가된 프로퍼티는 제외 (우선 순위가 낮다)
+			Shader refShader = null;
+			Material refMat = null;
+			if(srcMatSet != null
+				&& srcMatSet._referenceMat != null)
+			{
+				refMat = srcMatSet._referenceMat;
+				refShader = refMat.shader;
+			}
+
+			if(refMat != null && refShader != null)
+			{
+				int nRefProps = ShaderUtil.GetPropertyCount(refShader);
+				if(nRefProps > 0)
+				{
+					for (int iRefProp = 0; iRefProp < nRefProps; iRefProp++)
+					{
+						string refPropName = ShaderUtil.GetPropertyName(refShader, iRefProp);
+
+						//고정적으로 사용되는 프로퍼티의 값은 받아오지 않는다.
+						if(string.Equals(refPropName, RESERVED_PROP__COLOR) ||
+							string.Equals(refPropName, RESERVED_PROP__MAIN_TEX) ||
+							string.Equals(refPropName, RESERVED_PROP__MASK_TEX) ||
+							string.Equals(refPropName, RESERVED_PROP__MASK_SCREEN_SPACE_OFFSET) ||
+
+							string.Equals(refPropName, RESERVED_PROP__MERGED_TEX_1) ||
+							string.Equals(refPropName, RESERVED_PROP__MERGED_TEX_2) ||
+							string.Equals(refPropName, RESERVED_PROP__MERGED_TEX_3) ||
+							string.Equals(refPropName, RESERVED_PROP__MERGED_TEX_4) ||
+							string.Equals(refPropName, RESERVED_PROP__MERGED_TEX_5) ||
+							string.Equals(refPropName, RESERVED_PROP__MERGED_TEX_6) ||
+							string.Equals(refPropName, RESERVED_PROP__MERGED_TEX_7) ||
+							string.Equals(refPropName, RESERVED_PROP__MERGED_TEX_8) ||
+							string.Equals(refPropName, RESERVED_PROP__MERGED_TEX_9) ||
+
+							string.IsNullOrEmpty(refPropName))
+						{
+							//이 값은 사용할 수 없다. Reserved임
+							continue;
+						}
+
+						//프로퍼티가 있는 경우에만
+						bool isHasProp = shaderPropNames.Contains(refPropName);//v1.5.1
+						if (!isHasProp)
+						{
+							//없는 Property.
+							continue;
+						}
+
+						//중복 체크를 한다.
+						bool isAlreadyRegistered = registeredProps.Contains(refPropName);
+						if(isAlreadyRegistered)
+						{
+							//이미 등록이 되었다.
+							continue;
+						}
+
+						//이 프로퍼티 이름을 등록하자
+						registeredProps.Add(refPropName);
+
+						//타입에 따라 재질의 값을 가져오자
+						ShaderUtil.ShaderPropertyType refPropType = ShaderUtil.GetPropertyType(refShader, iRefProp);
+						//Debug.Log("프로퍼티를 캐릭터에 입력 [" + refPropName + " / " + refPropType + "]");
+
+						switch(refPropType)
+						{
+							case ShaderUtil.ShaderPropertyType.Float:
+							case ShaderUtil.ShaderPropertyType.Range:
+								{
+									float refValue_Float = refMat.GetFloat(refPropName);
+									AddProperty_Float(list_Float, refPropName, refValue_Float);
+
+									//Debug.Log("참조 재질에서 추가 [" + refPropName + " / " + refPropType + "] : " + refValue_Float);
+								}
+								break;
+#if UNITY_2021_1_OR_NEWER
+							case ShaderUtil.ShaderPropertyType.Int:
+								{
+									int refValue_Int = refMat.GetInteger(refPropName);
+									AddProperty_Int(list_Int, refPropName, refValue_Int);
+
+									//Debug.Log("참조 재질에서 추가 [" + refPropName + " / " + refPropType + "] : " + refValue_Int);
+								}
+								break;
+#endif
+
+							case ShaderUtil.ShaderPropertyType.Vector:
+								{
+									Vector4 refValue_Vec = refMat.GetVector(refPropName);
+									AddProperty_Vector(list_Vector, refPropName, refValue_Vec);
+
+									//Debug.Log("참조 재질에서 추가 [" + refPropName + " / " + refPropType + "] : " + refValue_Vec);
+								}
+								break;
+
+							case ShaderUtil.ShaderPropertyType.TexEnv:
+								{
+									//이 방식은 강제로 Common Texture 방식이다.
+									Texture refValue_Tex = refMat.GetTexture(refPropName);
+									AddProperty_Texture(list_Texture, refPropName, refValue_Tex);
+
+									//Debug.Log("참조 재질에서 추가 [" + refPropName + " / " + refPropType + "] : " + (refValue_Tex != null ? refValue_Tex.name : "<NULL>"));
+								}
+								break;
+
+							case ShaderUtil.ShaderPropertyType.Color:
+								{
+									Color refValue_Color = refMat.GetColor(refPropName);
+									AddProperty_Color(list_Color, refPropName, refValue_Color);
+
+									//Debug.Log("참조 재질에서 추가 [" + refPropName + " / " + refPropType + "] : " + refValue_Color);
+								}
+								break;
+						}
+					}
+				}
+
+				//활성화된 키워드도 바로 포함해서 적용한다.
+				string[] keywords = refMat.shaderKeywords;
+				int nKeywords = keywords != null ? keywords.Length : 0;
+				if(nKeywords > 0)
+				{
+					//키워드를 등록하자
+					for (int iKeyword = 0; iKeyword < nKeywords; iKeyword++)
+					{
+						string curKeyword = keywords[iKeyword];
+						
+						bool isAlreadyRegisterd = registerdKeywords.Contains(curKeyword);
+						if(isAlreadyRegisterd)
+						{
+							//이미 등록이 되었다.
+							continue;
+						}
+
+						//이 키워드를 등록하자
+						registerdKeywords.Add(curKeyword);
+
+						//리스트에 추가한다.
+						AddProperty_Keyword(list_Keyword, curKeyword, true);
+					}
+				}
+
 			}
 
 
@@ -400,16 +617,10 @@ namespace AnyPortrait
 			if(srcMeshTransform._customMaterialProperties != null &&
 				srcMeshTransform._customMaterialProperties.Count > 0)
 			{
-				for (int iSrcProp = 0; iSrcProp < srcMeshTransform._customMaterialProperties.Count; iSrcProp++)
+				int nCustomProps = srcMeshTransform._customMaterialProperties.Count;
+				for (int iSrcProp = 0; iSrcProp < nCustomProps; iSrcProp++)
 				{
 					apTransform_Mesh.CustomMaterialProperty srcProp = srcMeshTransform._customMaterialProperties[iSrcProp];
-
-					//이전
-					//if(	string.Equals(srcProp._name, "_Color") ||
-					//	string.Equals(srcProp._name, "_MainTex") ||
-					//	string.Equals(srcProp._name, "_MaskTex") ||
-					//	string.Equals(srcProp._name, "_MaskScreenSpaceOffset") ||
-					//	string.IsNullOrEmpty(srcProp._name))
 
 					//변경 21.12.22 : const 변수로 바뀌었으며, "병합용" 텍스쳐가 추가되었다.
 					if(	string.Equals(srcProp._name, RESERVED_PROP__COLOR) ||
@@ -431,13 +642,20 @@ namespace AnyPortrait
 						continue;
 					}
 
-					//프로퍼티가 있는 경우에만
-					bool isHasProp = mat_Test.HasProperty(srcProp._name);
-					if(!isHasProp)
+					if(srcProp._propType != apTransform_Mesh.CustomMaterialProperty.SHADER_PROP_TYPE.Keyword)
 					{
-						//없는 Property.
-						continue;
+						//프로퍼티가 쉐이더에 있는 경우에만 (프로퍼티 타입의 경우)
+						//bool isHasProp = mat_Test.HasProperty(srcProp._name);
+						bool isHasProp = shaderPropNames.Contains(srcProp._name);//v1.5.1
+						if(!isHasProp)
+						{
+							//없는 Property.
+							continue;
+						}
 					}
+					
+
+					//여기서는 중복체크를 하지 않는다. 있으면 덮어 씌울 것이기 때문
 
 					//이름을 비교하여, 기존의 값이 있다면 덮어 씌우고, 없으면 새로 만들기
 					switch (srcProp._propType)
@@ -461,6 +679,10 @@ namespace AnyPortrait
 						case apTransform_Mesh.CustomMaterialProperty.SHADER_PROP_TYPE.Color:
 							AddProperty_Color(list_Color, srcProp._name, srcProp._value_Color);
 							break;
+
+						case apTransform_Mesh.CustomMaterialProperty.SHADER_PROP_TYPE.Keyword:
+							AddProperty_Keyword(list_Keyword, srcProp._name, srcProp._value_Keyword);
+							break;
 					}
 				}
 			}
@@ -468,7 +690,7 @@ namespace AnyPortrait
 			
 
 
-			//리스트의 값을 변수로 저장한다.
+			//리스트의 값을 변수로 저장한다.			
 			if(list_Float.Count > 0)
 			{
 				//정렬부터 
@@ -520,7 +742,7 @@ namespace AnyPortrait
 			if(list_Texture.Count > 0)
 			{
 				//정렬부터 
-				list_Float.Sort(delegate(Property_Float a, Property_Float b)
+				list_Texture.Sort(delegate(Property_Texture a, Property_Texture b)
 				{
 					return string.Compare(a._name, b._name);
 				});
@@ -536,7 +758,7 @@ namespace AnyPortrait
 			if(list_Color.Count > 0)
 			{
 				//정렬부터 
-				list_Float.Sort(delegate(Property_Float a, Property_Float b)
+				list_Color.Sort(delegate(Property_Color a, Property_Color b)
 				{
 					return string.Compare(a._name, b._name);
 				});
@@ -549,6 +771,25 @@ namespace AnyPortrait
 				}
 			}
 
+			//추가 v1.5.1 : 키워드 정렬
+			if(list_Keyword.Count > 0)
+			{
+				//정렬부터 
+				list_Keyword.Sort(delegate(Property_Keyword a, Property_Keyword b)
+				{
+					return string.Compare(a._name, b._name);
+				});
+				
+				//값 복사
+				_props_Keywords = new Property_Keyword[list_Keyword.Count];
+				for (int i = 0; i < list_Keyword.Count; i++)
+				{
+					_props_Keywords[i] = list_Keyword[i];
+				}
+			}
+
+			
+
 
 			//추가 21.12.24
 			//이게 병합 가능한 재질인지 확인하자
@@ -556,25 +797,27 @@ namespace AnyPortrait
 			//클리핑 속성은 없어야 한다.
 			//병합 속성 9개 모두 있어야 한다.
 			_isMergable = false;
-			if(mat_Test.HasProperty(RESERVED_PROP__COLOR)
-				&& mat_Test.HasProperty(RESERVED_PROP__MAIN_TEX)
-				&& !mat_Test.HasProperty(RESERVED_PROP__MASK_TEX)
-				&& !mat_Test.HasProperty(RESERVED_PROP__MASK_SCREEN_SPACE_OFFSET)
-				&& mat_Test.HasProperty(RESERVED_PROP__MERGED_TEX_1)
-				&& mat_Test.HasProperty(RESERVED_PROP__MERGED_TEX_2)
-				&& mat_Test.HasProperty(RESERVED_PROP__MERGED_TEX_3)
-				&& mat_Test.HasProperty(RESERVED_PROP__MERGED_TEX_4)
-				&& mat_Test.HasProperty(RESERVED_PROP__MERGED_TEX_5)
-				&& mat_Test.HasProperty(RESERVED_PROP__MERGED_TEX_6)
-				&& mat_Test.HasProperty(RESERVED_PROP__MERGED_TEX_7)
-				&& mat_Test.HasProperty(RESERVED_PROP__MERGED_TEX_8)
-				&& mat_Test.HasProperty(RESERVED_PROP__MERGED_TEX_9)
+
+			//변경 v1.5.1
+			if(shaderPropNames.Contains(RESERVED_PROP__COLOR)
+				&& shaderPropNames.Contains(RESERVED_PROP__MAIN_TEX)
+				&& !shaderPropNames.Contains(RESERVED_PROP__MASK_TEX)
+				&& !shaderPropNames.Contains(RESERVED_PROP__MASK_SCREEN_SPACE_OFFSET)
+				&& shaderPropNames.Contains(RESERVED_PROP__MERGED_TEX_1)
+				&& shaderPropNames.Contains(RESERVED_PROP__MERGED_TEX_2)
+				&& shaderPropNames.Contains(RESERVED_PROP__MERGED_TEX_3)
+				&& shaderPropNames.Contains(RESERVED_PROP__MERGED_TEX_4)
+				&& shaderPropNames.Contains(RESERVED_PROP__MERGED_TEX_5)
+				&& shaderPropNames.Contains(RESERVED_PROP__MERGED_TEX_6)
+				&& shaderPropNames.Contains(RESERVED_PROP__MERGED_TEX_7)
+				&& shaderPropNames.Contains(RESERVED_PROP__MERGED_TEX_8)
+				&& shaderPropNames.Contains(RESERVED_PROP__MERGED_TEX_9)
 				)
 			{
 				_isMergable = true;
 			}
 
-			UnityEngine.Object.DestroyImmediate(mat_Test);
+			//UnityEngine.Object.DestroyImmediate(mat_Test);//삭제 v1.5.1
 		}
 		
 #endif
@@ -635,6 +878,17 @@ namespace AnyPortrait
 			else					{ propList.Add(new Property_Color(name, value)); }
 		}
 
+		public void AddProperty_Keyword(List<Property_Keyword> propList, string name, bool value)
+		{
+			Property_Keyword existProp = propList.Find(delegate(Property_Keyword a)
+			{
+				return string.Equals(a._name, name);
+			});
+
+			if(existProp != null)	{ existProp._value = value; }
+			else					{ propList.Add(new Property_Keyword(name, value)); }
+		}
+
 		// Make from Src : Batched / Shared Material에서 만들때는 이 함수를 이용하자
 		//---------------------------------------------------
 		public void MakeFromSrc(apOptMaterialInfo srcMatInfo)
@@ -646,54 +900,70 @@ namespace AnyPortrait
 			_textureID = srcMatInfo._textureID;
 			_shader = srcMatInfo._shader;
 			
-			
-			if(srcMatInfo.NumProp_Float > 0)
+			int nSrcProp_Float = srcMatInfo.NumProp_Float;
+			int nSrcProp_Int = srcMatInfo.NumProp_Int;
+			int nSrcProp_Vector = srcMatInfo.NumProp_Vector;
+			int nSrcProp_Texture = srcMatInfo.NumProp_Texture;
+			int nSrcProp_Color = srcMatInfo.NumProp_Color;
+			int nSrcProp_Keyword = srcMatInfo.NumProp_Keyword;
+
+			if(nSrcProp_Float > 0)
 			{
-				_props_Float = new Property_Float[srcMatInfo.NumProp_Float];
-				for (int i = 0; i < srcMatInfo.NumProp_Float; i++)
+				_props_Float = new Property_Float[nSrcProp_Float];
+				for (int i = 0; i < nSrcProp_Float; i++)
 				{
 					Property_Float srcProp = srcMatInfo._props_Float[i];
 					_props_Float[i] = new Property_Float(srcProp._name, srcProp._value);
 				}
 			}
 
-			if(srcMatInfo.NumProp_Int > 0)
+			if(nSrcProp_Int > 0)
 			{
-				_props_Int = new Property_Int[srcMatInfo.NumProp_Int];
-				for (int i = 0; i < srcMatInfo.NumProp_Int; i++)
+				_props_Int = new Property_Int[nSrcProp_Int];
+				for (int i = 0; i < nSrcProp_Int; i++)
 				{
 					Property_Int srcProp = srcMatInfo._props_Int[i];
 					_props_Int[i] = new Property_Int(srcProp._name, srcProp._value);
 				}
 			}
 
-			if(srcMatInfo.NumProp_Vector > 0)
+			if(nSrcProp_Vector > 0)
 			{
-				_props_Vector = new Property_Vector[srcMatInfo.NumProp_Vector];
-				for (int i = 0; i < srcMatInfo.NumProp_Vector; i++)
+				_props_Vector = new Property_Vector[nSrcProp_Vector];
+				for (int i = 0; i < nSrcProp_Vector; i++)
 				{
 					Property_Vector srcProp = srcMatInfo._props_Vector[i];
 					_props_Vector[i] = new Property_Vector(srcProp._name, srcProp._value);
 				}
 			}
 
-			if(srcMatInfo.NumProp_Texture > 0)
+			if(nSrcProp_Texture > 0)
 			{
-				_props_Texture = new Property_Texture[srcMatInfo.NumProp_Texture];
-				for (int i = 0; i < srcMatInfo.NumProp_Texture; i++)
+				_props_Texture = new Property_Texture[nSrcProp_Texture];
+				for (int i = 0; i < nSrcProp_Texture; i++)
 				{
 					Property_Texture srcProp = srcMatInfo._props_Texture[i];
 					_props_Texture[i] = new Property_Texture(srcProp._name, srcProp._value);
 				}
 			}
 
-			if(srcMatInfo.NumProp_Color > 0)
+			if(nSrcProp_Color > 0)
 			{
-				_props_Color = new Property_Color[srcMatInfo.NumProp_Color];
-				for (int i = 0; i < srcMatInfo.NumProp_Color; i++)
+				_props_Color = new Property_Color[nSrcProp_Color];
+				for (int i = 0; i < nSrcProp_Color; i++)
 				{
 					Property_Color srcProp = srcMatInfo._props_Color[i];
 					_props_Color[i] = new Property_Color(srcProp._name, srcProp._value);
+				}
+			}
+
+			if(nSrcProp_Keyword > 0)
+			{
+				_props_Keywords = new Property_Keyword[nSrcProp_Keyword];
+				for (int i = 0; i < nSrcProp_Keyword; i++)
+				{
+					Property_Keyword srcProp = srcMatInfo._props_Keywords[i];
+					_props_Keywords[i] = new Property_Keyword(srcProp._name, srcProp._value);
 				}
 			}
 		}
@@ -711,7 +981,8 @@ namespace AnyPortrait
 				infoA.NumProp_Int != infoB.NumProp_Int ||
 				infoA.NumProp_Vector != infoB.NumProp_Vector ||
 				infoA.NumProp_Texture != infoB.NumProp_Texture ||
-				infoA.NumProp_Color != infoB.NumProp_Color)
+				infoA.NumProp_Color != infoB.NumProp_Color ||
+				infoA.NumProp_Keyword != infoB.NumProp_Keyword)
 			{
 				//기본 속성에서 차이가 있다.
 				return false;
@@ -727,6 +998,7 @@ namespace AnyPortrait
 			int numVector = infoA.NumProp_Vector;
 			int numTexture = infoA.NumProp_Texture;
 			int numColor = infoA.NumProp_Color;
+			int numKeyword = infoA.NumProp_Keyword;
 
 			//1. Float
 			if(numFloat > 0)
@@ -840,6 +1112,27 @@ namespace AnyPortrait
 				}
 			}
 
+			//6. Keyword (v1.5.1)
+			if(numKeyword > 0)
+			{
+				Property_Keyword propA = null;
+				Property_Keyword propB = null;
+				for (int i = 0; i < numKeyword; i++)
+				{
+					propA = infoA._props_Keywords[i];
+					propB = infoB._props_Keywords[i];
+					if(!string.Equals(propA._name, propB._name))
+					{
+						return false;
+					}
+
+					if(propA._value != propB._value)
+					{
+						return false;
+					}
+				}
+			}
+
 			return true;
 		}
 
@@ -855,97 +1148,101 @@ namespace AnyPortrait
 				return;
 			}
 
+			int nProp_Float = NumProp_Float;
+			int nProp_Int = NumProp_Int;
+			int nProp_Vector = NumProp_Vector;
+			int nProp_Texture = NumProp_Texture;
+			int nProp_Color = NumProp_Color;
+			int nProp_Keyword = NumProp_Keyword;
+
 			//1. Float
-			if(NumProp_Float > 0)
+			if(nProp_Float > 0)
 			{
-				for (int i = 0; i < NumProp_Float; i++)
+				Property_Float propF = null;
+				for (int i = 0; i < nProp_Float; i++)
 				{
-					targetMaterial.SetFloat(_props_Float[i]._name, _props_Float[i]._value);
+					propF = _props_Float[i];
+					targetMaterial.SetFloat(propF._name, propF._value);
 				}
 			}
 
 			//2. Int
-			if(NumProp_Int > 0)
+			if(nProp_Int > 0)
 			{
-				for (int i = 0; i < NumProp_Int; i++)
+				Property_Int propI = null;
+				for (int i = 0; i < nProp_Int; i++)
 				{
-					targetMaterial.SetInt(_props_Int[i]._name, _props_Int[i]._value);
+					propI = _props_Int[i];
+#if UNITY_2021_1_OR_NEWER
+					targetMaterial.SetInteger(propI._name, propI._value);
+#else
+					targetMaterial.SetInt(propI._name, propI._value);
+#endif				
 				}
 			}
 
 			//3. Vector
-			if(NumProp_Vector > 0)
+			if(nProp_Vector > 0)
 			{
-				for (int i = 0; i < NumProp_Vector; i++)
+				Property_Vector propV = null;
+				for (int i = 0; i < nProp_Vector; i++)
 				{
-					targetMaterial.SetVector(_props_Vector[i]._name, _props_Vector[i]._value);
+					propV = _props_Vector[i];
+					targetMaterial.SetVector(propV._name, propV._value);
 				}
 			}
 
 			//4. Texture
-			if(NumProp_Texture > 0)
+			if(nProp_Texture > 0)
 			{
-				for (int i = 0; i < NumProp_Texture; i++)
+				Property_Texture propT = null;
+				for (int i = 0; i < nProp_Texture; i++)
 				{
-					targetMaterial.SetTexture(_props_Texture[i]._name, _props_Texture[i]._value);
+					propT = _props_Texture[i];
+					targetMaterial.SetTexture(propT._name, propT._value);
 				}
 			}
 
 			//5. Color
-			if(NumProp_Color > 0)
+			if(nProp_Color > 0)
 			{
-				for (int i = 0; i < NumProp_Color; i++)
+				Property_Color propC = null;
+				for (int i = 0; i < nProp_Color; i++)
 				{
-					targetMaterial.SetColor(_props_Color[i]._name, _props_Color[i]._value);
+					propC = _props_Color[i];
+					targetMaterial.SetColor(propC._name, propC._value);
+				}
+			}
+
+			//6. Keyword v1.5.1
+			if(nProp_Keyword > 0)
+			{
+				Property_Keyword propK = null;
+				for (int i = 0; i < nProp_Keyword; i++)
+				{
+					propK = _props_Keywords[i];
+					
+					if(propK._value)
+					{
+						//키워드 활성화
+						targetMaterial.EnableKeyword(propK._name);
+					}
+					else
+					{
+						//키워드 비활성화
+						targetMaterial.DisableKeyword(propK._name);
+					}
 				}
 			}
 		}
 
 		// Get / Set
 		//---------------------------------------------------
-		public int NumProp_Float
-		{
-			get
-			{
-				if(_props_Float == null) { return 0; }
-				return _props_Float.Length;
-			}
-		}
-
-		public int NumProp_Int
-		{
-			get
-			{
-				if(_props_Int == null) { return 0; }
-				return _props_Int.Length;
-			}
-		}
-
-		public int NumProp_Vector
-		{
-			get
-			{
-				if(_props_Vector == null) { return 0; }
-				return _props_Vector.Length;
-			}
-		}
-
-		public int NumProp_Texture
-		{
-			get
-			{
-				if(_props_Texture == null) { return 0; }
-				return _props_Texture.Length;
-			}
-		}
-
-		public int NumProp_Color
-		{
-			get
-			{
-				if(_props_Color == null) { return 0; }
-				return _props_Color.Length;
-			}
-		}
+		public int NumProp_Float	{ get { return _props_Float != null ? _props_Float.Length : 0; } }
+		public int NumProp_Int		{ get { return _props_Int != null ? _props_Int.Length : 0; } }
+		public int NumProp_Vector	{ get { return _props_Vector != null ? _props_Vector.Length : 0; } }
+		public int NumProp_Texture	{ get { return _props_Texture != null ? _props_Texture.Length : 0; } }
+		public int NumProp_Color	{ get { return _props_Color != null ? _props_Color.Length : 0; } }
+		public int NumProp_Keyword	{ get { return _props_Keywords != null ? _props_Keywords.Length : 0; }  }
 	}
 }

@@ -1,5 +1,5 @@
-﻿------------------------------------------------------------
-		AnyPortrait (Version 1.4.8)
+------------------------------------------------------------
+		AnyPortrait (Version 1.5.1)
 ------------------------------------------------------------
 
 
@@ -42,7 +42,7 @@ please contact us for any issues that may be causing the problem.
 
 3. How to start
 
-To use AnyPortrait, go to "Window > AnyPortrait > 2D Editor".
+To use AnyPortrait, go to "Window > AnyPortrait > Open Editor".
 The work is done in the unit called Portrait.
 You can create a new portrait or open an existing one.
 For more information, please refer to the User Guide.
@@ -889,13 +889,97 @@ You can also check in "Setting > About" of AnyPortrait.
 - An issue is fixed where the editor update frequency remained reduced even when the mouse was dragged when the performance optimization function for laptops was turned on.
 - An issue is fixed where the UI of the dialog for selecting presets for control parameters was displayed abnormally.
 
+1.5.0 (August 20, 2024)
+- FABRIK algorithm added, which is more improved than the previous CCD algorithm
+- Options are added to determine which IK algorithm to select when updating a character and controlling the editor.
+- The CCD method is maintained in existing works, and the default value for characters created after the update is set to FABRIK.
+- It is improved to allow more flexible use of IK controllers that were previously limited by parent-child relationships
+- The "Depth" property is added that allows the user to determine the processing order of the IK controller.
+- The "Soft Limit" option is added to make the bone stop smoothly when setting the Angle Constraint in the IK controller.
+- IK controller-related UI when selecting bone is improved.
+- It is changed that the IK controller is disabled when a mesh group's "Default Transform" mode is turned on.
+- It is changed that Rigging results reflect IK when "Bone Edit Mode" is turned off in the Bone tab of the mesh group.
+- It is improved that the IK controller results in the editor and in-game are consistent when “Angle Constraint” is not set.
+- When "Angle Constraint" is set, an option is added to determine which value between FK and Prefer Angle to use when starting IK calculation (for FABRIK)
+- In the Control Parameter tab on the left, a function is added to save and utilize the values ​​of control parameters frequently used by users in a "Snapshot" method.
+- A function to change the positions of selected keyframes by stretching is added.
+- The ability is added to perform an automatic search based on the asset's name when the path to the shader asset in the material preset has been modified.
+- When the Select All button is pressed in the dialog for adding a mesh or child mesh group to a mesh group, only objects in the current tab are selected.
+- It is improved so that the last selected modifier is selected again.
+- It is changed that the visibility of the mesh in keys other than the selected key is set to "default" when registering a mesh by pressing the "yellow eye icon" in a modifier where keys have already been created. (previously, the mesh's visibility values on the selected key ​​are applied in batches)
+- It is improved so that when you change visibility by pressing the eye icon, the values ​​of all selected objects change simultaneously.
+- It is changed that the editor's tooltip UI appears again starting from Unity 2022.
+- It is improved to allow simultaneous selection of multiple timeline layers for Control Parameters
+- The layout is improved so that various elements of the animation screen can be displayed on a narrow screen.
+- It is changed that a duplicated object is shown right below the original object in the left Hierarchy.
+- When adding a key in a modifier for control parameters, the option is added to the Setting dialog to set whether the state of the object at the added key will be "Default value (old)" or "Blended value (new)".
+- An issue is fixed where it took a long time to open the editor when the number of registered material presets and shader asset information increased.
+- The performance degradation issue caused by the editor's memory GC processing is improved.
+- Many codes that create unnecessary memory in the editor and in-game are modified.
+- The performance of internal code that checks and connects data related to modifiers is improved.
+- The “Dirty” related code passed to the Unity editor during the work process is improved.
+- An issue is fixed where the clipping mask optimization function could not respond when the number or properties of cameras were changed during in-game, resulting in poor rendering quality.
+- The ability is improved to perform clipping mask optimization even with multiple cameras when conditions are meet, to perform more smoothly and render at the highest quality possible.
+- An issue is fixed where an update error occurred when there were no valid cameras in billboard mode.
+- It is changed that resetting Command buffer is operated inside functions related to camera changes, such as the SetRenderingCameras function, eliminating the need for users to call functions such as ResetMeshesCommandBuffers.
+- The function that calibrates the Jiggle Bone calculation when the character's position suddenly changes during in-game is improved to check the "size" and "rotation" values ​​as well.
+- When using "Per Time (Not Sync)" among the options for updating the mesh at low FPS, an additional option is added to determine whether to be proportional to the Time Scale.
+- "Light Probes" and "Reflection Probe" options are added to the Bake dialog.
+- Script functions (ResetTextureForExtraOptionAll, ResetTextureForExtraOptionByName) that initialize images changed by the modifier's Extra option are added.
+- "URP (2023)" material preset is added due to changes in clipping handling starting with Unity 2023 and URP 16
+- The AnyPortrait item in the Unity menu is changed to be displayed independently from other menus.
+- The name of the menu that opens the AnyPortrait editor in the Unity menu is changed from "2D Editor" to "Open Editor"
+- The code is improved to prevent cases where the interpolation operation fails when interpolating with Vector type control parameters.
+- An option to select whether to apply modifier results to invisible meshes is added to the Bake dialog for continuous processing of physics effects, etc.
+- The weight of the Rigging modifier is changed to automatically Normalize when running the editor and performing bake.
+- The option to make the parent's rotation be added to the Billboard calculation is added.
+- An issue is fixed where physics effects, including Jiggle bones, were calculated strangely immediately after initialization or in the first frame rendered.
+- An issue is fixed where bones could not be selected in outline rendering mode in the Bone tab of the mesh group.
+- An issue is fixed where the animation list did not appear on the root unit screen immediately after loading a character from a backup file.
+- An issue is fixed where the order of objects in the right Hierarchy screen was incorrect immediately after adding two or more meshes or child mesh groups to a mesh group.
+- An issue is fixed where bones were strangely controlled by a script when the calculation mode was Non-Uniform (Rotation only)
+- An issue is fixed where the bone could not be controlled by script when an IK controller was applied and the IK Weight was greater than 0.
+- An issue is fixed where the Rigging modifier would remain disabled if you had "Bone Edit Mode" turned on in the Bone tab of a mesh group and then switched to another tab in the mesh group.
+- An issue is fixed where if you create a timeline layer and a keyframe at the same time by pressing the "yellow eye icon" on the animation editing screen, the keyframe is created on the first frame rather than the current frame.
+- An issue is fixed where meshes whose images have been changed by the Extra option are excluded from script functions such as SetImageAll.
+- An issue is fixed where the Extra option would be disabled when using script functions such as ResetMeshMaterialToBatchAll that reset the mesh's materials.
+- An issue is fixed where the timeline of an object registered in an animation could not be deleted when selecting one object registered in the animation timeline and multiple objects not registered in the animation timeline.
+- An issue is fixed where "Auto-Key" mode in animations did not work properly on timelines targeting Control Parameters.
+- An issue is fixed where Undo data was registered abnormally.
+- An issue is fixed where when a mesh was duplicated, the duplicated target was not immediately selected.
+- An issue is fixed where the interpolation is performed abnormally when the type of a control parameter is Vector type  and the keys do not form a square. (Results are different from existing work, so confirmation is required)
+- An issue is fixed where position calculations were performed abnormally in the first and last frames of animation during in-game.
+- An issue is fixed where abnormal values ​​were temporarily entered during the bone update process when menus were changed or arbitrary functions were performed in the editor.
+- An issue is fixed where the IK application degree did not transition smoothly when the IK Weight value in the IK controller was about 0.005.
+- An issue is fixed where the editor's gizmo did not work properly depending on the layer order of the modifiers when the same bone was controlled by two or more modifiers.
+- An issue is fixed where the character is displayed in purple when you run the game after pressing the Refresh Meshes button in the Inspector UI of the AnyPortrait character with the Reload Scene option turned on and the Reload Domain option turned off in the Unity Editor options.
+- An issue is fixed where the modifier's edit mode is automatically canceled when the value of the control parameter is changed while the calculation result preview mode is on.
+- An issue is fixed where the value of the control parameter has a value unrelated to the animation immediately after switching to the animation screen or root unit screen and immediately after executing Bake.
+- An issue is fixed where duplicating a mesh within a mesh group would temporarily disconnect it from the modifier.
 
+1.5.1 (October 30, 2024)
+- The compatibility issue is resolved between versions for the material control function, "SetInt" .
+- Compatibility issues are resolved that occurred due to changes in the APIs of "Render Pipeline" and "Rigidbody" in Unity 6.
+- Due to the change in layout of the un-docked editor in Unity 6, a "Close Editor Button" is added to the top of the screen.
+- An issue is fixed where warnings about clipping meshes and command buffers were raised in Unity 6.
+- The "Keyword" type is added to the shader properties of the material library, and shaders with "multi_compile" applied are supported.
+- You can conveniently set the shader properties of a material set by specifying a Reference Material.
+- It is improved so that you can add shader properties of a material set by selecting them from the list.
+- The material set designated as the default is improved so that a check icon is output on the right side of the list.
+- Ability to export or import capture settings to an external file is added.
+- A search UI is added for easy selection of animations when capturing Sprite Sheets.
+- "Update clipping just before rendering" option is added to Bake dialog to address clipping not working properly in asynchronous projects
+- An issue is fixed where the shader property UI would display abnormally when selecting a material preset in the material library.
+- An issue is fixed where some code in the script would cause compilation problems
+- An issue is fixed where some properties related to jigglebone and IK were not copied when duplicating a bone
+- An issue is fixed where the "Update invisible meshes" option was not applied when "Optimized Bake"
+- An issue is fixed where some UIs in the material library would display strangely in Unity 2023 or later.
 
 
 
 
 ------------------------------------------------------------
-			한국어 설명 (버전 1.4.8)
+			한국어 설명 (버전 1.5.1)
 ------------------------------------------------------------
 
 AnyPortrait를 사용해주셔서 감사를 드립니다.
@@ -937,7 +1021,7 @@ AnyPortrait는 PC, 모바일, 웹, 콘솔에서 구동되도록 개발되었습�
 
 3. 시작하기
 
-AnyPortrait를 실행하려면 "Window > AnyPortrait > 2D Editor"메뉴를 실행하시면 됩니다.
+AnyPortrait를 실행하려면 "Window > AnyPortrait > Open Editor"메뉴를 실행하시면 됩니다.
 AnyPortrait는 Portrait라는 단위로 작업을 합니다.
 새로운 Portrait를 만들거나 기존의 것을 여시면 됩니다.
 더 많은 정보는 "사용 설명서"를 참고하시면 되겠습니다.
@@ -1783,3 +1867,91 @@ AnyPortrait의 "설정 > About"에서도 확인할 수 있습니다.
 - Loop가 아닌 애니메이션의 첫 키프레임보다 앞에서는 해당 객체의 Transform 값이 0이 되어버려서 메시들이 보이지 않게 되는 문제가 수정됨
 - 노트북을 위한 성능 최적화 기능을 켰을 때 마우스 드래그시에도 에디터 갱신 빈도가 줄어든 상태가 유지되는 문제가 수정됨
 - 컨트롤 파라미터의 프리셋을 선택하는 다이얼로그의 UI가 비정상적으로 출력되는 문제가 수정됨
+
+1.5.0 (2024년 8월 20일)
+- 기존의 CCD 알고리즘보다 개선된 FABRIK 알고리즘이 추가됨
+- 캐릭터의 업데이트 및 에디터 제어시 각각 어떤 IK 알고리즘을 선택할지 결정하는 옵션이 추가됨
+- 기존의 작업물에는 CCD 방식이 유지되고, 업데이트 후 생성된 캐릭터의 기본값은 FABRIK으로 설정됨
+- 부모-자식 관계에 의해 제한되었던 IK 컨트롤러를 더 유연하게 사용할 수 있도록 개선됨
+- IK 컨트롤러의 처리 순서를 사용자가 결정할 수 있는 "Depth" 속성이 추가됨
+- IK 컨트롤러에서 각도 제약(Angle Constraint) 설정 시 약간의 완충 효과를 주는 "Soft Limit" 옵션이 추가됨
+- 본 선택시의 IK 컨트롤러 관련 UI가 개선됨
+- 메시 그룹의 "Default Transform" 모드가 켜진 경우 IK 컨트롤러가 비활성화되도록 변경됨
+- 메시 그룹의 Bone 탭에서 "본 편집 모드"가 꺼진 상태에서 Rigging 결과에 IK가 반영되도록 변경됨
+- "각도 제약"이 설정되지 않은 경우 에디터와 인게임에서의 IK 컨트롤러 결과가 최대한 같아지도록 개선됨
+- "각도 제약"이 설정된 경우, IK의 연산 시작시 FK와 Prefer Angle 중에서 어떤 값을 사용할지에 대한 옵션이 추가됨 (FABRIK 용)
+- 왼쪽의 컨트롤 파라미터 탭에서 사용자가 자주 사용하는 컨트롤 파라미터들의 값들을 "스냅샷" 방식으로 저장하여 활용하는 기능이 추가됨
+- 선택한 키프레임들의 위치를 배율에 따라 변경하는 기능이 추가됨
+- 재질 프리셋의 쉐이더 에셋의 경로가 수정된 경우 에셋의 이름을 바탕으로 자동 탐색을 수행하는 기능이 추가됨
+- 메시 그룹에 메시나 자식 메시 그룹을 추가하기 위한 다이얼로그에서 Select All 버튼을 누를 경우 현재 탭의 객체들만 선택되도록 변경됨    
+- 마지막으로 선택했던 모디파이어가 다시 선택되도록 개선됨
+- 키(Key)들이 이미 생성된 모디파이어에서 "노란색 눈 아이콘"을 눌러서 메시를 등록할 때, 선택된 키 외의 다른 키에서의 메시의 가시성이 "기본값"으로 설정되도록 변경됨 (기존에는 모디파이어 등록 시점의 메시의 가시성 값이 일괄 적용됨)
+- 눈 아이콘을 눌러서 가시성을 변경하면 선택된 모든 대상들의 값이 동시에 변경되도록 개선됨
+- 유니티 2022부터 에디터의 툴팁 UI가 다시 나오도록 변경됨
+- 컨트롤 파라미터에 대한 타임라인 레이어를 동시에 여러개 선택할 수 있도록 개선됨
+- 애니메이션 화면의 여러 요소들이 좁은 화면에 보여지도록 레이아웃이 개선됨
+- 왼쪽 Hierarchy에서 객체를 복제(Duplicate)한 경우, 복제된 대상이 원래의 대상의 바로 아래에 보여지도록 변경됨
+- 컨트롤 파라미터로 동작하는 모디파이어에서 키를 추가하는 경우, 추가된 키에서의 객체의 상태가 "기본값 (기존 방식)"과 "보간된 값 (새로운 방식)"중에서 어느 값을 가질지 여부를 설정하는 옵션이 설정 다이얼로그에 추가됨
+- 등록된 재질 프리셋과 쉐이더 에셋 정보가 늘어나면 에디터를 열때마다 긴 시간이 소요되는 문제가 수정됨
+- 에디터의 메모리 GC 처리에 의한 성능 저하 문제가 개선됨
+- 에디터와 인게임에서 불필요한 메모리를 생성하는 코드들이 다수 수정됨
+- 모디파이어와 관련된 데이터들을 체크확인하고 연결하는 내부 코드의 성능이 개선됨
+- 작업 과정에서 유니티 에디터에 전달하는 "Dirty" 관련 코드가 개선됨
+- 2개 이상의 카메라들의 변경을 모니터링하는 방식에 대한 옵션이 Bake 다이얼로그에 추가됨
+- 인게임 중에 카메라의 개수나 속성이 변경되는 경우 클리핑 마스크 최적화 기능이 이에 대응하지 못하여 렌더링 품질이 저하되는 문제가 수정됨
+- 조건에 맞는 경우에 2개 이상의 카메라에서도 클리핑 마스크 최적화를 수행하는 기능이 더 원활하게 수행되어 가능한 높은 품질로 렌더링하도록 개선됨
+- 빌보드 모드에서 유효한 카메라가 없어지는 경우 업데이트 에러가 발생되는 문제가 수정됨
+- SetRenderingCameras 함수와 같이 카메라 변경과 관련된 함수 내부에 커맨드 버퍼 재설정이 동작하도록 변경되어 사용자가 ResetMeshesCommandBuffers와 같은 함수를 호출할 필요가 없어짐
+- 인게임 시 캐릭터의 위치가 갑자기 변하는 경우의 지글본 연산을 보정하는 기능이 "크기"와 "회전" 값도 같이 체크하도록 개선됨
+- 낮은 FPS로 메시를 갱신하는 옵션 중 "Per Time (Not Sync)"를 사용하는 경우, 시간 배속(Time Scale)에 비례할지 결정하는 옵션이 추가됨
+- Bake 다이얼로그에 "Light Probes", "Reflection Probe" 옵션이 추가됨
+- 모디파이어의 Extra 옵션에 의해서 변경된 이미지를 초기화하는 스크립트 함수(ResetTextureForExtraOptionAll, ResetTextureForExtraOptionByName)가 추가됨
+- 유니티 2023 및 URP 16부터 클리핑 처리가 변경됨에 따라 "URP (2023)" 재질 프리셋이 추가됨
+- 유니티 메뉴에서 AnyPortrait 항목이 다른 메뉴와 독립되어 보여지도록 변경됨
+- 유니티 메뉴에서 AnyPortrait 에디터를 여는 메뉴의 이름이 "2D Editor"에서 "Open Editor"로 변경됨
+- Vector 타입의 컨트롤 파라미터로 보간을 할 때, 보간 연산이 실패되는 경우를 방지하도록 코드가 개선됨
+- 물리 효과 등의 연속적인 처리를 위해서 보이지 않는 메시에도 모디파이어 결과를 적용할지 여부를 선택하는 옵션이 Bake 다이얼로그에 추가됨
+- 에디터 실행시와 Bake 수행시 Rigging 모디파이어의 가중치가 자동으로 Normalize 되도록 변경됨
+- 부모 객체의 회전이 빌보드 연산에 더해지도록 만드는 옵션이 추가됨
+- 초기화 직후 또는 렌더링되는 첫 프레임에서 지글본을 포함한 물리 효과가 이상하게 연산되는 문제가 수정됨
+- 메시 그룹의 Bone 탭에서 외곽선 렌더링 모드 상태에서 본을 선택할 수 없는 문제가 수정됨
+- 백업 파일로부터 캐릭터를 로드한 직후에 루트 유닛 화면에서 애니메이션 리스트가 나타나지 않는 문제가 수정됨
+- 메시 그룹에 메시나 자식 메시 그룹을 2개 이상 추가한 직후에 오른쪽 Hierarchy 화면에서 객체들의 순서가 올바르지 않았던 문제가 수정됨
+- 본 연산 모드가 Non-Uniform 방식인 경우 스크립트로 이상하게 제어되는 문제가 수정됨 (Rotation만 가능)
+- IK 컨트롤러가 적용되어 있고 IK Weight가 0보다 큰 경우에 스크립트로 해당 본을 제어할 수 없는 문제가 수정됨
+- 메시 그룹의 Bone 탭에서 "본 편집 모드"를 켠 상태로 메시 그룹의 다른 탭으로 전환하면 Rigging 모디파이어가 계속 비활성화되는 문제가 수정됨
+- 애니메이션 편집 화면에서 "노란색 눈 아이콘"을 눌러서 타임라인 레이어와 키프레임을 동시에 생성하면 현재 프레임이 아닌 첫 프레임에 키프레임을 생성하는 문제가 수정됨
+- Extra 옵션에 의해 이미지가 변경된 메시는 SetImageAll 등의 스크립트 함수에서 제외되는 문제가 수정됨
+- 메시의 재질을 초기화하는 ResetMeshMaterialToBatchAll 등의 스크립트 함수를 사용하는 경우 Extra 옵션이 비활성화되는 문제가 수정됨
+- 애니메이션 타임라인에 등록된 객체 1개와 그렇지 않은 다수의 객체들을 선택한 경우, 애니메이션에 등록된 객체의 타임라인을 삭제할 수 없었던 문제가 수정됨
+- 애니메이션에서 "Auto-Key" 모드가 컨트롤 파라미터를 대상으로 하는 타임라인에서는 제대로 동작하지 않는 문제가 수정됨
+- 실행 취소(Undo) 데이터가 부자연스럽게 등록되는 문제가 수정됨
+- 메시가 복제될 때, 복제된 대상이 바로 선택되지 않았던 문제가 수정됨
+- 컨트롤 파라미터 타입이 Vector이고 키들이 사각형을 이루지 않을 때의 보간 연산이 비정상적으로 수행되는 문제가 수정됨 (기존 작업물과 결과가 달라지므로 확인 필요)
+- 인게임 중에 애니메이션의 첫 프레임과 마지막 프레임에서 위치 연산이 비정상적으로 수행되는 문제가 수정됨
+- 에디터에서 메뉴 변경이나 임의의 기능 수행시 본 업데이트에서 비정상적인 값이 일시적으로 입력되는 문제가 수정됨
+- IK 컨트롤러에서 IK Weight의 값이 약 0.005 일 때, IK 적용 정도가 부드럽게 전환되지 않는 문제가 수정됨
+- 동일한 본을 두개 이상의 모디파이어가 제어하는 경우, 모디파이어들의 레이어 순서에 따라서 에디터의 기즈모가 제대로 동작하지 않는 문제가 수정됨
+- 유니티 에디터의 옵션에서 Reload Scene 옵션을 켜고 Reload Domain 옵션을 끈 상태로, AnyPortrait 캐릭터의 인스펙터 UI의 Refresh Meshes 버튼을 누른 후 게임을 실행하면 캐릭터가 보라색으로 출력되는 문제가 수정됨
+- 본 연산 결과 미리보기 모드가 켜진 상태에서 컨트롤 파라미터의 값을 변경하면 모디파이어의 편집 모드가 자동으로 해제되버리는 문제가 수정됨
+- 애니메이션 화면이나 루트 유닛 화면으로 전환 직후와 Bake 실행 직후에 컨트롤 파라미터의 값이 애니메이션과 관계없는 값을 가지는 문제가 수정됨
+- 메시 그룹 내의 메시 복제시 모디파이어와의 연결이 일시적으로 해제되는 문제가 수정됨
+
+1.5.1 (2024년 10월 30일)
+- 재질 제어 함수 중 "SetInt"에 대한 버전별 호환성 문제가 해결됨
+- 유니티 6에서 "Render Pipeline"과 "Rigidbody"의 API가 변경되면서 발생하는 호환성 문제가 해결됨
+- 유니티 6에서 도킹되지 않은 에디터의 레이아웃이 변경됨에 따라 "에디터 닫기 버튼"이 화면 상단에 추가됨
+- 유니티 6에서 클리핑 메시와 커맨드 버퍼에 대한 경고가 발생되는 문제가 수정됨
+- 재질 라이브러리의 쉐이더 속성 옵션에 "Keyword" 타입이 추가되어 "multi_compile"이 적용된 쉐이더가 지원됨
+- 참조 재질 ("Reference Material")을 지정하여 재질 세트의 쉐이더 프로퍼티를 편리하게 설정 가능
+- 재질 세트의 쉐이더 프로퍼티를 목록에서 선택하여 추가할 수 있도록 개선됨
+- 기본값으로 설정된 재질 세트는 목록의 오른쪽에 체크 마크가 출력되도록 개선됨
+- 캡쳐 설정을 외부 파일로 내보내거나 가져오는 기능이 추가됨
+- 스프라이트 시트 캡쳐 기능시, 애니메이션을 빠르게 선택하기 위한 검색 UI가 추가됨
+- 비동기로 동작하는 프로젝트에서 클리핑 메시가 제대로 동작하지 않는 문제를 해결하기 위해, "렌더링 직전에 클리핑 갱신하기" 옵션이 Bake 다이얼로그에 추가됨
+- 재질 라이브러리에서 재질 프리셋을 선택하면 쉐이더 프로퍼티 UI가 비정상적으로 표시되는 문제가 수정됨
+- 스크립트 내에 일부 코드가 컴파일 문제를 발생시키는 문제가 수정됨
+- 본 복제시 지글본과 IK와 관련된 일부 속성이 복사되지 않는 문제가 수정됨
+- "Optimized Bake"시 "보이지 않는 메시의 업데이트" 옵션이 적용되지 않는 문제가 수정됨
+- 유니티 2023 또는 그 이후 버전에서 재질 라이브러리의 일부 UI가 이상하게 출력되는 문제가 수정됨
+

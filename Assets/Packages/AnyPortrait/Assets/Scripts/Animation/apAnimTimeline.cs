@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -585,57 +585,86 @@ namespace AnyPortrait
 				return null;//대상 오브젝트가 아니다.
 			}
 
-			return _layers.Find(delegate (apAnimTimelineLayer a)
-					{
-						return a.IsContainTargetObject(targetObject);
-					});
+			//이전 (GC 발생)
+			//return _layers.Find(delegate (apAnimTimelineLayer a)
+			//		{
+			//			return a.IsContainTargetObject(targetObject);
+			//		});
+
+			//변경 v1.5.0
+			s_GetTimelineLayer_TargetObj = targetObject;
+			return _layers.Find(s_GetTimelineLayerByObj_Func);
 		}
+
+		private static object s_GetTimelineLayer_TargetObj = null;
+		private static Predicate<apAnimTimelineLayer> s_GetTimelineLayerByObj_Func = FUNC_GetTimelineLayer_Obj;
+		private static bool FUNC_GetTimelineLayer_Obj(apAnimTimelineLayer a)
+		{
+			return a.IsContainTargetObject(s_GetTimelineLayer_TargetObj);
+		}
+
+
+
 
 		public apAnimTimelineLayer GetTimelineLayer(int timelineLayerID)
 		{
-			return _layers.Find(delegate (apAnimTimelineLayer a)
-			{
-				return a._uniqueID == timelineLayerID;
-			});
+			// 이전 (GC 발생)
+			//return _layers.Find(delegate (apAnimTimelineLayer a)
+			//{
+			//	return a._uniqueID == timelineLayerID;
+			//});
+
+			s_getTimelineLayer_LayerID = timelineLayerID;
+			return _layers.Find(s_GetTimelineLayerByID_Func);
 		}
+
+		private static int s_getTimelineLayer_LayerID = -1;
+		private static Predicate<apAnimTimelineLayer> s_GetTimelineLayerByID_Func = FUNC_GetTimelineLayer_ID;
+		private static bool FUNC_GetTimelineLayer_ID(apAnimTimelineLayer a)
+		{
+			return a._uniqueID == s_getTimelineLayer_LayerID;
+		}
+
 
 		// 실제로 연결된 데이터를 가져오자
 		//-------------------------------------------------------------------------------
-		/// <summary>
-		/// Animated Modifier 타입의 타임라인인 경우에, layer와 keyframe을 선택한 경우,
-		/// 해당 데이터와 연동된 paramSet을 가져온다. (paramSet에는 ModMesh가 포함되어있다)
-		/// </summary>
-		/// <param name="targetLayer"></param>
-		/// <param name="keyframe"></param>
-		/// <returns></returns>
-		public apModifierParamSet GetModifierParamSet(apAnimTimelineLayer targetLayer, apAnimKeyframe keyframe)
-		{
-			if (_linkType != apAnimClip.LINK_TYPE.AnimatedModifier ||
-				_linkedModifier == null)
-			{
-				return null;
-			}
-			if (targetLayer == null || !_layers.Contains(targetLayer) || keyframe == null)
-			{
-				return null;
-			}
+		#region [미사용 코드]
+		///// <summary>
+		///// Animated Modifier 타입의 타임라인인 경우에, layer와 keyframe을 선택한 경우,
+		///// 해당 데이터와 연동된 paramSet을 가져온다. (paramSet에는 ModMesh가 포함되어있다)
+		///// </summary>
+		///// <param name="targetLayer"></param>
+		///// <param name="keyframe"></param>
+		///// <returns></returns>
+		//public apModifierParamSet GetModifierParamSet(apAnimTimelineLayer targetLayer, apAnimKeyframe keyframe)
+		//{
+		//	if (_linkType != apAnimClip.LINK_TYPE.AnimatedModifier ||
+		//		_linkedModifier == null)
+		//	{
+		//		return null;
+		//	}
+		//	if (targetLayer == null || !_layers.Contains(targetLayer) || keyframe == null)
+		//	{
+		//		return null;
+		//	}
 
-			apModifierParamSetGroup selectedParamSetGroup = _linkedModifier._paramSetGroup_controller.Find(delegate (apModifierParamSetGroup a)
-			{
-				return a._keyAnimTimelineLayer == targetLayer;
-			});
+		//	apModifierParamSetGroup selectedParamSetGroup = _linkedModifier._paramSetGroup_controller.Find(delegate (apModifierParamSetGroup a)
+		//	{
+		//		return a._keyAnimTimelineLayer == targetLayer;
+		//	});
 
-			if (selectedParamSetGroup == null)
-			{
-				return null;
-			}
+		//	if (selectedParamSetGroup == null)
+		//	{
+		//		return null;
+		//	}
 
-			return selectedParamSetGroup._paramSetList.Find(delegate (apModifierParamSet a)
-			{
-				return a.SyncKeyframe == keyframe;
-			});
+		//	return selectedParamSetGroup._paramSetList.Find(delegate (apModifierParamSet a)
+		//	{
+		//		return a.SyncKeyframe == keyframe;
+		//	});
 
-		}
+		//} 
+		#endregion
 
 
 		//------------------------------------------------------------------------------------------

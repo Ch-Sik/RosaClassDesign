@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -15,6 +15,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+
 #if UNITY_2017_1_OR_NEWER
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
@@ -723,10 +724,17 @@ namespace AnyPortrait
 			public bool AddTrack(string trackName, int layer, apAnimPlayUnit.BLEND_METHOD blendMethod, apPortrait portrait, apAnimPlayManager animPlayManager)
 			{
 				//이미 적용된 트랙이 있다면, 에러 메시지를 보낸다.
-				bool isExist = _trackData.Exists(delegate(TimelineTrackData a)
-				{
-					return a._trackName.Equals(trackName);
-				});
+				//이전
+				//bool isExist = _trackData.Exists(delegate(TimelineTrackData a)
+				//{
+				//	return a._trackName.Equals(trackName);
+				//});
+
+				//변경 [v1.5.0]
+				s_FindTrackData_TrackName = trackName;
+				bool isExist = _trackData.Exists(s_FindTrackData_Func);
+
+				
 				if(isExist)
 				{
 					Debug.LogError("AnyPortrait : A track with the same name has already been registered. [ " + trackName + " ]");
@@ -758,6 +766,12 @@ namespace AnyPortrait
 				return true;
 			}
 			
+			private static string s_FindTrackData_TrackName = null;
+			private static Predicate<TimelineTrackData> s_FindTrackData_Func = FUNC_FindTrackData;
+			private static bool FUNC_FindTrackData(TimelineTrackData a)
+			{
+				return string.Equals(a._trackName, s_FindTrackData_TrackName);
+			}
 
 
 			//업데이트
@@ -959,10 +973,15 @@ namespace AnyPortrait
 			//이미 등록된 Director에 대하여 새로운 Track을 추가하는 경우일 수 있다.
 			//없다면 새로 Director를 만들고, 있으면 재활용
 
-			DirectorTrackSet targetDirectorSet = _trackSets.Find(delegate(DirectorTrackSet a)
-			{
-				return a._playableDirector == playableDirector && a._playableAsset == playableDirector.playableAsset;
-			});
+			//이전 (GC 발생)
+			//DirectorTrackSet targetDirectorSet = _trackSets.Find(delegate(DirectorTrackSet a)
+			//{
+			//	return a._playableDirector == playableDirector && a._playableAsset == playableDirector.playableAsset;
+			//});
+
+			//변경 v1.5.0
+			s_FindTrackSet_PlayableDirector = playableDirector;
+			DirectorTrackSet targetDirectorSet = _trackSets.Find(s_FindTrackSet_Func);
 
 			if(targetDirectorSet == null)
 			{
@@ -983,6 +1002,14 @@ namespace AnyPortrait
 
 		}
 
+#if UNITY_2017_1_OR_NEWER
+		private static PlayableDirector s_FindTrackSet_PlayableDirector = null;
+		private static Predicate<DirectorTrackSet> s_FindTrackSet_Func = FUNC_FindTrackSet;
+		private static bool FUNC_FindTrackSet(DirectorTrackSet a)
+		{
+			return a._playableDirector == s_FindTrackSet_PlayableDirector && a._playableAsset == s_FindTrackSet_PlayableDirector.playableAsset;
+		}
+#endif
 
 		/// <summary>
 		/// 유효하지 않은 트랙을 삭제한다.
@@ -990,23 +1017,45 @@ namespace AnyPortrait
 		public void RemoveInvalidTracks()
 		{
 			//유효하지 않은 트랙들을 지워야 한다.
-			_trackSets.RemoveAll(delegate(DirectorTrackSet a)
-			{
-				if(!a.IsValid)
-				{
-					return true;
-				}
-#if UNITY_2017_1_OR_NEWER
-				if(a._playableDirector.gameObject == null)
-				{
-					return true;
-				}
-#endif
-				return false;
-			});
+			//이전 (GC 발생)
+//			_trackSets.RemoveAll(delegate(DirectorTrackSet a)
+//			{
+//				if(!a.IsValid)
+//				{
+//					return true;
+//				}
+//#if UNITY_2017_1_OR_NEWER
+//				if(a._playableDirector.gameObject == null)
+//				{
+//					return true;
+//				}
+//#endif
+//				return false;
+//			});
+
+			//변경 v1.5.0
+			_trackSets.RemoveAll(s_RemoveInvalidTrackSets_Func);
 			
 			_nTrackSets = _trackSets.Count;
 		}
+
+
+		private static Predicate<DirectorTrackSet> s_RemoveInvalidTrackSets_Func = FUNC_RemoveInvalidTrackSets;
+		private static bool FUNC_RemoveInvalidTrackSets(DirectorTrackSet a)
+		{
+			if(!a.IsValid)
+			{
+				return true;
+			}
+#if UNITY_2017_1_OR_NEWER
+			if(a._playableDirector.gameObject == null)
+			{
+				return true;
+			}
+#endif
+			return false;
+		}
+
 
 
 		/// <summary>
@@ -1019,30 +1068,62 @@ namespace AnyPortrait
 #endif
 			)
 		{
-			_trackSets.RemoveAll(delegate(DirectorTrackSet a)
-			{
-				if(!a.IsValid)//<<이참에 유효하지 않은 것도 삭제
-				{
-					return true;
-				}
-#if UNITY_2017_1_OR_NEWER
-				if(a._playableDirector.gameObject == null)
-				{
-					return true;
-				}
-				//요청한 PlayableDirector를 가지고 있다면 삭제
-				if(a._playableDirector == playableDirector)
-				{
-					return true;
-				}
+			//이전 (GC 발생)
+//			_trackSets.RemoveAll(delegate(DirectorTrackSet a)
+//			{
+//				if(!a.IsValid)//<<이참에 유효하지 않은 것도 삭제
+//				{
+//					return true;
+//				}
+//#if UNITY_2017_1_OR_NEWER
+//				if(a._playableDirector.gameObject == null)
+//				{
+//					return true;
+//				}
+//				//요청한 PlayableDirector를 가지고 있다면 삭제
+//				if(a._playableDirector == playableDirector)
+//				{
+//					return true;
+//				}
+//#endif
+//				return false;
+//			});
+
+			//변경 v1.5.0
+#if UNITY_2017_1_OR_NEWER		
+			s_RemoveInvalidAndTargetTrackSets_TargetDirector = playableDirector;
 #endif
-				return false;
-			});
+			_trackSets.RemoveAll(s_RemoveInvalidAndTargetTrackSets_Func);
 			
 			_nTrackSets = _trackSets.Count;
 		}
 
-		
+#if UNITY_2017_1_OR_NEWER		
+		private static PlayableDirector s_RemoveInvalidAndTargetTrackSets_TargetDirector = null;
+#endif
+		private static Predicate<DirectorTrackSet> s_RemoveInvalidAndTargetTrackSets_Func = FUNC_RemoveInvalidAndTargetTrackSets;
+		private static bool FUNC_RemoveInvalidAndTargetTrackSets(DirectorTrackSet a)
+		{
+			if(!a.IsValid)//<<이참에 유효하지 않은 것도 삭제
+			{
+				return true;
+			}
+#if UNITY_2017_1_OR_NEWER
+			if(a._playableDirector.gameObject == null)
+			{
+				return true;
+			}
+			//요청한 PlayableDirector를 가지고 있다면 삭제
+			if(a._playableDirector == s_RemoveInvalidAndTargetTrackSets_TargetDirector)
+			{
+				return true;
+			}
+#endif
+			return false;
+		}
+
+
+
 
 		// 업데이트
 		//--------------------------------------------------------------------

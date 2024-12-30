@@ -581,7 +581,6 @@ MonoBehaviour:
   maxHP: 1
   currentHP: 0
   blackboard: {fileID: 0}
-  mobCounter: {fileID: 0}
 --- !u!114 &6180352387989304572
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613,12 +612,13 @@ MonoBehaviour:
   blackboard: {fileID: 0}
   monsterState: {fileID: 0}
   rigidbody: {fileID: 0}
-  portrait: {fileID: 0}
+  portrait: {fileID: 4821681170212478087}
   pandaBT: {fileID: 0}
-  isSuperArmour: 0
+  monsterAttackComponent: {fileID: 6180352387989304572}
+  isSuperArmour: 1
   tempSuperArmour: 0
-  isInvincible: 0
-  knockbackCoeff: 5
+  isInvincible: 1
+  knockbackCoeff: 0
   ignoreKnockbackOnSuperArmour: 0
   useRagdoll: 0
   addTorqueOnDie: 0
@@ -731,9 +731,9 @@ MonoBehaviour:
   usePatternID: 0
   patternID: 0
   startupDuration: 0.6
-  superArmourOnStartup: 1
+  superArmourOnStartup: 0
   activeDuration: 3
-  superArmourOnActive: 1
+  superArmourOnActive: 0
   recoveryDuration: 1.7
   superArmourOnRecovery: 0
   currentState: 0
@@ -746,6 +746,7 @@ MonoBehaviour:
   recoveryDrag: 3
   wallStunEnabled: 0
   wallStunDuration: 0
+  cliffStopEnabled: 1
 --- !u!50 &8508132543111365271
 Rigidbody2D:
   serializedVersion: 4
@@ -13449,3 +13450,14 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3229046184974772990, guid: b530f3f5719dfc5468e236c8d16adb50, type: 3}
   m_PrefabInstance: {fileID: 2249385321503539297}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4821681170212478087 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6763669359270698214, guid: b530f3f5719dfc5468e236c8d16adb50, type: 3}
+  m_PrefabInstance: {fileID: 2249385321503539297}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1871344196692521423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08e5468fa1bf05b4896cd7b2ef8664ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

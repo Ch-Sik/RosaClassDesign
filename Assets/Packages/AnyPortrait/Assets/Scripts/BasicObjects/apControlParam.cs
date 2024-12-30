@@ -73,7 +73,7 @@ namespace AnyPortrait
 		public bool _isIconChanged = false;//이 값이 True이면 아이콘을 한번도 바꾼 적이 없다는 것
 
 		//변경 : 키값으로 쓰기 위해선 무조건 Range여야 하고, Bool, Vector3, Color를 제외한다 <5.20>
-		public enum TYPE
+		public enum TYPE : int
 		{
 			Int = 0,
 			Float = 1,

@@ -240,7 +240,10 @@ namespace AnyPortrait
 			//Debug.Log("Select__Bone_MeshGroupMenu : MousePosW : " + mousePosW + " [ " + btnIndex + " ]");
 
 
-			if (Editor.Select.MeshGroup == null || Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render)
+			if (Editor.Select.MeshGroup == null
+			//|| Editor._boneGUIRenderMode != apEditor.BONE_RENDER_MODE.Render//버그
+			|| Editor._boneGUIRenderMode == apEditor.BONE_RENDER_MODE.None//수정 [v1.5.0]
+			)
 			{
 				return null;
 			}
@@ -1074,12 +1077,12 @@ namespace AnyPortrait
 						_prevSelected_MousePosW_Default += deltaMoveW;
 
 						//메인은 보정된 값대로 이동
-						successIK = bone.RequestIK(_prevSelected_MousePosW_Default, weight, true);
+						successIK = bone.RequestIK(_prevSelected_MousePosW_Default, weight, true, Editor._option_IKMethod);
 					}
 					else
 					{
 						//서브는 단순히 DeltaMoveW만큼 이동
-						successIK = bone.RequestIK(bone._worldMatrix.Pos + deltaMoveW, weight, true);
+						successIK = bone.RequestIK(bone._worldMatrix.Pos + deltaMoveW, weight, true, Editor._option_IKMethod);
 					}
 
 
@@ -2253,12 +2256,12 @@ namespace AnyPortrait
 
 						_prevSelected_MousePosW_Default += deltaMoveW;
 
-						successIK = bone.RequestIK(_prevSelected_MousePosW_Default, weight, true);//<<변경
+						successIK = bone.RequestIK(_prevSelected_MousePosW_Default, weight, true, Editor._option_IKMethod);//<<변경
 					}
 					else
 					{
 						//서브는 단순히 DeltaMoveW만큼 이동
-						successIK = bone.RequestIK(bone._worldMatrix.Pos + deltaMoveW, weight, true);
+						successIK = bone.RequestIK(bone._worldMatrix.Pos + deltaMoveW, weight, true, Editor._option_IKMethod);
 					}
 					
 

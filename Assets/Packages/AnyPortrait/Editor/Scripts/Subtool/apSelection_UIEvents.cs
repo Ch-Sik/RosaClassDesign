@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -1368,8 +1368,8 @@ namespace AnyPortrait
 				return null;
 			}
 			
-			List<apTransform_Mesh> selectedMeshTFs = GetSubSeletedMeshTFs(false);
-			List<apTransform_MeshGroup> selectedMeshGroupTFs = GetSubSeletedMeshGroupTFs(false);
+			List<apTransform_Mesh> selectedMeshTFs = GetSubSelectedMeshTFs(false);
+			List<apTransform_MeshGroup> selectedMeshGroupTFs = GetSubSelectedMeshGroupTFs(false);
 			int nSubSelectedMeshTFs_All = selectedMeshTFs != null ? selectedMeshTFs.Count : 0;
 			int nSubSelectedMeshGroupTFs_All = selectedMeshGroupTFs != null ? selectedMeshGroupTFs.Count : 0;
 
@@ -3601,6 +3601,38 @@ namespace AnyPortrait
 		// 하단 UI 이벤트
 		//---------------------------------------------------------------------
 		/// <summary>
+		/// [v1.5.0] 키프레임을 리스케일하는 다이얼로그의 결과
+		/// </summary>
+		private void OnKeyframesRescaled(bool isSuccess,
+														object loadKey,
+														apAnimClip animClip,
+														List<apAnimKeyframe> keyframes,
+														int srcFrame_Start, int srcFrame_Last,
+														int dstFrame_Start, int dstFrame_Last)
+		{
+			if(!isSuccess
+				|| _loadKey_RescaleKeyframes != loadKey
+				|| animClip == null
+				|| keyframes == null)
+			{
+				_loadKey_RescaleKeyframes = null;
+				return;
+			}
+
+			_loadKey_RescaleKeyframes = null;
+
+			//현재 선택된 AnimClip / Keyframe과 다르면 안된다.
+			if(_animClip != animClip) { return; }
+
+			Editor.Controller.RescaleKeyframes(animClip, keyframes,
+												srcFrame_Start, srcFrame_Last,
+												dstFrame_Start, dstFrame_Last);
+		}
+
+		
+
+
+		/// <summary>
 		/// 추가 20.12.4 : 단축키로 스크롤 움직이기
 		/// </summary>
 		private apHotKey.HotKeyResult OnHotKeyEvent_AnimTimelineUIScroll(object paramObj)
@@ -3646,6 +3678,9 @@ namespace AnyPortrait
 
 			return apHotKey.HotKeyResult.MakeResult(Editor._isAnimAutoKey ? apStringFactory.I.ON : apStringFactory.I.OFF);
 		}
+
+
+
 
 
 

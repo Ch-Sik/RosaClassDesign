@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -207,6 +207,21 @@ namespace AnyPortrait
 		public float _IKAnglePreferred = 0.0f;//선호하는 각도 Offset
 
 
+		//[v1.5.0] IK 옵션이 추가되었다.
+		/// <summary>[Please do not use it]</summary>
+		[SerializeField] public int _IKDepth = 0;//IK의 실행 순서를 결정한다. 큰값이 나중에 실행된다.
+
+		/// <summary>[Please do not use it]</summary>
+		[SerializeField] public bool _isIKSoftAngleLimit = true;//IK 각도 제한시, 딱 제한되는게 아니라, 부드럽게 각도 제한이 걸린다. (기본값/FABRIK 전용)
+
+		/// <summary>[Please do not use it]</summary>
+		[SerializeField] public apBone.IK_START_POSE _IKInitPoseType = apBone.IK_START_POSE.PreferAngle;
+
+		//다중 Effector Bone 연산용 변수 [v1.5.0]
+		//한번이라도 IK의 Init Pose 연산이 발생하면, 그 이후 루틴에서는 KeepCurrent로 인식한다.
+		[NonSerialized] public float _IKInitPoseWeightSum = 0.0f;
+
+
 
 		// IK 연산이 되었는가
 		/// <summary>
@@ -262,15 +277,10 @@ namespace AnyPortrait
 		[SerializeField]
 		public apOptBoneIKController _IKController = null;
 
-		[NonSerialized]
-		public bool _isIKCalculated_Controlled = false;
-
-		[NonSerialized]
-		public float _IKRequestAngleResult_Controlled = 0.0f;
-
-		[NonSerialized]
-		public float _IKRequestWeight_Controlled = 0.0f;
-
+		[NonSerialized] public bool _isIKCalculated_Controlled = false;
+		[NonSerialized] public float _IKRequestAngleResult_Controlled = 0.0f;
+		[NonSerialized] public float _IKRequestWeight_Controlled = 0.0f;
+		
 		//[NonSerialized]
 		//private bool _isIKRendered_Controller = false;
 
@@ -337,14 +347,26 @@ namespace AnyPortrait
 		//단 Update마다 매번 설정해야한다.
 		//좌표계는 WorldMatrix를 기준으로 한다.
 		//값 자체는 절대값을 기준으로 한다.
-		private bool _isExternalUpdate_Position = false;
-		private bool _isExternalUpdate_Rotation = false;
-		private bool _isExternalUpdate_Scaling = false;
-		//private bool _isExternalUpdate_IK = false;//<<추가 20.8.31 : 외부의 요청에 따라 IK를 수정하는 경우
-		private float _externalUpdateWeight = 0.0f;
-		private Vector2 _exUpdate_Pos = Vector2.zero;
-		private float _exUpdate_Angle = 0.0f;
-		private Vector2 _exUpdate_Scale = Vector2.zero;
+		private bool _isExUpdate_Position = false;
+		private bool _isExUpdate_Rotation = false;
+		private bool _isExUpdate_Scaling = false;
+
+		//추가 [v1.5.0] 외부 스크립트에 의한 LookAt은 IK 등의 처리 등으로 함수 호출 시점에서 각도를 계산하는게 불가능하다
+		private bool _isExUpdate_LookAt = false;
+
+		//이전 : TRS가 공통의 Weight를 갖는다.
+		//private float _externalUpdateWeight = 0.0f;
+
+		//변경 : TRS가 서로 다른 Weight를 갖는다.
+		private float _exUpdateWeight_Position = 0.0f;
+		private float _exUpdateWeight_Rotation = 0.0f;
+		private float _exUpdateWeight_Scaling = 0.0f;
+		private float _exUpdateWeight_LookAt = 0.0f;
+
+		private Vector2 _exUpdateValue_Pos = Vector2.zero;
+		private float _exUpdateValue_Angle = 0.0f;
+		private Vector2 _exUpdateValue_Scale = Vector2.zero;
+		private Vector2 _exUpdateValue_LookAtPos = Vector2.zero;
 
 
 		//추가 6.7 : 영역을 제한하자
@@ -368,12 +390,13 @@ namespace AnyPortrait
 		private float _updatedWorldAngle = 0.0f;
 		private Vector3 _updatedWorldScale = Vector3.one;
 
-		private Vector3 _updatedWorldPos_NoRequest = Vector3.zero;
-		private float _updatedWorldAngle_NoRequest = 0.0f;
-		private Vector3 _updatedWorldScale_NoRequest = Vector3.one;
+		//삭제 v1.5.0
+		//private Vector3 _updatedWorldPos_NoRequest = Vector3.zero;
+		//private float _updatedWorldAngle_NoRequest = 0.0f;
+		//private Vector3 _updatedWorldScale_NoRequest = Vector3.one;
 
 
-		
+
 
 		//추가 21.9.19 : 리타겟팅 동기화
 		[NonSerialized]
@@ -388,9 +411,10 @@ namespace AnyPortrait
 			//업데이트 안합니더
 			this.enabled = false;
 
-			_isExternalUpdate_Position = false;
-			_isExternalUpdate_Rotation = false;
-			_isExternalUpdate_Scaling = false;
+			_isExUpdate_Position = false;
+			_isExUpdate_Rotation = false;
+			_isExUpdate_Scaling = false;
+			_isExUpdate_LookAt = false;//추가 v1.5.0 : LookAt을 별도로 계산한다.
 			//_isExternalUpdate_IK = false;
 
 			_isExternalConstraint = false;
@@ -484,6 +508,11 @@ namespace AnyPortrait
 			_IKAngleRange_Upper = bone._IKAngleRange_Upper;
 			_IKAnglePreferred = bone._IKAnglePreferred;
 
+			//[v1.5.0] IK 옵션이 추가되었다.
+			_IKDepth = bone._IKDepth;
+			_isIKSoftAngleLimit = bone._isIKSoftAngleLimit;
+			_IKInitPoseType = bone._IKInitPoseType;
+
 			//이게 변경된 IK 코드
 			//_IKAngleRange_Lower = bone._defaultMatrix._angleDeg + bone._IKAngleRange_Lower;
 			//_IKAngleRange_Upper = bone._defaultMatrix._angleDeg + bone._IKAngleRange_Upper;
@@ -524,10 +553,10 @@ namespace AnyPortrait
 		{
 			InitWorldMatrix();
 
-			_isExternalUpdate_Position = false;
-			_isExternalUpdate_Rotation = false;
-			_isExternalUpdate_Scaling = false;
-			//_isExternalUpdate_IK = false;
+			_isExUpdate_Position = false;
+			_isExUpdate_Rotation = false;
+			_isExUpdate_Scaling = false;
+			_isExUpdate_LookAt = false;
 
 			_isExternalConstraint = false;
 			_isExternalConstraint_Xmin = false;
@@ -783,7 +812,6 @@ namespace AnyPortrait
 			_isIKCalculated_Controlled = false;
 			_IKRequestAngleResult_Controlled = 0.0f;
 			_IKRequestWeight_Controlled = 0.0f;
-			//_isIKRendered_Controller = false;
 
 			_calculatedBoneIKWeight = 0.0f;//<<추가
 
@@ -933,9 +961,41 @@ namespace AnyPortrait
 
 		public void AddIKAngle_Controlled(float IKAngle, float weight)
 		{
+			//이전 > 그냥 더한다
+			//이전에 IK 연산이 되지 않았다면
+			//_isIKCalculated_Controlled = true;
+			//_IKRequestAngleResult_Controlled += (IKAngle) * weight;
+			//_IKRequestWeight_Controlled += weight;
+			
+			//float prevResult = _IKRequestAngleResult_Controlled;
+			//float prevWeight = _IKRequestWeight_Controlled;
+			//bool prevIsCalculated = _isIKCalculated_Controlled;
+
+			// //변경 v1.5.0 : 연산 순서에 따라 덮어쓰기를 한다.
+			// if(!_isIKCalculated_Controlled)
+			// {
+			// 	//이전 IK 결과가 없다면 바로 적용
+			// 	_isIKCalculated_Controlled = true;
+			// 	_IKRequestAngleResult_Controlled += IKAngle * weight;
+			// 	_IKRequestWeight_Controlled += weight;
+
+			// 	Debug.LogError("[" + _name + "] (First) : " + IKAngle + " (Weight : " + weight + ") > " + _IKRequestAngleResult_Controlled + " (Prev : " + prevResult + ")");
+			// }
+			// else
+			// {
+			// 	//이전 결과가 있다면, 덮어쓰기 보간을 한다.
+			// 	//(Weight 더하기가 아니다)
+			// 	float lerp = Mathf.Clamp01(weight);
+
+			// 	_IKRequestAngleResult_Controlled = apUtil.AngleSlerp(_IKRequestAngleResult_Controlled, IKAngle * weight, lerp);
+			// 	_IKRequestWeight_Controlled = (_IKRequestWeight_Controlled * (1.0f - lerp)) + (weight * lerp);
+
+			// 	Debug.LogError("[" + _name + "] (Added) : " + IKAngle + " (Weight : " + weight + ") > " + _IKRequestAngleResult_Controlled + " (Prev : " + prevResult + ")");
+			// }
+
 			_isIKCalculated_Controlled = true;
-			_IKRequestAngleResult_Controlled += (IKAngle) * weight;
-			_IKRequestWeight_Controlled += weight;
+			_IKRequestAngleResult_Controlled = IKAngle * weight;
+			_IKRequestWeight_Controlled = weight;
 		}
 
 
@@ -955,6 +1015,7 @@ namespace AnyPortrait
 			//Root인 경우에는 MeshGroup의 Matrix를 이용하자
 
 			//_invWorldMatrix_NonModified.SetIdentity();
+			#region [미사용 코드] 이전 방식
 
 			//================================================
 			// 이전 방식
@@ -997,6 +1058,7 @@ namespace AnyPortrait
 			//_worldMatrix.MakeMatrix();
 			//_worldMatrix_NonModified.MakeMatrix();
 
+			#endregion
 
 			//================================================
 			// 변경 20.8.30 : BoneWorldMatrix를 이용한 코드
@@ -1031,12 +1093,17 @@ namespace AnyPortrait
 			//>>UpdatePostRecursive() 함수에서 나중에 일괄적으로 갱신한다.
 			
 			//Child도 호출해준다.
-			if (isRecursive && _childBones != null)
+			if (isRecursive)
 			{
-				for (int i = 0; i < _childBones.Length; i++)
+				int nChild = _childBones != null ? _childBones.Length : 0;
+				if (nChild > 0)
 				{
-					_childBones[i].MakeWorldMatrix(true);
+					for (int i = 0; i < nChild; i++)
+					{
+						_childBones[i].MakeWorldMatrix(true);
+					}
 				}
+				
 			}
 		}
 
@@ -1107,8 +1174,8 @@ namespace AnyPortrait
 		/// 계산 자체는 IK Controller가 활성화된 경우에 한한다. (Chain되어서 처리가 된다.)
 		/// </summary>
 		/// <param name="isRecursive"></param>
-		public bool CalculateIK(bool isRecursive)
-		{
+		public bool CalculateIK(apPortrait.IK_METHOD IKMethod, bool isRecursive)
+		{	
 			bool IKCalculated = false;
 
 			if (_IKChainSet != null && _isIKChainSetAvailable)
@@ -1121,9 +1188,14 @@ namespace AnyPortrait
 				{
 					_calculatedBoneIKWeight = Mathf.Clamp01(_IKController._weightControlParam._float_Cur);
 				}
+				else
+				{
+					_calculatedBoneIKWeight = _IKController._defaultMixWeight;
+				}
 
 
-				if (_calculatedBoneIKWeight > 0.001f
+				if (//_calculatedBoneIKWeight > 0.001f
+					_calculatedBoneIKWeight > 0.0f//변경 v1.5.0 : Bias 없이 적용
 					&& _IKController._controllerType != apOptBoneIKController.CONTROLLER_TYPE.None
 					)
 				{
@@ -1133,11 +1205,21 @@ namespace AnyPortrait
 						//1. Position 타입일 때
 						if (_IKController._effectorBone != null)
 						{
-							//bool result = _IKChainSet.SimulateIK(_IKController._effectorBone._worldMatrix._pos, true, true);//<<논리상 EffectorBone은 IK의 영향을 받으면 안된다.
 
-							//bool result = _IKChainSet.SimulateIK(_IKController._effectorBone._worldMatrix._pos, true);
-							bool result = _IKChainSet.SimulateIK(_worldMatrix.ConvertForIK(_IKController._effectorBone._worldMatrix.Pos), true);//변경 20.8.31 : IK Space의 위치
-							
+							bool result = false;
+							if(IKMethod == apPortrait.IK_METHOD.CCD)
+							{
+								// [ CCD 방식의 IK 연산 ]
+								result = _IKChainSet.SimulateIK_CCD(_worldMatrix.ConvertForIK(_IKController._effectorBone._worldMatrix.Pos), true);//변경 20.8.31 : IK Space의 위치
+							}
+							else
+							{
+								// [ FABRIK 방식의 IK 연산 ]
+								result = _IKChainSet.SimulateIK_FABRIK(	_worldMatrix.ConvertForIK(_IKController._effectorBone._worldMatrix.Pos),
+																		true,
+																		_calculatedBoneIKWeight);
+							}
+
 							if (result)
 							{
 								IKCalculated = true;
@@ -1178,9 +1260,23 @@ namespace AnyPortrait
 
 
 
-							bool result = _IKChainSet.SimulateLookAtIK(_worldMatrix.ConvertForIK(defaultEffectorPos), 
+							bool result = false;
+
+							if (IKMethod == apPortrait.IK_METHOD.CCD)
+							{
+								// [ CCD 방식의 IK 연산 ]
+								result = _IKChainSet.SimulateLookAtIK_CCD(_worldMatrix.ConvertForIK(defaultEffectorPos), 
 																		_worldMatrix.ConvertForIK(_IKController._effectorBone._worldMatrix.Pos), 
 																		true);//IK Space로 이동
+							}
+							else
+							{
+								// [ FABRIK 방식의 IK 연산 ]
+								result = _IKChainSet.SimulateLookAtIK_FABRIK(_worldMatrix.ConvertForIK(defaultEffectorPos), 
+																		_worldMatrix.ConvertForIK(_IKController._effectorBone._worldMatrix.Pos), 
+																		true,
+																		_calculatedBoneIKWeight);
+							}
 
 							if (result)
 							{
@@ -1258,7 +1354,7 @@ namespace AnyPortrait
 				{
 					for (int i = 0; i < _childBones.Length; i++)
 					{
-						if (_childBones[i].CalculateIK(true))
+						if (_childBones[i].CalculateIK(IKMethod, true))
 						{
 							//자식 본 중에 처리 결과가 True라면
 							//나중에 전체 True 처리
@@ -1279,7 +1375,7 @@ namespace AnyPortrait
 		/// </summary>
 		/// <param name="isRecursive"></param>
 		/// <returns></returns>
-		public bool CalculateIKAsSyncBones(bool isRecursive)
+		public bool CalculateIKAsSyncBones(apPortrait.IK_METHOD IKMethod, bool isRecursive)
 		{
 			bool IKCalculated = false;
 
@@ -1295,18 +1391,37 @@ namespace AnyPortrait
 					{
 						_calculatedBoneIKWeight = Mathf.Clamp01(_IKController._weightControlParam._float_Cur);
 					}
+					else
+					{
+						_calculatedBoneIKWeight = _IKController._defaultMixWeight;
+					}
 
-					if (_calculatedBoneIKWeight > 0.001f
+					if (//_calculatedBoneIKWeight > 0.001f
+						_calculatedBoneIKWeight > 0.0f//변경 v1.5.0 : Bias 없음
 						&& _IKController._controllerType != apOptBoneIKController.CONTROLLER_TYPE.None
 						)
 					{
-
 						if (_IKController._controllerType == apOptBoneIKController.CONTROLLER_TYPE.Position)
 						{
 							//1. Position 타입일 때
 							if (_IKController._effectorBone != null)
 							{
-								bool result = _IKChainSet.SimulateIK(_worldMatrix.ConvertForIK(_IKController._effectorBone._worldMatrix.Pos), true);//변경 20.8.31 : IK Space의 위치
+								bool result = false;
+
+								if(IKMethod == apPortrait.IK_METHOD.CCD)
+								{
+									// [ CCD 방식의 IK ]
+									result = _IKChainSet.SimulateIK_CCD(_worldMatrix.ConvertForIK(_IKController._effectorBone._worldMatrix.Pos), true);//변경 20.8.31 : IK Space의 위치
+								}
+								else
+								{
+									// [ FABRIK 방식의 IK ]
+									result = _IKChainSet.SimulateIK_FABRIK(	_worldMatrix.ConvertForIK(_IKController._effectorBone._worldMatrix.Pos),
+																			true,
+																			_calculatedBoneIKWeight);
+								}
+
+
 
 								if (result)
 								{
@@ -1335,9 +1450,23 @@ namespace AnyPortrait
 
 
 
-								bool result = _IKChainSet.SimulateLookAtIK(_worldMatrix.ConvertForIK(defaultEffectorPos),
+								bool result = false;
+
+								if(IKMethod == apPortrait.IK_METHOD.CCD)
+								{
+									// [ CCD 방식의 IK ]
+									result = _IKChainSet.SimulateLookAtIK_CCD(_worldMatrix.ConvertForIK(defaultEffectorPos),
 																			_worldMatrix.ConvertForIK(_IKController._effectorBone._worldMatrix.Pos),
 																			true);//IK Space로 이동
+								}
+								else
+								{
+									// [ FABRIK 방식의 IK ]
+									result = _IKChainSet.SimulateLookAtIK_FABRIK(_worldMatrix.ConvertForIK(defaultEffectorPos),
+																			_worldMatrix.ConvertForIK(_IKController._effectorBone._worldMatrix.Pos),
+																			true,
+																			_calculatedBoneIKWeight);
+								}
 
 								if (result)
 								{
@@ -1387,7 +1516,7 @@ namespace AnyPortrait
 				{
 					for (int i = 0; i < _childBones.Length; i++)
 					{
-						if (_childBones[i].CalculateIKAsSyncBones(true))
+						if (_childBones[i].CalculateIKAsSyncBones(IKMethod, true))
 						{
 							//자식 본 중에 처리 결과가 True라면
 							//나중에 전체 True 처리
@@ -1403,6 +1532,52 @@ namespace AnyPortrait
 
 		
 
+		
+		/// <summary>
+		/// [v1.5.0 추가]
+		/// Calculate IK의 대상이 되는지 여부를 리턴한다.
+		/// Weight에 따라 현재는 업데이트가 되지 않더라도 IK 업데이트 가능성이 있다면 true를 리턴한다.
+		/// </summary>
+		/// <returns></returns>
+		public bool IsIKCalculatable(out apOptBone chainRootBone)
+		{
+			if(_IKController == null)
+			{
+				//IK Controller가 없다.
+				chainRootBone = null;
+				return false;
+			}
+
+			if(_IKController._controllerType == apOptBoneIKController.CONTROLLER_TYPE.None)
+			{
+				//IK Controller 옵션이 비활성 상태다.
+				chainRootBone = null;
+				return false;
+			}
+
+			//체인 여부에 상관없이 일단 IK Controller가 활성화되었다면 오케이
+
+			//체인의 루트 본을 리턴하자 (체인이 있는 경우만)
+			chainRootBone = null;
+			if(_IKChainSet != null)
+			{
+				chainRootBone = _IKChainSet.GetHeadBone();
+			}
+
+			if(chainRootBone == null)
+			{
+				//체인의 RootBone이 없다면 본인을 리턴
+				//Debug.LogError("Chain Root Bone이 없다.");
+				chainRootBone = this;
+			}
+
+			return true;
+		}
+		
+
+
+
+
 
 
 		/// <summary>
@@ -1411,158 +1586,124 @@ namespace AnyPortrait
 		/// IK Controller에 의한 IK 연산이 있다면 이 함수에서 계산 및 WorldMatrix
 		/// IK용 GUI 업데이트도 동시에 실행된다.
 		/// </summary>
-		public void MakeWorldMatrixForIK(bool isRecursive, bool isCalculateMatrixForce, bool isPhysics, bool isTeleportFrame, float tDelta)
+		public void MakeWorldMatrixForIK_WithJiggle(bool isRecursive, bool isCalculateMatrixForce, bool isPhysics, bool isTeleportFrame, float tDelta)
 		{
-			if(_isIKCalculated_Controlled)
+			//변경 v1.5.0
+			//IK 연산을 삭제했다.
+			//해당 코멘트는 apBone.MakeWorldMatrixForIK_WithJiggle 에서 찾자
+
+			//이전
+			#region [미사용 코드]
+			// if (!_isWorldMatrixIKCompleted || isCalculateMatrixForce)
+			// {
+			// 	//WorldMatrix_IK가 완료되지 않은 경우에만 연산 [v1.5.0]
+			// 	//단, 연산이 강요되는 "isCalculateMatrixForce"가 true이면 무조건 다시 연산한다.
+			// 	if (_isIKCalculated_Controlled)
+			// 	{
+			// 		//IK가 계산된 결과를 넣자
+			// 		//World Matrix 재계산
+
+			// 		//--------------------------
+			// 		// 변경된 코드 20.8.31 : 래핑 + Skew + IKSpace
+			// 		//--------------------------
+
+			// 		float prevWorldMatrixAngle = _worldMatrix.Angle_IKSpace;
+			// 		float addIKAngle = (_IKRequestAngleResult_Controlled / _IKRequestWeight_Controlled);
+
+			// 		float nextIKAngle = 0.0f;
+
+			// 		if (_IKRequestWeight_Controlled > 1.0f)
+			// 		{
+			// 			nextIKAngle = prevWorldMatrixAngle + addIKAngle;
+			// 		}
+			// 		else if (_IKRequestWeight_Controlled > 0.0f)
+			// 		{
+			// 			//Slerp가 적용된 코드
+			// 			nextIKAngle = apUtil.AngleSlerp(prevWorldMatrixAngle,
+			// 												prevWorldMatrixAngle + addIKAngle,
+			// 												_IKRequestWeight_Controlled);
+			// 		}
+
+			// 		//IK 적용
+			// 		//중요 : 래핑된 코드
+			// 		_worldMatrix.MakeWorldMatrix_IK(_localMatrix,
+			// 											(_parentBone != null ? _parentBone._worldMatrix : null),
+			// 											(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null),
+			// 											nextIKAngle);
+
+
+			// 		//여기서도 External Request를 적용해준다.
+			// 		UpdateExternalRequest();//<Opt 코드
+
+			// 		//--------------------------
+
+			// 		isCalculateMatrixForce = true;//<<다음 Child 부터는 무조건 갱신을 해야한다.
+			// 	}
+			// 	else if (isCalculateMatrixForce)
+			// 	{
+			// 		//Debug.Log("IK Force [" + _name + "] : " + _IKRequestAngleResult_Controlled);
+
+			// 		//----------------------------------
+			// 		// 변경된 방식 20.8.31 : 래핑
+			// 		//----------------------------------
+			// 		//IK 자체는 적용되지 않았으나, Parent에서 적용된게 있어서 WorldMatrix를 그대로 쓸 순 없다.
+			// 		_worldMatrix.MakeWorldMatrix_Mod(_localMatrix,
+			// 											(_parentBone != null ? _parentBone._worldMatrix : null),
+			// 											(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null));
+
+			// 		//----------------------------------
+
+			// 		//_isIKRendered_Controller = true;//<에디터 코드
+
+			// 		//추가 v1.5.0 : 여기에도 External 처리를 한다.
+			// 		UpdateExternalRequest();//<Opt 코드
+			// 	}
+			// 	//else
+			// 	//{
+			// 	//	//World Matrix와 동일하다.
+			// 	//	//생략
+			// 	//	//_worldMatrix_IK.SetMatrix(_worldMatrix);//<<동일하다.
+			// 	//}
+
+			// 	//완료 플래그 [v1.5.0]
+			// 	_isWorldMatrixIKCompleted = true;
+			// }
+			#endregion
+
+			//[변경 v1.5.0]
+			if(isCalculateMatrixForce)
 			{
-				//IK가 계산된 결과를 넣자
-				//World Matrix 재계산
-
-
-				//--------------------------
-				// 기존 코드
-				//--------------------------
-				#region [미사용 코드] 이전 방식
-				//float prevWorldMatrixAngle = _worldMatrix._angleDeg;
-
-				//_worldMatrix.SetMatrix(_defaultMatrix, false);
-				//_worldMatrix.Add(_localMatrix);
-
-				////추가 20.8.6 : RMultiply 전에 함수를 호출해야한다. [RMultiply Scale 이슈]
-				//_worldMatrix.OnBeforeRMultiply();
-
-				//if (_parentBone == null)
-				//{
-				//	if (_parentOptTransform != null)
-				//	{
-				//		_worldMatrix.RMultiply(_parentOptTransform._matrix_TFResult_World, false);
-				//	}
-				//}
-				//else
-				//{
-				//	_worldMatrix.RMultiply(_parentBone._worldMatrix, false);
-				//}
-
-				//_worldMatrix.MakeMatrix();
-
-				////여기서도 External Request를 적용해준다.
-				//UpdateExternalRequest();
-
-
-				////IK 적용
-
-				////추가 20.8.6 : [RMultiply Scale 이슈]
-				////플립된 상태라면, 실제 Angle은 반전되어야 한다.
-				//float addIKAngle = (_IKRequestAngleResult_Controlled / _IKRequestWeight_Controlled);
-				//float nextIKAngle = 0.0f;
-
-				//if (_IKRequestWeight_Controlled > 1.0f)
-				//{
-				//	//_worldMatrix.SetRotate(prevWorldMatrixAngle + (_IKRequestAngleResult_Controlled / _IKRequestWeight_Controlled));
-				//	nextIKAngle = prevWorldMatrixAngle + addIKAngle;
-				//}
-				//else if (_IKRequestWeight_Controlled > 0.0f)
-				//{
-				//	//Slerp가 적용된 코드
-				//	nextIKAngle = apUtil.AngleSlerp(	prevWorldMatrixAngle,
-				//										prevWorldMatrixAngle + addIKAngle,
-				//										_IKRequestWeight_Controlled);
-				//}
-
-				//_worldMatrix.SetRotate(nextIKAngle, true); 
-				#endregion
-
-				//--------------------------
-				// 변경된 코드 20.8.31 : 래핑 + Skew + IKSpace
-				//--------------------------
-
-				float prevWorldMatrixAngle = _worldMatrix.Angle_IKSpace;
-				float addIKAngle = (_IKRequestAngleResult_Controlled / _IKRequestWeight_Controlled);
-				
-				float nextIKAngle = 0.0f;
-
-				if (_IKRequestWeight_Controlled > 1.0f)
+				//부모 본의 업데이트가 발생했으므로, 부모 본의 Matrix를 다시 적용해주자.
+				//IK 적용 여부에 따라서 다른 함수를 적용한다.
+				if(_isIKCalculated_Controlled)
 				{
-					nextIKAngle = prevWorldMatrixAngle + addIKAngle;
+					// < IK가 적용된 본의 경우 >
+					//계산된 IK 각도는 WorldMatrix에서 얻을 수 있다.
+					float IKAngle = _worldMatrix.Angle_IKSpace;
+
+					_worldMatrix.MakeWorldMatrix_IK(	_localMatrix,
+														(_parentBone != null ? _parentBone._worldMatrix : null),
+														(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null),
+														IKAngle);
+
+					//여기서도 External Request를 적용해준다.
+					UpdateExternalRequest();//<Opt 코드
 				}
-				else if (_IKRequestWeight_Controlled > 0.0f)
+				else
 				{
-					//Slerp가 적용된 코드
-					nextIKAngle = apUtil.AngleSlerp(	prevWorldMatrixAngle,
-														prevWorldMatrixAngle + addIKAngle,
-														_IKRequestWeight_Controlled);
+					// < IK가 적용되지 않은 본의 경우 >
+					//일반 WorldMatrix 계산식을 이용한다.
+					_worldMatrix.MakeWorldMatrix_Mod(	_localMatrix,
+														(_parentBone != null ? _parentBone._worldMatrix : null),
+														(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null));
+
+					//----------------------------------
+					//추가 v1.5.0 : 여기에도 External 처리를 한다.
+					UpdateExternalRequest();//<Opt 코드
 				}
-
-				//IK 적용
-				//중요 : 래핑된 코드
-				_worldMatrix.MakeWorldMatrix_IK(	_localMatrix,
-													(_parentBone != null ? _parentBone._worldMatrix : null),
-													(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null),
-													nextIKAngle);
-
-
-				//여기서도 External Request를 적용해준다.
-				UpdateExternalRequest();//<Opt 코드
-
-				//--------------------------
-
-				isCalculateMatrixForce = true;//<<다음 Child 부터는 무조건 갱신을 해야한다.
 			}
-			else if(isCalculateMatrixForce)
-			{
-				//Debug.Log("IK Force [" + _name + "] : " + _IKRequestAngleResult_Controlled);
-
-				//----------------------------------
-				// 기존 방식
-				//----------------------------------
-				#region [미사용 코드] 기존 방식
-				////IK 자체는 적용되지 않았으나, Parent에서 적용된게 있어서 WorldMatrix를 그대로 쓸 순 없다.
-				//_worldMatrix.SetMatrix(_defaultMatrix, false);
-				//_worldMatrix.Add(_localMatrix);
-
-
-				////추가 20.8.6 : RMultiply 전에 함수를 호출해야한다. [RMultiply Scale 이슈]
-				//_worldMatrix.OnBeforeRMultiply();
-
-
-				//if (_parentBone == null)
-				//{
-				//	if (_parentOptTransform != null)
-				//	{
-				//		_worldMatrix.RMultiply(_parentOptTransform._matrix_TFResult_World, false);
-				//	}
-				//}
-				//else
-				//{
-				//	_worldMatrix.RMultiply(_parentBone._worldMatrix, false);
-				//}
-
-				//_worldMatrix.MakeMatrix(); 
-				#endregion
-
-
-				//----------------------------------
-				// 변경된 방식 20.8.31 : 래핑
-				//----------------------------------
-				//IK 자체는 적용되지 않았으나, Parent에서 적용된게 있어서 WorldMatrix를 그대로 쓸 순 없다.
-				_worldMatrix.MakeWorldMatrix_Mod(_localMatrix, 
-													(_parentBone != null ? _parentBone._worldMatrix : null),
-													(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null));
-
-				//----------------------------------
-
-				//_isIKRendered_Controller = true;//<에디터 코드
-			}
-			//else
-			//{
-			//	//World Matrix와 동일하다.
-			//	//생략
-			//	//_worldMatrix_IK.SetMatrix(_worldMatrix);//<<동일하다.
-			//}
-
 
 			//추가 20.5.23 : 지글본이 계산된 경우 WorldMatrix_IK를 변경하자
-			//추가 20.5.23 : 지글본
 			//지글 본은 계층 처리가 없다.
 			//헬퍼는 지글본일 수가 없다.
 			//길이가 1 이상이어야 한다.
@@ -1649,21 +1790,6 @@ namespace AnyPortrait
 						//- 각도를 계산하고, Drag를 곱해서 변화량을 줄이자 (dAngle_Drag)
 
 						//-----------------------------------------
-						// 이전 방식
-						//-----------------------------------------
-						#region [미사용 코드]
-						//s_calJig_Tmp_WorldMatrix.SetMatrix(_worldMatrix, false);
-
-						////추가 20.8.6 : RMultiply 전에 함수를 호출해야한다. [RMultiply Scale 이슈]
-						//s_calJig_Tmp_WorldMatrix.OnBeforeRMultiply();
-
-
-						//s_calJig_Tmp_WorldMatrix._angleDeg += _calJig_Angle_Result_Prev;
-						//s_calJig_Tmp_WorldMatrix.MakeMatrix(); 
-						#endregion
-
-
-						//-----------------------------------------
 						// 변경된 방식 20.8.31 : 래핑된 코드
 						//-----------------------------------------
 						_calJig_Tmp_WorldMatrix.CopyFromMatrix(_worldMatrix);
@@ -1673,14 +1799,9 @@ namespace AnyPortrait
 
 						//예상 위치
 
-						//이전
-						//Vector2 endPos_Excepted = _calJig_Tmp_WorldMatrix.MulPoint2(new Vector2(0, _shapeLength));
-
 						//변경 v1.4.4 : Ref를 이용한 더 빠른 함수
 						_calJig_Tmp_WorldMatrix.MulPoint2(ref _calJig_EndPos_Excepted, ref _calJig_EndPos_LocalByShape);
 						
-
-
 						//[Opt 코드] 좌표계 전환
 						//기존에 저장된 값 : Unity World 좌표계.
 						//이걸 Portrait 좌표계로 바꿔서 테스트하자
@@ -1826,45 +1947,6 @@ namespace AnyPortrait
 						calJig_Angle_Result = dAngle_woJiggle + (_calJig_Velocity * tDelta);
 
 
-
-						//이전
-						#region [미사용 코드]
-						//if (calJig_Angle_Result < 0.0f && _calJig_Velocity < 0.0f)
-						//{
-						//	//Min과의 거리를 보자
-						//	if (calJig_Angle_Result < minAngle)
-						//	{
-						//		//거리 제한
-						//		calJig_Angle_Result = minAngle;
-						//		_calJig_Velocity = (calJig_Angle_Result - dAngle_woJiggle) / tDelta;
-						//	}
-						//	else if (calJig_Angle_Result < minAngle * 0.7f)
-						//	{
-						//		//70% 구간부터는 감속을 한다.
-						//		//70% : x1 > 100% : x0
-						//		_calJig_Velocity *= 1.0f - ((calJig_Angle_Result - (minAngle * 0.7f)) / (minAngle * 0.3f));
-						//		calJig_Angle_Result = dAngle_woJiggle + (_calJig_Velocity * tDelta);
-						//	}
-						//}
-						//else if (calJig_Angle_Result > 0.0f && _calJig_Velocity > 0.0f)
-						//{
-						//	//Max와의 거리를 보자
-						//	if (calJig_Angle_Result > maxAngle)
-						//	{
-						//		//거리 제한
-						//		calJig_Angle_Result = maxAngle;
-						//		_calJig_Velocity = (calJig_Angle_Result - dAngle_woJiggle) / tDelta;
-						//	}
-						//	else if (calJig_Angle_Result > maxAngle * 0.7f)
-						//	{
-						//		//70% 구간부터는 감속을 한다.
-						//		//70% : x1 > 100% : x0
-						//		_calJig_Velocity *= 1.0f - ((calJig_Angle_Result - (maxAngle * 0.7f)) / (maxAngle * 0.3f));
-						//		calJig_Angle_Result = dAngle_woJiggle + (_calJig_Velocity * tDelta);
-						//	}
-						//} 
-						#endregion
-
 						//개선 20.7.15 : 속도에 상관없이 외부 힘이 작동하여 범위를 벗어나는 경우 포함
 						if (calJig_Angle_Result < 0.0f)
 						{
@@ -1967,12 +2049,6 @@ namespace AnyPortrait
 					}
 
 					//---------------------------------
-					// 이전 코드
-					//---------------------------------
-					//_worldMatrix._angleDeg += calJig_Angle_Result;
-					//_worldMatrix.MakeMatrix();
-
-					//---------------------------------
 					// 래핑된 코드 20.8.31
 					//---------------------------------
 					_worldMatrix.RotateAsStep1(calJig_Angle_Result, true);
@@ -2026,15 +2102,92 @@ namespace AnyPortrait
 			//자식 본도 업데이트
 			if(isRecursive)
 			{
-				if (_childBones != null)
+				int nChildBones = _childBones != null ? _childBones.Length : 0;
+				if (nChildBones > 0)
 				{
-					for (int i = 0; i < _childBones.Length; i++)
+					for (int i = 0; i < nChildBones; i++)
 					{
-						_childBones[i].MakeWorldMatrixForIK(true, isCalculateMatrixForce, isPhysics, isTeleportFrame, tDelta);
+						_childBones[i].MakeWorldMatrixForIK_WithJiggle(true, isCalculateMatrixForce, isPhysics, isTeleportFrame, tDelta);
 					}
 				}
 			}
 		}
+
+
+		//[v1.5.0] RunNode에 의해서 IK Controller 연산이 발생한 경우, 그 즉시 World Matrix를 갱신해야 한다.
+		//이때는 Jiggle본과 같은 처리는 하지 않는다.
+		public void MakeWorldMatrixForIK_ByRunNode(bool isRecursive, bool isCalculateMatrixForce)
+		{
+			if(_isIKCalculated_Controlled)
+			{
+				//IK가 계산된 결과를 넣자
+				//World Matrix 재계산
+				// 변경된 코드 20.8.31 : 래핑 + Skew + IKSpace
+				float prevWorldMatrixAngle = _worldMatrix.Angle_IKSpace;
+				float nextIKAngle = prevWorldMatrixAngle;
+				if(_IKRequestWeight_Controlled > 0.0f)
+				{
+					float addIKAngle = (_IKRequestAngleResult_Controlled / _IKRequestWeight_Controlled);
+
+					if (_IKRequestWeight_Controlled > 1.0f)
+					{
+						nextIKAngle = prevWorldMatrixAngle + addIKAngle;
+					}
+					else if (_IKRequestWeight_Controlled > 0.0f)
+					{
+						//Slerp가 적용된 코드
+						nextIKAngle = apUtil.AngleSlerp(	prevWorldMatrixAngle,
+															prevWorldMatrixAngle + addIKAngle,
+															_IKRequestWeight_Controlled);
+					}
+				}
+
+				//IK 적용
+				//중요 : 래핑된 코드
+				_worldMatrix.MakeWorldMatrix_IK(	_localMatrix,
+													(_parentBone != null ? _parentBone._worldMatrix : null),
+													(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null),
+													nextIKAngle);
+
+
+				//여기서도 External Request를 적용해준다.
+				UpdateExternalRequest();//<Opt 코드
+
+				//--------------------------
+
+				isCalculateMatrixForce = true;//<<다음 Child 부터는 무조건 갱신을 해야한다.
+			}
+			else if(isCalculateMatrixForce)
+			{
+				// 변경된 방식 20.8.31 : 래핑
+				//IK 자체는 적용되지 않았으나, Parent에서 적용된게 있어서 WorldMatrix를 그대로 쓸 순 없다.
+				_worldMatrix.MakeWorldMatrix_Mod(_localMatrix, 
+													(_parentBone != null ? _parentBone._worldMatrix : null),
+													(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null));
+
+
+				//여기에도 External을 해야한다.
+				UpdateExternalRequest();
+			}
+
+			
+			//자식 본도 업데이트
+			if(isRecursive)
+			{
+				int nChild = _childBones != null ? _childBones.Length : 0;
+				if (nChild > 0)
+				{
+					for (int i = 0; i < nChild; i++)
+					{
+						_childBones[i].MakeWorldMatrixForIK_ByRunNode(true, isCalculateMatrixForce);
+					}
+				}
+			}
+		}
+
+
+
+
 
 
 		/// <summary>
@@ -2044,63 +2197,111 @@ namespace AnyPortrait
 		/// <param name="isCalculateMatrixForce"></param>
 		/// <param name="isPhysics"></param>
 		/// <param name="tDelta"></param>
-		public void MakeWorldMatrixForIKAsSyncBones(bool isRecursive, bool isCalculateMatrixForce, bool isPhysics, bool isTeleportFrame, float tDelta)
+		public void MakeWorldMatrixForIKAsSyncBones_WithJiggle(bool isRecursive, bool isCalculateMatrixForce, bool isPhysics, bool isTeleportFrame, float tDelta)
 		{
 			if (_syncBone == null)
 			{
-				if (_isIKCalculated_Controlled)
+				//변경 v1.5.0
+				//IK 연산을 삭제했다.
+				//해당 코멘트는 apBone.MakeWorldMatrixForIK_WithJiggle 에서 찾자
+
+				if(isCalculateMatrixForce)
 				{
-					//IK가 계산된 결과를 넣자
-					//World Matrix 재계산
-					//--------------------------
-					// 변경된 코드 20.8.31 : 래핑 + Skew + IKSpace
-					//--------------------------
-
-					float prevWorldMatrixAngle = _worldMatrix.Angle_IKSpace;
-					float addIKAngle = (_IKRequestAngleResult_Controlled / _IKRequestWeight_Controlled);
-
-					float nextIKAngle = 0.0f;
-
-					if (_IKRequestWeight_Controlled > 1.0f)
+					//부모 본의 업데이트가 발생했으므로, 부모 본의 Matrix를 다시 적용해주자.
+					//IK 적용 여부에 따라서 다른 함수를 적용한다.
+					if(_isIKCalculated_Controlled)
 					{
-						nextIKAngle = prevWorldMatrixAngle + addIKAngle;
+						// < IK가 적용된 본의 경우 >
+						//계산된 IK 각도는 WorldMatrix에서 얻을 수 있다.
+						float IKAngle = _worldMatrix.Angle_IKSpace;
+
+						_worldMatrix.MakeWorldMatrix_IK(	_localMatrix,
+															(_parentBone != null ? _parentBone._worldMatrix : null),
+															(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null),
+															IKAngle);
+
+						//여기서도 External Request를 적용해준다.
+						UpdateExternalRequest();//<Opt 코드
 					}
-					else if (_IKRequestWeight_Controlled > 0.0f)
+					else
 					{
-						//Slerp가 적용된 코드
-						nextIKAngle = apUtil.AngleSlerp(prevWorldMatrixAngle,
-															prevWorldMatrixAngle + addIKAngle,
-															_IKRequestWeight_Controlled);
+						// < IK가 적용되지 않은 본의 경우 >
+						//일반 WorldMatrix 계산식을 이용한다.
+						_worldMatrix.MakeWorldMatrix_Mod(	_localMatrix,
+															(_parentBone != null ? _parentBone._worldMatrix : null),
+															(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null));
+
+						//----------------------------------
+						//추가 v1.5.0 : 여기에도 External 처리를 한다.
+						UpdateExternalRequest();//<Opt 코드
 					}
-
-					//IK 적용
-					//중요 : 래핑된 코드
-					_worldMatrix.MakeWorldMatrix_IK(_localMatrix,
-														//(_parentBone != null ? _parentBone._worldMatrix : null),
-														(_parentBone != null ? (_parentBone._syncBone != null ? _parentBone._syncBone._worldMatrix : _parentBone._worldMatrix) : null),//[Sync]
-														(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null),
-														nextIKAngle);
-
-
-					//여기서도 External Request를 적용해준다.
-					UpdateExternalRequest();//<Opt 코드
-
-					//--------------------------
-
-					isCalculateMatrixForce = true;//<<다음 Child 부터는 무조건 갱신을 해야한다.
 				}
-				else if (isCalculateMatrixForce)
-				{
-					//----------------------------------
-					// 변경된 방식 20.8.31 : 래핑
-					//----------------------------------
-					//IK 자체는 적용되지 않았으나, Parent에서 적용된게 있어서 WorldMatrix를 그대로 쓸 순 없다.
-					_worldMatrix.MakeWorldMatrix_Mod(_localMatrix,
-														//(_parentBone != null ? _parentBone._worldMatrix : null),
-														(_parentBone != null ? (_parentBone._syncBone != null ? _parentBone._syncBone._worldMatrix : _parentBone._worldMatrix) : null),//[Sync]
-														(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null));
-				}
-				
+
+				#region [미사용 코드]
+				// if (!_isWorldMatrixIKCompleted || isCalculateMatrixForce)
+				// {
+				// 	//WorldMatrix_IK가 완료되지 않은 경우에만 연산 [v1.5.0]
+				// 	//단, 연산이 강요되는 "isCalculateMatrixForce"가 true이면 무조건 다시 연산한다.
+				// 	if (_isIKCalculated_Controlled)
+				// 	{
+				// 		//IK가 계산된 결과를 넣자
+				// 		//World Matrix 재계산
+				// 		//--------------------------
+				// 		// 변경된 코드 20.8.31 : 래핑 + Skew + IKSpace
+				// 		//--------------------------
+
+				// 		float prevWorldMatrixAngle = _worldMatrix.Angle_IKSpace;
+				// 		float addIKAngle = (_IKRequestAngleResult_Controlled / _IKRequestWeight_Controlled);
+
+				// 		float nextIKAngle = 0.0f;
+
+				// 		if (_IKRequestWeight_Controlled > 1.0f)
+				// 		{
+				// 			nextIKAngle = prevWorldMatrixAngle + addIKAngle;
+				// 		}
+				// 		else if (_IKRequestWeight_Controlled > 0.0f)
+				// 		{
+				// 			//Slerp가 적용된 코드
+				// 			nextIKAngle = apUtil.AngleSlerp(prevWorldMatrixAngle,
+				// 												prevWorldMatrixAngle + addIKAngle,
+				// 												_IKRequestWeight_Controlled);
+				// 		}
+
+				// 		//IK 적용
+				// 		//중요 : 래핑된 코드
+				// 		_worldMatrix.MakeWorldMatrix_IK(_localMatrix,
+				// 											//(_parentBone != null ? _parentBone._worldMatrix : null),
+				// 											(_parentBone != null ? (_parentBone._syncBone != null ? _parentBone._syncBone._worldMatrix : _parentBone._worldMatrix) : null),//[Sync]
+				// 											(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null),
+				// 											nextIKAngle);
+
+
+				// 		//여기서도 External Request를 적용해준다.
+				// 		UpdateExternalRequest();//<Opt 코드
+
+				// 		//--------------------------
+
+				// 		isCalculateMatrixForce = true;//<<다음 Child 부터는 무조건 갱신을 해야한다.
+				// 	}
+				// 	else if (isCalculateMatrixForce)
+				// 	{
+				// 		//----------------------------------
+				// 		// 변경된 방식 20.8.31 : 래핑
+				// 		//----------------------------------
+				// 		//IK 자체는 적용되지 않았으나, Parent에서 적용된게 있어서 WorldMatrix를 그대로 쓸 순 없다.
+				// 		_worldMatrix.MakeWorldMatrix_Mod(_localMatrix,
+				// 											//(_parentBone != null ? _parentBone._worldMatrix : null),
+				// 											(_parentBone != null ? (_parentBone._syncBone != null ? _parentBone._syncBone._worldMatrix : _parentBone._worldMatrix) : null),//[Sync]
+				// 											(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null));
+
+				// 		//변경 v1.5.0 : 외부 요청 처리를 한다.
+				// 		UpdateExternalRequest();
+				// 	}
+
+				// 	//완료 플래그 [v1.5.0]
+				// 	_isWorldMatrixIKCompleted = true;
+				// }
+				#endregion
 				
 				if (_isJiggle && isPhysics)
 				{
@@ -2427,15 +2628,101 @@ namespace AnyPortrait
 			//자식 본도 업데이트
 			if(isRecursive)
 			{
-				if (_childBones != null)
+				int nChild = _childBones != null ? _childBones.Length : 0;
+				if (nChild > 0)
 				{
-					for (int i = 0; i < _childBones.Length; i++)
+					for (int i = 0; i < nChild; i++)
 					{
-						_childBones[i].MakeWorldMatrixForIKAsSyncBones(true, isCalculateMatrixForce, isPhysics, isTeleportFrame, tDelta);
+						_childBones[i].MakeWorldMatrixForIKAsSyncBones_WithJiggle(true, isCalculateMatrixForce, isPhysics, isTeleportFrame, tDelta);
 					}
 				}
 			}
 		}
+
+
+
+
+
+		public void MakeWorldMatrixForIKAsSyncBones_ByRunNode(bool isRecursive, bool isCalculateMatrixForce)
+		{
+			if (_syncBone == null)
+			{
+				if (_isIKCalculated_Controlled)
+				{
+					//IK가 계산된 결과를 넣자
+					//World Matrix 재계산
+					//--------------------------
+					// 변경된 코드 20.8.31 : 래핑 + Skew + IKSpace
+					//--------------------------
+
+					float prevWorldMatrixAngle = _worldMatrix.Angle_IKSpace;
+					float nextIKAngle = prevWorldMatrixAngle;
+					if(_IKRequestWeight_Controlled > 0.0f)
+					{
+						float addIKAngle = (_IKRequestAngleResult_Controlled / _IKRequestWeight_Controlled);
+
+						if (_IKRequestWeight_Controlled > 1.0f)
+						{
+							nextIKAngle = prevWorldMatrixAngle + addIKAngle;
+						}
+						else if (_IKRequestWeight_Controlled > 0.0f)
+						{
+							//Slerp가 적용된 코드
+							nextIKAngle = apUtil.AngleSlerp(prevWorldMatrixAngle,
+																prevWorldMatrixAngle + addIKAngle,
+																_IKRequestWeight_Controlled);
+						}
+					}					
+
+					//IK 적용
+					//중요 : 래핑된 코드
+					_worldMatrix.MakeWorldMatrix_IK(	_localMatrix,
+														//(_parentBone != null ? _parentBone._worldMatrix : null),
+														(_parentBone != null ? (_parentBone._syncBone != null ? _parentBone._syncBone._worldMatrix : _parentBone._worldMatrix) : null),//[Sync]
+														(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null),
+														nextIKAngle);
+
+					//여기서도 External Request를 적용해준다.
+					UpdateExternalRequest();//<Opt 코드
+
+					//--------------------------
+
+					isCalculateMatrixForce = true;//<<다음 Child 부터는 무조건 갱신을 해야한다.
+				}
+				else if (isCalculateMatrixForce)
+				{
+					//----------------------------------
+					// 변경된 방식 20.8.31 : 래핑
+					//----------------------------------
+					//IK 자체는 적용되지 않았으나, Parent에서 적용된게 있어서 WorldMatrix를 그대로 쓸 순 없다.
+					_worldMatrix.MakeWorldMatrix_Mod(_localMatrix,
+														//(_parentBone != null ? _parentBone._worldMatrix : null),
+														(_parentBone != null ? (_parentBone._syncBone != null ? _parentBone._syncBone._worldMatrix : _parentBone._worldMatrix) : null),//[Sync]
+														(_parentOptTransform != null ? _parentOptTransform._matrix_TFResult_World : null));
+
+					//변경 v1.5.0 : 외부 요청 처리를 한다.
+					UpdateExternalRequest();
+				}
+			}
+			
+
+
+			
+			//자식 본도 업데이트
+			if(isRecursive)
+			{
+				int nChild = _childBones != null ? _childBones.Length : 0;
+				if (nChild > 0)
+				{
+					for (int i = 0; i < nChild; i++)
+					{
+						_childBones[i].MakeWorldMatrixForIKAsSyncBones_ByRunNode(true, isCalculateMatrixForce);
+					}
+				}
+			}
+		}
+
+
 
 
 
@@ -2515,84 +2802,68 @@ namespace AnyPortrait
 		private void UpdateExternalRequest()
 		{
 			//처리된 TRS
-			_updatedWorldPos_NoRequest.x = _worldMatrix.Pos.x;
-			_updatedWorldPos_NoRequest.y = _worldMatrix.Pos.y;
+			//_updatedWorldPos_NoRequest.x = _worldMatrix.Pos.x;
+			//_updatedWorldPos_NoRequest.y = _worldMatrix.Pos.y;
 
-			_updatedWorldAngle_NoRequest = _worldMatrix.Angle;
+			//_updatedWorldAngle_NoRequest = _worldMatrix.Angle;
 
-			_updatedWorldScale_NoRequest.x = _worldMatrix.Scale.x;
-			_updatedWorldScale_NoRequest.y = _worldMatrix.Scale.y;
+			//_updatedWorldScale_NoRequest.x = _worldMatrix.Scale.x;
+			//_updatedWorldScale_NoRequest.y = _worldMatrix.Scale.y;
 
-			_updatedWorldPos = _updatedWorldPos_NoRequest;
-			_updatedWorldAngle = _updatedWorldAngle_NoRequest;
-			_updatedWorldScale = _updatedWorldScale_NoRequest;
+			//_updatedWorldPos = _updatedWorldPos_NoRequest;
+			//_updatedWorldAngle = _updatedWorldAngle_NoRequest;
+			//_updatedWorldScale = _updatedWorldScale_NoRequest;
+
+			//변경 v1.5.0.
+			//NoRequest 변수를 더이상 사용하지 않는다.
+			_updatedWorldPos = _worldMatrix.Pos;
+			_updatedWorldAngle = _worldMatrix.Angle;
+			_updatedWorldScale = _worldMatrix.Scale;
 
 
+			if (!_isIKCalculated
+				&& !_isExUpdate_Position 
+				&& !_isExUpdate_Rotation 
+				&& !_isExUpdate_Scaling
+				&& !_isExUpdate_LookAt
+				&& !_isExternalConstraint)
+			{
+				//외부 요청이나 IK가 없다.
+				return;
+			}
+
+			//IK가 계산되었다면
 			if(_isIKCalculated)
 			{	
 				_IKRequestAngleResult_World = apUtil.AngleTo180(_IKRequestAngleResult_World - 90.0f);
-
-				//값을 할당하는 방식이 조금더 세분화 되었다.
-				////float prevAngle = _updatedWorldAngle;
-				//_updatedWorldAngle = _updatedWorldAngle * (1.0f - _IKRequestWeight) + (_IKRequestAngleResult_World * _IKRequestWeight);
-				////Debug.Log("Add IK [" + _name + "] : " + prevAngle + " > " + _IKRequestAngleResult);
-
-				//초기화는 아래에서 실행한다.(20.9.2)
-				//_IKRequestAngleResult = 0.0f;
-				//_IKRequestWeight = 0.0f;
 			}
-
-
-			
 
 			//스크립트로 외부에서 제어한 경우
-			if (_isExternalUpdate_Position)
+			if (_isExUpdate_Position)
 			{
-				_updatedWorldPos.x = (_exUpdate_Pos.x * _externalUpdateWeight) + (_updatedWorldPos.x * (1.0f - _externalUpdateWeight));
-				_updatedWorldPos.y = (_exUpdate_Pos.y * _externalUpdateWeight) + (_updatedWorldPos.y * (1.0f - _externalUpdateWeight));
+				_updatedWorldPos.x = (_exUpdateValue_Pos.x * _exUpdateWeight_Position) + (_updatedWorldPos.x * (1.0f - _exUpdateWeight_Position));
+				_updatedWorldPos.y = (_exUpdateValue_Pos.y * _exUpdateWeight_Position) + (_updatedWorldPos.y * (1.0f - _exUpdateWeight_Position));
 			}
 
-			if (_isExternalUpdate_Rotation)
+			if (_isExUpdate_Rotation)
 			{
-				_updatedWorldAngle = (_exUpdate_Angle * _externalUpdateWeight) + (_updatedWorldAngle * (1.0f - _externalUpdateWeight));
+				_updatedWorldAngle = (_exUpdateValue_Angle * _exUpdateWeight_Rotation) + (_updatedWorldAngle * (1.0f - _exUpdateWeight_Rotation));
 			}
 
-			if(_isExternalUpdate_Scaling)
+			if(_isExUpdate_Scaling)
 			{ 
-				_updatedWorldScale.x = (_exUpdate_Scale.x * _externalUpdateWeight) + (_updatedWorldScale.x * (1.0f - _externalUpdateWeight));
-				_updatedWorldScale.y = (_exUpdate_Scale.y * _externalUpdateWeight) + (_updatedWorldScale.y * (1.0f - _externalUpdateWeight));
+				_updatedWorldScale.x = (_exUpdateValue_Scale.x * _exUpdateWeight_Scaling) + (_updatedWorldScale.x * (1.0f - _exUpdateWeight_Scaling));
+				_updatedWorldScale.y = (_exUpdateValue_Scale.y * _exUpdateWeight_Scaling) + (_updatedWorldScale.y * (1.0f - _exUpdateWeight_Scaling));
 			}
 
 			if(_isExternalConstraint)
 			{
-				//if(_isExternalConstraint_Xsurface)
-				//{
-
-				//}
-				if(_isExternalConstraint_Xpref)
-				{
-					_updatedWorldPos.x = _externalConstraint_PosX.y;
-				}
-				if(_isExternalConstraint_Ypref)
-				{
-					_updatedWorldPos.y = _externalConstraint_PosY.y;
-				}
-				if (_isExternalConstraint_Xmin)
-				{
-					_updatedWorldPos.x = Mathf.Max(_updatedWorldPos.x, _externalConstraint_PosX.x);
-				}
-				if (_isExternalConstraint_Xmax)
-				{
-					_updatedWorldPos.x = Mathf.Min(_updatedWorldPos.x, _externalConstraint_PosX.z);
-				}
-				if (_isExternalConstraint_Ymin)
-				{
-					_updatedWorldPos.y = Mathf.Max(_updatedWorldPos.y, _externalConstraint_PosY.x);
-				}
-				if (_isExternalConstraint_Ymax)
-				{
-					_updatedWorldPos.y = Mathf.Min(_updatedWorldPos.y, _externalConstraint_PosY.z);
-				}
+				if(_isExternalConstraint_Xpref) { _updatedWorldPos.x = _externalConstraint_PosX.y; }
+				if(_isExternalConstraint_Ypref) { _updatedWorldPos.y = _externalConstraint_PosY.y; }
+				if (_isExternalConstraint_Xmin) { _updatedWorldPos.x = Mathf.Max(_updatedWorldPos.x, _externalConstraint_PosX.x); }
+				if (_isExternalConstraint_Xmax) { _updatedWorldPos.x = Mathf.Min(_updatedWorldPos.x, _externalConstraint_PosX.z); }
+				if (_isExternalConstraint_Ymin) { _updatedWorldPos.y = Mathf.Max(_updatedWorldPos.y, _externalConstraint_PosY.x); }
+				if (_isExternalConstraint_Ymax) { _updatedWorldPos.y = Mathf.Min(_updatedWorldPos.y, _externalConstraint_PosY.z); }
 
 				if(_isExternalConstraint_Xsurface)
 				{
@@ -2603,46 +2874,15 @@ namespace AnyPortrait
 					_updatedWorldPos.y = Mathf.Clamp((_updatedWorldPos.y - _externalConstraint_PosSurfaceY.x) + _externalConstraint_PosSurfaceY.y, _externalConstraint_PosSurfaceY.z, _externalConstraint_PosSurfaceY.w);
 				}
 			}
-			
-			// 이전 코드
-			//if (_isIKCalculated 
-			//	|| _isExternalUpdate_Position 
-			//	|| _isExternalUpdate_Rotation 
-			//	|| _isExternalUpdate_Scaling 
-			//	|| _isExternalConstraint)
-			//{
-			//	//WorldMatrix를 갱신해주자
-			//	_worldMatrix.SetTRS(	_updatedWorldPos.x, _updatedWorldPos.y,
-			//							_updatedWorldAngle,
-			//							_updatedWorldScale.x, _updatedWorldScale.y, true);
 
-			//	//>> 이건 Post에서 처리
-			//	//_isIKCalculated = false;
-			//	//_isExternalUpdate_Position = false;
-			//	//_isExternalUpdate_Rotation = false;
-			//	//_isExternalUpdate_Scaling = false;
-			//	//
-			//}
-
-			//변경 20.8.31 : 래핑된 함수를 위한 새로운 TRS 코드 + 다른 플래그
-			if (_isIKCalculated //<<이거 없어져야함
-				|| _isExternalUpdate_Position 
-				|| _isExternalUpdate_Rotation 
-				|| _isExternalUpdate_Scaling 
-				//|| _isExternalUpdate_IK
-				|| _isExternalConstraint)
-			{
-				//WorldMatrix를 갱신해주자
-				//Debug.Log("[" + this.gameObject.name + "] Set TRS As Result : (IK : " + _isIKCalculated + " / " + _updatedWorldAngle + ")");
-
-				_worldMatrix.SetTRSAsResult(
-									(_isExternalUpdate_Position || _isExternalConstraint), _updatedWorldPos,
-									//(_isExternalUpdate_Rotation || _isIKCalculated), _updatedWorldAngle,//이전
-									_isExternalUpdate_Rotation, _updatedWorldAngle,//변경
-									_isExternalUpdate_Scaling, _updatedWorldScale,
-									_isIKCalculated, _IKRequestAngleResult_World, _IKRequestAngleResult_Delta, _IKRequestWeight//추가 20.9.2
-									);
-			}
+			//조건문 필요없다. 위에서 조건 탈출을 하므로
+			//WorldMatrix를 갱신해주자
+			_worldMatrix.SetTRSAsResult(	(_isExUpdate_Position || _isExternalConstraint), _updatedWorldPos,
+											_isExUpdate_Rotation, _updatedWorldAngle,//변경
+											_isExUpdate_Scaling, _updatedWorldScale,
+											_isExUpdate_LookAt, _exUpdateValue_LookAtPos, _exUpdateWeight_LookAt,
+											_isIKCalculated, _IKRequestAngleResult_World, _IKRequestAngleResult_Delta, _IKRequestWeight//추가 20.9.2
+											);
 
 
 			//변경 20.9.2 : IK 요청 초기화는 여기서 하자
@@ -2720,9 +2960,10 @@ namespace AnyPortrait
 			}
 
 			_isIKCalculated = false;
-			_isExternalUpdate_Position = false;
-			_isExternalUpdate_Rotation = false;
-			_isExternalUpdate_Scaling = false;
+			_isExUpdate_Position = false;
+			_isExUpdate_Rotation = false;
+			_isExUpdate_Scaling = false;
+			_isExUpdate_LookAt = false;//추가 v1.5.0
 			//_isExternalUpdate_IK = false;
 
 			_isExternalConstraint = false;
@@ -2735,9 +2976,10 @@ namespace AnyPortrait
 			_isExternalConstraint_Xsurface = false;
 			_isExternalConstraint_Ysurface = false;
 
-			if (_childBones != null)
+			int nChildBones = _childBones != null ? _childBones.Length : 0;
+			if (nChildBones > 0)
 			{
-				for (int i = 0; i < _childBones.Length; i++)
+				for (int i = 0; i < nChildBones; i++)
 				{
 					_childBones[i].UpdatePostRecursive();
 
@@ -2807,9 +3049,10 @@ namespace AnyPortrait
 			}
 
 			_isIKCalculated = false;
-			_isExternalUpdate_Position = false;
-			_isExternalUpdate_Rotation = false;
-			_isExternalUpdate_Scaling = false;
+			_isExUpdate_Position = false;
+			_isExUpdate_Rotation = false;
+			_isExUpdate_Scaling = false;
+			_isExUpdate_LookAt = false;//추가 v1.5.0
 			//_isExternalUpdate_IK = false;
 
 			_isExternalConstraint = false;
@@ -2822,9 +3065,10 @@ namespace AnyPortrait
 			_isExternalConstraint_Xsurface = false;
 			_isExternalConstraint_Ysurface = false;
 
-			if (_childBones != null)
+			int nChildBones = _childBones != null ? _childBones.Length : 0;
+			if (nChildBones > 0)
 			{
-				for (int i = 0; i < _childBones.Length; i++)
+				for (int i = 0; i < nChildBones; i++)
 				{
 					_childBones[i].UpdatePostRecursiveAsSyncBones();
 				}
@@ -2844,9 +3088,11 @@ namespace AnyPortrait
 		/// <param name="weight"></param>
 		public void SetPosition(Vector2 worldPosition, float weight = 1.0f)
 		{
-			_isExternalUpdate_Position = true;
-			_externalUpdateWeight = Mathf.Clamp01(weight);
-			_exUpdate_Pos = worldPosition;
+			_isExUpdate_Position = true;			
+			_exUpdateValue_Pos = worldPosition;
+
+			//_exUpdateWeight = Mathf.Clamp01(weight);//이전
+			_exUpdateWeight_Position = Mathf.Clamp01(weight);//변경 v1.5.0
 		}
 
 		/// <summary>
@@ -2856,9 +3102,11 @@ namespace AnyPortrait
 		/// <param name="weight"></param>
 		public void SetRotation(float worldAngle, float weight = 1.0f)
 		{
-			_isExternalUpdate_Rotation = true;
-			_externalUpdateWeight = Mathf.Clamp01(weight);
-			_exUpdate_Angle = worldAngle;
+			_isExUpdate_Rotation = true;			
+			_exUpdateValue_Angle = worldAngle;
+
+			//_exUpdateWeight = Mathf.Clamp01(weight);//이전
+			_exUpdateWeight_Rotation = Mathf.Clamp01(weight);//변경 v1.5.0
 		}
 
 
@@ -2869,9 +3117,20 @@ namespace AnyPortrait
 		/// <param name="weight"></param>
 		public void SetScale(Vector2 worldScale, float weight = 1.0f)
 		{
-			_isExternalUpdate_Scaling = true;
-			_externalUpdateWeight = Mathf.Clamp01(weight);
-			_exUpdate_Scale = worldScale;
+			_isExUpdate_Scaling = true;			
+			_exUpdateValue_Scale = worldScale;
+
+			//_exUpdateWeight = Mathf.Clamp01(weight);
+			_exUpdateWeight_Scaling = Mathf.Clamp01(weight);//변경 v1.5.0
+		}
+
+
+		//추가 v1.5.0
+		public void SetLookAtExternal(Vector2 targetPos, float weight = 1.0f)
+		{
+			_isExUpdate_LookAt = true;
+			_exUpdateValue_LookAtPos = targetPos;
+			_exUpdateWeight_LookAt = Mathf.Clamp01(weight);
 		}
 		
 
@@ -2884,14 +3143,18 @@ namespace AnyPortrait
 		/// <param name="weight"></param>
 		public void SetTRS(Vector2 worldPosition, float worldAngle, Vector2 worldScale, float weight = 1.0f)
 		{
-			_isExternalUpdate_Position = true;
-			_isExternalUpdate_Rotation = true;
-			_isExternalUpdate_Scaling = true;
+			_isExUpdate_Position = true;
+			_isExUpdate_Rotation = true;
+			_isExUpdate_Scaling = true;
+						
+			_exUpdateValue_Pos = worldPosition;
+			_exUpdateValue_Angle = worldAngle;
+			_exUpdateValue_Scale = worldScale;
 
-			_externalUpdateWeight = Mathf.Clamp01(weight);
-			_exUpdate_Pos = worldPosition;
-			_exUpdate_Angle = worldAngle;
-			_exUpdate_Scale = worldScale;
+			weight = Mathf.Clamp01(weight);
+			_exUpdateWeight_Position = weight;
+			_exUpdateWeight_Rotation = weight;
+			_exUpdateWeight_Scaling = weight;
 		}
 
 		public void SetPositionConstraint(float worldPositionValue, ConstraintBound constraintBound)
@@ -2965,7 +3228,7 @@ namespace AnyPortrait
 		/// <param name="weight"></param>
 		/// <param name="isContinuous"></param>
 		/// <returns></returns>
-		public bool RequestIK(Vector2 targetPosW, float weight, bool isContinuous)
+		public bool RequestIK(Vector2 targetPosW, float weight, bool isContinuous, apPortrait.IK_METHOD IKMethod)
 		{
 			if (!_isIKTail || _IKChainSet == null || !_isIKChainSetAvailable)
 			{
@@ -2979,10 +3242,26 @@ namespace AnyPortrait
 				_isIKChainInit = true;
 			}
 
+			//[v1.5.0]
+			//IK 연산의 "초기 포즈" 연산 여부를 초기화한다.
+			//초기 포즈 연산 플래그를 초기화한다. 
+			_IKChainSet.ResetIKInitPoseFlag();
+
 			//Debug.Log("Request IK > " + targetPosW);
 
-			//bool isSuccess = _IKChainSet.SimulateIK(targetPosW, isContinuous);
-			bool isSuccess = _IKChainSet.SimulateIK(_worldMatrix.ConvertForIK(targetPosW), isContinuous);//IKSpace로 변경
+			bool isSuccess = false;
+
+			if(IKMethod == apPortrait.IK_METHOD.CCD)
+			{
+				// [ CCD 방식의 IK ]
+				isSuccess = _IKChainSet.SimulateIK_CCD(_worldMatrix.ConvertForIK(targetPosW), isContinuous);//IKSpace로 변경
+			}
+			else
+			{
+				// [ FABRIK 방식의 IK ]
+				isSuccess = _IKChainSet.SimulateIK_FABRIK(_worldMatrix.ConvertForIK(targetPosW), isContinuous, weight);//IKSpace로 변경
+			}
+
 
 			//IK가 실패하면 패스
 			if (!isSuccess)
@@ -3151,14 +3430,39 @@ namespace AnyPortrait
 		public Vector3 Scale { get { return _updatedWorldScale; } }
 
 		
+		//함수 사용안함 [v1.5.0]
 		/// <summary>Bone's Position without User's external request</summary>
-		public Vector3 PositionWithouEditing {  get { return _updatedWorldPos_NoRequest; } }
+		[Obsolete("This property no longer returns a valid value. Please use Position or Socket instead.")]
+		public Vector3 PositionWithouEditing
+		{
+			get
+			{
+				//return _updatedWorldPos_NoRequest;
+				return _updatedWorldPos;
+			}
+		}
 		
 		/// <summary>Bone's Angle without User's external request</summary>
-		public float AngleWithouEditing {  get { return _updatedWorldAngle_NoRequest; } }
+		[Obsolete("This property no longer returns a valid value. Please use Angle or Socket instead.")]
+		public float AngleWithouEditing
+		{
+			get
+			{
+				//return _updatedWorldAngle_NoRequest;
+				return _updatedWorldAngle;
+			}
+		}
 		
 		/// <summary>Bone's Scale without User's external request</summary>
-		public Vector3 ScaleWithouEditing {  get { return _updatedWorldScale_NoRequest; } }
+		[Obsolete("This property no longer returns a valid value. Please use Scale or Socket instead.")]
+		public Vector3 ScaleWithouEditing
+		{
+			get
+			{
+				//return _updatedWorldScale_NoRequest;
+				return _updatedWorldScale;
+			}
+		}
 
 
 		//-----------------------------------------------------------------------------------------------

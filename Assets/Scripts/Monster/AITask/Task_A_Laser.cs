@@ -31,10 +31,21 @@ public class Task_A_Laser : Task_A_Base
 
     protected override void OnStartupBegin()
     {
-        GameObject spawned = Instantiate(laserPrefab, muzzle.position, Quaternion.identity);
-        instance = spawned.GetComponent<MonsterLaser>();
-
-        instance.Initalize(GetCurrentDir().toVector2());
+        // 적(플레이어) 정보 가져와서 대상을 향해 조준
+        GameObject enemy;
+        if(blackboard.TryGet(BBK.Enemy, out enemy))
+        {
+            Vector2 toTarget = enemy.transform.position - muzzle.position;
+            GameObject spawned = Instantiate(laserPrefab, muzzle.position, Quaternion.identity);
+            instance = spawned.GetComponent<MonsterLaser>();
+            instance.Initalize(toTarget.normalized);
+        }
+        else
+        {
+            Debug.LogError("레이저 발사 대상을 찾을 수 없음");
+            Fail();
+            return;
+        }
     }
 
     protected override void OnActiveBegin()

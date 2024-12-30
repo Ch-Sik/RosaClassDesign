@@ -955,14 +955,22 @@ namespace AnyPortrait
 
 				//3. Child를 렌더링하자
 				//for (int iClip = 0; iClip < 3; iClip++)
+				apTransform_Mesh.ClipMeshSet clipSet = null;
+				apTransform_Mesh clipMeshTF = null;
+				apMesh clipMesh = null;
+				apRenderUnit clipRenderUnit = null;
+
 				for (int iClip = 0; iClip < nClipMeshes; iClip++)
 				{
-					if(childClippedSet[iClip] == null || childClippedSet[iClip]._meshTransform == null)
+					clipSet = childClippedSet[iClip];
+					if(clipSet == null || clipSet._meshTransform == null)
 					{
 						continue;
 					}
-					apMesh clipMesh = childClippedSet[iClip]._meshTransform._mesh;
-					apRenderUnit clipRenderUnit = childClippedSet[iClip]._renderUnit;
+
+					clipMeshTF = clipSet._meshTransform;
+					clipMesh = clipMeshTF._mesh;
+					clipRenderUnit = clipMeshTF._linkedRenderUnit;
 
 					if (clipMesh == null || clipRenderUnit == null) { continue; }
 					if (clipRenderUnit._meshTransform == null) { continue; }
@@ -987,28 +995,31 @@ namespace AnyPortrait
 					GL.Color(Color.black);
 
 					//------------------------------------------
-					for (int i = 0; i < clipMesh._indexBuffer.Count; i += 3)
-					{
-						if (i + 2 >= clipMesh._indexBuffer.Count)
-						{ break; }
+					int nIndexBuffers = clipMesh._indexBuffer.Count;
+					int nVerts = clipMesh._vertexData.Count;
 
-						if (clipMesh._indexBuffer[i + 0] >= clipMesh._vertexData.Count ||
-							clipMesh._indexBuffer[i + 1] >= clipMesh._vertexData.Count ||
-							clipMesh._indexBuffer[i + 2] >= clipMesh._vertexData.Count)
+					for (int i = 0; i < nIndexBuffers; i += 3)
+					{
+						if (i + 2 >= nIndexBuffers) { break; }
+
+						int index_0 = clipMesh._indexBuffer[i + 0];
+						int index_1 = clipMesh._indexBuffer[i + 1];
+						int index_2 = clipMesh._indexBuffer[i + 2];
+
+						if (index_0 >= nVerts ||
+							index_1 >= nVerts ||
+							index_2 >= nVerts)
 						{
 							break;
 						}
 
-						rVert0 = clipRenderUnit._renderVerts[clipMesh._indexBuffer[i + 0]];
-						rVert1 = clipRenderUnit._renderVerts[clipMesh._indexBuffer[i + 1]];
-						rVert2 = clipRenderUnit._renderVerts[clipMesh._indexBuffer[i + 2]];
-
+						rVert0 = clipRenderUnit._renderVerts[index_0];
+						rVert1 = clipRenderUnit._renderVerts[index_1];
+						rVert2 = clipRenderUnit._renderVerts[index_2];
 
 						//vColor0 = Color.black;
 						//vColor1 = Color.black;
 						//vColor2 = Color.black;
-
-
 
 						if (rootMatrix == null)
 						{
@@ -1031,7 +1042,6 @@ namespace AnyPortrait
 							posGL_0 = World2GL(tmpPos_0);
 							posGL_1 = World2GL(tmpPos_1);
 							posGL_2 = World2GL(tmpPos_2);
-
 						}
 
 						pos_0.x = posGL_0.x;
@@ -1046,10 +1056,13 @@ namespace AnyPortrait
 						pos_2.y = posGL_2.y;
 						pos_2.z = rVert2._vertex._zDepth * 0.5f;
 
-						uv_0 = clipMesh._vertexData[clipMesh._indexBuffer[i + 0]]._uv;
-						uv_1 = clipMesh._vertexData[clipMesh._indexBuffer[i + 1]]._uv;
-						uv_2 = clipMesh._vertexData[clipMesh._indexBuffer[i + 2]]._uv;
+						// uv_0 = clipMesh._vertexData[clipMesh._indexBuffer[i + 0]]._uv;
+						// uv_1 = clipMesh._vertexData[clipMesh._indexBuffer[i + 1]]._uv;
+						// uv_2 = clipMesh._vertexData[clipMesh._indexBuffer[i + 2]]._uv;
 
+						uv_0 = rVert0._vertex._uv;
+						uv_1 = rVert1._vertex._uv;
+						uv_2 = rVert2._vertex._uv;
 
 						/*GL.Color(vColor0);*/	GL.TexCoord(uv_0);	GL.Vertex(pos_0); // 0
 						/*GL.Color(vColor1);*/	GL.TexCoord(uv_1);	GL.Vertex(pos_1); // 1
@@ -1059,8 +1072,6 @@ namespace AnyPortrait
 						/*GL.Color(vColor2);*/	GL.TexCoord(uv_2);	GL.Vertex(pos_2); // 2
 						/*GL.Color(vColor1);*/	GL.TexCoord(uv_1);	GL.Vertex(pos_1); // 1
 						/*GL.Color(vColor0);*/	GL.TexCoord(uv_0);	GL.Vertex(pos_0); // 0
-
-
 					}
 					//------------------------------------------------
 					//삭제 21.5.19
@@ -1217,10 +1228,11 @@ namespace AnyPortrait
 				Vector2 uv_1 = Vector2.zero;
 				Vector2 uv_2 = Vector2.zero;
 
-				
+				int nIndexBuffers = mesh._indexBuffer != null ? mesh._indexBuffer.Count : 0;
+				int nVerts = mesh._vertexData != null ? mesh._vertexData.Count : 0;
 
 				//2. 메시를 렌더링하자
-				if (mesh._indexBuffer.Count >= 3)
+				if (nIndexBuffers >= 3 && nVerts >= 3)
 				{
 					//변경 21.5.19
 					if (!isDrawToneOutline)
@@ -1235,31 +1247,30 @@ namespace AnyPortrait
 					
 					//_matBatch.SetClippingSize(_glScreenClippingSize);
 					//GL.Begin(GL.TRIANGLES);
-
 					//------------------------------------------
 					apVertex vert0, vert1, vert2;
-					//Color color0 = Color.black, color1 = Color.black, color2 = Color.black;
-					//Color color0 = Color.white, color1 = Color.white, color2 = Color.white;
 					
 					//색상은 한번만
 					GL.Color(Color.white);
 
-					for (int i = 0; i < mesh._indexBuffer.Count; i += 3)
+					for (int i = 0; i < nIndexBuffers; i += 3)
 					{
-						if (i + 2 >= mesh._indexBuffer.Count)
-						{ break; }
+						if (i + 2 >= nIndexBuffers) { break; }
 
-						if (mesh._indexBuffer[i + 0] >= mesh._vertexData.Count ||
-							mesh._indexBuffer[i + 1] >= mesh._vertexData.Count ||
-							mesh._indexBuffer[i + 2] >= mesh._vertexData.Count)
+						int index_0 = mesh._indexBuffer[i + 0];
+						int index_1 = mesh._indexBuffer[i + 1];
+						int index_2 = mesh._indexBuffer[i + 2];
+
+						if (index_0 >= nVerts ||
+							index_1 >= nVerts ||
+							index_2 >= nVerts)
 						{
 							break;
 						}
 
-						vert0 = mesh._vertexData[mesh._indexBuffer[i + 0]];
-						vert1 = mesh._vertexData[mesh._indexBuffer[i + 1]];
-						vert2 = mesh._vertexData[mesh._indexBuffer[i + 2]];
-
+						vert0 = mesh._vertexData[index_0];
+						vert1 = mesh._vertexData[index_1];
+						vert2 = mesh._vertexData[index_2];
 						
 						pos2_0 = World2GL(matrix.MultiplyPoint(vert0._pos));
 						pos2_1 = World2GL(matrix.MultiplyPoint(vert1._pos));
@@ -1269,10 +1280,13 @@ namespace AnyPortrait
 						pos_1 = new Vector3(pos2_1.x, pos2_1.y, vert1._zDepth * 0.5f);
 						pos_2 = new Vector3(pos2_2.x, pos2_2.y, vert2._zDepth * 0.5f);//<<Z값이 반영되었다.
 
-						uv_0 = mesh._vertexData[mesh._indexBuffer[i + 0]]._uv;
-						uv_1 = mesh._vertexData[mesh._indexBuffer[i + 1]]._uv;
-						uv_2 = mesh._vertexData[mesh._indexBuffer[i + 2]]._uv;
-
+						// uv_0 = mesh._vertexData[mesh._indexBuffer[i + 0]]._uv;
+						// uv_1 = mesh._vertexData[mesh._indexBuffer[i + 1]]._uv;
+						// uv_2 = mesh._vertexData[mesh._indexBuffer[i + 2]]._uv;
+						
+						uv_0 = vert0._uv;
+						uv_1 = vert1._uv;
+						uv_2 = vert2._uv;
 						
 						/*GL.Color(color0);*/ GL.TexCoord(uv_0); GL.Vertex(pos_0); // 0
 						/*GL.Color(color1);*/ GL.TexCoord(uv_1); GL.Vertex(pos_1); // 1
@@ -1346,36 +1360,55 @@ namespace AnyPortrait
 				//3. Edge를 렌더링하자 (전체 / Ouline)
 				if(isDrawEdge)
 				{
-					Vector2 pos0 = Vector2.zero, pos1 = Vector2.zero;
-					if (mesh._edges.Count > 0)
+					int nEdges = mesh._edges != null ? mesh._edges.Count : 0;
+
+					if (nEdges > 0)
 					{
 						//변경 21.5.19
 						_matBatch.BeginPass_Color(GL.LINES);
 						//_matBatch.SetClippingSize(_glScreenClippingSize);
 						//GL.Begin(GL.LINES);
 
+						Vector2 pos0 = Vector2.zero, pos1 = Vector2.zero;
 
-						for (int i = 0; i < mesh._edges.Count; i++)
+						apMeshEdge edge = null;
+
+						for (int i = 0; i < nEdges; i++)
 						{
-							pos0 = matrix.MultiplyPoint(mesh._edges[i]._vert1._pos);
-							pos1 = matrix.MultiplyPoint(mesh._edges[i]._vert2._pos);
+							edge = mesh._edges[i];
+							pos0 = matrix.MultiplyPoint(edge._vert1._pos);
+							pos1 = matrix.MultiplyPoint(edge._vert2._pos);
 
 							DrawLine(pos0, pos1, meshEdgeColor, false);
 						}
 
-						for (int iPoly = 0; iPoly < mesh._polygons.Count; iPoly++)
+						int nPolygons = mesh._polygons != null ? mesh._polygons.Count : 0;
+						if(nPolygons > 0)
 						{
-							for (int iHE = 0; iHE < mesh._polygons[iPoly]._hidddenEdges.Count; iHE++)
+							apMeshPolygon polygon = null;
+							apMeshEdge hiddenEdge = null;
+							for (int iPoly = 0; iPoly < nPolygons; iPoly++)
 							{
-								apMeshEdge hiddenEdge = mesh._polygons[iPoly]._hidddenEdges[iHE];
+								polygon = mesh._polygons[iPoly];
+								int nHiddenEdges = polygon._hidddenEdges != null ? polygon._hidddenEdges.Count : 0;
+								if(nHiddenEdges == 0)
+								{
+									continue;
+								}
 
-								pos0 = matrix.MultiplyPoint(hiddenEdge._vert1._pos);
-								pos1 = matrix.MultiplyPoint(hiddenEdge._vert2._pos);
+								for (int iHE = 0; iHE < nHiddenEdges; iHE++)
+								{
+									hiddenEdge = polygon._hidddenEdges[iHE];
 
-								DrawLine(pos0, pos1, meshHiddenEdgeColor, false);
+									pos0 = matrix.MultiplyPoint(hiddenEdge._vert1._pos);
+									pos1 = matrix.MultiplyPoint(hiddenEdge._vert2._pos);
+
+									DrawLine(pos0, pos1, meshHiddenEdgeColor, false);
+								}
 							}
-
 						}
+
+						
 
 						//삭제 21.5.19
 						//GL.End();//<전환 완료>
@@ -1410,39 +1443,54 @@ namespace AnyPortrait
 				Color meshHiddenEdgeColor = new Color(1.0f, 1.0f, 0.0f, 0.7f);
 
 				matrix *= mesh.Matrix_VertToLocal;
-				
 
 				Vector2 pos0 = Vector2.zero, pos1 = Vector2.zero;
-				if (mesh._edges.Count > 0)
+
+				int nEdges = mesh._edges != null ? mesh._edges.Count : 0;
+				if (nEdges > 0)
 				{
 					//변경 21.5.19
 					_matBatch.BeginPass_Color(GL.LINES);
 					//_matBatch.SetClippingSize(_glScreenClippingSize);
 					//GL.Begin(GL.LINES);
 
+					apMeshEdge edge = null;
 
-
-					for (int i = 0; i < mesh._edges.Count; i++)
+					for (int i = 0; i < nEdges; i++)
 					{
-						pos0 = matrix.MultiplyPoint(mesh._edges[i]._vert1._pos);
-						pos1 = matrix.MultiplyPoint(mesh._edges[i]._vert2._pos);
+						edge = mesh._edges[i];
+						pos0 = matrix.MultiplyPoint(edge._vert1._pos);
+						pos1 = matrix.MultiplyPoint(edge._vert2._pos);
 
 						DrawLine(pos0, pos1, meshEdgeColor, false);
 					}
 
-					for (int iPoly = 0; iPoly < mesh._polygons.Count; iPoly++)
+					int nPolygons = mesh._polygons != null ? mesh._polygons.Count : 0;
+					if(nPolygons > 0)
 					{
-						for (int iHE = 0; iHE < mesh._polygons[iPoly]._hidddenEdges.Count; iHE++)
+						apMeshPolygon polygon = null;
+						apMeshEdge hiddenEdge = null;
+						for (int iPoly = 0; iPoly < nPolygons; iPoly++)
 						{
-							apMeshEdge hiddenEdge = mesh._polygons[iPoly]._hidddenEdges[iHE];
+							polygon = mesh._polygons[iPoly];
+							int nHiddenEdges = polygon._hidddenEdges != null ? polygon._hidddenEdges.Count : 0;
+							if(nHiddenEdges == 0)
+							{
+								continue;
+							}
 
-							pos0 = matrix.MultiplyPoint(hiddenEdge._vert1._pos);
-							pos1 = matrix.MultiplyPoint(hiddenEdge._vert2._pos);
+							for (int iHE = 0; iHE < nHiddenEdges; iHE++)
+							{
+								hiddenEdge = polygon._hidddenEdges[iHE];
 
-							DrawLine(pos0, pos1, meshHiddenEdgeColor, false);
+								pos0 = matrix.MultiplyPoint(hiddenEdge._vert1._pos);
+								pos1 = matrix.MultiplyPoint(hiddenEdge._vert2._pos);
+
+								DrawLine(pos0, pos1, meshHiddenEdgeColor, false);
+							}
 						}
-
 					}
+					
 
 					//삭제 21.5.19
 					//GL.End();//<전환 완료>

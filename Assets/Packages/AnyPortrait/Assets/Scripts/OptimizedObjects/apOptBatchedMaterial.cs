@@ -179,6 +179,7 @@ namespace AnyPortrait
 				{
 					//이전 버전으로 만드는 경우
 					_material = new Material(_shader);
+					_material.name = "Batched-" + _material.name;
 
 					_shaderID_MainTex = Shader.PropertyToID("_MainTex");
 					_shaderID_Color = Shader.PropertyToID("_Color");
@@ -192,6 +193,7 @@ namespace AnyPortrait
 					apOptMaterialInfo matInfo = MaterialInfo;
 
 					_material = new Material(matInfo._shader);
+					_material.name = "Batched-" + _material.name;
 
 					_shaderID_MainTex = Shader.PropertyToID("_MainTex");
 					_shaderID_Color = Shader.PropertyToID("_Color");
@@ -606,7 +608,12 @@ namespace AnyPortrait
 			public void RequestCustomInt(int intValue, string propertyName)
 			{
 				_isRequested_Custom = true;//<<항상 Request 사용 상태
+
+#if UNITY_2021_1_OR_NEWER
+				_material.SetInteger(propertyName, intValue);
+#else
 				_material.SetInt(propertyName, intValue);
+#endif
 
 				apOptMesh curMesh = null;
 				for (int i = 0; i < _linkedMeshes.Count; i++)
@@ -626,7 +633,11 @@ namespace AnyPortrait
 			public void RequestCustomInt(int intValue, int propertyNameID)
 			{
 				_isRequested_Custom = true;//<<항상 Request 사용 상태
+#if UNITY_2021_1_OR_NEWER
+				_material.SetInteger(propertyNameID, intValue);
+#else
 				_material.SetInt(propertyNameID, intValue);
+#endif
 
 				apOptMesh curMesh = null;
 				for (int i = 0; i < _linkedMeshes.Count; i++)
@@ -872,10 +883,18 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public MaterialUnit MakeBatchedMaterial_Prev(Texture2D texture, int textureID, Shader shader)
 		{
-			MaterialUnit result = _matUnits.Find(delegate (MaterialUnit a)
-			{
-				return a.IsEqualMaterial_Prev(texture, textureID, shader);
-			});
+			//이전 (GC 발생)
+			// MaterialUnit result = _matUnits.Find(delegate (MaterialUnit a)
+			// {
+			// 	return a.IsEqualMaterial_Prev(texture, textureID, shader);
+			// });
+
+			//변경 v1.5.0
+			s_GetMaterialUnit_Texture2D = texture;
+			s_GetMaterialUnit_TextureID = textureID;
+			s_GetMaterialUnit_Shader = shader;
+			MaterialUnit result = _matUnits.Find(s_GetMaterialUnit_Prev_Func);
+
 			if(result != null)
 			{
 				return result;
@@ -890,6 +909,19 @@ namespace AnyPortrait
 			return result;
 		}
 
+
+		private static Texture2D s_GetMaterialUnit_Texture2D = null;
+		private static int s_GetMaterialUnit_TextureID = -1;
+		private static Shader s_GetMaterialUnit_Shader = null;
+		private static Predicate<MaterialUnit> s_GetMaterialUnit_Prev_Func = FUNC_GetMaterialUnit_Prev;
+		private static bool FUNC_GetMaterialUnit_Prev(MaterialUnit a)
+		{
+			return a.IsEqualMaterial_Prev(
+				s_GetMaterialUnit_Texture2D,
+				s_GetMaterialUnit_TextureID,
+				s_GetMaterialUnit_Shader);
+		}
+
 		/// <summary>
 		/// Batched Material을 만들거나, 동일한 Material를 리턴하는 함수.
 		/// v1.1.7 또는 그 이후 버전을 위한 함수이며 Material Info를 이용한다.
@@ -898,10 +930,16 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public MaterialUnit MakeBatchedMaterial_MatInfo(apOptMaterialInfo srcMatInfo)
 		{
-			MaterialUnit result = _matUnits.Find(delegate (MaterialUnit a)
-			{
-				return a.IsEqualMaterial_MatInfo(srcMatInfo);
-			});
+			//이전 (GC 발생)
+			// MaterialUnit result = _matUnits.Find(delegate (MaterialUnit a)
+			// {
+			// 	return a.IsEqualMaterial_MatInfo(srcMatInfo);
+			// });
+
+			//변경 v1.5.0
+			s_GetMaterialUnit_MatInfo = srcMatInfo;
+			MaterialUnit result = _matUnits.Find(s_GetMaterialUnitByMatInfo_Func);
+
 			if(result != null)
 			{
 				return result;
@@ -914,6 +952,13 @@ namespace AnyPortrait
 			_matUnits.Add(result);
 
 			return result;
+		}
+
+		private static apOptMaterialInfo s_GetMaterialUnit_MatInfo = null;
+		private static Predicate<MaterialUnit> s_GetMaterialUnitByMatInfo_Func = FUNC_GetMaterialUnitByMatInfo;
+		private static bool FUNC_GetMaterialUnitByMatInfo(MaterialUnit a)
+		{
+			return a.IsEqualMaterial_MatInfo(s_GetMaterialUnit_MatInfo);
 		}
 
 
@@ -929,10 +974,15 @@ namespace AnyPortrait
 
 			if(result == null)
 			{
-				result = _matUnits.Find(delegate (MaterialUnit a)
-				{
-					return a._uniqueID == materialID;
-				});
+				// 이전 (GC 발생)
+				// result = _matUnits.Find(delegate (MaterialUnit a)
+				// {
+				// 	return a._uniqueID == materialID;
+				// });
+
+				// 변경 v1.5.0
+				s_GetMaterialUnit_UnitID = materialID;
+				result = _matUnits.Find(s_GetMaterialUnitByID_Func);
 			}
 			
 			if(result == null)
@@ -948,6 +998,13 @@ namespace AnyPortrait
 			result.LinkMesh(optMesh);
 
 			return result;
+		}
+
+		private static int s_GetMaterialUnit_UnitID = -1;
+		private static Predicate<MaterialUnit> s_GetMaterialUnitByID_Func = FUNC_GetMaterialUnitByID;
+		private static bool FUNC_GetMaterialUnitByID(MaterialUnit a)
+		{
+			return a._uniqueID == s_GetMaterialUnit_UnitID;
 		}
 
 
@@ -1008,17 +1065,22 @@ namespace AnyPortrait
 		{
 			MaterialUnit curUnit = null;
 			//apOptMesh curMesh = null;
-				
-			for (int i = 0; i < _matUnits.Count; i++)
-			{
-				curUnit = _matUnits[i];
-				curUnit.ResetRequestProperties();
-				//curUnit.RefreshLinkedMeshes();
-			}
 
-			if(_clippedMatUnits != null && _clippedMatUnits.Count > 0)
+			int nMatUnits = _matUnits != null ? _matUnits.Count : 0;
+			if(nMatUnits > 0)
 			{
-				for (int i = 0; i < _clippedMatUnits.Count; i++)
+				for (int i = 0; i < nMatUnits; i++)
+				{
+					curUnit = _matUnits[i];
+					curUnit.ResetRequestProperties();
+				}
+			}
+			
+
+			int nClipped = _clippedMatUnits != null ? _clippedMatUnits.Count : 0;
+			if(nClipped > 0)
+			{
+				for (int i = 0; i < nClipped; i++)
 				{
 					_clippedMatUnits[i].ResetRequestProperties();
 				}
@@ -1036,9 +1098,10 @@ namespace AnyPortrait
 			{
 				List<MaterialUnit> targetUnits = null;
 				_mapping_TextureID2MatUnits.TryGetValue(textureID, out targetUnits);
-				if(targetUnits != null)
+				int nTargetUnits = targetUnits != null ? targetUnits.Count : 0;
+				if(nTargetUnits > 0)
 				{
-					for (int i = 0; i < targetUnits.Count; i++)
+					for (int i = 0; i < nTargetUnits; i++)
 					{
 						curUnit = targetUnits[i];
 						curUnit.ResetRequestProperties();//<<이거 맞추기
@@ -1050,26 +1113,32 @@ namespace AnyPortrait
 			if (!isFastRef)
 			{
 				//빠른 조회가 실패했을 때
-				for (int i = 0; i < _matUnits.Count; i++)
+				int nMatUnits = _matUnits != null ? _matUnits.Count : 0;
+				if(nMatUnits > 0)
 				{
-					curUnit = _matUnits[i];
-
-					//추가 19.10.28 : 이 코드가 빠지면 버그다.
-					if (curUnit._textureID != textureID)
+					for (int i = 0; i < nMatUnits; i++)
 					{
-						continue;
-					}
+						curUnit = _matUnits[i];
 
-					curUnit.ResetRequestProperties();
-					//curUnit.RefreshLinkedMeshes();
+						//추가 19.10.28 : 이 코드가 빠지면 버그다.
+						if (curUnit._textureID != textureID)
+						{
+							continue;
+						}
+
+						curUnit.ResetRequestProperties();
+						//curUnit.RefreshLinkedMeshes();
+					}
 				}
+				
 			}
 			
 
-			if(_clippedMatUnits != null && _clippedMatUnits.Count > 0)
+			int nClipped = _clippedMatUnits != null ? _clippedMatUnits.Count : 0;
+			if(nClipped > 0)
 			{
 				ClippedMatMeshSet curCMMSet = null;
-				for (int i = 0; i < _clippedMatUnits.Count; i++)
+				for (int i = 0; i < nClipped; i++)
 				{
 					curCMMSet = _clippedMatUnits[i];
 					if(!curCMMSet.IsValid())
@@ -1090,7 +1159,6 @@ namespace AnyPortrait
 		{
 			MaterialUnit curUnit = null;
 			bool isFastRef = false;
-
 
 			//추가 22.6.8 : 빠른 참조로 딱 적당한 만큼만 조회하여 처리
 			if(_mapping_TextureID2MatUnits != null)

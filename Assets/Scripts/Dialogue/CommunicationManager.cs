@@ -203,8 +203,12 @@ public class CommunicationManager : MonoBehaviour
     //계속해서 무한 while하는 커뮤니케이션 함수
     public void Communication()
     {
+        // 24.12.22) CommunicationType이 None이면 무시하고 다음으로 넘김
+        while (i < data.Count && data[i].type == CommunicationType.None) 
+            i++;
+
         //끝 판독
-        if (i + 1 > data.Count)
+        if (i >= data.Count)
         {
             EndCommunication();
             return;
@@ -234,6 +238,7 @@ public class CommunicationManager : MonoBehaviour
             case CommunicationType.Delay:               Delay(data[i].delay); return;
             case CommunicationType.Sfx:                 Sfx(data[i].sfx); return;
             case CommunicationType.Flag:                SetFlag(data[i].flag); return;
+            case CommunicationType.HideAll:             HideAll(); return;
         }
     }
 
@@ -334,6 +339,15 @@ public class CommunicationManager : MonoBehaviour
         FlagManager.Instance.SetFlag(flag);
     }
 
+    //24.12.22) 한꺼번에 숨기기 추가
+    public void HideAll()
+    {
+        //사라지게 하는 시간을 리턴받고,
+        float time = UI.HideAll();
+        //딜레이를 제공한다.
+        Delay(time);
+    }
+
     //다음 커뮤니케이션 실행
     public void Next()
     {
@@ -429,8 +443,8 @@ public class CommunicationData
     public CommunicationTarget target;
     [ShowIf("@type == CommunicationType.SetEmotion")]
     public Emotion emotion;
-    [HideInInspector]
-    public string text;
+    [ShowIf("@type == CommunicationType.PlayerText || type == CommunicationType.TargetText"), ReadOnly]
+    public string text;                 // 24.12.21.    가독성 개선 목적으로 인스펙터에 노출되게 변경
     [ShowIf("@type == CommunicationType.Show")]
     public CommunicationLocation location;
     [ShowIf("@type == CommunicationType.MoveToPosition")]
@@ -459,12 +473,23 @@ public enum CommunicationType
     Delay,                      //커뮤니케이션에 딜레이를 준다.
     Sfx,                        //특정 소리를 발생시킨다.
     Flag,                       //플래그를 변경한다.
+    HideAll,                    // 24.12.22) 화면 상에 보이는 모든 대상을 '동시에' 숨긴다.
 }
 
 public enum CommunicationTarget
 {
     None,
     Player,
+    Healer,
+    Healer_noName,
+    Healer_boss,
+    Salamander,
+    Salamander_noName,
+    Watchmaker,
+    Watchmaker_noName,
+    Bear,
+    Crane,
+    Wolf,
     A,
     B,
     C

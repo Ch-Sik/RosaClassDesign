@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -88,95 +88,99 @@ namespace AnyPortrait
 
 		// Validate
 		//-------------------------------------------------------
-		/// <summary>
-		/// 유효하지 않은 모디파이어들을 소스 리스트에서 삭제하고, 삭제된 개수를 리턴합니다.
-		/// </summary>
-		/// <returns></returns>
-		public int RemoveInvalidModifiers()
-		{
-			int nRemoved = 0;
-			if (_modifiers_Volume != null)
-			{
-				int curRmv = _modifiers_Volume.RemoveAll(delegate (apModifier_Volume a) { return a == null; });
-				nRemoved += curRmv > 0 ? curRmv : 0;
-			}
+		#region [미사용 코드]
+		///// <summary>
+		///// 유효하지 않은 모디파이어들을 소스 리스트에서 삭제하고, 삭제된 개수를 리턴합니다.
+		///// </summary>
+		///// <returns></returns>
+		//public int RemoveInvalidModifiers()
+		//{
+		//	int nRemoved = 0;
 
-			if (_modifiers_Morph != null)
-			{
-				int curRmv = _modifiers_Morph.RemoveAll(delegate (apModifier_Morph a) { return a == null; });
-				nRemoved += curRmv > 0 ? curRmv : 0;
-			}
 
-			if (_modifiers_AnimatedMorph != null)
-			{
-				int curRmv = _modifiers_AnimatedMorph.RemoveAll(delegate (apModifier_AnimatedMorph a) { return a == null; });
-				nRemoved += curRmv > 0 ? curRmv : 0;
-			}
+		//	if (_modifiers_Volume != null)
+		//	{	
+		//		int curRmv = _modifiers_Volume.RemoveAll(delegate (apModifier_Volume a) { return a == null; });
+		//		nRemoved += curRmv > 0 ? curRmv : 0;
+		//	}
 
-			if (_modifiers_Rigging != null)
-			{
-				int curRmv = _modifiers_Rigging.RemoveAll(delegate (apModifier_Rigging a) { return a == null; });
-				nRemoved += curRmv > 0 ? curRmv : 0;
-			}
+		//	if (_modifiers_Morph != null)
+		//	{
+		//		int curRmv = _modifiers_Morph.RemoveAll(delegate (apModifier_Morph a) { return a == null; });
+		//		nRemoved += curRmv > 0 ? curRmv : 0;
+		//	}
 
-			if (_modifiers_Physic != null)
-			{
-				int curRmv = _modifiers_Physic.RemoveAll(delegate (apModifier_Physic a) { return a == null; });
-				nRemoved += curRmv > 0 ? curRmv : 0;
-			}
+		//	if (_modifiers_AnimatedMorph != null)
+		//	{
+		//		int curRmv = _modifiers_AnimatedMorph.RemoveAll(delegate (apModifier_AnimatedMorph a) { return a == null; });
+		//		nRemoved += curRmv > 0 ? curRmv : 0;
+		//	}
 
-			if (_modifiers_TF != null)
-			{
-				int curRmv = _modifiers_TF.RemoveAll(delegate (apModifier_TF a) { return a == null; });
-				nRemoved += curRmv > 0 ? curRmv : 0;
-			}
+		//	if (_modifiers_Rigging != null)
+		//	{
+		//		int curRmv = _modifiers_Rigging.RemoveAll(delegate (apModifier_Rigging a) { return a == null; });
+		//		nRemoved += curRmv > 0 ? curRmv : 0;
+		//	}
 
-			if (_modifiers_AnimatedTF != null)
-			{
-				int curRmv = _modifiers_AnimatedTF.RemoveAll(delegate (apModifier_AnimatedTF a) { return a == null; });
-				nRemoved += curRmv > 0 ? curRmv : 0;
-			}
+		//	if (_modifiers_Physic != null)
+		//	{
+		//		int curRmv = _modifiers_Physic.RemoveAll(delegate (apModifier_Physic a) { return a == null; });
+		//		nRemoved += curRmv > 0 ? curRmv : 0;
+		//	}
 
-			if (_modifiers_FFD != null)
-			{
-				int curRmv = _modifiers_FFD.RemoveAll(delegate (apModifier_FFD a) { return a == null; });
-				nRemoved += curRmv > 0 ? curRmv : 0;
-			}
+		//	if (_modifiers_TF != null)
+		//	{
+		//		int curRmv = _modifiers_TF.RemoveAll(delegate (apModifier_TF a) { return a == null; });
+		//		nRemoved += curRmv > 0 ? curRmv : 0;
+		//	}
 
-			if (_modifiers_AnimatedFFD != null)
-			{
-				int curRmv = _modifiers_AnimatedFFD.RemoveAll(delegate (apModifier_AnimatedFFD a) { return a == null; });
-				nRemoved += curRmv > 0 ? curRmv : 0;
-			}
+		//	if (_modifiers_AnimatedTF != null)
+		//	{
+		//		int curRmv = _modifiers_AnimatedTF.RemoveAll(delegate (apModifier_AnimatedTF a) { return a == null; });
+		//		nRemoved += curRmv > 0 ? curRmv : 0;
+		//	}
 
-			if (_modifiers_ColorOnly != null)
-			{
-				int curRmv = _modifiers_ColorOnly.RemoveAll(delegate (apModifier_ColorOnly a) { return a == null; });
-				nRemoved += curRmv > 0 ? curRmv : 0;
-			}
+		//	if (_modifiers_FFD != null)
+		//	{
+		//		int curRmv = _modifiers_FFD.RemoveAll(delegate (apModifier_FFD a) { return a == null; });
+		//		nRemoved += curRmv > 0 ? curRmv : 0;
+		//	}
 
-			if (_modifiers_AnimatedColorOnly != null)
-			{
-				int curRmv = _modifiers_AnimatedColorOnly.RemoveAll(delegate (apModifier_AnimatedColorOnly a) { return a == null; });
-				nRemoved += curRmv > 0 ? curRmv : 0;
-			}
+		//	if (_modifiers_AnimatedFFD != null)
+		//	{
+		//		int curRmv = _modifiers_AnimatedFFD.RemoveAll(delegate (apModifier_AnimatedFFD a) { return a == null; });
+		//		nRemoved += curRmv > 0 ? curRmv : 0;
+		//	}
 
-			//만약, Runtime용 변수인 _modifiers에도 Null이 있다면 일단 여기서 없애자 (RefreshAndSort 함수가 더 적절하다)
-			if (_modifiers != null)
-			{
-				_modifiers.RemoveAll(delegate(apModifierBase a)
-				{
-					return a == null;
-				});
-			}
+		//	if (_modifiers_ColorOnly != null)
+		//	{
+		//		int curRmv = _modifiers_ColorOnly.RemoveAll(delegate (apModifier_ColorOnly a) { return a == null; });
+		//		nRemoved += curRmv > 0 ? curRmv : 0;
+		//	}
 
-			//if(nRemoved > 0)
-			//{
-			//	Debug.Log("Null 모디파이어 발견 (Invalid 체크에서)");
-			//}
+		//	if (_modifiers_AnimatedColorOnly != null)
+		//	{
+		//		int curRmv = _modifiers_AnimatedColorOnly.RemoveAll(delegate (apModifier_AnimatedColorOnly a) { return a == null; });
+		//		nRemoved += curRmv > 0 ? curRmv : 0;
+		//	}
 
-			return nRemoved;
-		}
+		//	//만약, Runtime용 변수인 _modifiers에도 Null이 있다면 일단 여기서 없애자 (RefreshAndSort 함수가 더 적절하다)
+		//	if (_modifiers != null)
+		//	{
+		//		_modifiers.RemoveAll(delegate(apModifierBase a)
+		//		{
+		//			return a == null;
+		//		});
+		//	}
+
+		//	//if(nRemoved > 0)
+		//	//{
+		//	//	Debug.Log("Null 모디파이어 발견 (Invalid 체크에서)");
+		//	//}
+
+		//	return nRemoved;
+		//} 
+		#endregion
 
 
 
@@ -204,15 +208,21 @@ namespace AnyPortrait
 		//(2) Null 상태의 모디파이어를 소스 리스트에서 완전히 삭제할지 여부
 		public void RefreshAndSort(REFRESH_OPTION_ACTIVE activeModOption, REFRESH_OPTION_REMOVE removeNullOption)
 		{
+			if(_modifiers == null)
+			{
+				_modifiers = new List<apModifierBase>();
+			}
 			_modifiers.Clear();
 
 			apModifierBase curMod = null;
 
 			bool isAnyNullMod = false;//Null 데이터가 있는지 감지하자
 
-			if (_modifiers_Volume != null)
+
+			int nMod_Volume = _modifiers_Volume != null ? _modifiers_Volume.Count : 0;
+			if (nMod_Volume > 0)
 			{
-				for (int i = 0; i < _modifiers_Volume.Count; i++)
+				for (int i = 0; i < nMod_Volume; i++)
 				{
 					curMod = _modifiers_Volume[i];
 					if(curMod == null)
@@ -224,9 +234,10 @@ namespace AnyPortrait
 				}
 			}
 
-			if (_modifiers_Morph != null)
+			int nMod_Morph = _modifiers_Morph != null ? _modifiers_Morph.Count : 0;
+			if (nMod_Morph > 0)
 			{
-				for (int i = 0; i < _modifiers_Morph.Count; i++)
+				for (int i = 0; i < nMod_Morph; i++)
 				{
 					curMod = _modifiers_Morph[i];
 					if(curMod == null)
@@ -238,9 +249,10 @@ namespace AnyPortrait
 				}
 			}
 
-			if (_modifiers_AnimatedMorph != null)
+			int nMod_AnimMorph = _modifiers_AnimatedMorph != null ? _modifiers_AnimatedMorph.Count : 0;
+			if (nMod_AnimMorph > 0)
 			{
-				for (int i = 0; i < _modifiers_AnimatedMorph.Count; i++)
+				for (int i = 0; i < nMod_AnimMorph; i++)
 				{
 					curMod = _modifiers_AnimatedMorph[i];
 					if(curMod == null)
@@ -252,9 +264,10 @@ namespace AnyPortrait
 				}
 			}
 
-			if (_modifiers_Rigging != null)
+			int nMod_Rigging = _modifiers_Rigging != null ? _modifiers_Rigging.Count : 0;
+			if (nMod_Rigging > 0)
 			{
-				for (int i = 0; i < _modifiers_Rigging.Count; i++)
+				for (int i = 0; i < nMod_Rigging; i++)
 				{
 					curMod = _modifiers_Rigging[i];
 					if(curMod == null)
@@ -266,9 +279,10 @@ namespace AnyPortrait
 				}
 			}
 
-			if (_modifiers_Physic != null)
+			int nMod_Physic = _modifiers_Physic != null ? _modifiers_Physic.Count : 0;
+			if (nMod_Physic > 0)
 			{
-				for (int i = 0; i < _modifiers_Physic.Count; i++)
+				for (int i = 0; i < nMod_Physic; i++)
 				{
 					curMod = _modifiers_Physic[i];
 					if(curMod == null)
@@ -280,9 +294,10 @@ namespace AnyPortrait
 				}
 			}
 
-			if (_modifiers_TF != null)
+			int nMod_TF = _modifiers_TF != null ? _modifiers_TF.Count : 0;
+			if (nMod_TF > 0)
 			{
-				for (int i = 0; i < _modifiers_TF.Count; i++)
+				for (int i = 0; i < nMod_TF; i++)
 				{
 					curMod = _modifiers_TF[i];
 					if(curMod == null)
@@ -294,9 +309,10 @@ namespace AnyPortrait
 				}
 			}
 
-			if (_modifiers_AnimatedTF != null)
+			int nMod_AnimTF = _modifiers_AnimatedTF != null ? _modifiers_AnimatedTF.Count : 0;
+			if (nMod_AnimTF > 0)
 			{
-				for (int i = 0; i < _modifiers_AnimatedTF.Count; i++)
+				for (int i = 0; i < nMod_AnimTF; i++)
 				{
 					curMod = _modifiers_AnimatedTF[i];
 					if(curMod == null)
@@ -308,9 +324,10 @@ namespace AnyPortrait
 				}
 			}
 
-			if (_modifiers_FFD != null)
+			int nMod_FFD = _modifiers_FFD != null ? _modifiers_FFD.Count : 0;
+			if (nMod_FFD > 0)
 			{
-				for (int i = 0; i < _modifiers_FFD.Count; i++)
+				for (int i = 0; i < nMod_FFD; i++)
 				{
 					curMod = _modifiers_FFD[i];
 					if(curMod == null)
@@ -322,9 +339,10 @@ namespace AnyPortrait
 				}
 			}
 
-			if (_modifiers_AnimatedFFD != null)
+			int nMod_AnimFFD = _modifiers_AnimatedFFD != null ? _modifiers_AnimatedFFD.Count : 0;
+			if (nMod_AnimFFD > 0)
 			{
-				for (int i = 0; i < _modifiers_AnimatedFFD.Count; i++)
+				for (int i = 0; i < nMod_AnimFFD; i++)
 				{
 					curMod = _modifiers_AnimatedFFD[i];
 					if(curMod == null)
@@ -338,9 +356,10 @@ namespace AnyPortrait
 
 
 			//추가 21.7.20 : 색상 전용 모디파이어
-			if (_modifiers_ColorOnly != null)
+			int nMod_ColorOnly = _modifiers_ColorOnly != null ? _modifiers_ColorOnly.Count : 0;
+			if (nMod_ColorOnly > 0)
 			{
-				for (int i = 0; i < _modifiers_ColorOnly.Count; i++)
+				for (int i = 0; i < nMod_ColorOnly; i++)
 				{
 					curMod = _modifiers_ColorOnly[i];
 					if(curMod == null)
@@ -352,9 +371,10 @@ namespace AnyPortrait
 				}
 			}
 
-			if (_modifiers_AnimatedColorOnly != null)
+			int nMod_AnimColorOnly = _modifiers_AnimatedColorOnly != null ? _modifiers_AnimatedColorOnly.Count : 0;
+			if (nMod_AnimColorOnly > 0)
 			{
-				for (int i = 0; i < _modifiers_AnimatedColorOnly.Count; i++)
+				for (int i = 0; i < nMod_AnimColorOnly; i++)
 				{
 					curMod = _modifiers_AnimatedColorOnly[i];
 					if(curMod == null)
@@ -370,34 +390,56 @@ namespace AnyPortrait
 			//Null 데이터가 발견되었다면 옵션에 따라 삭제하자
 			if(isAnyNullMod 
 				&& removeNullOption == REFRESH_OPTION_REMOVE.RemoveNullModifiers)
-			{	
-				if(_modifiers_Volume != null)				{ _modifiers_Volume.RemoveAll(delegate(apModifier_Volume a) { return a == null; }); }
-				if(_modifiers_Morph != null)				{ _modifiers_Morph.RemoveAll(delegate(apModifier_Morph a) { return a == null; }); }
-				if(_modifiers_AnimatedMorph != null)		{ _modifiers_AnimatedMorph.RemoveAll(delegate(apModifier_AnimatedMorph a) { return a == null; }); }
-				if(_modifiers_Rigging != null)				{ _modifiers_Rigging.RemoveAll(delegate(apModifier_Rigging a) { return a == null; }); }
-				if(_modifiers_Physic != null)				{ _modifiers_Physic.RemoveAll(delegate(apModifier_Physic a) { return a == null; }); }
-				if(_modifiers_TF != null)					{ _modifiers_TF.RemoveAll(delegate(apModifier_TF a) { return a == null; }); }
-				if(_modifiers_AnimatedTF != null)			{ _modifiers_AnimatedTF.RemoveAll(delegate(apModifier_AnimatedTF a) { return a == null; }); }
-				if(_modifiers_FFD != null)					{ _modifiers_FFD.RemoveAll(delegate(apModifier_FFD a) { return a == null; }); }
-				if(_modifiers_AnimatedFFD != null)			{ _modifiers_AnimatedFFD.RemoveAll(delegate(apModifier_AnimatedFFD a) { return a == null; }); }
-				if(_modifiers_ColorOnly != null)			{ _modifiers_ColorOnly.RemoveAll(delegate(apModifier_ColorOnly a) { return a == null; }); }
-				if(_modifiers_AnimatedColorOnly != null)	{ _modifiers_AnimatedColorOnly.RemoveAll(delegate(apModifier_AnimatedColorOnly a) { return a == null; }); }
+			{
+				//이전 (GC 발생)
+				//if(_modifiers_Volume != null)				{ _modifiers_Volume.RemoveAll(delegate(apModifier_Volume a) { return a == null; }); }
+				//if(_modifiers_Morph != null)				{ _modifiers_Morph.RemoveAll(delegate(apModifier_Morph a) { return a == null; }); }
+				//if(_modifiers_AnimatedMorph != null)		{ _modifiers_AnimatedMorph.RemoveAll(delegate(apModifier_AnimatedMorph a) { return a == null; }); }
+				//if(_modifiers_Rigging != null)				{ _modifiers_Rigging.RemoveAll(delegate(apModifier_Rigging a) { return a == null; }); }
+				//if(_modifiers_Physic != null)				{ _modifiers_Physic.RemoveAll(delegate(apModifier_Physic a) { return a == null; }); }
+				//if(_modifiers_TF != null)					{ _modifiers_TF.RemoveAll(delegate(apModifier_TF a) { return a == null; }); }
+				//if(_modifiers_AnimatedTF != null)			{ _modifiers_AnimatedTF.RemoveAll(delegate(apModifier_AnimatedTF a) { return a == null; }); }
+				//if(_modifiers_FFD != null)					{ _modifiers_FFD.RemoveAll(delegate(apModifier_FFD a) { return a == null; }); }
+				//if(_modifiers_AnimatedFFD != null)			{ _modifiers_AnimatedFFD.RemoveAll(delegate(apModifier_AnimatedFFD a) { return a == null; }); }
+				//if(_modifiers_ColorOnly != null)			{ _modifiers_ColorOnly.RemoveAll(delegate(apModifier_ColorOnly a) { return a == null; }); }
+				//if(_modifiers_AnimatedColorOnly != null)	{ _modifiers_AnimatedColorOnly.RemoveAll(delegate(apModifier_AnimatedColorOnly a) { return a == null; }); }
+
+				//변경 v1.5.0
+				if (_modifiers_Volume != null)				{ _modifiers_Volume.RemoveAll(s_FindNullMod_Volume_Func); }
+				if(_modifiers_Morph != null)				{ _modifiers_Morph.RemoveAll(s_FindNullMod_Morph_Func); }
+				if(_modifiers_AnimatedMorph != null)		{ _modifiers_AnimatedMorph.RemoveAll(s_FindNullMod_AnimMorph_Func); }
+				if(_modifiers_Rigging != null)				{ _modifiers_Rigging.RemoveAll(s_FindNullMod_Rigging_Func); }
+				if(_modifiers_Physic != null)				{ _modifiers_Physic.RemoveAll(s_FindNullMod_Physic_Func); }
+				if(_modifiers_TF != null)					{ _modifiers_TF.RemoveAll(s_FindNullMod_TF_Func); }
+				if(_modifiers_AnimatedTF != null)			{ _modifiers_AnimatedTF.RemoveAll(s_FindNullMod_AnimTF_Func); }
+				if(_modifiers_FFD != null)					{ _modifiers_FFD.RemoveAll(s_FindNullMod_FFD_Func); }
+				if(_modifiers_AnimatedFFD != null)			{ _modifiers_AnimatedFFD.RemoveAll(s_FindNullMod_AnimFFD_Func); }
+				if(_modifiers_ColorOnly != null)			{ _modifiers_ColorOnly.RemoveAll(s_FindNullMod_ColorOnly_Func); }
+				if(_modifiers_AnimatedColorOnly != null)	{ _modifiers_AnimatedColorOnly.RemoveAll(s_FindNullMod_AnimColorOnly_Func); }
 			}
 
 
-			_modifiers.Sort(delegate (apModifierBase a, apModifierBase b)
+			int nMods = _modifiers.Count;
+			if (nMods > 0)
 			{
-				return (a._layer * 10) - (b._layer * 10);
-			});
+				//이전 (GC 발생)
+				//_modifiers.Sort(delegate (apModifierBase a, apModifierBase b)
+				//{
+				//	return (a._layer * 10) - (b._layer * 10);
+				//});
 
-			for (int i = 0; i < _modifiers.Count; i++)
-			{
-				_modifiers[i]._layer = i;
+				//변경 v1.5.0
+				_modifiers.Sort(s_SortModifiers_Func);
+
+
+				for (int i = 0; i < nMods; i++)
+				{
+					_modifiers[i]._layer = i;
+				}
 			}
-
+			
 			_isSorted = true;
 
-			//if (isSetActiveAllModifier)
 			if(activeModOption == REFRESH_OPTION_ACTIVE.ActiveAllModifierIfPossible)
 			{
 				ActiveAllModifierFromExclusiveEditing();
@@ -405,43 +447,77 @@ namespace AnyPortrait
 		}
 
 
+		private static Predicate<apModifier_Volume>				s_FindNullMod_Volume_Func =		FUNC_FindNullMod_Volume;
+		private static Predicate<apModifier_Morph>				s_FindNullMod_Morph_Func =		FUNC_FindNullMod_Morph;
+		private static Predicate<apModifier_AnimatedMorph>		s_FindNullMod_AnimMorph_Func =	FUNC_FindNullMod_AnimMorph;
+		private static Predicate<apModifier_Rigging>			s_FindNullMod_Rigging_Func =	FUNC_FindNullMod_Rigging;
+		private static Predicate<apModifier_Physic>				s_FindNullMod_Physic_Func =		FUNC_FindNullMod_Physic;
+		private static Predicate<apModifier_TF>					s_FindNullMod_TF_Func =			FUNC_FindNullMod_TF;
+		private static Predicate<apModifier_AnimatedTF>			s_FindNullMod_AnimTF_Func =		FUNC_FindNullMod_AnimTF;
+		private static Predicate<apModifier_FFD>				s_FindNullMod_FFD_Func =		FUNC_FindNullMod_FFD;
+		private static Predicate<apModifier_AnimatedFFD>		s_FindNullMod_AnimFFD_Func =	FUNC_FindNullMod_AnimFFD;
+		private static Predicate<apModifier_ColorOnly>			s_FindNullMod_ColorOnly_Func =	FUNC_FindNullMod_ColorOnly;
+		private static Predicate<apModifier_AnimatedColorOnly>	s_FindNullMod_AnimColorOnly_Func = FUNC_FindNullMod_AnimColorOnly;
+
+		private static bool FUNC_FindNullMod_Volume(apModifier_Volume a) { return a == null; }
+		private static bool FUNC_FindNullMod_Morph(apModifier_Morph a) { return a == null; }
+		private static bool FUNC_FindNullMod_AnimMorph(apModifier_AnimatedMorph a) { return a == null; }
+		private static bool FUNC_FindNullMod_Rigging(apModifier_Rigging a) { return a == null; }
+		private static bool FUNC_FindNullMod_Physic(apModifier_Physic a) { return a == null; }
+		private static bool FUNC_FindNullMod_TF(apModifier_TF a) { return a == null; }
+		private static bool FUNC_FindNullMod_AnimTF(apModifier_AnimatedTF a) { return a == null; }
+		private static bool FUNC_FindNullMod_FFD(apModifier_FFD a) { return a == null; }
+		private static bool FUNC_FindNullMod_AnimFFD(apModifier_AnimatedFFD a) { return a == null; }
+		private static bool FUNC_FindNullMod_ColorOnly(apModifier_ColorOnly a) { return a == null; }
+		private static bool FUNC_FindNullMod_AnimColorOnly(apModifier_AnimatedColorOnly a) { return a == null; }
+
+
+		private static Comparison<apModifierBase> s_SortModifiers_Func = FUNC_SortModifiers;
+		private static int FUNC_SortModifiers(apModifierBase a, apModifierBase b)
+		{
+			return (a._layer * 10) - (b._layer * 10);
+		}
+
+
 
 		// Functions - Validate
 		//----------------------------------------------------
-		/// <summary>
-		/// 모디파이어가 이 모디파이어스택에 포함되어 있는지 확인하는 유효성 검사용 함수.
-		/// 모디파이어 삭제/복구 과정에서 제대로 연결되었는지 체크한다.
-		/// </summary>
-		public bool IsContain(apModifierBase modifier)
-		{
-			if(modifier == null)
-			{
-				return false;
-			}
-			switch (modifier.ModifierType)
-			{
-				case apModifierBase.MODIFIER_TYPE.Volume:
-					if(_modifiers_Volume != null && modifier is apModifier_Volume)
-					{
-						return _modifiers_Volume.Contains(modifier as apModifier_Volume);
-					}
-					break;
+		#region [미사용 코드]
+		///// <summary>
+		///// 모디파이어가 이 모디파이어스택에 포함되어 있는지 확인하는 유효성 검사용 함수.
+		///// 모디파이어 삭제/복구 과정에서 제대로 연결되었는지 체크한다.
+		///// </summary>
+		//public bool IsContain(apModifierBase modifier)
+		//{
+		//	if(modifier == null)
+		//	{
+		//		return false;
+		//	}
+		//	switch (modifier.ModifierType)
+		//	{
+		//		case apModifierBase.MODIFIER_TYPE.Volume:
+		//			if(_modifiers_Volume != null && modifier is apModifier_Volume)
+		//			{
+		//				return _modifiers_Volume.Contains(modifier as apModifier_Volume);
+		//			}
+		//			break;
 
-				case apModifierBase.MODIFIER_TYPE.Morph:
+		//		case apModifierBase.MODIFIER_TYPE.Morph:
 
-				case apModifierBase.MODIFIER_TYPE.AnimatedMorph:
-				case apModifierBase.MODIFIER_TYPE.Rigging:
-				case apModifierBase.MODIFIER_TYPE.Physic:
-				case apModifierBase.MODIFIER_TYPE.TF:
-				case apModifierBase.MODIFIER_TYPE.AnimatedTF:
-				case apModifierBase.MODIFIER_TYPE.FFD:
-				case apModifierBase.MODIFIER_TYPE.AnimatedFFD:
-				case apModifierBase.MODIFIER_TYPE.ColorOnly:
-				case apModifierBase.MODIFIER_TYPE.AnimatedColorOnly:
-					break;
-			}
-			return false;
-		}
+		//		case apModifierBase.MODIFIER_TYPE.AnimatedMorph:
+		//		case apModifierBase.MODIFIER_TYPE.Rigging:
+		//		case apModifierBase.MODIFIER_TYPE.Physic:
+		//		case apModifierBase.MODIFIER_TYPE.TF:
+		//		case apModifierBase.MODIFIER_TYPE.AnimatedTF:
+		//		case apModifierBase.MODIFIER_TYPE.FFD:
+		//		case apModifierBase.MODIFIER_TYPE.AnimatedFFD:
+		//		case apModifierBase.MODIFIER_TYPE.ColorOnly:
+		//		case apModifierBase.MODIFIER_TYPE.AnimatedColorOnly:
+		//			break;
+		//	}
+		//	return false;
+		//} 
+		#endregion
 
 
 
@@ -450,38 +526,42 @@ namespace AnyPortrait
 		//----------------------------------------------------
 		public void Update_Pre(float tDelta)
 		{
-			if (_modifiers.Count == 0 && !_isSorted)
+			int nMod = _modifiers != null ? _modifiers.Count : 0;
+			if (nMod == 0 && !_isSorted)
 			{
-				//RefreshAndSort(false);
 				RefreshAndSort(REFRESH_OPTION_ACTIVE.Keep, REFRESH_OPTION_REMOVE.Ignore);//변경 22.12.13
+				nMod = _modifiers != null ? _modifiers.Count : 0;//다시 계산
 			}
 
-			//Profiler.BeginSample("Modifier Calculate");
-			for (int i = 0; i < _modifiers.Count; i++)
+
+			if(nMod == 0)
 			{
-				if (!_modifiers[i].IsPreUpdate)
+				return;
+			}
+
+			apModifierBase curMod = null;
+
+			for (int i = 0; i < nMod; i++)
+			{
+				curMod = _modifiers[i];
+				if (!curMod.IsPreUpdate)
 				{
 					//Post-Update라면 패스
 					continue;
 				}
-				if (_modifiers[i]._isActive
+				if (curMod._isActive
 #if UNITY_EDITOR
-					//&& _modifiers[i]._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled//<<이건 에디터에서만 작동한다.
-					&& _modifiers[i]._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled_Force//변경 21.2.14 : 편집 모드에 의한 값 헤분화
+					&& curMod._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled_Force//변경 21.2.14 : 편집 모드에 의한 값 헤분화
 #endif
 				)
-
 				{
-					_modifiers[i].Calculate(tDelta);
+					curMod.Calculate(tDelta);
 				}
 				else
 				{
-					//Debug.LogError("Not Update Mod Stack : " + _modifiers[i].DisplayName + " / " + _parentMeshGroup._name);
-					_modifiers[i].InitCalculate(tDelta);
+					curMod.InitCalculate(tDelta);
 				}
 			}
-
-			//Profiler.EndSample();
 		}
 
 
@@ -492,38 +572,42 @@ namespace AnyPortrait
 		/// <param name="tDelta"></param>
 		public void Update_Pre_DLL(float tDelta)
 		{
-			if (_modifiers.Count == 0 && !_isSorted)
+			int nMod = _modifiers != null ? _modifiers.Count : 0;
+			if (nMod == 0 && !_isSorted)
 			{
-				//RefreshAndSort(false);
 				RefreshAndSort(REFRESH_OPTION_ACTIVE.Keep, REFRESH_OPTION_REMOVE.Ignore);//변경 22.12.13
+				nMod = _modifiers != null ? _modifiers.Count : 0;//다시 계산
 			}
 
-			//Profiler.BeginSample("Modifier Calculate");
-			for (int i = 0; i < _modifiers.Count; i++)
+			if(nMod == 0)
 			{
-				if (!_modifiers[i].IsPreUpdate)
+				return;
+			}
+
+			apModifierBase curMod = null;
+
+			for (int i = 0; i < nMod; i++)
+			{
+				curMod = _modifiers[i];
+				if (!curMod.IsPreUpdate)
 				{
 					//Post-Update라면 패스
 					continue;
 				}
-				if (_modifiers[i]._isActive
+				if (curMod._isActive
 #if UNITY_EDITOR
-					//&& _modifiers[i]._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled//<<이건 에디터에서만 작동한다.
-					&& _modifiers[i]._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled_Force//변경 21.2.14 : 편집 모드에 의한 값 헤분화
+					&& curMod._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled_Force//변경 21.2.14 : 편집 모드에 의한 값 헤분화
 #endif
 				)
 				{
-					//_modifiers[i].Calculate(tDelta);//기본
-					_modifiers[i].Calculate_DLL(tDelta);//C++ DLL
+					//curMod.Calculate(tDelta);//기본
+					curMod.Calculate_DLL(tDelta);//C++ DLL
 				}
 				else
 				{
-					//Debug.LogError("Not Update Mod Stack : " + _modifiers[i].DisplayName + " / " + _parentMeshGroup._name);
-					_modifiers[i].InitCalculate(tDelta);
+					curMod.InitCalculate(tDelta);
 				}
 			}
-
-			//Profiler.EndSample();
 		}
 
 
@@ -532,32 +616,36 @@ namespace AnyPortrait
 
 		public void Update_Post(float tDelta)
 		{
-			//Profiler.BeginSample("Modifier Calculate - Post");
-			for (int i = 0; i < _modifiers.Count; i++)
+			int nMod = _modifiers != null ? _modifiers.Count : 0;
+
+			if(nMod == 0)
 			{
-				if (_modifiers[i].IsPreUpdate)
+				return;
+			}
+
+			apModifierBase curMod = null;
+
+			for (int i = 0; i < nMod; i++)
+			{
+				curMod = _modifiers[i];
+				if (curMod.IsPreUpdate)
 				{
 					//Pre-Update라면 패스
 					continue;
 				}
-				if (_modifiers[i]._isActive
+				if (curMod._isActive
 #if UNITY_EDITOR
-				//&& _modifiers[i]._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled//<<이건 에디터에서만 작동한다.
-				&& _modifiers[i]._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled_Force
+					&& curMod._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled_Force
 #endif
 				)
-
 				{
-					_modifiers[i].Calculate(tDelta);
+					curMod.Calculate(tDelta);
 				}
 				else
 				{
-					//Debug.Log("Not Update Mod Stack : " + _modifiers[i].DisplayName + " / " + _parentMeshGroup._name);
-					_modifiers[i].InitCalculate(tDelta);
+					curMod.InitCalculate(tDelta);
 				}
 			}
-
-			//Profiler.EndSample();
 		}
 
 
@@ -567,32 +655,37 @@ namespace AnyPortrait
 		/// <param name="tDelta"></param>
 		public void Update_Post_DLL(float tDelta)
 		{
-			//Profiler.BeginSample("Modifier Calculate - Post");
-			for (int i = 0; i < _modifiers.Count; i++)
+			int nMod = _modifiers != null ? _modifiers.Count : 0;
+
+			if(nMod == 0)
 			{
-				if (_modifiers[i].IsPreUpdate)
+				return;
+			}
+
+			apModifierBase curMod = null;
+			
+			for (int i = 0; i < nMod; i++)
+			{
+				curMod = _modifiers[i];
+				if (curMod.IsPreUpdate)
 				{
 					//Pre-Update라면 패스
 					continue;
 				}
-				if (_modifiers[i]._isActive
+				if (curMod._isActive
 #if UNITY_EDITOR
-				//&& _modifiers[i]._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled//<<이건 에디터에서만 작동한다.
-				&& _modifiers[i]._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled_Force
+				&& curMod._editorExclusiveActiveMod != apModifierBase.MOD_EDITOR_ACTIVE.Disabled_Force
 #endif
 				)
 				{
-					//_modifiers[i].Calculate(tDelta);//기본
-					_modifiers[i].Calculate_DLL(tDelta);//DLL을 이용하여 업데이트
+					//curMod.Calculate(tDelta);//기본
+					curMod.Calculate_DLL(tDelta);//DLL을 이용하여 업데이트
 				}
 				else
 				{
-					//Debug.Log("Not Update Mod Stack : " + _modifiers[i].DisplayName + " / " + _parentMeshGroup._name);
-					_modifiers[i].InitCalculate(tDelta);
+					curMod.InitCalculate(tDelta);
 				}
 			}
-
-			//Profiler.EndSample();
 		}
 
 
@@ -799,151 +892,265 @@ namespace AnyPortrait
 			//추가 22.5.13 [v1.4.0]
 			//선택된 모디파이어가 Transform을 관여하지 않는 타입이라면,
 			//다른 모디파이어의 Transform을 막을 필요가 없다.
-			bool isTransformUpdatableOnNotSelectedModifier = false;//이게 True라면 선택되지 않은 모디파이어도 Transform계열 연산을 지원한다.
-			if(targetModifier != null && 
-				(targetModifier.ModifierType == apModifierBase.MODIFIER_TYPE.ColorOnly
-				|| targetModifier.ModifierType == apModifierBase.MODIFIER_TYPE.AnimatedColorOnly
-				|| targetModifier.ModifierType == apModifierBase.MODIFIER_TYPE.Physic))
+
+			//이전
+			//bool isTransformUpdatableOnNotSelectedModifier = false;//이게 True라면 선택되지 않은 모디파이어도 Transform계열 연산을 지원한다.
+			//if(targetModifier != null && 
+			//	(targetModifier.ModifierType == apModifierBase.MODIFIER_TYPE.ColorOnly
+			//	|| targetModifier.ModifierType == apModifierBase.MODIFIER_TYPE.AnimatedColorOnly
+			//	|| targetModifier.ModifierType == apModifierBase.MODIFIER_TYPE.Physic))
+			//{
+			//	isTransformUpdatableOnNotSelectedModifier = true;
+			//}
+
+			//더 개선 v1.5.0
+			//TF(Morph 포함 이동 데이터 처리)가 활성화되는지 여부.
+			//"다른 모디파이어"의 "PSG"에 할당된다.
+			bool isOtherModTFUpdatable_Morph = true;//Morph 타입의 업데이트 가능여부
+			bool isOtherModTFUpdatable_TF = true;//TF 타입의 업데이트 가능 여부
+			bool isOtherModTFUpdatable_Physics = true;
+
+			if(targetModifier != null)
 			{
-				isTransformUpdatableOnNotSelectedModifier = true;
+				switch (targetModifier.ModifierType)
+				{
+					case apModifierBase.MODIFIER_TYPE.Morph:
+					case apModifierBase.MODIFIER_TYPE.AnimatedMorph:
+						{
+							// [ 선택된게 Morph 타입 ]
+							//isOtherModTFUpdatable_Morph = false;
+							isOtherModTFUpdatable_Physics = false;
+						}
+						break;
+
+					case apModifierBase.MODIFIER_TYPE.TF:
+					case apModifierBase.MODIFIER_TYPE.AnimatedTF:
+						{
+							// [ 선택된게 TF 타입 ]
+							//다른 TF는 제한된다. (v1.5.0에서의 버그 해결)
+							//Morph와는 다르게 TF-TF 모디파이어는 동시 실행 안됨
+							isOtherModTFUpdatable_TF = false;
+						}
+						break;
+
+					case apModifierBase.MODIFIER_TYPE.Rigging:
+						{
+							// [ 선택된게 Rigging 타입 ]
+							//리깅에 방해되는 다른 모디파이어는 제한된다.
+							isOtherModTFUpdatable_Morph = false;
+							isOtherModTFUpdatable_TF = false;
+							isOtherModTFUpdatable_Physics = false;
+						}
+						break;
+
+						//나머지는 모든 TF 동시 실행 가능
+				}
 			}
-			
+
 
 			apModifierBase curModifier = null;
-			apModifierParamSetGroup curParamSetGroup = null;
+			apModifierParamSetGroup curPSG = null;
 
-			for (int i = 0; i < _modifiers.Count; i++)
+			int nMod = _modifiers != null ? _modifiers.Count : 0;
+
+			if (nMod > 0)
 			{
-				curModifier = _modifiers[i];
-
-				if (curModifier == targetModifier && targetModifier != null && targetParamSetGroup != null)
+				for (int i = 0; i < nMod; i++)
 				{
-					//동일한 Modifier이다. 
-					// ParamSetGroup이 같은 경우 무조건 활성
-					// 다를 경우 : Color 제외하고 무조건 비활성
+					curModifier = _modifiers[i];
 
-					//curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.ExclusiveEnabled;//이전
-					curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit;//변경 21.2.14 : 편집 중인 모디파이어
+					int nPSGs = curModifier._paramSetGroup_controller != null ? curModifier._paramSetGroup_controller.Count : 0;
 
-					
-					for (int iP = 0; iP < curModifier._paramSetGroup_controller.Count; iP++)
+					if (curModifier == targetModifier && targetModifier != null && targetParamSetGroup != null)
 					{
-						curParamSetGroup = curModifier._paramSetGroup_controller[iP];
-						if (targetParamSetGroup == curParamSetGroup)
-						{
-							//편집 중인 PSG
-							curParamSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
-							curParamSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
-						}
-						else
-						{
-							curParamSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+						//동일한 Modifier이다. 
+						// ParamSetGroup이 같은 경우 무조건 활성
+						// 다를 경우 : Color 제외하고 무조건 비활성
 
-							//색상 미리보기는 지원하는 경우
-							if(multipleModType == OTHER_MOD_RUN_OPTION.ActiveColorOnly
-								|| multipleModType == OTHER_MOD_RUN_OPTION.ActiveAllPossible)
+						//curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.ExclusiveEnabled;//이전
+						curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit;//변경 21.2.14 : 편집 중인 모디파이어
+
+						
+						if (nPSGs > 0)
+						{
+							for (int iP = 0; iP < nPSGs; iP++)
 							{
-								//색상은 분리해서 따로 Enable이 가능
-								curParamSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
-							}
-							else
-							{
-								curParamSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+								curPSG = curModifier._paramSetGroup_controller[iP];
+								if (targetParamSetGroup == curPSG)
+								{
+									//편집 중인 PSG
+									curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+									curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+								}
+								else
+								{
+									curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+
+									//색상 미리보기는 지원하는 경우
+									if (multipleModType == OTHER_MOD_RUN_OPTION.ActiveColorOnly
+										|| multipleModType == OTHER_MOD_RUN_OPTION.ActiveAllPossible)
+									{
+										//색상은 분리해서 따로 Enable이 가능
+										curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+									}
+									else
+									{
+										curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+									}
+								}
 							}
 						}
 					}
-				}
-				else if (isRiggingAvailable && curModifier.ModifierType == apModifierBase.MODIFIER_TYPE.Rigging)
-				{
-					//만약 Rigging 타입은 예외로 친다면..
-					//curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.ExclusiveEnabled;//이전
-					curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Background;//변경 21.2.15
-
-					for (int iP = 0; iP < curModifier._paramSetGroup_controller.Count; iP++)
+					else if (isRiggingAvailable && curModifier.ModifierType == apModifierBase.MODIFIER_TYPE.Rigging)
 					{
-						curParamSetGroup = curModifier._paramSetGroup_controller[iP];
+						//만약 Rigging 타입은 예외로 친다면..
+						curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Background;//변경 21.2.15
 
-						curParamSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
-						curParamSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;//<<사실 색상은 상관 없는뎅
+						if (nPSGs > 0)
+						{
+							for (int iP = 0; iP < nPSGs; iP++)
+							{
+								curPSG = curModifier._paramSetGroup_controller[iP];
+
+								curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+								curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;//<<사실 색상은 상관 없는뎅
+							}
+						}
+						
 					}
-				}
-				else
-				{
-					//Exclusive에서 다른 것들은 무조건 제외한다.
-					for (int iP = 0; iP < curModifier._paramSetGroup_controller.Count; iP++)
+					else
 					{
-						curParamSetGroup = curModifier._paramSetGroup_controller[iP];
+						//Exclusive에서 다른 것들은 무조건 제외하되, 그 방식이 다르다.
 
+						//v1.5.0 : 현재의 "다른 모디파이어"의 종류에 따라 TF 편집 가능 여부가 결정된다.
+						bool isTFPSGUpdatable = true;
+						if(multipleModType == OTHER_MOD_RUN_OPTION.ActiveAllPossible)
+						{
+							switch (curModifier.ModifierType)
+							{
+								case apModifierBase.MODIFIER_TYPE.Morph:
+								case apModifierBase.MODIFIER_TYPE.AnimatedMorph:
+									{
+										if(!isOtherModTFUpdatable_Morph)
+										{
+											//Morph 타입의 처리는 제한된다.
+											isTFPSGUpdatable = false;
+										}
+									}
+									break;
+
+								case apModifierBase.MODIFIER_TYPE.TF:
+								case apModifierBase.MODIFIER_TYPE.AnimatedTF:
+									{
+										if(!isOtherModTFUpdatable_TF)
+										{
+											//TF 타입의 처리는 제한된다.
+											isTFPSGUpdatable = false;
+										}
+									}
+									break;
+
+								case apModifierBase.MODIFIER_TYPE.Physic:
+									{
+										if(!isOtherModTFUpdatable_Physics)
+										{
+											//Physics 타입의 처리는 제한된다.
+											isTFPSGUpdatable = false;
+										}
+									}
+									break;
+							}
+						}
+
+
+						if (nPSGs > 0)
+						{
+							for (int iP = 0; iP < nPSGs; iP++)
+							{
+								curPSG = curModifier._paramSetGroup_controller[iP];
+
+								switch (multipleModType)
+								{
+									case OTHER_MOD_RUN_OPTION.Disabled:
+										{
+											//선택되지 않은 모든 모디파이어의 PSG는 무조건 비활성화
+											curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+											curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+										}
+										break;
+
+									case OTHER_MOD_RUN_OPTION.ActiveColorOnly:
+										{
+											//색상 옵션에 한해서, 색상 처리는 허가한다.
+											curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+											curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+										}
+										break;
+
+									case OTHER_MOD_RUN_OPTION.ActiveAllPossible:
+										{
+											//가능한 다른 모디파이어의 PSG들도 실행하는 옵션이므로, PSG는 활성화
+											curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+											curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+
+											//v1.5.0 : 불가 여부에 따라 Transform(이동) 정보는 비활성화된다.
+											if(!isTFPSGUpdatable)
+											{
+												curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+											}
+										}
+										break;
+								}
+							}
+						}
+						
+
+						//변경 22.5.13 [1.4.0]
 						switch (multipleModType)
 						{
 							case OTHER_MOD_RUN_OPTION.Disabled:
 								{
-									//선택되지 않은 모든 모디파이어의 PSG는 무조건 비활성화
-									curParamSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
-									curParamSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+									//선택되지 않은 모든 모디파이어는 무조건 비활성화
+									curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_NotEdit;
 								}
 								break;
 
 							case OTHER_MOD_RUN_OPTION.ActiveColorOnly:
 								{
 									//색상 옵션에 한해서, 색상 처리는 허가한다.
-									curParamSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
-									curParamSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+									curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_ExceptColor;//값 변경 21.2.15
 								}
 								break;
 
 							case OTHER_MOD_RUN_OPTION.ActiveAllPossible:
 								{
-									//가능한 다른 모디파이어의 PSG들도 실행하는 옵션이므로, PSG는 활성화
-									curParamSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
-									curParamSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+									//가능한 다른 모디파이어를 허가한다.
+									//if (isTransformUpdatableOnNotSelectedModifier)
+									if(isTFPSGUpdatable)
+									{
+										//Transform을 제어하지 않는 모디파이어가 선택된 상태에서는 Enabled이 가능하다
+										curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run;
+									}
+									else
+									{
+										//색상만 허가한다.
+										curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_ExceptColor;
+									}
 								}
 								break;
 						}
 					}
-
-					//변경 22.5.13 [1.4.0]
-					switch (multipleModType)
-					{
-						case OTHER_MOD_RUN_OPTION.Disabled:
-							{
-								//선택되지 않은 모든 모디파이어는 무조건 비활성화
-								curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_NotEdit;
-							}
-							break;
-
-						case OTHER_MOD_RUN_OPTION.ActiveColorOnly:
-							{
-								//색상 옵션에 한해서, 색상 처리는 허가한다.
-								curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_ExceptColor;//값 변경 21.2.15
-							}
-							break;
-
-						case OTHER_MOD_RUN_OPTION.ActiveAllPossible:
-							{
-								//가능한 다른 모디파이어를 허가한다.
-								if(isTransformUpdatableOnNotSelectedModifier)
-								{
-									//Transform을 제어하지 않는 모디파이어가 선택된 상태에서는 Enabled이 가능하다
-									curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run;
-								}
-								else
-								{
-									//색상만 허가한다.
-									curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_ExceptColor;
-								}
-							}
-							break;
-					}
 				}
 			}
+			
 
 			//Child MeshGroup에도 모두 적용하자
 			if (_parentMeshGroup != null)
 			{
-				if (_parentMeshGroup._childMeshGroupTransforms != null)
+				int nChildMeshGroupTFs = _parentMeshGroup._childMeshGroupTransforms != null ? _parentMeshGroup._childMeshGroupTransforms.Count : 0;
+				if(nChildMeshGroupTFs > 0)
 				{
-					for (int i = 0; i < _parentMeshGroup._childMeshGroupTransforms.Count; i++)
+					for (int i = 0; i < nChildMeshGroupTFs; i++)
 					{
 						apTransform_MeshGroup meshGroupTransform = _parentMeshGroup._childMeshGroupTransforms[i];
 						if (meshGroupTransform._meshGroup != null && meshGroupTransform._meshGroup != _parentMeshGroup)
@@ -984,7 +1191,9 @@ namespace AnyPortrait
 			//요청한 Modifier가 BoneTransform을 지원하는 경우
 			//Rigging은 비활성화 되어서는 안된다.
 			bool isRiggingAvailable = false;
-			if (modifier != null && modifier.IsTarget_Bone && modifier.ModifierType != apModifierBase.MODIFIER_TYPE.Rigging)
+			if (modifier != null
+				&& modifier.IsTarget_Bone
+				&& modifier.ModifierType != apModifierBase.MODIFIER_TYPE.Rigging)
 			{
 				isRiggingAvailable = true;//Rigging은 허용하자
 			}
@@ -992,217 +1201,278 @@ namespace AnyPortrait
 			//추가 22.5.13 [v1.4.0]
 			//선택된 모디파이어가 Transform을 관여하지 않는 타입이라면,
 			//다른 모디파이어의 Transform을 막을 필요가 없다.
-			bool isTransformUpdatableOnNotSelectedModifier = false;//이게 True라면 선택되지 않은 모디파이어도 Transform계열 연산을 지원한다.
-			if(modifier != null && 
-				(modifier.ModifierType == apModifierBase.MODIFIER_TYPE.ColorOnly
-				|| modifier.ModifierType == apModifierBase.MODIFIER_TYPE.AnimatedColorOnly
-				|| modifier.ModifierType == apModifierBase.MODIFIER_TYPE.Physic))
+			//추가 v1.5.0
+			//단순히 선택된 모디파이어에 따라 다른 모디파이어는 일괄 가능/불가를 결정할게 아니라
+			//선택된 모디파이어 - 다른 모디파이어의 타입을 비교하여 가능/불가를 결정하자
+			//ExTF가 가능한 모디파이어 타입을 지정하자
+
+			//이전
+			//bool isTransformUpdatableOnNotSelectedModifier = false;//이게 True라면 선택되지 않은 모디파이어도 Transform계열 연산을 지원한다.
+			//if(modifier != null && 
+			//	(modifier.ModifierType == apModifierBase.MODIFIER_TYPE.ColorOnly
+			//	|| modifier.ModifierType == apModifierBase.MODIFIER_TYPE.AnimatedColorOnly
+			//	|| modifier.ModifierType == apModifierBase.MODIFIER_TYPE.Physic))
+			//{
+			//	isTransformUpdatableOnNotSelectedModifier = true;
+			//}
+
+			//변경 v1.5.0
+			//TF(Morph 포함 이동 데이터 처리)가 활성화되는지 여부.
+			//"다른 모디파이어"의 "PSG"에 할당된다.
+			bool isOtherModTFUpdatable_Morph = true;//Morph 타입의 업데이트 가능여부
+			bool isOtherModTFUpdatable_TF = true;//TF 타입의 업데이트 가능 여부
+			bool isOtherModTFUpdatable_Physics = true;
+			
+			if(modifier != null)
 			{
-				isTransformUpdatableOnNotSelectedModifier = true;
+				switch (modifier.ModifierType)
+				{
+					case apModifierBase.MODIFIER_TYPE.Morph:
+					case apModifierBase.MODIFIER_TYPE.AnimatedMorph:
+						{
+							// [ 선택된게 Morph 타입 ]
+							//isOtherModTFUpdatable_Morph = false;
+							isOtherModTFUpdatable_Physics = false;
+						}
+						break;
+
+					case apModifierBase.MODIFIER_TYPE.TF:
+					case apModifierBase.MODIFIER_TYPE.AnimatedTF:
+						{
+							// [ 선택된게 TF 타입 ]
+							//다른 TF는 제한된다. (v1.5.0에서의 버그 해결)
+							//Morph와는 다르게 TF-TF 모디파이어는 동시 실행 안됨
+							isOtherModTFUpdatable_TF = false;
+						}
+						break;
+
+					case apModifierBase.MODIFIER_TYPE.Rigging:
+						{
+							// [ 선택된게 Rigging 타입 ]
+							//리깅에 방해되는 다른 모디파이어는 제한된다.
+							isOtherModTFUpdatable_Morph = false;
+							isOtherModTFUpdatable_TF = false;
+							isOtherModTFUpdatable_Physics = false;
+						}
+						break;
+
+						//나머지는 모든 TF 동시 실행 가능
+				}
 			}
 			
 
 			apModifierBase curModifier = null;
 			int nModifiers = _modifiers != null ? _modifiers.Count : 0;
 
-			for (int i = 0; i < nModifiers; i++)
+			apModifierParamSetGroup curPSG = null;
+
+			if (nModifiers > 0)
 			{
-				curModifier = _modifiers[i];
-				if (curModifier == modifier && modifier != null && paramSetGroups != null && paramSetGroups.Count > 0)
+				for (int i = 0; i < nModifiers; i++)
 				{
-					//편집중인 모디파이어이다.
-					//허가된 PSG (TimelineLayer)는 Enable, 그렇지 않다면 Disable로 만들자
+					curModifier = _modifiers[i];
 
-					//_modifiers[i]._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.ExclusiveEnabled;
-					curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit;
+					int nPSGs = curModifier._paramSetGroup_controller != null ? curModifier._paramSetGroup_controller.Count : 0;
 
-					for (int iP = 0; iP < curModifier._paramSetGroup_controller.Count; iP++)
+					if (curModifier == modifier && modifier != null && paramSetGroups != null && paramSetGroups.Count > 0)
 					{
-						apModifierParamSetGroup paramSetGroup = curModifier._paramSetGroup_controller[iP];
-						if (paramSetGroups.Contains(paramSetGroup))
+						//편집중인 모디파이어이다.
+						//허가된 PSG (TimelineLayer)는 Enable, 그렇지 않다면 Disable로 만들자
+
+						//_modifiers[i]._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.ExclusiveEnabled;
+						curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit;
+
+						if (nPSGs > 0)
 						{
-							//허용되는 ParamSetGroup이다.
-							//무조건 허용
-							//paramSetGroup._isEnabledExclusive = true;//<<이전
-							paramSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
-							paramSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+							for (int iP = 0; iP < nPSGs; iP++)
+							{
+								curPSG = curModifier._paramSetGroup_controller[iP];
+								if (paramSetGroups.Contains(curPSG))
+								{
+									//허용되는 ParamSetGroup이다.
+									//무조건 허용
+									curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+									curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+								}
+								else
+								{
+									//허용되지 않는 ParamSetGroup이다.
+									//색상은 따로 처리 가능하다.
+									curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+
+									//색상 미리보기는 지원하는 경우
+									if (multipleModType == OTHER_MOD_RUN_OPTION.ActiveColorOnly
+										|| multipleModType == OTHER_MOD_RUN_OPTION.ActiveAllPossible)
+									{
+										curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+									}
+									else
+									{
+										curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+									}
+								}
+							}
 						}
-						else
+						
+					}
+					else if (isRiggingAvailable && curModifier.ModifierType == apModifierBase.MODIFIER_TYPE.Rigging)
+					{
+						//만약 Rigging 타입은 예외로 친다면..
+						curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Background;
+
+						if (nPSGs > 0)
 						{
-							//허용되지 않는 ParamSetGroup이다.
-							//색상은 따로 처리 가능하다.
-							//paramSetGroup._isEnabledExclusive = false;//<<이전
-							paramSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;//<<이게 왜 Enabled
-							
-							//색상 미리보기는 지원하는 경우
-							if(multipleModType == OTHER_MOD_RUN_OPTION.ActiveColorOnly
-								|| multipleModType == OTHER_MOD_RUN_OPTION.ActiveAllPossible)
+							for (int iP = 0; iP < nPSGs; iP++)
 							{
-								paramSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
-							}
-							else
-							{
-								paramSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+								curPSG = curModifier._paramSetGroup_controller[iP];
+								curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+								curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;//<<Rigging은 상관 없는뎅..
 							}
 						}
+						
 					}
-				}
-				else if (isRiggingAvailable && curModifier.ModifierType == apModifierBase.MODIFIER_TYPE.Rigging)
-				{
-					//만약 Rigging 타입은 예외로 친다면..
-					//_modifiers[i]._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.ExclusiveEnabled;
-					curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Background;
-
-					for (int iP = 0; iP < curModifier._paramSetGroup_controller.Count; iP++)
+					else					
 					{
-						//_modifiers[i]._paramSetGroup_controller[iP]._isEnabledExclusive = true;
-						curModifier._paramSetGroup_controller[iP]._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
-						curModifier._paramSetGroup_controller[iP]._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;//<<Rigging은 상관 없는뎅..
-					}
-				}
-				else
-					//if(!curModifier.IsAnimated
-					//&& isEnablePSGEvenIfDisabledModifier
-					//)
-				{
-					//추가 21.2.17
-					//애니메이션이 아닌 모디파이어라면, 모디파이어는 Disabled이지만, PSG는 다 켜보자
-					//비활성 객체를 대상으로 적용될 수 있다.
-					
+						//추가 21.2.17
+						//애니메이션이 아닌 모디파이어라면, 모디파이어는 Disabled이지만, PSG는 다 켜보자 > 이 부분 수정됨 v1.5.0
+						//비활성 객체를 대상으로 적용될 수 있다.
 
-					for (int iP = 0; iP < curModifier._paramSetGroup_controller.Count; iP++)
-					{
-						apModifierParamSetGroup paramSetGroup = curModifier._paramSetGroup_controller[iP];
+						//v1.5.0 : 현재의 "다른 모디파이어"의 종류에 따라 TF 편집 가능 여부가 결정된다.
+						bool isTFPSGUpdatable = true;
+						if(multipleModType == OTHER_MOD_RUN_OPTION.ActiveAllPossible)
+						{
+							switch (curModifier.ModifierType)
+							{
+								case apModifierBase.MODIFIER_TYPE.Morph:
+								case apModifierBase.MODIFIER_TYPE.AnimatedMorph:
+									{
+										if(!isOtherModTFUpdatable_Morph)
+										{
+											//Morph 타입의 처리는 제한된다.
+											isTFPSGUpdatable = false;
+										}
+									}
+									break;
+
+								case apModifierBase.MODIFIER_TYPE.TF:
+								case apModifierBase.MODIFIER_TYPE.AnimatedTF:
+									{
+										if(!isOtherModTFUpdatable_TF)
+										{
+											//TF 타입의 처리는 제한된다.
+											isTFPSGUpdatable = false;
+										}
+									}
+									break;
+
+								case apModifierBase.MODIFIER_TYPE.Physic:
+									{
+										if(!isOtherModTFUpdatable_Physics)
+										{
+											//Physics 타입의 처리는 제한된다.
+											isTFPSGUpdatable = false;
+										}
+									}
+									break;
+							}
+						}
+
+						
+
+						if (nPSGs > 0)
+						{
+							for (int iP = 0; iP < nPSGs; iP++)
+							{
+								curPSG = curModifier._paramSetGroup_controller[iP];
+
+								switch (multipleModType)
+								{
+									case OTHER_MOD_RUN_OPTION.Disabled:
+										{
+											//선택되지 않은 모든 모디파이어의 PSG는 무조건 비활성화
+											curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+											curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+										}
+										break;
+
+									case OTHER_MOD_RUN_OPTION.ActiveColorOnly:
+										{
+											//색상 옵션에 한해서, 색상 처리는 허가한다.
+											curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+											curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+										}
+										break;
+
+									case OTHER_MOD_RUN_OPTION.ActiveAllPossible:
+										{
+											//가능한 다른 모디파이어의 PSG들도 실행하는 옵션이므로, PSG는 활성화
+											curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+											curPSG._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+
+											//v1.5.0 : 불가 여부에 따라 Transform(이동) 정보는 비활성화된다.
+											if(!isTFPSGUpdatable)
+											{
+												curPSG._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+											}
+										}
+										break;
+								}
+							}
+						}
+						
 
 						switch (multipleModType)
 						{
 							case OTHER_MOD_RUN_OPTION.Disabled:
 								{
-									//선택되지 않은 모든 모디파이어의 PSG는 무조건 비활성화
-									paramSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
-									paramSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
+									curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_NotEdit;
 								}
 								break;
 
 							case OTHER_MOD_RUN_OPTION.ActiveColorOnly:
 								{
 									//색상 옵션에 한해서, 색상 처리는 허가한다.
-									paramSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
-									paramSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+									curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_ExceptColor;
 								}
 								break;
 
 							case OTHER_MOD_RUN_OPTION.ActiveAllPossible:
 								{
-									//가능한 다른 모디파이어의 PSG들도 실행하는 옵션이므로, PSG는 활성화
-									paramSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
-									paramSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
+									//가능한 다른 모디파이어를 허가한다.
+									//if (isTransformUpdatableOnNotSelectedModifier)
+									if(isTFPSGUpdatable)
+									{
+										//Transform을 제어하지 않는 모디파이어가 선택된 상태에서는 Enabled이 가능하다
+										curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run;
+									}
+									else
+									{
+										//색상만 허가한다.
+										curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_ExceptColor;
+									}
 								}
 								break;
 						}
-						
-					}
 
-					switch (multipleModType)
-					{
-						case OTHER_MOD_RUN_OPTION.Disabled:
-							{
-								curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_NotEdit;
-							}
-							break;
-
-						case OTHER_MOD_RUN_OPTION.ActiveColorOnly:
-							{
-								//색상 옵션에 한해서, 색상 처리는 허가한다.
-								curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_ExceptColor;
-							}
-							break;
-
-						case OTHER_MOD_RUN_OPTION.ActiveAllPossible:
-							{
-								//가능한 다른 모디파이어를 허가한다.
-								if(isTransformUpdatableOnNotSelectedModifier)
-								{
-									//Transform을 제어하지 않는 모디파이어가 선택된 상태에서는 Enabled이 가능하다
-									curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run;
-								}
-								else
-								{
-									//색상만 허가한다.
-									curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_ExceptColor;
-								}
-							}
-							break;
+						//Debug.Log("- 비활성되어야 하는 모디파이어 : " + curModifier.DisplayName 
+						//	+ " - " + curModifier._editorExclusiveActiveMod);
 					}
 				}
-				//else
-				//{
-				//	//[ 애니메이션 타입의 선택되지 않은 모디파이어 == 다른 타임라인 ]
-				//	//선택되지 않은 모디파이어이다.
-
-				//	//일단 다 빼보자
-				//	//색상은 적용 가능
-				//	//_modifiers[i]._isActive_InEditorExclusive = false;
-
-				//	//_modifiers[i]._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled;
-				//	curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_NotEdit;
-
-				//	bool isAnyColorUpdate = false;
-
-				//	for (int iP = 0; iP < curModifier._paramSetGroup_controller.Count; iP++)
-				//	{
-				//		apModifierParamSetGroup paramSetGroup = curModifier._paramSetGroup_controller[iP];
-				//		//paramSetGroup._isEnabledExclusive = false;
-						
-				//		//이전
-				//		//paramSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
-
-				//		//변경 22.5.13
-				//		//Transform을 제어하지 않는 모디파이어가 선택된 상태에서는 Enabled이 가능하다
-				//		if (isTransformUpdatableOnNotSelectedModifier)
-				//		{
-				//			paramSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
-				//		}
-				//		else
-				//		{
-				//			//그냥 다른 모디파이어의 Transform(메인 변형)은 비활성
-				//			paramSetGroup._modExType_Transform = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
-				//		}
-
-
-				//		if(isColorCalculated)
-				//		{
-				//			paramSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Enabled;
-				//			isAnyColorUpdate = true;
-				//		}
-				//		else
-				//		{
-				//			paramSetGroup._modExType_Color = apModifierParamSetGroup.MOD_EX_CALCULATE.Disabled;
-				//		}
-				//	}
-
-				//	if(isAnyColorUpdate)
-				//	{
-				//		//Color 업데이트가 되는 ParamSetGroup이 존재한다.
-				//		//_modifiers[i]._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.OnlyColorEnabled;
-				//		curModifier._editorExclusiveActiveMod = apModifierBase.MOD_EDITOR_ACTIVE.Disabled_ExceptColor;
-				//	}
-				//}
 			}
+			
 
 			//Child MeshGroup에도 모두 적용하자 - False로.. << 이게 문제였네
 			if (_parentMeshGroup != null)
 			{
-				if (_parentMeshGroup._childMeshGroupTransforms != null)
+				int nChildMeshGroupTFs = _parentMeshGroup._childMeshGroupTransforms != null ? _parentMeshGroup._childMeshGroupTransforms.Count : 0;
+				if(nChildMeshGroupTFs > 0)
 				{
 					apTransform_MeshGroup childMeshGroupTF = null;
-					for (int i = 0; i < _parentMeshGroup._childMeshGroupTransforms.Count; i++)
+					for (int i = 0; i < nChildMeshGroupTFs; i++)
 					{
 						childMeshGroupTF = _parentMeshGroup._childMeshGroupTransforms[i];
 						if (childMeshGroupTF._meshGroup != null && childMeshGroupTF._meshGroup != _parentMeshGroup)
 						{
-							//meshGroupTransform._meshGroup._modifierStack.SetExclusiveModifierInEditing(null, null, isColorCalculated);
-							//childMeshGroupTF._meshGroup._modifierStack.SetExclusiveModifierInEditing(modifier, null, isColorCalculated, isEnablePSGEvenIfDisabledModifier);
 							childMeshGroupTF._meshGroup._modifierStack.SetExclusiveModifierInEditing(modifier, null, multipleModType);
 						}
 					}
@@ -1575,49 +1845,83 @@ namespace AnyPortrait
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.Volume:
-					_modifiers_Volume.Add((apModifier_Volume)modifier);
+					{
+						if (_modifiers_Volume == null) { _modifiers_Volume = new List<apModifier_Volume>(); }
+						_modifiers_Volume.Add((apModifier_Volume)modifier);
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.Morph:
-					_modifiers_Morph.Add((apModifier_Morph)modifier);
+					{
+						if(_modifiers_Morph == null) { _modifiers_Morph = new List<apModifier_Morph>(); }
+						_modifiers_Morph.Add((apModifier_Morph)modifier);
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.AnimatedMorph:
-					_modifiers_AnimatedMorph.Add((apModifier_AnimatedMorph)modifier);
+					{
+						if(_modifiers_AnimatedMorph == null) { _modifiers_AnimatedMorph = new List<apModifier_AnimatedMorph>(); }
+						_modifiers_AnimatedMorph.Add((apModifier_AnimatedMorph)modifier);
+					}
+					
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.Rigging:
-					_modifiers_Rigging.Add((apModifier_Rigging)modifier);
+					{
+						if(_modifiers_Rigging == null) { _modifiers_Rigging = new List<apModifier_Rigging>(); }
+						_modifiers_Rigging.Add((apModifier_Rigging)modifier);
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.Physic:
-					_modifiers_Physic.Add((apModifier_Physic)modifier);
+					{
+						if(_modifiers_Physic == null) { _modifiers_Physic = new List<apModifier_Physic>(); }
+						_modifiers_Physic.Add((apModifier_Physic)modifier);
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.TF:
-					_modifiers_TF.Add((apModifier_TF)modifier);
+					{
+						if(_modifiers_TF == null) { _modifiers_TF = new List<apModifier_TF>(); }
+						_modifiers_TF.Add((apModifier_TF)modifier);
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.AnimatedTF:
-					_modifiers_AnimatedTF.Add((apModifier_AnimatedTF)modifier);
+					{
+						if(_modifiers_AnimatedTF == null) { _modifiers_AnimatedTF = new List<apModifier_AnimatedTF>(); }
+						_modifiers_AnimatedTF.Add((apModifier_AnimatedTF)modifier);
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.FFD:
-					_modifiers_FFD.Add((apModifier_FFD)modifier);
+					{
+						if(_modifiers_FFD == null) { _modifiers_FFD = new List<apModifier_FFD>(); }
+						_modifiers_FFD.Add((apModifier_FFD)modifier);
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.AnimatedFFD:
-					_modifiers_AnimatedFFD.Add((apModifier_AnimatedFFD)modifier);
+					{
+						if(_modifiers_AnimatedFFD == null) { _modifiers_AnimatedFFD = new List<apModifier_AnimatedFFD>(); }
+						_modifiers_AnimatedFFD.Add((apModifier_AnimatedFFD)modifier);
+					}
 					break;
 
 
 					//추가 21.7.20 : 색상 모디파이어 추가
 				case apModifierBase.MODIFIER_TYPE.ColorOnly:
-					_modifiers_ColorOnly.Add((apModifier_ColorOnly)modifier);
+					{
+						if(_modifiers_ColorOnly == null) { _modifiers_ColorOnly = new List<apModifier_ColorOnly>(); }
+						_modifiers_ColorOnly.Add((apModifier_ColorOnly)modifier);
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.AnimatedColorOnly:
-					_modifiers_AnimatedColorOnly.Add((apModifier_AnimatedColorOnly)modifier);
+					{
+						if(_modifiers_AnimatedColorOnly == null) { _modifiers_AnimatedColorOnly = new List<apModifier_AnimatedColorOnly>(); }
+						_modifiers_AnimatedColorOnly.Add((apModifier_AnimatedColorOnly)modifier);
+					}
 					break;
 
 				default:
@@ -1638,48 +1942,103 @@ namespace AnyPortrait
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.Volume:
-					_modifiers_Volume.Remove((apModifier_Volume)modifier);
+					{
+						if (_modifiers_Volume != null)
+						{
+							_modifiers_Volume.Remove((apModifier_Volume)modifier);
+						}
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.Morph:
-					_modifiers_Morph.Remove((apModifier_Morph)modifier);
+					{
+						if(_modifiers_Morph != null)
+						{
+							_modifiers_Morph.Remove((apModifier_Morph)modifier);
+						}
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.AnimatedMorph:
-					_modifiers_AnimatedMorph.Remove((apModifier_AnimatedMorph)modifier);
+					{
+						if(_modifiers_AnimatedMorph != null)
+						{
+							_modifiers_AnimatedMorph.Remove((apModifier_AnimatedMorph)modifier);
+						}
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.Rigging:
-					_modifiers_Rigging.Remove((apModifier_Rigging)modifier);
+					{
+						if(_modifiers_Rigging != null)
+						{
+							_modifiers_Rigging.Remove((apModifier_Rigging)modifier);
+						}
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.Physic:
-					_modifiers_Physic.Remove((apModifier_Physic)modifier);
+					{
+						if(_modifiers_Physic != null)
+						{
+							_modifiers_Physic.Remove((apModifier_Physic)modifier);
+						}
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.TF:
-					_modifiers_TF.Remove((apModifier_TF)modifier);
+					{
+						if(_modifiers_TF != null)
+						{
+							_modifiers_TF.Remove((apModifier_TF)modifier);
+						}
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.AnimatedTF:
-					_modifiers_AnimatedTF.Remove((apModifier_AnimatedTF)modifier);
+					{
+						if(_modifiers_AnimatedTF != null)
+						{
+							_modifiers_AnimatedTF.Remove((apModifier_AnimatedTF)modifier);
+						}
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.FFD:
-					_modifiers_FFD.Remove((apModifier_FFD)modifier);
+					{
+						if(_modifiers_FFD != null)
+						{
+							_modifiers_FFD.Remove((apModifier_FFD)modifier);
+						}
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.AnimatedFFD:
-					_modifiers_AnimatedFFD.Remove((apModifier_AnimatedFFD)modifier);
+					{
+						if(_modifiers_AnimatedFFD != null)
+						{
+							_modifiers_AnimatedFFD.Remove((apModifier_AnimatedFFD)modifier);
+						}
+					}
 					break;
 
 					//추가 21.7.20 : 색상 모디파이어
 				case apModifierBase.MODIFIER_TYPE.ColorOnly:
-					_modifiers_ColorOnly.Remove((apModifier_ColorOnly)modifier);
+					{
+						if(_modifiers_ColorOnly != null)
+						{
+							_modifiers_ColorOnly.Remove((apModifier_ColorOnly)modifier);
+						}
+					}
 					break;
 
 				case apModifierBase.MODIFIER_TYPE.AnimatedColorOnly:
-					_modifiers_AnimatedColorOnly.Remove((apModifier_AnimatedColorOnly)modifier);
+					{
+						if(_modifiers_AnimatedColorOnly != null)
+						{
+							_modifiers_AnimatedColorOnly.Remove((apModifier_AnimatedColorOnly)modifier);
+						}
+					}
 					break;
 			}
 		}
@@ -1689,40 +2048,60 @@ namespace AnyPortrait
 		//----------------------------------------------------
 		public void ClearAllCalculateParams(apModifierBase targetSelectedModifier)
 		{
+			apModifierBase curMod = null;
 			apRenderUnit renderUnit = null;
+
+			int nMod = _modifiers != null ? _modifiers.Count : 0;
+			int nRenderUnits = _parentMeshGroup._renderUnits_All != null ? _parentMeshGroup._renderUnits_All.Count : 0;
+
 			if (targetSelectedModifier == null)
 			{
-				//모든 모디파이어의 ResultParam을 초기화한다면 (기존)
-				for (int i = 0; i < _modifiers.Count; i++)
+				//모든 모디파이어의 ResultParam을 초기화
+				if (nMod > 0)
 				{
-					_modifiers[i]._calculatedResultParams.Clear();
+					for (int i = 0; i < nMod; i++)
+					{
+						curMod = _modifiers[i];
+						curMod._calculatedResultParams.Clear();
+					}
 				}
+
 				//렌더 유닛들의 Stack도 리셋한다.
-				for (int i = 0; i < _parentMeshGroup._renderUnits_All.Count; i++)
+				if (nRenderUnits > 0)
 				{
-					renderUnit = _parentMeshGroup._renderUnits_All[i];
-					renderUnit._calculatedStack.ClearResultParams();
+					for (int i = 0; i < nRenderUnits; i++)
+					{
+						renderUnit = _parentMeshGroup._renderUnits_All[i];
+						renderUnit._calculatedStack.ClearResultParams();
+					}
 				}
 			}
 			else
 			{
 				//특정 모디파이어에 대해서만 초기화하려고 한다면 (추가 20.4.21)
-				for (int i = 0; i < _modifiers.Count; i++)
+				if (nMod > 0)
 				{
-					if(_modifiers[i] == targetSelectedModifier)
+					for (int i = 0; i < nMod; i++)
 					{
-						//같을때만 (없을 수도 있어서..)
-						_modifiers[i]._calculatedResultParams.Clear();
+						curMod = _modifiers[i];
+						if (curMod == targetSelectedModifier)
+						{
+							//같을때만 (없을 수도 있어서..)
+							curMod._calculatedResultParams.Clear();
+						}
 					}
 				}
+
 				//렌더 유닛들의 Stack도 리셋한다.
-				for (int i = 0; i < _parentMeshGroup._renderUnits_All.Count; i++)
+				if (nRenderUnits > 0)
 				{
-					renderUnit = _parentMeshGroup._renderUnits_All[i];
-					renderUnit._calculatedStack.ClearResultParamsOfModifier(targetSelectedModifier);
+					for (int i = 0; i < nRenderUnits; i++)
+					{
+						renderUnit = _parentMeshGroup._renderUnits_All[i];
+						renderUnit._calculatedStack.ClearResultParamsOfModifier(targetSelectedModifier);
+					}
 				}
 			}
-			
 		}
 
 		
@@ -1776,168 +2155,191 @@ namespace AnyPortrait
 
 
 			//Modifier를 돌면서 ParamSet 데이터를 Calculated 데이터로 변환해서 옮긴다.
-			for (int iMod = 0; iMod < _modifiers.Count; iMod++)
+			int nMod = _modifiers != null ? _modifiers.Count : 0;
+			if (nMod > 0)
 			{
-				//Modifier ->..
-				apModifierBase modifier = _modifiers[iMod];
-				//Debug.Log("--- Check Modifier [" + modifier.DisplayName + "]");
-
-				if(isOnlySelectedModifier && modifier != curSelectedModifier)
+				apModifierBase modifier = null;
+				for (int iMod = 0; iMod < nMod; iMod++)
 				{
-					//최적화 1) 선택되지 않은 모디파이어는 생략
-					continue;
-				}
-
-				
-				if(isSkipAllAnimModifiers && modifier.IsAnimated)
-				{
-					//최적화 2) 모든 Anim 모디파이어를 생략
-					continue;
-				}
-
-				List<apModifierParamSetGroup> paramSetGroups = modifier._paramSetGroup_controller;
-
-				for (int iGroup = 0; iGroup < paramSetGroups.Count; iGroup++)
-				{
-					//Modifier -> ParamSetGroup ->..
-					apModifierParamSetGroup paramSetGroup = paramSetGroups[iGroup];
-
+					//Modifier ->..
+					modifier = _modifiers[iMod];
 					
-					if(isSkipUnselectedAnimPSGs && modifier.IsAnimated)
-					{	
-						if(paramSetGroup._keyAnimClip != curSelectedAnimClip)
-						{
-							//최적화 3) 만약 스킵할 수 있는 "애니메이션 모디파이어의 PSG"라면, 처리를 생략한다.
-							continue;
-						}
+					if (isOnlySelectedModifier && modifier != curSelectedModifier)
+					{
+						//최적화 1) 선택되지 않은 모디파이어는 생략
+						continue;
 					}
 
-					List<apModifierParamSet> paramSets = paramSetGroup._paramSetList;
-
-					
-
-					for (int iParam = 0; iParam < paramSets.Count; iParam++)
+					if (isSkipAllAnimModifiers && modifier.IsAnimated)
 					{
-						//Modifier -> ParamSetGroup -> ParamSet ->...
-						apModifierParamSet paramSet = paramSets[iParam];
+						//최적화 2) 모든 Anim 모디파이어를 생략
+						continue;
+					}
 
-						List<apModifiedMesh> modMeshes = paramSet._meshData;
-						List<apModifiedBone> modBones = paramSet._boneData;
+					List<apModifierParamSetGroup> paramSetGroups = modifier._paramSetGroup_controller;
 
-
-						//1. Mod Mesh => Calculate Param으로 연결한다.
-						for (int iModMesh = 0; iModMesh < modMeshes.Count; iModMesh++)
+					int nPSGs = paramSetGroups != null ? paramSetGroups.Count : 0;
+					if (nPSGs > 0)
+					{
+						for (int iGroup = 0; iGroup < nPSGs; iGroup++)
 						{
-							//[핵심]
-							//Modifier -> ParamSetGroup -> ParamSet -> ModMeh 
-							//이제 이 ModMesh와 타겟 Transform을 연결하자.
-							//연결할땐 Calculated 오브젝트를 만들어서 연결
-							apModifiedMesh modMesh = modMeshes[iModMesh];
+							//Modifier -> ParamSetGroup ->..
+							apModifierParamSetGroup paramSetGroup = paramSetGroups[iGroup];
 
-							if (modMesh._renderUnit == null)
+							if (isSkipUnselectedAnimPSGs && modifier.IsAnimated)
 							{
-								//>> 당장 링크가 안될 수도 있다. (선택한 MeshGroup이 아닐 경우)
-								//이때는 걍 무시한다.
-								continue;
-							}
-							
-							//이미 만든 Calculate Param이 있는지 확인
-							apCalculatedResultParam existParam = modifier.GetCalculatedResultParam(modMesh._renderUnit);
-
-							
-							if (existParam != null)
-							{
-								existParam.AddParamSetAndModifiedValue(paramSetGroup, paramSet, modMesh, null);
-								existParam.RefreshResultVertices();
-
-								// > 추가 12.03 <
-								//ParamKeyValue가 추가될 때에도 CalculateStack을 갱신할 필요가 있다.
-								modMesh._renderUnit._calculatedStack.OnParamKeyValueAddedOnCalculatedResultParam(existParam);
-							}
-							else
-							{
-								//새로 Calculate Param을 만들고..
-								apCalculatedResultParam newCalParam = new apCalculatedResultParam(
-									modifier.CalculatedValueType,
-									modifier.CalculatedSpace,
-									modifier,
-									modMesh._renderUnit,
-									modMesh._renderUnit,
-									null//<Bone은 없으닝께..
-									//weightedVertexData // << 19.5.20 : 삭제
-									);
-
-								newCalParam.AddParamSetAndModifiedValue(paramSetGroup, paramSet, modMesh, null);
-
-								// Modifier에 등록하고
-								modifier._calculatedResultParams.Add(newCalParam);
-
-								//RenderUnit에도 등록을 하자
-								//<< 여기가 호출되어야 하는데 안되는 것 같다 >>
-								modMesh._renderUnit._calculatedStack.AddCalculatedResultParam(newCalParam, modMesh._renderUnit);
-							}
-							
-						}
-
-						//변경 : ModBone의 계산을 위해서 모든 ModBone이 계산되는 RenderUnit은 "Root  MeshGroup"의 "Root RenderUnit"이다.
-						apRenderUnit modBoneRenderUnit = rootMeshGroup._rootRenderUnit;
-						if (modBoneRenderUnit != null)
-						{
-
-							//2. Mod Bone => Calculate Param으로 연결한다.
-							for (int iModBone = 0; iModBone < modBones.Count; iModBone++)
-							{
-								apModifiedBone modBone = modBones[iModBone];
-
-								if (modBone._bone == null || modBone._renderUnit == null)
+								if (paramSetGroup._keyAnimClip != curSelectedAnimClip)
 								{
-									//일단 무시하자. Stack에 넣을 필요가 없다는 것
+									//최적화 3) 만약 스킵할 수 있는 "애니메이션 모디파이어의 PSG"라면, 처리를 생략한다.
 									continue;
 								}
+							}
 
-								//apCalculatedResultParam existParam = modifier.GetCalculatedResultParam_Bone(modBone._renderUnit, modBone._bone);//이전
-								apCalculatedResultParam existParam = modifier.GetCalculatedResultParam_Bone(modBoneRenderUnit, modBone._bone, modBone._renderUnit);//변경
+							List<apModifierParamSet> paramSets = paramSetGroup._paramSetList;
 
-								if (existParam != null)
-								{	
-									//Debug.LogWarning(" < Add > : " + modBone._bone._name);
-
-									//이미 있다면 ModBone만 추가해주자
-									existParam.AddParamSetAndModifiedValue(paramSetGroup, paramSet, null, modBone);
-									existParam.RefreshResultVertices();
-								}
-								else
+							int nParamSets = paramSets != null ? paramSets.Count : 0;
+							if (nParamSets > 0)
+							{
+								for (int iParam = 0; iParam < nParamSets; iParam++)
 								{
-									apCalculatedResultParam newCalParam = new apCalculatedResultParam(
-										modifier.CalculatedValueType,
-										modifier.CalculatedSpace,
-										modifier,
-										modBoneRenderUnit,//<<변경
-										modBone._renderUnit,
-										modBone._bone
-										//null//WeightedVertex // 19.5.20 : 삭제
-										);
+									//Modifier -> ParamSetGroup -> ParamSet ->...
+									apModifierParamSet paramSet = paramSets[iParam];
 
-									newCalParam.AddParamSetAndModifiedValue(paramSetGroup, paramSet, null, modBone);
+									List<apModifiedMesh> modMeshes = paramSet._meshData;
+									List<apModifiedBone> modBones = paramSet._boneData;
 
-									// Modifier에 등록하고
-									modifier._calculatedResultParams.Add(newCalParam);
+									int nModMeshes = modMeshes != null ? modMeshes.Count : 0;
+									int nModBones = modBones != null ? modBones.Count : 0;
 
-									//RenderUnit에도 등록을 하자
-									modBoneRenderUnit._calculatedStack.AddCalculatedResultParam(newCalParam, modBone._renderUnit);
+									//1. Mod Mesh => Calculate Param으로 연결한다.
+									if (nModMeshes > 0)
+									{
+										apModifiedMesh modMesh = null;
+										for (int iModMesh = 0; iModMesh < nModMeshes; iModMesh++)
+										{
+											//[핵심]
+											//Modifier -> ParamSetGroup -> ParamSet -> ModMeh 
+											//이제 이 ModMesh와 타겟 Transform을 연결하자.
+											//연결할땐 Calculated 오브젝트를 만들어서 연결
+											modMesh = modMeshes[iModMesh];
+
+											if (modMesh._renderUnit == null)
+											{
+												//>> 당장 링크가 안될 수도 있다. (선택한 MeshGroup이 아닐 경우)
+												//이때는 걍 무시한다.
+												continue;
+											}
+
+											//이미 만든 Calculate Param이 있는지 확인
+											apCalculatedResultParam existParam = modifier.GetCalculatedResultParam(modMesh._renderUnit);
+
+
+											if (existParam != null)
+											{
+												existParam.AddParamSetAndModifiedValue(paramSetGroup, paramSet, modMesh, null);
+												existParam.RefreshResultVertices();
+
+												// > 추가 12.03 <
+												//ParamKeyValue가 추가될 때에도 CalculateStack을 갱신할 필요가 있다.
+												modMesh._renderUnit._calculatedStack.OnParamKeyValueAddedOnCalculatedResultParam(existParam);
+											}
+											else
+											{
+												//새로 Calculate Param을 만들고..
+												apCalculatedResultParam newCalParam = new apCalculatedResultParam(
+													modifier.CalculatedValueType,
+													modifier.CalculatedSpace,
+													modifier,
+													modMesh._renderUnit,
+													modMesh._renderUnit,
+													null//<Bone은 없으닝께..
+														//weightedVertexData // << 19.5.20 : 삭제
+													);
+
+												newCalParam.AddParamSetAndModifiedValue(paramSetGroup, paramSet, modMesh, null);
+
+												// Modifier에 등록하고
+												modifier._calculatedResultParams.Add(newCalParam);
+
+												//RenderUnit에도 등록을 하자
+												//<< 여기가 호출되어야 하는데 안되는 것 같다 >>
+												modMesh._renderUnit._calculatedStack.AddCalculatedResultParam(newCalParam, modMesh._renderUnit);
+											}
+
+										}
+									}
+									
+
+									//변경 : ModBone의 계산을 위해서 모든 ModBone이 계산되는 RenderUnit은 "Root  MeshGroup"의 "Root RenderUnit"이다.
+									apRenderUnit modBoneRenderUnit = rootMeshGroup._rootRenderUnit;
+									if (modBoneRenderUnit != null && nModBones > 0)
+									{
+										apModifiedBone modBone = null;
+
+										//2. Mod Bone => Calculate Param으로 연결한다.
+										for (int iModBone = 0; iModBone < nModBones; iModBone++)
+										{
+											modBone = modBones[iModBone];
+
+											if (modBone._bone == null || modBone._renderUnit == null)
+											{
+												//일단 무시하자. Stack에 넣을 필요가 없다는 것
+												continue;
+											}
+
+											//apCalculatedResultParam existParam = modifier.GetCalculatedResultParam_Bone(modBone._renderUnit, modBone._bone);//이전
+											apCalculatedResultParam existParam = modifier.GetCalculatedResultParam_Bone(modBoneRenderUnit, modBone._bone, modBone._renderUnit);//변경
+
+											if (existParam != null)
+											{
+												//Debug.LogWarning(" < Add > : " + modBone._bone._name);
+
+												//이미 있다면 ModBone만 추가해주자
+												existParam.AddParamSetAndModifiedValue(paramSetGroup, paramSet, null, modBone);
+												existParam.RefreshResultVertices();
+											}
+											else
+											{
+												apCalculatedResultParam newCalParam = new apCalculatedResultParam(
+													modifier.CalculatedValueType,
+													modifier.CalculatedSpace,
+													modifier,
+													modBoneRenderUnit,//<<변경
+													modBone._renderUnit,
+													modBone._bone
+													//null//WeightedVertex // 19.5.20 : 삭제
+													);
+
+												newCalParam.AddParamSetAndModifiedValue(paramSetGroup, paramSet, null, modBone);
+
+												// Modifier에 등록하고
+												modifier._calculatedResultParams.Add(newCalParam);
+
+												//RenderUnit에도 등록을 하자
+												modBoneRenderUnit._calculatedStack.AddCalculatedResultParam(newCalParam, modBone._renderUnit);
+											}
+										}
+									}
 								}
 							}
+							
+						}
+					}
+					
+
+
+					//SubList를 한번 정렬하자
+					int nCalResultParams = modifier._calculatedResultParams != null ? modifier._calculatedResultParams.Count : 0;
+					if (nCalResultParams > 0)
+					{
+						for (int iCal = 0; iCal < nCalResultParams; iCal++)
+						{
+							modifier._calculatedResultParams[iCal].SortSubList();
 						}
 					}
 				}
-
-
-				//SubList를 한번 정렬하자
-				for (int iCal = 0; iCal < modifier._calculatedResultParams.Count; iCal++)
-				{
-					modifier._calculatedResultParams[iCal].SortSubList();
-				}
 			}
+			
 
 			//추가>>
 			//하위 객체에 대해서도 Link를 자동으로 수행한다.
@@ -1946,9 +2348,10 @@ namespace AnyPortrait
 
 			apTransform_MeshGroup childMeshGroup = null;
 
-			if (childMeshGroupTransforms != null && childMeshGroupTransforms.Count > 0)
+			int nChildMeshGroups = childMeshGroupTransforms != null ? childMeshGroupTransforms.Count : 0;
+			if (nChildMeshGroups > 0)
 			{
-				for (int i = 0; i < childMeshGroupTransforms.Count; i++)
+				for (int i = 0; i < nChildMeshGroups; i++)
 				{
 					childMeshGroup = childMeshGroupTransforms[i];
 					if (childMeshGroup._meshGroup != null && childMeshGroup._meshGroup != _parentMeshGroup)
@@ -1965,12 +2368,17 @@ namespace AnyPortrait
 				//Root인 경우
 				//RenderUnit들을 검사하면서 Calculated Stack에 대해서 Sort를 해주자
 				List<apRenderUnit> renderUnits = _parentMeshGroup._renderUnits_All;
-				for (int i = 0; i < renderUnits.Count; i++)
+				int nRenderUnits = renderUnits != null ? renderUnits.Count : 0;
+				if (nRenderUnits > 0)
 				{
-					renderUnits[i]._calculatedStack.Sort();
+					apRenderUnit curRenderUnit = null;
+					for (int i = 0; i < nRenderUnits; i++)
+					{
+						curRenderUnit = renderUnits[i];
+						curRenderUnit._calculatedStack.Sort();
+					}
 				}
 			}
-
 		}
 
 
@@ -1979,56 +2387,97 @@ namespace AnyPortrait
 		/// </summary>
 		public void InitModifierCalculatedValues()
 		{
-			for (int iMod = 0; iMod < _modifiers.Count; iMod++)
+			int nModifiers = _modifiers != null ? _modifiers.Count : 0;
+			if(nModifiers == 0)
+			{
+				return;
+			}
+
+			apModifierBase modifier = null;
+			List<apModifierParamSetGroup> paramSetGroups = null;
+			apModifierParamSetGroup paramSetGroup = null;
+			List<apModifierParamSet> paramSets = null;
+			apModifierParamSet paramSet = null;
+			List<apModifiedMesh> modMeshes = null;
+			//List<apModifiedBone> modBones = null;
+			apModifiedMesh modMesh = null;
+
+			for (int iMod = 0; iMod < nModifiers; iMod++)
 			{
 				//Modifier ->..
-				apModifierBase modifier = _modifiers[iMod];
+				modifier = _modifiers[iMod];
 
-				List<apModifierParamSetGroup> paramSetGroups = modifier._paramSetGroup_controller;
+				paramSetGroups = modifier._paramSetGroup_controller;
 
-				for (int iGroup = 0; iGroup < paramSetGroups.Count; iGroup++)
+				int nPSGs = paramSetGroups != null ? paramSetGroups.Count : 0;
+				if(nPSGs == 0)
+				{
+					continue;
+				}
+
+				for (int iGroup = 0; iGroup < nPSGs; iGroup++)
 				{
 					//Modifier -> ParamSetGroup ->..
-					apModifierParamSetGroup paramSetGroup = paramSetGroups[iGroup];
+					paramSetGroup = paramSetGroups[iGroup];
 
-					List<apModifierParamSet> paramSets = paramSetGroup._paramSetList;
+					paramSets = paramSetGroup._paramSetList;
 
-					for (int iParam = 0; iParam < paramSets.Count; iParam++)
+					int nParamSets = paramSets != null ? paramSets.Count : 0;
+					if(nParamSets == 0)
+					{
+						continue;
+					}
+
+					for (int iParam = 0; iParam < nParamSets; iParam++)
 					{
 						//Modifier -> ParamSetGroup -> ParamSet ->...
-						apModifierParamSet paramSet = paramSets[iParam];
+						paramSet = paramSets[iParam];
 
-						List<apModifiedMesh> modMeshes = paramSet._meshData;
-						List<apModifiedBone> modBones = paramSet._boneData;
+						modMeshes = paramSet._meshData;
+						//modBones = paramSet._boneData;//Mod Bone은 초기화할게 없어서 주석 처리
 
-						for (int iModMesh = 0; iModMesh < modMeshes.Count; iModMesh++)
+						int nModMeshes = modMeshes != null ? modMeshes.Count : 0;
+						if (nModMeshes > 0)
 						{
-							apModifiedMesh modMesh = modMeshes[iModMesh];
-							if (modMesh._vertices != null && modMesh._vertices.Count > 0)
+							for (int iModMesh = 0; iModMesh < nModMeshes; iModMesh++)
 							{
-								//ModVert 초기화 => 현재는 초기화 할게 없다.
+								modMesh = modMeshes[iModMesh];
 
-							}
-							if (modMesh._vertRigs != null && modMesh._vertRigs.Count > 0)
-							{
-								//ModVertRig 초기화 => 현재는 초기화 할게 없다.
-							}
-							if (modMesh._vertWeights != null && modMesh._vertWeights.Count > 0)
-							{
-								apModifiedVertexWeight vertWeight = null;
-								for (int iVW = 0; iVW < modMesh._vertWeights.Count; iVW++)
+
+								//if (modMesh._vertices != null && modMesh._vertices.Count > 0)
+								//{
+								//	//ModVert 초기화 => 현재는 초기화 할게 없다.
+
+								//}
+								//if (modMesh._vertRigs != null && modMesh._vertRigs.Count > 0)
+								//{
+								//	//ModVertRig 초기화 => 현재는 초기화 할게 없다.
+								//}
+
+								//ModVertWeight는 초기화해야한다. (물리값)
+								int nVertWeights = modMesh._vertWeights != null ? modMesh._vertWeights.Count : 0;
+								if(nVertWeights > 0)
 								{
-									vertWeight = modMesh._vertWeights[iVW];
-									vertWeight.InitCalculatedValue();//<<초기화를 하자. (여기서는 물리값)
+									apModifiedVertexWeight vertWeight = null;
+									for (int iVW = 0; iVW < nVertWeights; iVW++)
+									{
+										vertWeight = modMesh._vertWeights[iVW];
+										vertWeight.InitCalculatedValue();//<<초기화를 하자. (여기서는 물리값)
+									}
 								}
 							}
 						}
-
-						for (int iModBone = 0; iModBone < modBones.Count; iModBone++)
-						{
-							apModifiedBone modBone = modBones[iModBone];
-							//ModBone도 현재는 초기화 할게 없다.
-						}
+						
+						//int nModBones = modBones != null ? modBones.Count : 0;
+						//if(nModBones > 0)
+						//{
+						//	for (int iModBone = 0; iModBone < nModBones; iModBone++)
+						//	{
+						//		apModifiedBone modBone = modBones[iModBone];
+						//		//ModBone도 현재는 초기화 할게 없다.
+						//	}
+						//}
+						
 					}
 				}
 			}
@@ -2044,30 +2493,59 @@ namespace AnyPortrait
 
 		public apModifierBase GetModifier(int uniqueID)
 		{
-			return _modifiers.Find(delegate (apModifierBase a)
-			{
-				return a._uniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _modifiers.Find(delegate (apModifierBase a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetModifier_ID = uniqueID;
+			return _modifiers.Find(s_GetModifierByID_Func);
 		}
+
 
 		public bool IsModifierExist(int uniqueID)
 		{
-			return _modifiers.Exists(delegate (apModifierBase a)
-			{
-				return a._uniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _modifiers.Exists(delegate (apModifierBase a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 v1.5.0
+			s_GetModifier_ID = uniqueID;
+			return _modifiers.Exists(s_GetModifierByID_Func);
 		}
+
+
+		private static int s_GetModifier_ID = -1;
+		private static Predicate<apModifierBase> s_GetModifierByID_Func = FUNC_GetModifierByID;
+		private static bool FUNC_GetModifierByID(apModifierBase a)
+		{
+			return a._uniqueID == s_GetModifier_ID;
+		}
+
+
+
 
 		public int GetLastLayer()
 		{
 			int maxLayer = -1;
-			for (int i = 0; i < _modifiers.Count; i++)
+			int nMod = _modifiers != null ? _modifiers.Count : 0;
+			if (nMod > 0)
 			{
-				if (maxLayer < _modifiers[i]._layer)
+				apModifierBase curMod = null;
+				for (int i = 0; i < nMod; i++)
 				{
-					maxLayer = _modifiers[i]._layer;
+					curMod = _modifiers[i];
+					if (maxLayer < curMod._layer)
+					{
+						maxLayer = curMod._layer;
+					}
 				}
 			}
+			
 			return maxLayer;
 
 		}

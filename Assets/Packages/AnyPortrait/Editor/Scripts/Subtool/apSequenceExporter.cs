@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -1023,7 +1023,9 @@ namespace AnyPortrait
 		//---------------------------------------------------------------------------------------
 		// Functions : Sprite Sheet
 		//---------------------------------------------------------------------------------------
-		public bool StartSpritesheet(apRootUnit rootUnit, List<apAnimClip> animClips, List<bool> animClipFlags, 
+		public bool StartSpritesheet(apRootUnit rootUnit,
+										//List<apAnimClip> animClips, List<bool> animClipFlags, 
+										List<apSelection.CaptureAnimInfo> targetAnimInfos,
 										string saveFilePath, 
 										bool isSizeCompressed,
 										bool isSequenceFiles,
@@ -1037,7 +1039,9 @@ namespace AnyPortrait
 			//1. 애니메이션을 한번씩 돌리고, 결과를 SpriteUnit으로 텍스쳐와 애니메이션+프레임 정보, 이미지의 크기와 오프셋 등을 저장하여 리스트로 가진다.
 			//2. Pack 방식에 따라서 한꺼번에 합친다.
 
-			if (rootUnit == null || animClips == null || animClips.Count == 0)
+			int nAnimInfos = targetAnimInfos != null ? targetAnimInfos.Count : 0;
+
+			if (rootUnit == null || nAnimInfos == 0)
 			{
 				StopAll();
 				return false;
@@ -1051,22 +1055,30 @@ namespace AnyPortrait
 			_Sprite_CurAnimFrameOnTotal = 0;
 
 			_Sprite_AnimClips.Clear();
-			for (int i = 0; i < animClips.Count; i++)
+
+			apSelection.CaptureAnimInfo curInfo = null;
+
+			for (int i = 0; i < nAnimInfos; i++)
 			{
-				if(animClipFlags[i])
+				curInfo = targetAnimInfos[i];
+				if(curInfo._animClip == null || !curInfo._isSelected)
 				{
-					_Sprite_AnimClips.Add(animClips[i]);
-					int frames = 0;
-					if(animClips[i].IsLoop)
-					{
-						frames = Mathf.Max(animClips[i].EndFrame - animClips[i].StartFrame, 1);
-					}
-					else
-					{
-						frames = Mathf.Max((animClips[i].EndFrame - animClips[i].StartFrame) + 1, 1);
-					}
-					_Sprite_TotalAnimFrames += frames;
+					continue;
 				}
+
+				apAnimClip targetAnimClip = curInfo._animClip;
+
+				_Sprite_AnimClips.Add(targetAnimClip);
+				int frames = 0;
+				if(targetAnimClip.IsLoop)
+				{
+					frames = Mathf.Max(targetAnimClip.EndFrame - targetAnimClip.StartFrame, 1);
+				}
+				else
+				{
+					frames = Mathf.Max((targetAnimClip.EndFrame - targetAnimClip.StartFrame) + 1, 1);
+				}
+				_Sprite_TotalAnimFrames += frames;
 			}
 
 			if(_Sprite_TotalAnimFrames < 1)

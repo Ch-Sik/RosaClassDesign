@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -136,6 +136,10 @@ namespace AnyPortrait
 		private apProjectSettingData _projectSettingData = null;
 		public apProjectSettingData ProjectSettingData { get { return _projectSettingData; } }
 
+
+		//[v1.5.0] 메모리 관리 (GC 체크용)
+		private apEditorMemUtil _memUtil = new apEditorMemUtil();
+		public apEditorMemUtil MemUtil { get { return _memUtil; } }
 
 		//--------------------------------------------------------------------------------
 		// 화면 구성 요소
@@ -565,6 +569,13 @@ namespace AnyPortrait
 		public bool _isSaveProjectWhenBaked = false;
 
 
+		//추가 v1.5.0 : IK 처리 방식 (에디터용)
+		public apPortrait.IK_METHOD _option_IKMethod = apPortrait.IK_METHOD.FABRIK;
+
+		//추가 v1.5.0 : 컨트롤 파라미터에 키 추가하는 경우 블렌딩 값이 설정될지 여부
+		public bool _option_NewControlParamModMeshBoneBlended = true;
+
+
 		//----------------------------------------------------------------------------------
 		// 에디터 UI 변수
 		//----------------------------------------------------------------------------------
@@ -816,7 +827,7 @@ namespace AnyPortrait
 
 
 		//딜레이되어 동작하는 Window 호출 요청
-		private enum DIALOG_SHOW_CALL { None, Setting, Bake, Capture, }
+		private enum DIALOG_SHOW_CALL { None, Setting, Bake, Capture, Close }
 		private DIALOG_SHOW_CALL _dialogShowCall = DIALOG_SHOW_CALL.None;
 		private EventType _curEventType = EventType.Ignore;
 
@@ -1054,7 +1065,10 @@ namespace AnyPortrait
 		private bool _isVersionNoticeIgnored = false;
 
 		//변경 22.7.1 : 특정 버전은 계속 무시하기
-		private int _versionNoticeIgnored_Ver = -1;
+		//> v1.5.0 : Major/Minor/Patch 각각 저장하기
+		private int _versionNoticeIgnored_Ver_Major = -1;
+		private int _versionNoticeIgnored_Ver_Minor = -1;
+		private int _versionNoticeIgnored_Ver_Patch = -1;
 
 
 		// FFD 변수들
@@ -1119,7 +1133,7 @@ namespace AnyPortrait
 		}
 
 
-		private float _tMemGC = 0.0f;
+		//private float _tMemGC = 0.0f;//삭제 v1.5.0 : GC.Collect는 유니티 에디터 자체 동작으로 대체 가능하다.
 
 		// 이게 True일때만 Repaint된다. Repaint하고나면 이 값은 False가 됨
 		private bool _isRepaintTimerUsable = false;
@@ -1273,14 +1287,6 @@ namespace AnyPortrait
 			Version2 = 1,//v1.4.6에 추가된 프로세서
 		}
 		public CAPTURE_PROCESSOR _captureProcessor = CAPTURE_PROCESSOR.Version2;
-
-		//public enum CAPTURE_FILTER_MODE : int
-		//{
-		//	Point = 0,
-		//	Bilinear = 1
-		//}
-		//public CAPTURE_FILTER_MODE _captureFilterMode = CAPTURE_FILTER_MODE.Bilinear;
-		//public bool _capturePixelPerfect = false;
 
 		//포커스 미세 조정 (Image의 Pixel 단위)
 		public int _captureFocusOffsetPX_X = 0;
@@ -1504,6 +1510,7 @@ namespace AnyPortrait
 		private apGUIContentWrapper _guiContent_Top_GizmoIcon_Scale = null;
 		private apGUIContentWrapper _guiContent_Top_GizmoIcon_Color = null;
 		private apGUIContentWrapper _guiContent_Top_GizmoIcon_Extra = null;
+		private apGUIContentWrapper _guiContent_TopBtn_CloseEditor = null;
 
 		//EditorController에서 사용될 GUIContent
 		public apGUIContentWrapper _guiContent_EC_SetDefault = null;

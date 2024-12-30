@@ -476,12 +476,20 @@ namespace AnyPortrait
 
 			public void SetCustomInt(int intValue, ref string propertyName)
 			{
+#if UNITY_2021_1_OR_NEWER
+				_material.SetInteger(propertyName, intValue);
+#else
 				_material.SetInt(propertyName, intValue);
+#endif
 			}
 
 			public void SetCustomInt(int intValue, int propertyNameID)//ID 버전 [v1.4.3]
 			{
+#if UNITY_2021_1_OR_NEWER
+				_material.SetInteger(propertyNameID, intValue);
+#else
 				_material.SetInt(propertyNameID, intValue);
+#endif
 			}
 
 			public void SetCustomVector4(ref Vector4 vec4Value, ref string propertyName)

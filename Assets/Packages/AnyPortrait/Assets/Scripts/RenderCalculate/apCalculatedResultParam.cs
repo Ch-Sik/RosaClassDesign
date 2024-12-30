@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -594,11 +594,13 @@ namespace AnyPortrait
 			apCalculatedResultParamSubList targetSubList = null;
 
 			//같이 묶여서 작업할 SubList가 있는가
-			apCalculatedResultParamSubList existSubList = _subParamKeyValueList.Find(delegate (apCalculatedResultParamSubList a)
-			{
-			//return a._controlParam == paramSetGroup._keyControlParam;
-			return a._keyParamSetGroup == paramSetGroup;
-			});
+			//apCalculatedResultParamSubList existSubList = _subParamKeyValueList.Find(delegate (apCalculatedResultParamSubList a)
+			//{
+			//	return a._keyParamSetGroup == paramSetGroup;
+			//});
+
+			s_FindCalResultParamSubList_PSG = paramSetGroup;
+			apCalculatedResultParamSubList existSubList = _subParamKeyValueList.Find(s_FindCalResultParamSubList_Func);
 
 			if (existSubList != null)
 			{
@@ -622,6 +624,13 @@ namespace AnyPortrait
 			}
 		}
 
+		private static apModifierParamSetGroup s_FindCalResultParamSubList_PSG = null;
+		private static Predicate<apCalculatedResultParamSubList> s_FindCalResultParamSubList_Func = FUNC_FindCalResultParamSubList;
+		private static bool FUNC_FindCalResultParamSubList(apCalculatedResultParamSubList a)
+		{
+			return a._keyParamSetGroup == s_FindCalResultParamSubList_PSG;
+		}
+		
 
 
 
@@ -769,10 +778,22 @@ namespace AnyPortrait
 
 		public ParamKeyValueSet GetParamKeyValue(apModifierParamSet paramSet)
 		{
-			return _paramKeyValues.Find(delegate (ParamKeyValueSet a)
-			{
-				return a._paramSet == paramSet;
-			});
+			//이전 (GC 발생)
+			//return _paramKeyValues.Find(delegate (ParamKeyValueSet a)
+			//{
+			//	return a._paramSet == paramSet;
+			//});
+
+			//변경 v1.5.0
+			s_FindPKVSet_ParamSet = paramSet;
+			return _paramKeyValues.Find(s_FindPKVSet_Func);
+		}
+
+		private static apModifierParamSet s_FindPKVSet_ParamSet = null;
+		private static Predicate<ParamKeyValueSet> s_FindPKVSet_Func = FUNC_FindPKVSet;
+		private static bool FUNC_FindPKVSet(ParamKeyValueSet a)
+		{
+			return a._paramSet == s_FindPKVSet_ParamSet;
 		}
 	}
 

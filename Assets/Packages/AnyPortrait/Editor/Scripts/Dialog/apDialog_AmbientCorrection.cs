@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -186,7 +186,7 @@ namespace AnyPortrait
 		{	
 			RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
 			RenderSettings.ambientLight = Color.black;
-			apEditorUtil.SetEditorDirty();
+			apEditorUtil.SetAllSceneDirty();//씬 전체 Dirty
 		}
 	}
 }

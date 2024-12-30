@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -414,10 +414,16 @@ namespace AnyPortrait
 			_animPlayMapping = _portrait._animPlayMapping;
 			_parentOptTransform = parentOptTransform;
 
-			for (int i = 0; i < _paramSetGroupList.Count; i++)
+			int nPSGs = _paramSetGroupList != null ? _paramSetGroupList.Count : 0;
+
+			if (nPSGs > 0)
 			{
-				_paramSetGroupList[i].LinkPortrait(portrait, this);
+				for (int i = 0; i < nPSGs; i++)
+				{
+					_paramSetGroupList[i].LinkPortrait(portrait, this);
+				}
 			}
+			
 
 			if(_isAnimated)
 			{
@@ -436,10 +442,16 @@ namespace AnyPortrait
 				_animLayeredParams = new List<AnimLayeredParam>();
 			}
 
-			for (int i = 0; i < _paramSetGroupList.Count; i++)
+			int nPSGs = _paramSetGroupList != null ? _paramSetGroupList.Count : 0;
+
+			if (nPSGs > 0)
 			{
-				yield return _paramSetGroupList[i].LinkPortraitAsync(portrait, this, asyncTimer);
+				for (int i = 0; i < nPSGs; i++)
+				{
+					yield return _paramSetGroupList[i].LinkPortraitAsync(portrait, this, asyncTimer);
+				}
 			}
+			
 
 			if(asyncTimer.IsYield())
 			{
@@ -492,17 +504,27 @@ namespace AnyPortrait
 			//ParamSetWeight를 사용하는가
 			_isUseParamSetWeight = srcModifier.IsUseParamSetWeight;
 
-			_paramSetGroupList.Clear();
-			for (int i = 0; i < srcModifier._paramSetGroup_controller.Count; i++)
+			if(_paramSetGroupList == null)
 			{
-				apModifierParamSetGroup srcParamSetGroup = srcModifier._paramSetGroup_controller[i];
-
-				apOptParamSetGroup optParamSetGroup = new apOptParamSetGroup();
-				optParamSetGroup.Bake(portrait, this, srcParamSetGroup, _isAnimated, isUseModMeshSet);
-
-				_paramSetGroupList.Add(optParamSetGroup);
-				
+				_paramSetGroupList = new List<apOptParamSetGroup>();
 			}
+			_paramSetGroupList.Clear();
+
+			int nSrcPSGs = srcModifier._paramSetGroup_controller != null ? srcModifier._paramSetGroup_controller.Count : 0;
+
+			if (nSrcPSGs > 0)
+			{
+				for (int i = 0; i < nSrcPSGs; i++)
+				{
+					apModifierParamSetGroup srcParamSetGroup = srcModifier._paramSetGroup_controller[i];
+
+					apOptParamSetGroup optParamSetGroup = new apOptParamSetGroup();
+					optParamSetGroup.Bake(portrait, this, srcParamSetGroup, _isAnimated, isUseModMeshSet);
+
+					_paramSetGroupList.Add(optParamSetGroup);
+				}
+			}
+			
 
 			//추가 19.5.23 : ModMeshSet을 사용하도록 하자
 			_isUseModMeshSet = isUseModMeshSet;
@@ -512,14 +534,17 @@ namespace AnyPortrait
 		//--------------------------------------------
 		public void InitCalcualte(float tDelta)
 		{
+			int nCalResultParam = _calculatedResultParams != null ? _calculatedResultParams.Count : 0;
+
 			//계산이 불가능한 상황일 때, 계산 값만 초기화한다.
-			if (_calculatedResultParams.Count == 0)
+			if (nCalResultParam == 0)
 			{
 				return;
 			}
 
 			apOptCalculatedResultParam calParam = null;
-			for (int i = 0; i < _calculatedResultParams.Count; i++)
+
+			for (int i = 0; i < nCalResultParam; i++)
 			{
 				calParam = _calculatedResultParams[i];
 
@@ -2857,11 +2882,18 @@ namespace AnyPortrait
 			//bool isFirstDebug = true;
 			apOptCalculatedResultParam calParam = null;
 			bool isUpdatable = false;
-			for (int i = 0; i < _calculatedResultParams.Count; i++)
+
+			int nCRP = _calculatedResultParams != null ? _calculatedResultParams.Count : 0;
+			if(nCRP == 0)
+			{
+				return;
+			}
+
+
+			for (int i = 0; i < nCRP; i++)
 			{
 				calParam = _calculatedResultParams[i];
-
-				
+								
 				//1. 계산 [중요]
 				isUpdatable = calParam.Calculate();
 				if (!isUpdatable)
@@ -2885,7 +2917,7 @@ namespace AnyPortrait
 
 				//신버전
 				calParamVertRequestList = calParam._result_VertLocalPairs;
-
+				
 
 				subParamGroupList = calParam._subParamKeyValueList;
 				subParamKeyValueList = null;
@@ -2903,15 +2935,21 @@ namespace AnyPortrait
 				//}
 
 				//신버전
-				for (int iVR = 0; iVR < calParamVertRequestList.Count; iVR++)
+				int nCalParamVertRequests = calParamVertRequestList != null ? calParamVertRequestList.Count : 0;
+				if (nCalParamVertRequests > 0)
 				{
-					calParamVertRequestList[iVR].InitCalculate();
+					for (int iVR = 0; iVR < nCalParamVertRequests; iVR++)
+					{
+						calParamVertRequestList[iVR].InitCalculate();
+					}
 				}
+				
 
 
 				if (_isColorProperty)
 				{
-					calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					calParam._result_Color = _defaultColor;
 					calParam._result_IsVisible = false;//Alpha와 달리 Visible 값은 false -> OR 연산으로 작동한다.
 				}
 				else
@@ -2948,7 +2986,14 @@ namespace AnyPortrait
 
 				//SubList (ParamSetGroup을 키값으로 레이어화된 데이터)를 순회하면서 먼저 계산한다.
 				//레이어간 병합 과정에 신경 쓸것
-				for (int iSubList = 0; iSubList < subParamGroupList.Count; iSubList++)
+				int nSubParamGroups = subParamGroupList != null ? subParamGroupList.Count : 0;
+				if(nSubParamGroups == 0)
+				{
+					calParam._isAvailable = false;
+					continue;
+				}
+
+				for (int iSubList = 0; iSubList < nSubParamGroups; iSubList++)
 				{
 					curSubList = subParamGroupList[iSubList];
 
@@ -3018,280 +3063,212 @@ namespace AnyPortrait
 
 					//Param (MorphKey에 따라서)을 기준으로 데이터를 넣어준다.
 					//Dist에 따른 ParamWeight를 가중치로 적용한다.
-					for (int iPV = 0; iPV < nParamKeys; iPV++)
+					if (nParamKeys > 0)
 					{
-						paramKeyValue = subParamKeyValueList[iPV];
-
-						// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
-						//if (!paramKeyValue._isCalculated) { continue; }
-
-						tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
-
-						
-						//최적화해야할 부분 1)
-						//구버전)
-						//Pos를 일일이 돌게 아니라 VertexRequst의 Weight만 지정하자
-						////---------------------------- Pos List
-						//for (int iPos = 0; iPos < posList.Length; iPos++)
-						//{
-						//	//calculatedValue = paramKeyValue._modifiedValue._vertices[iPos]._deltaPos * paramKeyValue._weight;
-						//	tmpPosList[iPos] += paramKeyValue._modifiedMesh._vertices[iPos]._deltaPos * paramKeyValue._weight;
-						//}
-						////---------------------------- Pos List
-
-						//>> 최적화 코드)
-						//이전
-						//vertRequest._modWeightPairs[iPV].SetWeight(paramKeyValue._weight);//<<TODO : 이 부분이 툴과 달라서 "계산된 것만 적용하기"가 안되네..
-						//변경 v1.4.7 : VertexRequest에도 _isCalculated를 삭제하는 전략을 적용했다.
-						vertRequest.OnModWeightPairCalculated(paramKeyValue._linkedVertexRequestMWP, paramKeyValue._weight);
-
-
-						//---------------------------- Color
-						if (tmpIsColoredKeyParamSetGroup)
+						for (int iPV = 0; iPV < nParamKeys; iPV++)
 						{
-							tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
-							if (tmpSubModMesh_Color != null)
-							{
-								if (!tmpIsToggleShowHideOption)
-								{
-									//기본방식
-									if (tmpSubModMesh_Color._isVisible)
-									{
-										tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-										tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
-									}
-									else
-									{
-										tmpParamColor = tmpSubModMesh_Color._meshColor;
-										tmpParamColor.a = 0.0f;
-										tmpColor += tmpParamColor * paramKeyValue._weight;
-									}
-								}
-								else
-								{
-									//추가 20.2.24 : 토글 방식의 ShowHide 방식
-									if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
-									{
-										//paramKeyValue._paramSet.ControlParamValue
-										tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-										tmpVisible = true;//< 일단 이것도 true
+							paramKeyValue = subParamKeyValueList[iPV];
 
-										//토글용 처리
-										tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+							// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
+							//if (!paramKeyValue._isCalculated) { continue; }
 
-										//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
-										if (!tmpToggleOpt_IsAnyKey_Shown)
-										{
-											tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
-										}
-										else
-										{
-											//Show Key Index 중 가장 작은 값을 기준으로 한다.
-											tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
-										}
+							tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
 
 
-										tmpToggleOpt_IsAnyKey_Shown = true;
-
-										tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
-										tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
-
-									}
-									else
-									{
-										//토글용 처리
-										tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
-
-										if (!tmpToggleOpt_IsAny_Hidden)
-										{
-											tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
-										}
-										else
-										{
-											//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
-											tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
-										}
-
-										tmpToggleOpt_IsAny_Hidden = true;
-										tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
-										tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
-									}
-								}
-							}
-						}
-
-						nColorCalculated++;
-						//---------------------------- Color
-
-						//---------------------------- Extra Option
-						//추가 12.5 : Extra Option
-						if (_isExtraPropertyEnabled)
-						{
-							//이전 코드
-							//1. Modifier의 Extra Property가 켜져 있어야 한다.
-							//2. 현재 ParamKeyValue의 ModMesh의 Depth나 TextureData Changed 옵션이 켜져 있어야 한다.
-							//2-1. Depth인 경우 Ex-Transform이 켜져 있어야 한다.
-							//2-2. Texture인 경우 Ex-Color가 켜져 있어야 한다.
-							//if (paramKeyValue._modifiedMesh._isExtraValueEnabled
-							//	&& (paramKeyValue._modifiedMesh._extraValue._isDepthChanged || paramKeyValue._modifiedMesh._extraValue._isTextureChanged)
-							//	)
+							//최적화해야할 부분 1)
+							//구버전)
+							//Pos를 일일이 돌게 아니라 VertexRequst의 Weight만 지정하자
+							////---------------------------- Pos List
+							//for (int iPos = 0; iPos < posList.Length; iPos++)
 							//{
-							//	//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
-							//	float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
-							//	float bias = 0.0001f;
-							//	float overlapBias = 0.01f;
-							//	float cutOut = 0.0f;
-							//	bool isExactWeight = false;
-							//	if (IsAnimated)
-							//	{
-							//		switch (paramKeyValue._animKeyPos)
-							//		{
-							//			case apOptCalculatedResultParam.AnimKeyPos.ExactKey: isExactWeight = true; break;
-							//			case apOptCalculatedResultParam.AnimKeyPos.NextKey: cutOut = paramKeyValue._modifiedMesh._extraValue._weightCutout_AnimPrev; break; //Next Key라면 Prev와의 CutOut을 가져온다.
-							//			case apOptCalculatedResultParam.AnimKeyPos.PrevKey: cutOut = paramKeyValue._modifiedMesh._extraValue._weightCutout_AnimNext; break;//Prev Key라면 Next와의 CutOut을 가져온다.
-							//		}
-							//	}
-							//	else
-							//	{
-							//		cutOut = paramKeyValue._modifiedMesh._extraValue._weightCutout;
-							//	}
-
-							//	cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
-
-							//	if (isExactWeight)
-							//	{
-							//		extraWeight = 10000.0f;
-							//	}
-							//	else if (cutOut < bias)
-							//	{
-							//		//정확하면 최대값
-							//		//아니면 적용안함
-							//		if (extraWeight > 1.0f - bias) { extraWeight = 10000.0f; }
-							//		else { extraWeight = -1.0f; }
-							//	}
-							//	else
-							//	{
-							//		if (extraWeight < 1.0f - cutOut) { extraWeight = -1.0f; }
-							//		else { extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
-							//	}
-
-							//	if (extraWeight > 0.0f)
-							//	{
-							//		if (paramKeyValue._modifiedMesh._extraValue._isDepthChanged)
-							//		{
-							//			//2-1. Depth 이벤트
-							//			if(extraWeight > tmpExtra_DepthMaxWeight)
-							//			{
-							//				//가중치가 최대값보다 큰 경우
-							//				tmpExtra_DepthMaxWeight = extraWeight;
-							//				tmpExtra_DepthChanged = true;
-							//				tmpExtra_DeltaDepth = paramKeyValue._modifiedMesh._extraValue._deltaDepth;
-							//			}
-
-							//		}
-							//		if (paramKeyValue._modifiedMesh._extraValue._isTextureChanged)
-							//		{
-							//			//2-2. Texture 이벤트
-							//			if(extraWeight > tmpExtra_TextureMaxWeight)
-							//			{
-							//				//가중치가 최대값보다 큰 경우
-							//				tmpExtra_TextureMaxWeight = extraWeight;
-							//				tmpExtra_TextureChanged = true;
-							//				tmpExtra_TextureData = paramKeyValue._modifiedMesh._extraValue._linkedTextureData;
-							//				tmpExtra_TextureDataID = paramKeyValue._modifiedMesh._extraValue._textureDataID;
-							//			}
-							//		}
-							//	}
+							//	//calculatedValue = paramKeyValue._modifiedValue._vertices[iPos]._deltaPos * paramKeyValue._weight;
+							//	tmpPosList[iPos] += paramKeyValue._modifiedMesh._vertices[iPos]._deltaPos * paramKeyValue._weight;
 							//}
+							////---------------------------- Pos List
 
-							//변경
-							tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
+							//>> 최적화 코드)
+							//이전
+							//vertRequest._modWeightPairs[iPV].SetWeight(paramKeyValue._weight);//<<TODO : 이 부분이 툴과 달라서 "계산된 것만 적용하기"가 안되네..
+							//변경 v1.4.7 : VertexRequest에도 _isCalculated를 삭제하는 전략을 적용했다.
+							vertRequest.OnModWeightPairCalculated(paramKeyValue._linkedVertexRequestMWP, paramKeyValue._weight);
 
-							if (tmpSubModMesh_Extra != null
-									&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
-									)
+
+							//---------------------------- Color
+							if (tmpIsColoredKeyParamSetGroup)
 							{
-								//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
-								float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
-								float bias = 0.0001f;
-								float overlapBias = 0.01f;
-								float cutOut = 0.0f;
-								bool isExactWeight = false;
-								if (IsAnimated)
+								tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
+								if (tmpSubModMesh_Color != null)
 								{
-									switch (paramKeyValue._animKeyPos)
+									if (!tmpIsToggleShowHideOption)
 									{
-										case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
-											isExactWeight = true;
-											break;
-										case apOptCalculatedResultParam.AnimKeyPos.NextKey:
-											cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
-											break; //Next Key라면 Prev와의 CutOut을 가져온다.
-										case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
-											cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
-											break;//Prev Key라면 Next와의 CutOut을 가져온다.
-									}
-								}
-								else
-								{
-									cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
-								}
-
-								cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
-
-								if (isExactWeight)
-								{
-									extraWeight = 10000.0f;
-								}
-								else if (cutOut < bias)
-								{
-									//정확하면 최대값
-									//아니면 적용안함
-									if (extraWeight > 1.0f - bias) { extraWeight = 10000.0f; }
-									else { extraWeight = -1.0f; }
-								}
-								else
-								{
-									if (extraWeight < 1.0f - cutOut) { extraWeight = -1.0f; }
-									else { extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
-								}
-
-								if (extraWeight > 0.0f)
-								{
-									if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
-									{
-										//2-1. Depth 이벤트
-										if (extraWeight > tmpExtra_DepthMaxWeight)
+										//기본방식
+										if (tmpSubModMesh_Color._isVisible)
 										{
-											//가중치가 최대값보다 큰 경우
-											tmpExtra_DepthMaxWeight = extraWeight;
-											tmpExtra_DepthChanged = true;
-											tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
+											tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+											tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
 										}
-
-									}
-									if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
-									{
-										//2-2. Texture 이벤트
-										if (extraWeight > tmpExtra_TextureMaxWeight)
+										else
 										{
-											//가중치가 최대값보다 큰 경우
-											tmpExtra_TextureMaxWeight = extraWeight;
-											tmpExtra_TextureChanged = true;
-											tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
-											tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
+											tmpParamColor = tmpSubModMesh_Color._meshColor;
+											tmpParamColor.a = 0.0f;
+											tmpColor += tmpParamColor * paramKeyValue._weight;
+										}
+									}
+									else
+									{
+										//추가 20.2.24 : 토글 방식의 ShowHide 방식
+										if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
+										{
+											//paramKeyValue._paramSet.ControlParamValue
+											tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+											tmpVisible = true;//< 일단 이것도 true
+
+											//토글용 처리
+											tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+
+											//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
+											if (!tmpToggleOpt_IsAnyKey_Shown)
+											{
+												tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
+											}
+											else
+											{
+												//Show Key Index 중 가장 작은 값을 기준으로 한다.
+												tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
+											}
+
+
+											tmpToggleOpt_IsAnyKey_Shown = true;
+
+											tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
+											tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
+
+										}
+										else
+										{
+											//토글용 처리
+											tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+
+											if (!tmpToggleOpt_IsAny_Hidden)
+											{
+												tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
+											}
+											else
+											{
+												//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
+												tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
+											}
+
+											tmpToggleOpt_IsAny_Hidden = true;
+											tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
+											tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
 										}
 									}
 								}
 							}
-						}
-						//---------------------------- Extra Option
+
+							nColorCalculated++;
+							//---------------------------- Color
+
+							//---------------------------- Extra Option
+							//추가 12.5 : Extra Option
+							if (_isExtraPropertyEnabled)
+							{	
+
+								//변경
+								tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
+
+								if (tmpSubModMesh_Extra != null
+										&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
+										)
+								{
+									//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
+									float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
+									float bias = 0.0001f;
+									float overlapBias = 0.01f;
+									float cutOut = 0.0f;
+									bool isExactWeight = false;
+									if (IsAnimated)
+									{
+										switch (paramKeyValue._animKeyPos)
+										{
+											case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
+												isExactWeight = true;
+												break;
+											case apOptCalculatedResultParam.AnimKeyPos.NextKey:
+												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
+												break; //Next Key라면 Prev와의 CutOut을 가져온다.
+											case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
+												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
+												break;//Prev Key라면 Next와의 CutOut을 가져온다.
+										}
+									}
+									else
+									{
+										cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
+									}
+
+									cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
+
+									if (isExactWeight)
+									{
+										extraWeight = 10000.0f;
+									}
+									else if (cutOut < bias)
+									{
+										//정확하면 최대값
+										//아니면 적용안함
+										if (extraWeight > 1.0f - bias)
+										{ extraWeight = 10000.0f; }
+										else
+										{ extraWeight = -1.0f; }
+									}
+									else
+									{
+										if (extraWeight < 1.0f - cutOut)
+										{ extraWeight = -1.0f; }
+										else
+										{ extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
+									}
+
+									if (extraWeight > 0.0f)
+									{
+										if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
+										{
+											//2-1. Depth 이벤트
+											if (extraWeight > tmpExtra_DepthMaxWeight)
+											{
+												//가중치가 최대값보다 큰 경우
+												tmpExtra_DepthMaxWeight = extraWeight;
+												tmpExtra_DepthChanged = true;
+												tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
+											}
+
+										}
+										if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
+										{
+											//2-2. Texture 이벤트
+											if (extraWeight > tmpExtra_TextureMaxWeight)
+											{
+												//가중치가 최대값보다 큰 경우
+												tmpExtra_TextureMaxWeight = extraWeight;
+												tmpExtra_TextureChanged = true;
+												tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
+												tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
+											}
+										}
+									}
+								}
+							}
+							//---------------------------- Extra Option
 
 
-//#if UNITY_EDITOR
-//						Profiler.EndSample();
-//#endif
-					}//--- Params
+							//#if UNITY_EDITOR
+							//						Profiler.EndSample();
+							//#endif
+						}//--- Params
+					}
+					
 
 //#if UNITY_EDITOR
 //					Profiler.EndSample();
@@ -3531,7 +3508,14 @@ namespace AnyPortrait
 			//bool isFirstDebug = true;
 			apOptCalculatedResultParam calParam = null;
 			bool isUpdatable = false;
-			for (int i = 0; i < _calculatedResultParams.Count; i++)
+
+			int nCRP = _calculatedResultParams != null ? _calculatedResultParams.Count : 0;
+			if(nCRP == 0)
+			{
+				return;
+			}
+
+			for (int i = 0; i < nCRP; i++)
 			{
 				calParam = _calculatedResultParams[i];
 
@@ -3577,15 +3561,20 @@ namespace AnyPortrait
 				_keyAnimPlayUnit = null;
 
 				//신버전
-				for (int iVR = 0; iVR < calParamVertRequestList.Count; iVR++)
+				int nCalParamVertRequests = calParamVertRequestList != null ? calParamVertRequestList.Count : 0;
+				if (nCalParamVertRequests > 0)
 				{
-					calParamVertRequestList[iVR].InitCalculate();
+					for (int iVR = 0; iVR < nCalParamVertRequests; iVR++)
+					{
+						calParamVertRequestList[iVR].InitCalculate();
+					}
 				}
 
 
 				if (_isColorProperty)
 				{
-					calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					calParam._result_Color = _defaultColor;
 					calParam._result_IsVisible = false;//Alpha와 달리 Visible 값은 false -> OR 연산으로 작동한다.
 				}
 				else
@@ -3648,470 +3637,470 @@ namespace AnyPortrait
 				//변경 20.11.23 : AnimPlayMapping을 이용하여 미리 정렬된 순서로 SubList를 호출
 				int iTargetSubList = 0;
 				apAnimPlayMapping.LiveUnit curUnit = null;
-				for (int iUnit = 0; iUnit < _animPlayMapping._nAnimClips; iUnit++)
+
+				int nAnimClips = _animPlayMapping._nAnimClips;
+				if (nAnimClips > 0)
 				{
-					curUnit = _animPlayMapping._liveUnits_Sorted[iUnit];
-					if(!curUnit._isLive)
+					for (int iUnit = 0; iUnit < nAnimClips; iUnit++)
 					{
-						//재생 종료
-						//이 뒤는 모두 재생이 안되는 애니메이션이다.
-						break;
-					}
-
-					iTargetSubList = curUnit._animIndex;
-					curSubList = calParam._subParamKeyValueList_AnimSync[iTargetSubList];
-					if(curSubList == null)
-					{
-						//이게 Null이라는 것은, 이 AnimClip에 대한 TimelineLayer와 Mod는 없다는 것
-						continue;
-					}
-					
-					//----------------------여기까지
-
-
-					//이전 방식
-					//int nParamKeys = curSubList._subParamKeyValues.Count;//Sub Params
-					//subParamKeyValueList = curSubList._subParamKeyValues;
-
-
-					//다른 방식 20.11.24 : 모든 ParamKeyValue가 아니라, 유효한 ParamKeyValue만 체크한다.
-					int nValidParamKeyValues = curSubList._nResultAnimKey;
-					if(nValidParamKeyValues == 0)
-					{
-						continue;
-					}
-
-
-
-
-
-					paramKeyValue = null;
-
-
-					keyParamSetGroup = curSubList._keyParamSetGroup;
-
-					//삭제 20.11.24 : 위에서 AnimPlayMapping의 LiveUnit에서 미리 결정된다.
-					////애니메이션 모디파이어에서 실행되지 않은 애니메이션에 대한 PSG는 생략한다.
-					//if (!keyParamSetGroup.IsAnimEnabled)
-					//{
-					//	continue;
-					//}
-
-
-					//이 로직이 추가된다. (20.4.18)
-					_keyAnimClip = keyParamSetGroup._keyAnimClip;
-					_keyAnimPlayUnit = _keyAnimClip._parentPlayUnit;
-
-					//레이어별로 데이터를 그룹으로 만들어서 계산하자
-					if (_curAnimLayer != _keyAnimPlayUnit._layer
-						|| _curAnimLayeredParam == null)
-					{
-						//다음 레이어를 꺼내자
-						//- 풀에 이미 생성된 레이어가 있다면 가져오고, 없으면 생성한다.
-						if (_nAnimLayeredParams < _animLayeredParams.Count)
+						curUnit = _animPlayMapping._liveUnits_Sorted[iUnit];
+						if (!curUnit._isLive)
 						{
-							//가져올 레이어 파라미터가 있다.
-							_curAnimLayeredParam = _animLayeredParams[_nAnimLayeredParams];
-							_curAnimLayeredParam.ReadyToUpdate();
-						}
-						else
-						{
-							//풀에 레이어 파라미터가 없으므로 새로 만들어서 풀에 넣어주자
-							_curAnimLayeredParam = AnimLayeredParam.Make_Morph(_nAnimLayeredParams);//생성자에 ReadyToUpdate가 포함되어 있다.
-							_animLayeredParams.Add(_curAnimLayeredParam);
+							//재생 종료
+							//이 뒤는 모두 재생이 안되는 애니메이션이다.
+							break;
 						}
 
-						_curAnimLayer = _keyAnimPlayUnit._layer;
-						_nAnimLayeredParams++;//사용된 레이어 파라미터의 개수
-					}
+						iTargetSubList = curUnit._animIndex;
+						curSubList = calParam._subParamKeyValueList_AnimSync[iTargetSubList];
+						if (curSubList == null)
+						{
+							//이게 Null이라는 것은, 이 AnimClip에 대한 TimelineLayer와 Mod는 없다는 것
+							continue;
+						}
+
+						//----------------------여기까지
 
 
+						//이전 방식
+						//int nParamKeys = curSubList._subParamKeyValues.Count;//Sub Params
+						//subParamKeyValueList = curSubList._subParamKeyValues;
 
 
-					//Vertex Pos 대신 Vertex Requst를 보간하자
-					vertRequest = curSubList._vertexRequest;
+						//다른 방식 20.11.24 : 모든 ParamKeyValue가 아니라, 유효한 ParamKeyValue만 체크한다.
+						int nValidParamKeyValues = curSubList._nResultAnimKey;
+						if (nValidParamKeyValues == 0)
+						{
+							continue;
+						}
 
 
-					tmpColor = Color.clear;
-					tmpVisible = false;
+						paramKeyValue = null;
 
-					tmpTotalParamSetWeight = 0.0f;
-					nColorCalculated = 0;
+						keyParamSetGroup = curSubList._keyParamSetGroup;
 
-					//KeyParamSetGroup이 Color를 지원하는지 체크
-					tmpIsColoredKeyParamSetGroup = _isColorProperty && keyParamSetGroup._isColorPropertyEnabled;
-
-					//추가 20.2.24 : 색상 토글 옵션
-					tmpIsToggleShowHideOption = !IsAnimated && tmpIsColoredKeyParamSetGroup && keyParamSetGroup._isToggleShowHideWithoutBlend;
-
-					if (tmpIsToggleShowHideOption)
-					{
-						tmpToggleOpt_IsAnyKey_Shown = false;
-						tmpToggleOpt_TotalWeight_Shown = 0.0f;
-						tmpToggleOpt_MaxWeight_Shown = 0.0f;
-						tmpToggleOpt_KeyIndex_Shown = 0.0f;
-						tmpToggleOpt_IsAny_Hidden = false;
-						tmpToggleOpt_TotalWeight_Hidden = 0.0f;
-						tmpToggleOpt_MaxWeight_Hidden = 0.0f;
-						tmpToggleOpt_KeyIndex_Hidden = 0.0f;
-					}
-
-
-					//변경 20.4.20 : 초기화 위치가 여기여야 한다.
-					if(_isExtraPropertyEnabled)
-					{
-						//추가 12.5 : Extra Option 계산 값				
-						tmpExtra_DepthChanged = false;
-						tmpExtra_TextureChanged = false;
-						tmpExtra_DeltaDepth = 0;
-						tmpExtra_TextureDataID = 0;
-						tmpExtra_TextureData = null;
-						tmpExtra_DepthMaxWeight = -1.0f;//최대 Weight 값
-						tmpExtra_TextureMaxWeight = -1.0f;//최대 Weight 값
-					}
-
-					//-------------------------------------------
-					// 여기가 과부하가 가장 심한 곳이다! 우오오오
-					//-------------------------------------------
-
-					//Param (MorphKey에 따라서)을 기준으로 데이터를 넣어준다.
-					//Dist에 따른 ParamWeight를 가중치로 적용한다.
-
-					//변경 20.11.24 모든 키프레임 순회 방식 제거
-					//이전 방식
-					//for (int iPV = 0; iPV < nParamKeys; iPV++)
-					//{
-					//	paramKeyValue = subParamKeyValueList[iPV];
-
-					//변경 20.11.24 : 전체 체크 > 이미 보간된 것만 체크
-					int iRealPKV = -1;
-					for (int iPV = 0; iPV < nValidParamKeyValues; iPV++)
-					{
-						paramKeyValue = curSubList._resultAnimKeyPKVs[iPV];//보간이 완료된 PKV만 가져온다.
-						iRealPKV = curSubList._resultAnimKeyPKVIndices[iPV];//실제 PKV의 인덱스는 따로 가져와야 한다.
-
-						//여기까지...
-
-						if (//!paramKeyValue._isCalculated ||//삭제 v1.4.7
-							iRealPKV < 0//추가 20.11.25
-							)
-						{ continue; }
-
-						tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
-
-
-						//최적화해야할 부분 1)
-						//구버전)
-						//Pos를 일일이 돌게 아니라 VertexRequst의 Weight만 지정하자
-						////---------------------------- Pos List
-						//for (int iPos = 0; iPos < posList.Length; iPos++)
+						//삭제 20.11.24 : 위에서 AnimPlayMapping의 LiveUnit에서 미리 결정된다.
+						////애니메이션 모디파이어에서 실행되지 않은 애니메이션에 대한 PSG는 생략한다.
+						//if (!keyParamSetGroup.IsAnimEnabled)
 						//{
-						//	//calculatedValue = paramKeyValue._modifiedValue._vertices[iPos]._deltaPos * paramKeyValue._weight;
-						//	tmpPosList[iPos] += paramKeyValue._modifiedMesh._vertices[iPos]._deltaPos * paramKeyValue._weight;
+						//	continue;
 						//}
-						////---------------------------- Pos List
-
-						//>> 최적화 코드)
-						//vertRequest._modWeightPairs[iPV].SetWeight(paramKeyValue._weight);//이전 : 이 인덱스를 사용하면 안된다.
-
-						//이전
-						//vertRequest._modWeightPairs[iRealPKV].SetWeight(paramKeyValue._weight);//변경 20.11.25 : 별도의 인덱스를 사용
-
-						//변경 v1.4.7 : VertexRequest에도 _isCalculated를 삭제하는 전략을 적용했다.
-						vertRequest.OnModWeightPairCalculated(paramKeyValue._linkedVertexRequestMWP, paramKeyValue._weight);//그런데 이렇게 되면 iRealPKV가 필요 없넹?
 
 
+						//이 로직이 추가된다. (20.4.18)
+						_keyAnimClip = keyParamSetGroup._keyAnimClip;
+						_keyAnimPlayUnit = _keyAnimClip._parentPlayUnit;
 
-						//---------------------------- Color
-						if (tmpIsColoredKeyParamSetGroup)
+						//레이어별로 데이터를 그룹으로 만들어서 계산하자
+						if (_curAnimLayer != _keyAnimPlayUnit._layer
+							|| _curAnimLayeredParam == null)
 						{
-							tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
-							if (tmpSubModMesh_Color != null)
+							//다음 레이어를 꺼내자
+							//- 풀에 이미 생성된 레이어가 있다면 가져오고, 없으면 생성한다.
+							if (_nAnimLayeredParams < _animLayeredParams.Count)
 							{
-								if (!tmpIsToggleShowHideOption)
-								{
-									//기본방식
-									if (tmpSubModMesh_Color._isVisible)
-									{
-										tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-										tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
-									}
-									else
-									{
-										tmpParamColor = tmpSubModMesh_Color._meshColor;
-										tmpParamColor.a = 0.0f;
-										tmpColor += tmpParamColor * paramKeyValue._weight;
-									}
-								}
-								else
-								{
-									//추가 20.2.24 : 토글 방식의 ShowHide 방식
-									if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
-									{
-										//paramKeyValue._paramSet.ControlParamValue
-										tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-										tmpVisible = true;//< 일단 이것도 true
-
-										//토글용 처리
-										tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
-
-										//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
-										if (!tmpToggleOpt_IsAnyKey_Shown)
-										{
-											tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
-										}
-										else
-										{
-											//Show Key Index 중 가장 작은 값을 기준으로 한다.
-											tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
-										}
-
-
-										tmpToggleOpt_IsAnyKey_Shown = true;
-
-										tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
-										tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
-
-									}
-									else
-									{
-										//토글용 처리
-										tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
-
-										if (!tmpToggleOpt_IsAny_Hidden)
-										{
-											tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
-										}
-										else
-										{
-											//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
-											tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
-										}
-
-										tmpToggleOpt_IsAny_Hidden = true;
-										tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
-										tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
-									}
-								}
+								//가져올 레이어 파라미터가 있다.
+								_curAnimLayeredParam = _animLayeredParams[_nAnimLayeredParams];
+								_curAnimLayeredParam.ReadyToUpdate();
 							}
+							else
+							{
+								//풀에 레이어 파라미터가 없으므로 새로 만들어서 풀에 넣어주자
+								_curAnimLayeredParam = AnimLayeredParam.Make_Morph(_nAnimLayeredParams);//생성자에 ReadyToUpdate가 포함되어 있다.
+								_animLayeredParams.Add(_curAnimLayeredParam);
+							}
+
+							_curAnimLayer = _keyAnimPlayUnit._layer;
+							_nAnimLayeredParams++;//사용된 레이어 파라미터의 개수
 						}
 
-						nColorCalculated++;
-						//---------------------------- Color
 
-						//---------------------------- Extra Option
-						//추가 12.5 : Extra Option
+						//Vertex Pos 대신 Vertex Requst를 보간하자
+						vertRequest = curSubList._vertexRequest;
+
+
+						tmpColor = Color.clear;
+						tmpVisible = false;
+
+						tmpTotalParamSetWeight = 0.0f;
+						nColorCalculated = 0;
+
+						//KeyParamSetGroup이 Color를 지원하는지 체크
+						tmpIsColoredKeyParamSetGroup = _isColorProperty && keyParamSetGroup._isColorPropertyEnabled;
+
+						//추가 20.2.24 : 색상 토글 옵션
+						tmpIsToggleShowHideOption = !IsAnimated && tmpIsColoredKeyParamSetGroup && keyParamSetGroup._isToggleShowHideWithoutBlend;
+
+						if (tmpIsToggleShowHideOption)
+						{
+							tmpToggleOpt_IsAnyKey_Shown = false;
+							tmpToggleOpt_TotalWeight_Shown = 0.0f;
+							tmpToggleOpt_MaxWeight_Shown = 0.0f;
+							tmpToggleOpt_KeyIndex_Shown = 0.0f;
+							tmpToggleOpt_IsAny_Hidden = false;
+							tmpToggleOpt_TotalWeight_Hidden = 0.0f;
+							tmpToggleOpt_MaxWeight_Hidden = 0.0f;
+							tmpToggleOpt_KeyIndex_Hidden = 0.0f;
+						}
+
+
+						//변경 20.4.20 : 초기화 위치가 여기여야 한다.
 						if (_isExtraPropertyEnabled)
 						{
-							tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
+							//추가 12.5 : Extra Option 계산 값				
+							tmpExtra_DepthChanged = false;
+							tmpExtra_TextureChanged = false;
+							tmpExtra_DeltaDepth = 0;
+							tmpExtra_TextureDataID = 0;
+							tmpExtra_TextureData = null;
+							tmpExtra_DepthMaxWeight = -1.0f;//최대 Weight 값
+							tmpExtra_TextureMaxWeight = -1.0f;//최대 Weight 값
+						}
 
-							if (tmpSubModMesh_Extra != null
-									&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
-									)
+						//-------------------------------------------
+						// 여기가 과부하가 가장 심한 곳이다! 우오오오
+						//-------------------------------------------
+
+						//Param (MorphKey에 따라서)을 기준으로 데이터를 넣어준다.
+						//Dist에 따른 ParamWeight를 가중치로 적용한다.
+
+						//변경 20.11.24 모든 키프레임 순회 방식 제거
+						//이전 방식
+						//for (int iPV = 0; iPV < nParamKeys; iPV++)
+						//{
+						//	paramKeyValue = subParamKeyValueList[iPV];
+
+						//변경 20.11.24 : 전체 체크 > 이미 보간된 것만 체크
+						int iRealPKV = -1;
+						for (int iPV = 0; iPV < nValidParamKeyValues; iPV++)
+						{
+							paramKeyValue = curSubList._resultAnimKeyPKVs[iPV];//보간이 완료된 PKV만 가져온다.
+							iRealPKV = curSubList._resultAnimKeyPKVIndices[iPV];//실제 PKV의 인덱스는 따로 가져와야 한다.
+
+							//여기까지...
+
+							if (//!paramKeyValue._isCalculated ||//삭제 v1.4.7
+								iRealPKV < 0//추가 20.11.25
+								)
+							{ continue; }
+
+							tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
+
+
+							//최적화해야할 부분 1)
+							//구버전)
+							//Pos를 일일이 돌게 아니라 VertexRequst의 Weight만 지정하자
+							////---------------------------- Pos List
+							//for (int iPos = 0; iPos < posList.Length; iPos++)
+							//{
+							//	//calculatedValue = paramKeyValue._modifiedValue._vertices[iPos]._deltaPos * paramKeyValue._weight;
+							//	tmpPosList[iPos] += paramKeyValue._modifiedMesh._vertices[iPos]._deltaPos * paramKeyValue._weight;
+							//}
+							////---------------------------- Pos List
+
+							//>> 최적화 코드)
+							//vertRequest._modWeightPairs[iPV].SetWeight(paramKeyValue._weight);//이전 : 이 인덱스를 사용하면 안된다.
+
+							//이전
+							//vertRequest._modWeightPairs[iRealPKV].SetWeight(paramKeyValue._weight);//변경 20.11.25 : 별도의 인덱스를 사용
+
+							//변경 v1.4.7 : VertexRequest에도 _isCalculated를 삭제하는 전략을 적용했다.
+							vertRequest.OnModWeightPairCalculated(paramKeyValue._linkedVertexRequestMWP, paramKeyValue._weight);//그런데 이렇게 되면 iRealPKV가 필요 없넹?
+
+
+
+							//---------------------------- Color
+							if (tmpIsColoredKeyParamSetGroup)
 							{
-								//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
-								float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
-								float bias = 0.0001f;
-								float overlapBias = 0.01f;
-								float cutOut = 0.0f;
-								bool isExactWeight = false;
-								if (IsAnimated)
+								tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
+								if (tmpSubModMesh_Color != null)
 								{
-									switch (paramKeyValue._animKeyPos)
+									if (!tmpIsToggleShowHideOption)
 									{
-										case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
-											isExactWeight = true;
-											break;
-										case apOptCalculatedResultParam.AnimKeyPos.NextKey:
-											cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
-											break; //Next Key라면 Prev와의 CutOut을 가져온다.
-										case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
-											cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
-											break;//Prev Key라면 Next와의 CutOut을 가져온다.
-									}
-								}
-								else
-								{
-									cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
-								}
-
-								cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
-
-								if (isExactWeight)
-								{
-									extraWeight = 10000.0f;
-								}
-								else if (cutOut < bias)
-								{
-									//정확하면 최대값
-									//아니면 적용안함
-									if (extraWeight > 1.0f - bias)	{ extraWeight = 10000.0f; }
-									else							{ extraWeight = -1.0f; }
-								}
-								else
-								{
-									if (extraWeight < 1.0f - cutOut)	{ extraWeight = -1.0f; }
-									else								{ extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
-								}
-
-								if (extraWeight > 0.0f)
-								{
-									if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
-									{
-										//2-1. Depth 이벤트
-										if (extraWeight > tmpExtra_DepthMaxWeight)
+										//기본방식
+										if (tmpSubModMesh_Color._isVisible)
 										{
-											//가중치가 최대값보다 큰 경우
-											tmpExtra_DepthMaxWeight = extraWeight;
-											tmpExtra_DepthChanged = true;
-											tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
+											tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+											tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
 										}
-
-									}
-									if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
-									{
-										//2-2. Texture 이벤트
-										if (extraWeight > tmpExtra_TextureMaxWeight)
+										else
 										{
-											//가중치가 최대값보다 큰 경우
-											tmpExtra_TextureMaxWeight = extraWeight;
-											tmpExtra_TextureChanged = true;
-											tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
-											tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
+											tmpParamColor = tmpSubModMesh_Color._meshColor;
+											tmpParamColor.a = 0.0f;
+											tmpColor += tmpParamColor * paramKeyValue._weight;
+										}
+									}
+									else
+									{
+										//추가 20.2.24 : 토글 방식의 ShowHide 방식
+										if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
+										{
+											//paramKeyValue._paramSet.ControlParamValue
+											tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+											tmpVisible = true;//< 일단 이것도 true
+
+											//토글용 처리
+											tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+
+											//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
+											if (!tmpToggleOpt_IsAnyKey_Shown)
+											{
+												tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
+											}
+											else
+											{
+												//Show Key Index 중 가장 작은 값을 기준으로 한다.
+												tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
+											}
+
+
+											tmpToggleOpt_IsAnyKey_Shown = true;
+
+											tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
+											tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
+
+										}
+										else
+										{
+											//토글용 처리
+											tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+
+											if (!tmpToggleOpt_IsAny_Hidden)
+											{
+												tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
+											}
+											else
+											{
+												//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
+												tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
+											}
+
+											tmpToggleOpt_IsAny_Hidden = true;
+											tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
+											tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
 										}
 									}
 								}
 							}
-						}
-						//---------------------------- Extra Option
 
-					}//--- Params
+							nColorCalculated++;
+							//---------------------------- Color
 
-					//추가 : ParamSetWeight를 사용한다면 -> LayerWeight x ParamSetWeight(0~1)을 사용한다.
-					if (!_isUseParamSetWeight)
-					{
-						//layerWeight = Mathf.Clamp01(keyParamSetGroup._layerWeight);//이전
-						layerWeight = Mathf.Clamp01(curUnit._playWeight);//변경 20.11.23 : 일일이 계산된 KeyParamSetGroup의 Weight대신, 일괄 계산된 LiveUnit의 값을 이용
-					}
-					else
-					{
-						//layerWeight = Mathf.Clamp01(keyParamSetGroup._layerWeight * Mathf.Clamp01(tmpTotalParamSetWeight));//이전
-						layerWeight = Mathf.Clamp01(curUnit._playWeight * Mathf.Clamp01(tmpTotalParamSetWeight));//변경 20.11.23 : 위와 동일
-					}
+							//---------------------------- Extra Option
+							//추가 12.5 : Extra Option
+							if (_isExtraPropertyEnabled)
+							{
+								tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
 
+								if (tmpSubModMesh_Extra != null
+										&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
+										)
+								{
+									//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
+									float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
+									float bias = 0.0001f;
+									float overlapBias = 0.01f;
+									float cutOut = 0.0f;
+									bool isExactWeight = false;
+									if (IsAnimated)
+									{
+										switch (paramKeyValue._animKeyPos)
+										{
+											case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
+												isExactWeight = true;
+												break;
+											case apOptCalculatedResultParam.AnimKeyPos.NextKey:
+												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
+												break; //Next Key라면 Prev와의 CutOut을 가져온다.
+											case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
+												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
+												break;//Prev Key라면 Next와의 CutOut을 가져온다.
+										}
+									}
+									else
+									{
+										cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
+									}
 
-					if (layerWeight < 0.001f)
-					{
-						continue;
-					}
+									cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
 
-					vertRequest.SetCalculated();//<<일단 계산하기 위해 참조 했음을 알린다.
+									if (isExactWeight)
+									{
+										extraWeight = 10000.0f;
+									}
+									else if (cutOut < bias)
+									{
+										//정확하면 최대값
+										//아니면 적용안함
+										if (extraWeight > 1.0f - bias)	{ extraWeight = 10000.0f; }
+										else							{ extraWeight = -1.0f; }
+									}
+									else
+									{
+										if (extraWeight < 1.0f - cutOut)	{ extraWeight = -1.0f; }
+										else								{ extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
+									}
 
-					//calParam._totalParamSetGroupWeight += layerWeight;//<<수정 : 나중에 Modifier 자체의 Weight를 적용할 수 있게 만든다.
+									if (extraWeight > 0.0f)
+									{
+										if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
+										{
+											//2-1. Depth 이벤트
+											if (extraWeight > tmpExtra_DepthMaxWeight)
+											{
+												//가중치가 최대값보다 큰 경우
+												tmpExtra_DepthMaxWeight = extraWeight;
+												tmpExtra_DepthChanged = true;
+												tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
+											}
 
-					if (nColorCalculated == 0)
-					{
-						tmpVisible = true;
-						tmpColor = _defaultColor;
-					}
+										}
+										if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
+										{
+											//2-2. Texture 이벤트
+											if (extraWeight > tmpExtra_TextureMaxWeight)
+											{
+												//가중치가 최대값보다 큰 경우
+												tmpExtra_TextureMaxWeight = extraWeight;
+												tmpExtra_TextureChanged = true;
+												tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
+												tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
+											}
+										}
+									}
+								}
+							}
+							//---------------------------- Extra Option
 
+						}//--- Params
 
-
-
-
-					//중요! 20.4.18
-					//계산한 값을 애니메이션 레이어에 넣자
-					//TF방식과 다른 것은, 여기서는 Weight연산하지 않고 기록만 하는 것이다.
-					//나중에 다 처리하기 전에 한꺼번에 계산해야한다.
-					_curAnimLayeredParam._totalWeight += layerWeight;
-
-					if (_curAnimLayeredParam._iCurAnimClip == 0)
-					{
-						//첫번째 애니메이션 클립일 때
-						//레이어의 블렌드 방식을 첫번째 클립의 값을 따른다.
-						if (_keyAnimPlayUnit.BlendMethod == apAnimPlayUnit.BLEND_METHOD.Interpolation)
+						//추가 : ParamSetWeight를 사용한다면 -> LayerWeight x ParamSetWeight(0~1)을 사용한다.
+						if (!_isUseParamSetWeight)
 						{
-							_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Interpolation;
+							//layerWeight = Mathf.Clamp01(keyParamSetGroup._layerWeight);//이전
+							layerWeight = Mathf.Clamp01(curUnit._playWeight);//변경 20.11.23 : 일일이 계산된 KeyParamSetGroup의 Weight대신, 일괄 계산된 LiveUnit의 값을 이용
 						}
 						else
 						{
-							_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Additive;
+							//layerWeight = Mathf.Clamp01(keyParamSetGroup._layerWeight * Mathf.Clamp01(tmpTotalParamSetWeight));//이전
+							layerWeight = Mathf.Clamp01(curUnit._playWeight * Mathf.Clamp01(tmpTotalParamSetWeight));//변경 20.11.23 : 위와 동일
 						}
 
-						_curAnimLayeredParam._isCalculated = true;
+
+						if (layerWeight < 0.001f)
+						{
+							continue;
+						}
+
+						vertRequest.SetCalculated();//<<일단 계산하기 위해 참조 했음을 알린다.
+
+						//calParam._totalParamSetGroupWeight += layerWeight;//<<수정 : 나중에 Modifier 자체의 Weight를 적용할 수 있게 만든다.
+
+						if (nColorCalculated == 0)
+						{
+							tmpVisible = true;
+							tmpColor = _defaultColor;
+						}
+
+
+
+
+
+						//중요! 20.4.18
+						//계산한 값을 애니메이션 레이어에 넣자
+						//TF방식과 다른 것은, 여기서는 Weight연산하지 않고 기록만 하는 것이다.
+						//나중에 다 처리하기 전에 한꺼번에 계산해야한다.
+						_curAnimLayeredParam._totalWeight += layerWeight;
+
+						if (_curAnimLayeredParam._iCurAnimClip == 0)
+						{
+							//첫번째 애니메이션 클립일 때
+							//레이어의 블렌드 방식을 첫번째 클립의 값을 따른다.
+							if (_keyAnimPlayUnit.BlendMethod == apAnimPlayUnit.BLEND_METHOD.Interpolation)
+							{
+								_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Interpolation;
+							}
+							else
+							{
+								_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Additive;
+							}
+
+							_curAnimLayeredParam._isCalculated = true;
+						}
+
+						//VertexRequest와 Weight를 기록하자
+						_curAnimLayeredParam._cal_VertRequests.Add(vertRequest);
+						_curAnimLayeredParam._cal_VertWeight.Add(layerWeight);
+						_curAnimLayeredParam._cal_NumVertRequest++;
+
+						//색상 옵션도 레이어 파라미터에 넣자.
+						if (tmpIsColoredKeyParamSetGroup)
+						{
+							//레이어 내에서는 무조건 Interpolation이다.
+							if (_curAnimLayeredParam._nCal_Color == 0)
+							{
+								//첫번째는 그대로 대입
+								_curAnimLayeredParam._cal_Color = tmpColor;
+								_curAnimLayeredParam._cal_Visible = tmpVisible;
+							}
+							else
+							{
+								//두번째부터는 Interpolation
+								_curAnimLayeredParam._cal_Color = apUtil.BlendColor_ITP(
+																	_curAnimLayeredParam._cal_Color,
+																	tmpColor,
+																	layerWeight);
+
+								//Visible은 OR연산
+								_curAnimLayeredParam._cal_Visible |= tmpVisible;
+							}
+
+							_curAnimLayeredParam._isCal_Color = true;
+							_curAnimLayeredParam._nCal_Color++;
+
+							_isAnimAnyColorCalculated = true;
+						}
+
+
+						//Extra Option > 레이어 파라미터
+						if (_isExtraPropertyEnabled)
+						{
+							if (tmpExtra_DepthChanged)
+							{
+								_curAnimLayeredParam._isCal_ExtraDepth = true;
+								_curAnimLayeredParam._cal_ExtraDepth = tmpExtra_DeltaDepth;
+
+								_isAnimAnyExtraCalculated = true;
+							}
+							else
+							{
+								_curAnimLayeredParam._isCal_ExtraDepth = false;
+								_curAnimLayeredParam._cal_ExtraDepth = 0;
+							}
+
+							if (tmpExtra_TextureChanged)
+							{
+								_curAnimLayeredParam._isCal_ExtraTexture = true;
+								_curAnimLayeredParam._cal_ExtraTexture = tmpExtra_TextureData;
+								_curAnimLayeredParam._cal_ExtraTextureID = tmpExtra_TextureDataID;
+
+								_isAnimAnyExtraCalculated = true;
+							}
+							else
+							{
+								_curAnimLayeredParam._isCal_ExtraTexture = false;
+								_curAnimLayeredParam._cal_ExtraTexture = null;
+								_curAnimLayeredParam._cal_ExtraTextureID = -1;
+							}
+						}
+
+
+						_curAnimLayeredParam._iCurAnimClip++;
+
+						iCalculatedSubParam++;
 					}
-
-					//VertexRequest와 Weight를 기록하자
-					_curAnimLayeredParam._cal_VertRequests.Add(vertRequest);
-					_curAnimLayeredParam._cal_VertWeight.Add(layerWeight);
-					_curAnimLayeredParam._cal_NumVertRequest++;
-
-					//색상 옵션도 레이어 파라미터에 넣자.
-					if (tmpIsColoredKeyParamSetGroup)
-					{
-						//레이어 내에서는 무조건 Interpolation이다.
-						if (_curAnimLayeredParam._nCal_Color == 0)
-						{
-							//첫번째는 그대로 대입
-							_curAnimLayeredParam._cal_Color = tmpColor;
-							_curAnimLayeredParam._cal_Visible = tmpVisible;
-						}
-						else
-						{
-							//두번째부터는 Interpolation
-							_curAnimLayeredParam._cal_Color = apUtil.BlendColor_ITP(
-																_curAnimLayeredParam._cal_Color,
-																tmpColor,
-																layerWeight);
-
-							//Visible은 OR연산
-							_curAnimLayeredParam._cal_Visible |= tmpVisible;
-						}
-
-						_curAnimLayeredParam._isCal_Color = true;
-						_curAnimLayeredParam._nCal_Color++;
-
-						_isAnimAnyColorCalculated = true;
-					}
-
-
-					//Extra Option > 레이어 파라미터
-					if (_isExtraPropertyEnabled)
-					{
-						if (tmpExtra_DepthChanged)
-						{
-							_curAnimLayeredParam._isCal_ExtraDepth = true;
-							_curAnimLayeredParam._cal_ExtraDepth = tmpExtra_DeltaDepth;
-
-							_isAnimAnyExtraCalculated = true;
-						}
-						else
-						{
-							_curAnimLayeredParam._isCal_ExtraDepth = false;
-							_curAnimLayeredParam._cal_ExtraDepth = 0;
-						}
-
-						if (tmpExtra_TextureChanged)
-						{
-							_curAnimLayeredParam._isCal_ExtraTexture = true;
-							_curAnimLayeredParam._cal_ExtraTexture = tmpExtra_TextureData;
-							_curAnimLayeredParam._cal_ExtraTextureID = tmpExtra_TextureDataID;
-
-							_isAnimAnyExtraCalculated = true;
-						}
-						else
-						{
-							_curAnimLayeredParam._isCal_ExtraTexture = false;
-							_curAnimLayeredParam._cal_ExtraTexture = null;
-							_curAnimLayeredParam._cal_ExtraTextureID = -1;
-						}
-					}
-
-
-					_curAnimLayeredParam._iCurAnimClip++;
-
-					iCalculatedSubParam++;
 				}
+				
 
 				//KeyParamSetGroup > 레이어 데이터로 누적 끝
 
@@ -4289,7 +4278,13 @@ namespace AnyPortrait
 			bool isBoneTarget = false;
 			//bool isBoneIKControllerUsed = false;//<<Bone IK 추가
 
-			for (int i = 0; i < _calculatedResultParams.Count; i++)
+			int nCRP = _calculatedResultParams != null ? _calculatedResultParams.Count : 0;
+			if(nCRP == 0)
+			{
+				return;
+			}
+
+			for (int i = 0; i < nCRP; i++)
 			{
 				calParam = _calculatedResultParams[i];
 
@@ -4339,7 +4334,8 @@ namespace AnyPortrait
 				{
 					if (_isColorProperty)
 					{
-						calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+						//calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+						calParam._result_Color = _defaultColor;
 						calParam._result_IsVisible = false;
 					}
 					else
@@ -4350,7 +4346,8 @@ namespace AnyPortrait
 				else
 				{
 					calParam._result_IsVisible = true;
-					calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					calParam._result_Color = _defaultColor;
 				}
 
 
@@ -4388,8 +4385,14 @@ namespace AnyPortrait
 				//tmpExtra_DepthMaxWeight = -1.0f;//최대 Weight 값
 				//tmpExtra_TextureMaxWeight = -1.0f;//최대 Weight 값
 
+				int nSubParamGroups = subParamGroupList != null ? subParamGroupList.Count : 0;
+				if(nSubParamGroups == 0)
+				{
+					calParam._isAvailable = false;
+					continue;
+				}
 
-				for (int iSubList = 0; iSubList < subParamGroupList.Count; iSubList++)
+				for (int iSubList = 0; iSubList < nSubParamGroups; iSubList++)
 				{
 					curSubList = subParamGroupList[iSubList];
 
@@ -4402,8 +4405,6 @@ namespace AnyPortrait
 					//변경 : 전체 PKV가 아닌 계산된 PKV만 가져온다. 이전의 isCalculated=true인 것만 모은 것과 같다.
 					int nParamKeys = curSubList.NumCalculatedParamKeyValues;
 					subParamKeyValueList = curSubList.CalculatedParamKeyValues;
-
-
 
 					paramKeyValue = null;
 
@@ -4477,215 +4478,209 @@ namespace AnyPortrait
 						if(calParam._targetOptTransform != null)
 						{
 							defaultMatrixOfRenderUnit = calParam._targetOptTransform._defaultMatrix;
-
-							//if(calParam._targetOptTransform.gameObject.name.Contains("Debug"))
-							//{
-							//	isDebug = true;
-							//}
 						}
 
 
-
-						for (int iPV = 0; iPV < nParamKeys; iPV++)
+						if (nParamKeys > 0)
 						{
-							paramKeyValue = subParamKeyValueList[iPV];
-
-							//[삭제 v1.4.7] : _isCalculated를 삭제하고 계산된 PKV 리스트만 순회한다.
-							//if (!paramKeyValue._isCalculated) { continue; }
-
-							tmpSubModMesh_Transform = paramKeyValue._modifiedMeshSet.SubModMesh_Transform;
-
-							//ParamSetWeight를 추가
-							tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
-
-							//Weight에 맞게 Matrix를 만들자
-							if(paramKeyValue._isAnimRotationBias)
+							for (int iPV = 0; iPV < nParamKeys; iPV++)
 							{
-								//추가 : RotationBias가 있다면 미리 계산된 Bias Matrix를 사용한다.
-								//이전 : apMatrix
-								//tmpMatrix.AddMatrix(paramKeyValue.AnimRotationBiasedMatrix, paramKeyValue._weight, false);
+								paramKeyValue = subParamKeyValueList[iPV];
 
-								//변경 3.27 : apMatrixCal
-								tmpMatrix.AddMatrixParallel_ModMesh(paramKeyValue.AnimRotationBiasedMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight);
-							}
-							else
-							{
-								//이전
-								//tmpMatrix.AddMatrixParallel(paramKeyValue._modifiedMesh._transformMatrix, paramKeyValue._weight);
+								//[삭제 v1.4.7] : _isCalculated를 삭제하고 계산된 PKV 리스트만 순회한다.
+								//if (!paramKeyValue._isCalculated) { continue; }
 
-								//ModMeshSet으로 변경
-								tmpMatrix.AddMatrixParallel_ModMesh(tmpSubModMesh_Transform._transformMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight/*, isDebug*/);
-							}
+								tmpSubModMesh_Transform = paramKeyValue._modifiedMeshSet.SubModMesh_Transform;
 
+								//ParamSetWeight를 추가
+								tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
 
-							//색상 처리
-							if (tmpIsColoredKeyParamSetGroup)
-							{
-								tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
-								if (tmpSubModMesh_Color != null)
+								//Weight에 맞게 Matrix를 만들자
+								if (paramKeyValue._isAnimRotationBias)
 								{
-									if (!tmpIsToggleShowHideOption)
-									{
-										//기본방식
-										if (tmpSubModMesh_Color._isVisible)
-										{
-											tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-											tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
-										}
-										else
-										{
-											tmpParamColor = tmpSubModMesh_Color._meshColor;
-											tmpParamColor.a = 0.0f;
-											tmpColor += tmpParamColor * paramKeyValue._weight;
-										}
-									}
-									else
-									{
-										//추가 20.2.24 : 토글 방식의 ShowHide 방식
-										if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
-										{
-											//paramKeyValue._paramSet.ControlParamValue
-											tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-											tmpVisible = true;//< 일단 이것도 true
+									//추가 : RotationBias가 있다면 미리 계산된 Bias Matrix를 사용한다.
+									//이전 : apMatrix
+									//tmpMatrix.AddMatrix(paramKeyValue.AnimRotationBiasedMatrix, paramKeyValue._weight, false);
 
-											//토글용 처리
-											tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
-
-											//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
-											if (!tmpToggleOpt_IsAnyKey_Shown)
-											{
-												tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
-											}
-											else
-											{
-												//Show Key Index 중 가장 작은 값을 기준으로 한다.
-												tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
-											}
-
-
-											tmpToggleOpt_IsAnyKey_Shown = true;
-
-											tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
-											tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
-
-										}
-										else
-										{
-											//토글용 처리
-											tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
-
-											if (!tmpToggleOpt_IsAny_Hidden)
-											{
-												tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
-											}
-											else
-											{
-												//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
-												tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
-											}
-
-											tmpToggleOpt_IsAny_Hidden = true;
-											tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
-											tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
-										}
-									}
+									//변경 3.27 : apMatrixCal
+									tmpMatrix.AddMatrixParallel_ModMesh(paramKeyValue.AnimRotationBiasedMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight);
 								}
-							}
-
-							nColorCalculated++;
-
-
-							//---------------------------------------------
-							//추가 12.5 : Extra Option
-							if (_isExtraPropertyEnabled)
-							{
-								//변경 : ModMeshSet을 이용하는 것으로 변경
-								tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
-
-								if (tmpSubModMesh_Extra != null
-										&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
-										)
+								else
 								{
-									//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
-									float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
-									float bias = 0.0001f;
-									float overlapBias = 0.01f;
-									float cutOut = 0.0f;
-									bool isExactWeight = false;
-									if (IsAnimated)
+									//이전
+									//tmpMatrix.AddMatrixParallel(paramKeyValue._modifiedMesh._transformMatrix, paramKeyValue._weight);
+
+									//ModMeshSet으로 변경
+									tmpMatrix.AddMatrixParallel_ModMesh(tmpSubModMesh_Transform._transformMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight/*, isDebug*/);
+								}
+
+
+								//색상 처리
+								if (tmpIsColoredKeyParamSetGroup)
+								{
+									tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
+									if (tmpSubModMesh_Color != null)
 									{
-										switch (paramKeyValue._animKeyPos)
+										if (!tmpIsToggleShowHideOption)
 										{
-											case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
-												isExactWeight = true;
-												break;
-											case apOptCalculatedResultParam.AnimKeyPos.NextKey:
-												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
-												break; //Next Key라면 Prev와의 CutOut을 가져온다.
-											case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
-												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
-												break;//Prev Key라면 Next와의 CutOut을 가져온다.
-										}
-									}
-									else
-									{
-										cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
-									}
-
-									cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
-
-									if (isExactWeight)
-									{
-										extraWeight = 10000.0f;
-									}
-									else if (cutOut < bias)
-									{
-										//정확하면 최대값
-										//아니면 적용안함
-										if (extraWeight > 1.0f - bias)
-										{ extraWeight = 10000.0f; }
-										else
-										{ extraWeight = -1.0f; }
-									}
-									else
-									{
-										if (extraWeight < 1.0f - cutOut)
-										{ extraWeight = -1.0f; }
-										else
-										{ extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
-									}
-
-									if (extraWeight > 0.0f)
-									{
-										if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
-										{
-											//2-1. Depth 이벤트
-											if (extraWeight > tmpExtra_DepthMaxWeight)
+											//기본방식
+											if (tmpSubModMesh_Color._isVisible)
 											{
-												//가중치가 최대값보다 큰 경우
-												tmpExtra_DepthMaxWeight = extraWeight;
-												tmpExtra_DepthChanged = true;
-												tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
+												tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+												tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
 											}
-
-										}
-										if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
-										{
-											//2-2. Texture 이벤트
-											if (extraWeight > tmpExtra_TextureMaxWeight)
+											else
 											{
-												//가중치가 최대값보다 큰 경우
-												tmpExtra_TextureMaxWeight = extraWeight;
-												tmpExtra_TextureChanged = true;
-												tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
-												tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
+												tmpParamColor = tmpSubModMesh_Color._meshColor;
+												tmpParamColor.a = 0.0f;
+												tmpColor += tmpParamColor * paramKeyValue._weight;
+											}
+										}
+										else
+										{
+											//추가 20.2.24 : 토글 방식의 ShowHide 방식
+											if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
+											{
+												//paramKeyValue._paramSet.ControlParamValue
+												tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+												tmpVisible = true;//< 일단 이것도 true
+
+												//토글용 처리
+												tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+
+												//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
+												if (!tmpToggleOpt_IsAnyKey_Shown)
+												{
+													tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
+												}
+												else
+												{
+													//Show Key Index 중 가장 작은 값을 기준으로 한다.
+													tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
+												}
+
+
+												tmpToggleOpt_IsAnyKey_Shown = true;
+
+												tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
+												tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
+
+											}
+											else
+											{
+												//토글용 처리
+												tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+
+												if (!tmpToggleOpt_IsAny_Hidden)
+												{
+													tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
+												}
+												else
+												{
+													//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
+													tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
+												}
+
+												tmpToggleOpt_IsAny_Hidden = true;
+												tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
+												tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
 											}
 										}
 									}
 								}
+
+								nColorCalculated++;
+
+
+								//---------------------------------------------
+								//추가 12.5 : Extra Option
+								if (_isExtraPropertyEnabled)
+								{
+									//변경 : ModMeshSet을 이용하는 것으로 변경
+									tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
+
+									if (tmpSubModMesh_Extra != null
+											&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
+											)
+									{
+										//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
+										float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
+										float bias = 0.0001f;
+										float overlapBias = 0.01f;
+										float cutOut = 0.0f;
+										bool isExactWeight = false;
+										if (IsAnimated)
+										{
+											switch (paramKeyValue._animKeyPos)
+											{
+												case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
+													isExactWeight = true;
+													break;
+												case apOptCalculatedResultParam.AnimKeyPos.NextKey:
+													cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
+													break; //Next Key라면 Prev와의 CutOut을 가져온다.
+												case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
+													cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
+													break;//Prev Key라면 Next와의 CutOut을 가져온다.
+											}
+										}
+										else
+										{
+											cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
+										}
+
+										cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
+
+										if (isExactWeight)
+										{
+											extraWeight = 10000.0f;
+										}
+										else if (cutOut < bias)
+										{
+											//정확하면 최대값
+											//아니면 적용안함
+											if (extraWeight > 1.0f - bias)	{ extraWeight = 10000.0f; }
+											else							{ extraWeight = -1.0f; }
+										}
+										else
+										{
+											if (extraWeight < 1.0f - cutOut)	{ extraWeight = -1.0f; }
+											else								{ extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
+										}
+
+										if (extraWeight > 0.0f)
+										{
+											if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
+											{
+												//2-1. Depth 이벤트
+												if (extraWeight > tmpExtra_DepthMaxWeight)
+												{
+													//가중치가 최대값보다 큰 경우
+													tmpExtra_DepthMaxWeight = extraWeight;
+													tmpExtra_DepthChanged = true;
+													tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
+												}
+
+											}
+											if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
+											{
+												//2-2. Texture 이벤트
+												if (extraWeight > tmpExtra_TextureMaxWeight)
+												{
+													//가중치가 최대값보다 큰 경우
+													tmpExtra_TextureMaxWeight = extraWeight;
+													tmpExtra_TextureChanged = true;
+													tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
+													tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
+												}
+											}
+										}
+									}
+								}
+								//---------------------------------------------
 							}
-							//---------------------------------------------
 						}
+						
 
 
 
@@ -4696,19 +4691,23 @@ namespace AnyPortrait
 							_cal_Rotation180Correction_DeltaAngle = 0.0f;
 							_cal_Rotation180Correction_SumVector = Vector2.zero;
 
-							for (int iPV = 0; iPV < nParamKeys; iPV++)
+							if (nParamKeys > 0)
 							{
-								paramKeyValue = subParamKeyValueList[iPV];
+								for (int iPV = 0; iPV < nParamKeys; iPV++)
+								{
+									paramKeyValue = subParamKeyValueList[iPV];
 
-								//[삭제 v1.4.7] : _isCalculated를 삭제하고 계산된 PKV 리스트만 순회한다.
-								//if(!paramKeyValue._isCalculated) { continue; }
+									//[삭제 v1.4.7] : _isCalculated를 삭제하고 계산된 PKV 리스트만 순회한다.
+									//if(!paramKeyValue._isCalculated) { continue; }
 
-								tmpSubModMesh_Transform = paramKeyValue._modifiedMeshSet.SubModMesh_Transform;
+									tmpSubModMesh_Transform = paramKeyValue._modifiedMeshSet.SubModMesh_Transform;
 
-								float curAngle = tmpSubModMesh_Transform._transformMatrix._angleDeg * Mathf.Deg2Rad;
-								_cal_Rotation180Correction_CurVector = new Vector2(Mathf.Cos(curAngle), Mathf.Sin(curAngle));
-								_cal_Rotation180Correction_SumVector += (_cal_Rotation180Correction_CurVector * paramKeyValue._weight) * 10.0f;//벡터합이 너무 작은 값이면 float 오차로 인하여 각도가 제대로 계산되기 힘들다.
+									float curAngle = tmpSubModMesh_Transform._transformMatrix._angleDeg * Mathf.Deg2Rad;
+									_cal_Rotation180Correction_CurVector = new Vector2(Mathf.Cos(curAngle), Mathf.Sin(curAngle));
+									_cal_Rotation180Correction_SumVector += (_cal_Rotation180Correction_CurVector * paramKeyValue._weight) * 10.0f;//벡터합이 너무 작은 값이면 float 오차로 인하여 각도가 제대로 계산되기 힘들다.
+								}
 							}
+							
 
 							//벡터합을 역산해서 현재 상태의 평균 합을 구하자
 							//Weight 합이 0이거나, 서로 반대방향을 바라보는 경우가 아니라면..
@@ -4730,40 +4729,44 @@ namespace AnyPortrait
 					else
 					{
 						//ModBone을 활용하는 타입인 경우
-						for (int iPV = 0; iPV < nParamKeys; iPV++)
+						if (nParamKeys > 0)
 						{
-							paramKeyValue = subParamKeyValueList[iPV];
-
-							//[삭제 v1.4.7] : _isCalculated를 삭제하고 계산된 PKV 리스트만 순회한다.
-							//if (!paramKeyValue._isCalculated) { continue; }
-
-							//ParamSetWeight를 추가
-							tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
-							//nAddedWeight++;
-
-							//Weight에 맞게 Matrix를 만들자
-							
-							if(paramKeyValue._isAnimRotationBias)
+							for (int iPV = 0; iPV < nParamKeys; iPV++)
 							{
-								//추가 : RotationBias가 있다면 미리 계산된 Bias Matrix를 사용한다.
-								//이전 : apMatrix
-								//tmpMatrix.AddMatrix(paramKeyValue.AnimRotationBiasedMatrix, paramKeyValue._weight, false);
+								paramKeyValue = subParamKeyValueList[iPV];
 
-								//변경 3.27 : apMatrixCal
-								tmpMatrix.AddMatrixParallel_ModBone(paramKeyValue.AnimRotationBiasedMatrix, paramKeyValue._weight);
+								//[삭제 v1.4.7] : _isCalculated를 삭제하고 계산된 PKV 리스트만 순회한다.
+								//if (!paramKeyValue._isCalculated) { continue; }
+
+								//ParamSetWeight를 추가
+								tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
+								//nAddedWeight++;
+
+								//Weight에 맞게 Matrix를 만들자
+
+								if (paramKeyValue._isAnimRotationBias)
+								{
+									//추가 : RotationBias가 있다면 미리 계산된 Bias Matrix를 사용한다.
+									//이전 : apMatrix
+									//tmpMatrix.AddMatrix(paramKeyValue.AnimRotationBiasedMatrix, paramKeyValue._weight, false);
+
+									//변경 3.27 : apMatrixCal
+									tmpMatrix.AddMatrixParallel_ModBone(paramKeyValue.AnimRotationBiasedMatrix, paramKeyValue._weight);
+								}
+								else
+								{
+									//이전 : apMatrix
+									//tmpMatrix.AddMatrix(paramKeyValue._modifiedBone._transformMatrix, paramKeyValue._weight, false);
+
+									//변경 3.27 : apMatrixCal
+									tmpMatrix.AddMatrixParallel_ModBone(paramKeyValue._modifiedBone._transformMatrix, paramKeyValue._weight);
+								}
+
+
+								nColorCalculated++;//Visible 계산을 위해 "ParamKey 계산 횟수"를 카운트하자
 							}
-							else
-							{
-								//이전 : apMatrix
-								//tmpMatrix.AddMatrix(paramKeyValue._modifiedBone._transformMatrix, paramKeyValue._weight, false);
-
-								//변경 3.27 : apMatrixCal
-								tmpMatrix.AddMatrixParallel_ModBone(paramKeyValue._modifiedBone._transformMatrix, paramKeyValue._weight);
-							}
-
-							
-							nColorCalculated++;//Visible 계산을 위해 "ParamKey 계산 횟수"를 카운트하자
 						}
+						
 
 
 						//추가 21.9.2 <회전 보정>
@@ -4772,33 +4775,33 @@ namespace AnyPortrait
 						{
 							_cal_Rotation180Correction_DeltaAngle = 0.0f;
 							_cal_Rotation180Correction_SumVector = Vector2.zero;
-							for (int iPV = 0; iPV < nParamKeys; iPV++)
+
+							if (nParamKeys > 0)
 							{
-								paramKeyValue = subParamKeyValueList[iPV];
-								
+								for (int iPV = 0; iPV < nParamKeys; iPV++)
+								{
+									paramKeyValue = subParamKeyValueList[iPV];
 
-								//[삭제 v1.4.7] : _isCalculated를 삭제하고 계산된 PKV 리스트만 순회한다.
-								//if(!paramKeyValue._isCalculated) { continue; }
+									//[삭제 v1.4.7] : _isCalculated를 삭제하고 계산된 PKV 리스트만 순회한다.
+									//if(!paramKeyValue._isCalculated) { continue; }
 
+									float curAngle = paramKeyValue._modifiedBone._transformMatrix._angleDeg * Mathf.Deg2Rad;
+									_cal_Rotation180Correction_CurVector = new Vector2(Mathf.Cos(curAngle), Mathf.Sin(curAngle));
+									_cal_Rotation180Correction_SumVector += (_cal_Rotation180Correction_CurVector * paramKeyValue._weight) * 10.0f;//벡터합이 너무 작은 값이면 float 오차로 인하여 각도가 제대로 계산되기 힘들다.
+								}
 
-								float curAngle = paramKeyValue._modifiedBone._transformMatrix._angleDeg * Mathf.Deg2Rad;
-								_cal_Rotation180Correction_CurVector = new Vector2(Mathf.Cos(curAngle), Mathf.Sin(curAngle));
-								_cal_Rotation180Correction_SumVector += (_cal_Rotation180Correction_CurVector * paramKeyValue._weight) * 10.0f;//벡터합이 너무 작은 값이면 float 오차로 인하여 각도가 제대로 계산되기 힘들다.
+								//벡터합을 역산해서 현재 상태의 평균 합을 구하자
+								//Weight 합이 0이거나, 서로 반대방향을 바라보는 경우가 아니라면..
+								if (_cal_Rotation180Correction_SumVector.sqrMagnitude > 0.001f)
+								{
+									_cal_Rotation180Correction_SumVector *= 10.0f;
+									_cal_Rotation180Correction_DeltaAngle = Mathf.Atan2(_cal_Rotation180Correction_SumVector.y, _cal_Rotation180Correction_SumVector.x) * Mathf.Rad2Deg;
+									//Debug.Log("보정 각도 : " + _cal_Rotation180Correction_DeltaAngle + " / 벡터 : " + sumVec);
+								}
+
+								tmpMatrix._angleDeg = _cal_Rotation180Correction_DeltaAngle;
 							}
-
-							//벡터합을 역산해서 현재 상태의 평균 합을 구하자
-							//Weight 합이 0이거나, 서로 반대방향을 바라보는 경우가 아니라면..
-							if(_cal_Rotation180Correction_SumVector.sqrMagnitude > 0.001f)
-							{
-								_cal_Rotation180Correction_SumVector *= 10.0f;
-								_cal_Rotation180Correction_DeltaAngle = Mathf.Atan2(_cal_Rotation180Correction_SumVector.y, _cal_Rotation180Correction_SumVector.x) * Mathf.Rad2Deg;
-								//Debug.Log("보정 각도 : " + _cal_Rotation180Correction_DeltaAngle + " / 벡터 : " + sumVec);
-							}
-
-							tmpMatrix._angleDeg = _cal_Rotation180Correction_DeltaAngle;
 						}
-
-
 
 						//위치 변경 20.9.11
 						tmpMatrix.CalculateScale_FromAdd();
@@ -5024,9 +5027,13 @@ namespace AnyPortrait
 				rootMotionBone = _parentOptTransform._rootUnit.RootMotionBone;
 			}
 
+			int nCRP = _calculatedResultParams != null ? _calculatedResultParams.Count : 0;
+			if(nCRP == 0)
+			{
+				return;
+			}
 
-
-			for (int i = 0; i < _calculatedResultParams.Count; i++)
+			for (int i = 0; i < nCRP; i++)
 			{
 				calParam = _calculatedResultParams[i];
 
@@ -5089,7 +5096,8 @@ namespace AnyPortrait
 				{
 					if (_isColorProperty)
 					{
-						calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+						//calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+						calParam._result_Color = _defaultColor;
 						calParam._result_IsVisible = false;
 					}
 					else
@@ -5100,7 +5108,8 @@ namespace AnyPortrait
 				else
 				{
 					calParam._result_IsVisible = true;
-					calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					//calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+					calParam._result_Color = _defaultColor;
 				}
 
 
@@ -5153,594 +5162,599 @@ namespace AnyPortrait
 				//변경 20.11.23 : AnimPlayMapping을 이용하여 미리 정렬된 순서로 SubList를 호출
 				int iTargetSubList = 0;
 				apAnimPlayMapping.LiveUnit curUnit = null;
-				for (int iUnit = 0; iUnit < _animPlayMapping._nAnimClips; iUnit++)
+				int nAnimClips = _animPlayMapping._nAnimClips;
+				if (nAnimClips > 0)
 				{
-					curUnit = _animPlayMapping._liveUnits_Sorted[iUnit];
-					if(!curUnit._isLive)
+					for (int iUnit = 0; iUnit < nAnimClips; iUnit++)
 					{
-						//재생 종료
-						//이 뒤는 모두 재생이 안되는 애니메이션이다.
-						break;
-					}
-
-					iTargetSubList = curUnit._animIndex;
-					curSubList = calParam._subParamKeyValueList_AnimSync[iTargetSubList];
-					if(curSubList == null)
-					{
-						//이게 Null이라는 것은, 이 AnimClip에 대한 TimelineLayer와 Mod는 없다는 것
-						continue;
-					}
-					
-					//----------------------여기까지
-
-
-					//이전 방식
-					//int nParamKeys = curSubList._subParamKeyValues.Count;//Sub Params
-					//subParamKeyValueList = curSubList._subParamKeyValues;
-
-					//다른 방식 20.11.24 : 모든 ParamKeyValue가 아니라, 유효한 ParamKeyValue만 체크한다.
-					int nValidParamKeyValues = curSubList._nResultAnimKey;
-					if(nValidParamKeyValues == 0)
-					{
-						continue;
-					}
-					
-
-
-					paramKeyValue = null;
-
-					keyParamSetGroup = curSubList._keyParamSetGroup;
-
-					//삭제 20.11.24 : 위에서 AnimPlayMapping의 LiveUnit에서 미리 결정된다.
-					////애니메이션 모디파이어에서 실행되지 않은 애니메이션에 대한 PSG는 생략한다.
-					//if (!keyParamSetGroup.IsAnimEnabled)
-					//{
-					//	//(KeyParamSetGroup이 AnimClip > Timeline (Modifier) > TimelineLayer에 해당한다.)
-					//	continue;
-					//}
-
-
-					//이 로직이 추가된다. (20.4.18)
-					_keyAnimClip = keyParamSetGroup._keyAnimClip;
-					_keyAnimPlayUnit = _keyAnimClip._parentPlayUnit;
-
-					//레이어별로 데이터를 그룹으로 만들어서 계산하자
-					if (_curAnimLayer != _keyAnimPlayUnit._layer
-						|| _curAnimLayeredParam == null)
-					{
-						//다음 레이어를 꺼내자
-						//- 풀에 이미 생성된 레이어가 있다면 가져오고, 없으면 생성한다.
-						if (_nAnimLayeredParams < _animLayeredParams.Count)
+						curUnit = _animPlayMapping._liveUnits_Sorted[iUnit];
+						if (!curUnit._isLive)
 						{
-							//가져올 레이어 파라미터가 있다.
-							_curAnimLayeredParam = _animLayeredParams[_nAnimLayeredParams];
-							_curAnimLayeredParam.ReadyToUpdate();
-						}
-						else
-						{
-							//풀에 레이어 파라미터가 없으므로 새로 만들어서 풀에 넣어주자
-							_curAnimLayeredParam = AnimLayeredParam.Make_TF(_nAnimLayeredParams);//생성자에 ReadyToUpdate가 포함되어 있다.
-							_animLayeredParams.Add(_curAnimLayeredParam);
+							//재생 종료
+							//이 뒤는 모두 재생이 안되는 애니메이션이다.
+							break;
 						}
 
-						_curAnimLayer = _keyAnimPlayUnit._layer;
-						_nAnimLayeredParams++;//사용된 레이어 파라미터의 개수
-					}
-
-
-
-
-					//레이어 내부의 임시 데이터를 먼저 초기화
-					tmpMatrix.SetZero();//<<TF에서 추가됨
-					tmpColor = Color.clear;
-
-					tmpVisible = false;
-
-					tmpTotalParamSetWeight = 0.0f;
-					nColorCalculated = 0;
-
-					//KeyParamSetGroup이 Color를 지원하는지 체크
-					tmpIsColoredKeyParamSetGroup = _isColorProperty && keyParamSetGroup._isColorPropertyEnabled && !isBoneTarget;
-
-
-					//추가 20.2.24 : 색상 토글 옵션
-					tmpIsToggleShowHideOption = !IsAnimated && tmpIsColoredKeyParamSetGroup && keyParamSetGroup._isToggleShowHideWithoutBlend;
-
-					if (tmpIsToggleShowHideOption)
-					{
-						tmpToggleOpt_IsAnyKey_Shown = false;
-						tmpToggleOpt_TotalWeight_Shown = 0.0f;
-						tmpToggleOpt_MaxWeight_Shown = 0.0f;
-						tmpToggleOpt_KeyIndex_Shown = 0.0f;
-						tmpToggleOpt_IsAny_Hidden = false;
-						tmpToggleOpt_TotalWeight_Hidden = 0.0f;
-						tmpToggleOpt_MaxWeight_Hidden = 0.0f;
-						tmpToggleOpt_KeyIndex_Hidden = 0.0f;
-					}
-
-
-					//변경 20.4.20 : 초기화 위치가 여기여야 한다.
-					if(_isExtraPropertyEnabled)
-					{
-						//추가 12.5 : Extra Option 계산 값				
-						tmpExtra_DepthChanged = false;
-						tmpExtra_TextureChanged = false;
-						tmpExtra_DeltaDepth = 0;
-						tmpExtra_TextureDataID = 0;
-						tmpExtra_TextureData = null;
-						tmpExtra_DepthMaxWeight = -1.0f;//최대 Weight 값
-						tmpExtra_TextureMaxWeight = -1.0f;//최대 Weight 값
-					}
-
-
-					if (!isBoneTarget)
-					{
-						//ModMesh를 활용하는 타입인 경우 >> ModMeshSet으로 변경
-
-						//추가 20.9.11 : 정밀한 보간을 위해 Default Matrix가 필요하다.
-						apMatrix defaultMatrixOfRenderUnit = null;
-						if(calParam._targetOptTransform != null)
+						iTargetSubList = curUnit._animIndex;
+						curSubList = calParam._subParamKeyValueList_AnimSync[iTargetSubList];
+						if (curSubList == null)
 						{
-							defaultMatrixOfRenderUnit = calParam._targetOptTransform._defaultMatrix;
+							//이게 Null이라는 것은, 이 AnimClip에 대한 TimelineLayer와 Mod는 없다는 것
+							continue;
 						}
 
+						//----------------------여기까지
 
-						//변경 20.11.24 모든 키프레임 순회 방식 제거
+
 						//이전 방식
-						//for (int iPV = 0; iPV < nParamKeys; iPV++)//이건 또 모든 키프레임을 돌려보겠네..
+						//int nParamKeys = curSubList._subParamKeyValues.Count;//Sub Params
+						//subParamKeyValueList = curSubList._subParamKeyValues;
+
+						//다른 방식 20.11.24 : 모든 ParamKeyValue가 아니라, 유효한 ParamKeyValue만 체크한다.
+						int nValidParamKeyValues = curSubList._nResultAnimKey;
+						if (nValidParamKeyValues == 0)
+						{
+							continue;
+						}
+
+
+
+						paramKeyValue = null;
+
+						keyParamSetGroup = curSubList._keyParamSetGroup;
+
+						//삭제 20.11.24 : 위에서 AnimPlayMapping의 LiveUnit에서 미리 결정된다.
+						////애니메이션 모디파이어에서 실행되지 않은 애니메이션에 대한 PSG는 생략한다.
+						//if (!keyParamSetGroup.IsAnimEnabled)
 						//{
-						//	paramKeyValue = subParamKeyValueList[iPV];
+						//	//(KeyParamSetGroup이 AnimClip > Timeline (Modifier) > TimelineLayer에 해당한다.)
+						//	continue;
+						//}
 
-						//변경 20.11.24 : 전체 체크 > 이미 보간된 것만 체크
-						for (int iPV = 0; iPV < nValidParamKeyValues; iPV++)
+
+						//이 로직이 추가된다. (20.4.18)
+						_keyAnimClip = keyParamSetGroup._keyAnimClip;
+						_keyAnimPlayUnit = _keyAnimClip._parentPlayUnit;
+
+						//레이어별로 데이터를 그룹으로 만들어서 계산하자
+						if (_curAnimLayer != _keyAnimPlayUnit._layer
+							|| _curAnimLayeredParam == null)
 						{
-							paramKeyValue = curSubList._resultAnimKeyPKVs[iPV];//보간이 완료된 PKV만 가져온다.
-
-							//여기까지...
-
-							// [ v1.4.7 삭제 : _isCalculated 삭제되고 계산된 리스트만 순회함 ]
-							//if (!paramKeyValue._isCalculated) { continue; }
-
-							tmpSubModMesh_Transform = paramKeyValue._modifiedMeshSet.SubModMesh_Transform;
-
-							//ParamSetWeight를 추가
-							tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
-
-							//Weight에 맞게 Matrix를 만들자
-							if (paramKeyValue._isAnimRotationBias)
+							//다음 레이어를 꺼내자
+							//- 풀에 이미 생성된 레이어가 있다면 가져오고, 없으면 생성한다.
+							if (_nAnimLayeredParams < _animLayeredParams.Count)
 							{
-								//추가 : RotationBias가 있다면 미리 계산된 Bias Matrix를 사용한다.
-								tmpMatrix.AddMatrixParallel_ModMesh(paramKeyValue.AnimRotationBiasedMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight);
+								//가져올 레이어 파라미터가 있다.
+								_curAnimLayeredParam = _animLayeredParams[_nAnimLayeredParams];
+								_curAnimLayeredParam.ReadyToUpdate();
 							}
 							else
 							{
-								//ModMeshSet으로 변경
-								tmpMatrix.AddMatrixParallel_ModMesh(tmpSubModMesh_Transform._transformMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight);
+								//풀에 레이어 파라미터가 없으므로 새로 만들어서 풀에 넣어주자
+								_curAnimLayeredParam = AnimLayeredParam.Make_TF(_nAnimLayeredParams);//생성자에 ReadyToUpdate가 포함되어 있다.
+								_animLayeredParams.Add(_curAnimLayeredParam);
 							}
 
-
-							//색상 처리
-							if (tmpIsColoredKeyParamSetGroup)
-							{
-								tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
-								if (tmpSubModMesh_Color != null)
-								{
-									if (!tmpIsToggleShowHideOption)
-									{
-										//기본방식
-										if (tmpSubModMesh_Color._isVisible)
-										{
-											tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-											tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
-										}
-										else
-										{
-											tmpParamColor = tmpSubModMesh_Color._meshColor;
-											tmpParamColor.a = 0.0f;
-											tmpColor += tmpParamColor * paramKeyValue._weight;
-										}
-									}
-									else
-									{
-										//추가 20.2.24 : 토글 방식의 ShowHide 방식
-										if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
-										{
-											//paramKeyValue._paramSet.ControlParamValue
-											tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-											tmpVisible = true;//< 일단 이것도 true
-
-											//토글용 처리
-											tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
-
-											//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
-											if (!tmpToggleOpt_IsAnyKey_Shown)
-											{
-												tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
-											}
-											else
-											{
-												//Show Key Index 중 가장 작은 값을 기준으로 한다.
-												tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
-											}
-
-
-											tmpToggleOpt_IsAnyKey_Shown = true;
-
-											tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
-											tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
-
-										}
-										else
-										{
-											//토글용 처리
-											tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
-
-											if (!tmpToggleOpt_IsAny_Hidden)
-											{
-												tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
-											}
-											else
-											{
-												//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
-												tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
-											}
-
-											tmpToggleOpt_IsAny_Hidden = true;
-											tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
-											tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
-										}
-									}
-								}
-							}
-
-							nColorCalculated++;
-
-
-							//---------------------------------------------
-							//추가 12.5 : Extra Option
-							if (_isExtraPropertyEnabled)
-							{
-								//변경 : ModMeshSet을 이용하는 것으로 변경
-								tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
-
-								if (tmpSubModMesh_Extra != null
-										&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
-										)
-								{
-									//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
-									float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
-									float bias = 0.0001f;
-									float overlapBias = 0.01f;
-									float cutOut = 0.0f;
-									bool isExactWeight = false;
-									if (IsAnimated)
-									{
-										switch (paramKeyValue._animKeyPos)
-										{
-											case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
-												isExactWeight = true;
-												break;
-											case apOptCalculatedResultParam.AnimKeyPos.NextKey:
-												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
-												break; //Next Key라면 Prev와의 CutOut을 가져온다.
-											case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
-												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
-												break;//Prev Key라면 Next와의 CutOut을 가져온다.
-										}
-									}
-									else
-									{
-										cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
-									}
-
-									cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
-
-									if (isExactWeight)
-									{
-										extraWeight = 10000.0f;
-									}
-									else if (cutOut < bias)
-									{
-										//정확하면 최대값
-										//아니면 적용안함
-										if (extraWeight > 1.0f - bias)	{ extraWeight = 10000.0f; }
-										else							{ extraWeight = -1.0f; }
-									}
-									else
-									{
-										if (extraWeight < 1.0f - cutOut)	{ extraWeight = -1.0f; }
-										else								{ extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
-									}
-
-									if (extraWeight > 0.0f)
-									{
-										if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
-										{
-											//2-1. Depth 이벤트
-											if (extraWeight > tmpExtra_DepthMaxWeight)
-											{
-												//가중치가 최대값보다 큰 경우
-												tmpExtra_DepthMaxWeight = extraWeight;
-												tmpExtra_DepthChanged = true;
-												tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
-											}
-
-										}
-										if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
-										{
-											//2-2. Texture 이벤트
-											if (extraWeight > tmpExtra_TextureMaxWeight)
-											{
-												//가중치가 최대값보다 큰 경우
-												tmpExtra_TextureMaxWeight = extraWeight;
-												tmpExtra_TextureChanged = true;
-												tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
-												tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
-											}
-										}
-									}
-								}
-							}
-							//---------------------------------------------
+							_curAnimLayer = _keyAnimPlayUnit._layer;
+							_nAnimLayeredParams++;//사용된 레이어 파라미터의 개수
 						}
 
-						//위치 변경 20.9.11
-						tmpMatrix.CalculateScale_FromAdd();
-						tmpMatrix.CalculateLocalPos_ModMesh(defaultMatrixOfRenderUnit);//추가 (20.9.11) : 위치 보간이슈 수정
-					}
-					else
-					{
-						//ModBone을 활용하는 타입인 경우
-						//변경 20.11.24 : 전체 체크 > 이미 보간된 것만 체크
-						for (int iPV = 0; iPV < nValidParamKeyValues; iPV++)
-						{
-							paramKeyValue = curSubList._resultAnimKeyPKVs[iPV];//보간이 완료된 PKV만 가져온다.
-
-							//여기까지...
-
-							// [ v1.4.7 삭제 : _isCalculated 삭제되고 계산된 리스트만 순회함 ]
-							//if (!paramKeyValue._isCalculated) { continue; }
-
-							//ParamSetWeight를 추가
-							tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
-
-							//Weight에 맞게 Matrix를 만들자
-
-							if (paramKeyValue._isAnimRotationBias)
-							{
-								//RotationBias가 있다면 미리 계산된 Bias Matrix를 사용한다.
-								//변경 3.27 : apMatrixCal
-								tmpMatrix.AddMatrixParallel_ModBone(paramKeyValue.AnimRotationBiasedMatrix, paramKeyValue._weight);
-							}
-							else
-							{
-								//변경 3.27 : apMatrixCal
-								tmpMatrix.AddMatrixParallel_ModBone(paramKeyValue._modifiedBone._transformMatrix, paramKeyValue._weight);
-							}
-
-							nColorCalculated++;//Visible 계산을 위해 "ParamKey 계산 횟수"를 카운트하자
-						}
-
-						//위치 변경 20.9.10
-						tmpMatrix.CalculateScale_FromAdd();
-					}
-
-					//추가 : ParamSetWeight를 사용한다면 -> LayerWeight x ParamSetWeight(0~1)을 사용한다.
 
 
-					
-					if (!_isUseParamSetWeight)
-					{
-						//layerWeight = Mathf.Clamp01(keyParamSetGroup._layerWeight);//이전
-						layerWeight = Mathf.Clamp01(curUnit._playWeight);//변경 20.11.23 : 일일이 계산된 KeyParamSetGroup의 Weight대신, 일괄 계산된 LiveUnit의 값을 이용
-					}
-					else
-					{
-						//layerWeight = Mathf.Clamp01(keyParamSetGroup._layerWeight * Mathf.Clamp01(tmpTotalParamSetWeight));//이전
-						layerWeight = Mathf.Clamp01(curUnit._playWeight * Mathf.Clamp01(tmpTotalParamSetWeight));//변경 20.11.23 : 위와 동일
-					}
 
-					if (layerWeight < 0.001f)
-					{
-						continue;
-					}
+						//레이어 내부의 임시 데이터를 먼저 초기화
+						tmpMatrix.SetZero();//<<TF에서 추가됨
+						tmpColor = Color.clear;
 
-					if ((nColorCalculated == 0 && _isColorProperty) || isBoneTarget)
-					{
-						tmpVisible = true;
-						tmpColor = _defaultColor;
-						if (!isBoneTarget)
-						{
-							tmpMatrix.SetIdentity();
-							tmpColor = _defaultColor;
-						}
-					}
+						tmpVisible = false;
 
-					
-					//추가 3.26 : apMatrixCal 계산 > 이건 ModMesh, ModBone에 따라 달라서 위에서 호출하자. (20.9.10)
-					//tmpMatrix.CalculateScale_FromAdd();
+						tmpTotalParamSetWeight = 0.0f;
+						nColorCalculated = 0;
 
-					//20.4.18 : 애니메이션 로직은 레이어별로 처리를 하므로, 색상 로직을 위로 올려서 여기서 미리 처리한다.
-					if (tmpIsColoredKeyParamSetGroup)
-					{
-						//토글 방식이면 tmpColor, tmpVisible을 다시 설정한다.
+						//KeyParamSetGroup이 Color를 지원하는지 체크
+						tmpIsColoredKeyParamSetGroup = _isColorProperty && keyParamSetGroup._isColorPropertyEnabled && !isBoneTarget;
+
+
+						//추가 20.2.24 : 색상 토글 옵션
+						tmpIsToggleShowHideOption = !IsAnimated && tmpIsColoredKeyParamSetGroup && keyParamSetGroup._isToggleShowHideWithoutBlend;
+
 						if (tmpIsToggleShowHideOption)
 						{
-							if (tmpToggleOpt_IsAnyKey_Shown && tmpToggleOpt_IsAny_Hidden)
+							tmpToggleOpt_IsAnyKey_Shown = false;
+							tmpToggleOpt_TotalWeight_Shown = 0.0f;
+							tmpToggleOpt_MaxWeight_Shown = 0.0f;
+							tmpToggleOpt_KeyIndex_Shown = 0.0f;
+							tmpToggleOpt_IsAny_Hidden = false;
+							tmpToggleOpt_TotalWeight_Hidden = 0.0f;
+							tmpToggleOpt_MaxWeight_Hidden = 0.0f;
+							tmpToggleOpt_KeyIndex_Hidden = 0.0f;
+						}
+
+
+						//변경 20.4.20 : 초기화 위치가 여기여야 한다.
+						if (_isExtraPropertyEnabled)
+						{
+							//추가 12.5 : Extra Option 계산 값				
+							tmpExtra_DepthChanged = false;
+							tmpExtra_TextureChanged = false;
+							tmpExtra_DeltaDepth = 0;
+							tmpExtra_TextureDataID = 0;
+							tmpExtra_TextureData = null;
+							tmpExtra_DepthMaxWeight = -1.0f;//최대 Weight 값
+							tmpExtra_TextureMaxWeight = -1.0f;//최대 Weight 값
+						}
+
+
+						if (!isBoneTarget)
+						{
+							//ModMesh를 활용하는 타입인 경우 >> ModMeshSet으로 변경
+
+							//추가 20.9.11 : 정밀한 보간을 위해 Default Matrix가 필요하다.
+							apMatrix defaultMatrixOfRenderUnit = null;
+							if (calParam._targetOptTransform != null)
 							{
-								//Show / Hide가 모두 있다면 토글 대상
-								if (tmpToggleOpt_MaxWeight_Shown > tmpToggleOpt_MaxWeight_Hidden)
+								defaultMatrixOfRenderUnit = calParam._targetOptTransform._defaultMatrix;
+							}
+
+
+							//변경 20.11.24 모든 키프레임 순회 방식 제거
+							//이전 방식
+							//for (int iPV = 0; iPV < nParamKeys; iPV++)//이건 또 모든 키프레임을 돌려보겠네..
+							//{
+							//	paramKeyValue = subParamKeyValueList[iPV];
+
+							//변경 20.11.24 : 전체 체크 > 이미 보간된 것만 체크
+							for (int iPV = 0; iPV < nValidParamKeyValues; iPV++)
+							{
+								paramKeyValue = curSubList._resultAnimKeyPKVs[iPV];//보간이 완료된 PKV만 가져온다.
+
+								//여기까지...
+
+								// [ v1.4.7 삭제 : _isCalculated 삭제되고 계산된 리스트만 순회함 ]
+								//if (!paramKeyValue._isCalculated) { continue; }
+
+								tmpSubModMesh_Transform = paramKeyValue._modifiedMeshSet.SubModMesh_Transform;
+
+								//ParamSetWeight를 추가
+								tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
+
+								//Weight에 맞게 Matrix를 만들자
+								if (paramKeyValue._isAnimRotationBias)
 								{
-									//Show가 더 크다
-									tmpVisible = true;
-								}
-								else if (tmpToggleOpt_MaxWeight_Shown < tmpToggleOpt_MaxWeight_Hidden)
-								{
-									//Hidden이 더 크다
-									tmpVisible = false;
-									tmpColor = Color.clear;
+									//추가 : RotationBias가 있다면 미리 계산된 Bias Matrix를 사용한다.
+									tmpMatrix.AddMatrixParallel_ModMesh(paramKeyValue.AnimRotationBiasedMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight);
 								}
 								else
 								{
-									//같다면? (Weight가 0.5 : 0.5로 같은 경우)
-									if (tmpToggleOpt_KeyIndex_Shown > tmpToggleOpt_KeyIndex_Hidden)
+									//ModMeshSet으로 변경
+									tmpMatrix.AddMatrixParallel_ModMesh(tmpSubModMesh_Transform._transformMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight);
+								}
+
+
+								//색상 처리
+								if (tmpIsColoredKeyParamSetGroup)
+								{
+									tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
+									if (tmpSubModMesh_Color != null)
 									{
-										//Show의 ParamSet의 키 인덱스가 더 크다.
+										if (!tmpIsToggleShowHideOption)
+										{
+											//기본방식
+											if (tmpSubModMesh_Color._isVisible)
+											{
+												tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+												tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
+											}
+											else
+											{
+												tmpParamColor = tmpSubModMesh_Color._meshColor;
+												tmpParamColor.a = 0.0f;
+												tmpColor += tmpParamColor * paramKeyValue._weight;
+											}
+										}
+										else
+										{
+											//추가 20.2.24 : 토글 방식의 ShowHide 방식
+											if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
+											{
+												//paramKeyValue._paramSet.ControlParamValue
+												tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+												tmpVisible = true;//< 일단 이것도 true
+
+												//토글용 처리
+												tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+
+												//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
+												if (!tmpToggleOpt_IsAnyKey_Shown)
+												{
+													tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
+												}
+												else
+												{
+													//Show Key Index 중 가장 작은 값을 기준으로 한다.
+													tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
+												}
+
+
+												tmpToggleOpt_IsAnyKey_Shown = true;
+
+												tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
+												tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
+
+											}
+											else
+											{
+												//토글용 처리
+												tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+
+												if (!tmpToggleOpt_IsAny_Hidden)
+												{
+													tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
+												}
+												else
+												{
+													//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
+													tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
+												}
+
+												tmpToggleOpt_IsAny_Hidden = true;
+												tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
+												tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
+											}
+										}
+									}
+								}
+
+								nColorCalculated++;
+
+
+								//---------------------------------------------
+								//추가 12.5 : Extra Option
+								if (_isExtraPropertyEnabled)
+								{
+									//변경 : ModMeshSet을 이용하는 것으로 변경
+									tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
+
+									if (tmpSubModMesh_Extra != null
+											&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
+											)
+									{
+										//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
+										float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
+										float bias = 0.0001f;
+										float overlapBias = 0.01f;
+										float cutOut = 0.0f;
+										bool isExactWeight = false;
+										if (IsAnimated)
+										{
+											switch (paramKeyValue._animKeyPos)
+											{
+												case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
+													isExactWeight = true;
+													break;
+												case apOptCalculatedResultParam.AnimKeyPos.NextKey:
+													cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
+													break; //Next Key라면 Prev와의 CutOut을 가져온다.
+												case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
+													cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
+													break;//Prev Key라면 Next와의 CutOut을 가져온다.
+											}
+										}
+										else
+										{
+											cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
+										}
+
+										cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
+
+										if (isExactWeight)
+										{
+											extraWeight = 10000.0f;
+										}
+										else if (cutOut < bias)
+										{
+											//정확하면 최대값
+											//아니면 적용안함
+											if (extraWeight > 1.0f - bias) { extraWeight = 10000.0f; }
+											else { extraWeight = -1.0f; }
+										}
+										else
+										{
+											if (extraWeight < 1.0f - cutOut) { extraWeight = -1.0f; }
+											else { extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
+										}
+
+										if (extraWeight > 0.0f)
+										{
+											if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
+											{
+												//2-1. Depth 이벤트
+												if (extraWeight > tmpExtra_DepthMaxWeight)
+												{
+													//가중치가 최대값보다 큰 경우
+													tmpExtra_DepthMaxWeight = extraWeight;
+													tmpExtra_DepthChanged = true;
+													tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
+												}
+
+											}
+											if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
+											{
+												//2-2. Texture 이벤트
+												if (extraWeight > tmpExtra_TextureMaxWeight)
+												{
+													//가중치가 최대값보다 큰 경우
+													tmpExtra_TextureMaxWeight = extraWeight;
+													tmpExtra_TextureChanged = true;
+													tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
+													tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
+												}
+											}
+										}
+									}
+								}
+								//---------------------------------------------
+							}
+
+							//위치 변경 20.9.11
+							tmpMatrix.CalculateScale_FromAdd();
+							tmpMatrix.CalculateLocalPos_ModMesh(defaultMatrixOfRenderUnit);//추가 (20.9.11) : 위치 보간이슈 수정
+						}
+						else
+						{
+							//ModBone을 활용하는 타입인 경우
+							//변경 20.11.24 : 전체 체크 > 이미 보간된 것만 체크
+							for (int iPV = 0; iPV < nValidParamKeyValues; iPV++)
+							{
+								paramKeyValue = curSubList._resultAnimKeyPKVs[iPV];//보간이 완료된 PKV만 가져온다.
+
+								//여기까지...
+
+								// [ v1.4.7 삭제 : _isCalculated 삭제되고 계산된 리스트만 순회함 ]
+								//if (!paramKeyValue._isCalculated) { continue; }
+
+								//ParamSetWeight를 추가
+								tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
+
+								//Weight에 맞게 Matrix를 만들자
+
+								if (paramKeyValue._isAnimRotationBias)
+								{
+									//RotationBias가 있다면 미리 계산된 Bias Matrix를 사용한다.
+									//변경 3.27 : apMatrixCal
+									tmpMatrix.AddMatrixParallel_ModBone(paramKeyValue.AnimRotationBiasedMatrix, paramKeyValue._weight);
+								}
+								else
+								{
+									//변경 3.27 : apMatrixCal
+									tmpMatrix.AddMatrixParallel_ModBone(paramKeyValue._modifiedBone._transformMatrix, paramKeyValue._weight);
+								}
+
+								nColorCalculated++;//Visible 계산을 위해 "ParamKey 계산 횟수"를 카운트하자
+							}
+
+							//위치 변경 20.9.10
+							tmpMatrix.CalculateScale_FromAdd();
+						}
+
+						//추가 : ParamSetWeight를 사용한다면 -> LayerWeight x ParamSetWeight(0~1)을 사용한다.
+
+
+
+						if (!_isUseParamSetWeight)
+						{
+							//layerWeight = Mathf.Clamp01(keyParamSetGroup._layerWeight);//이전
+							layerWeight = Mathf.Clamp01(curUnit._playWeight);//변경 20.11.23 : 일일이 계산된 KeyParamSetGroup의 Weight대신, 일괄 계산된 LiveUnit의 값을 이용
+						}
+						else
+						{
+							//layerWeight = Mathf.Clamp01(keyParamSetGroup._layerWeight * Mathf.Clamp01(tmpTotalParamSetWeight));//이전
+							layerWeight = Mathf.Clamp01(curUnit._playWeight * Mathf.Clamp01(tmpTotalParamSetWeight));//변경 20.11.23 : 위와 동일
+						}
+
+						if (layerWeight < 0.001f)
+						{
+							continue;
+						}
+
+						if ((nColorCalculated == 0 && _isColorProperty) || isBoneTarget)
+						{
+							tmpVisible = true;
+							tmpColor = _defaultColor;
+							if (!isBoneTarget)
+							{
+								tmpMatrix.SetIdentity();
+								tmpColor = _defaultColor;
+							}
+						}
+
+
+						//추가 3.26 : apMatrixCal 계산 > 이건 ModMesh, ModBone에 따라 달라서 위에서 호출하자. (20.9.10)
+						//tmpMatrix.CalculateScale_FromAdd();
+
+						//20.4.18 : 애니메이션 로직은 레이어별로 처리를 하므로, 색상 로직을 위로 올려서 여기서 미리 처리한다.
+						if (tmpIsColoredKeyParamSetGroup)
+						{
+							//토글 방식이면 tmpColor, tmpVisible을 다시 설정한다.
+							if (tmpIsToggleShowHideOption)
+							{
+								if (tmpToggleOpt_IsAnyKey_Shown && tmpToggleOpt_IsAny_Hidden)
+								{
+									//Show / Hide가 모두 있다면 토글 대상
+									if (tmpToggleOpt_MaxWeight_Shown > tmpToggleOpt_MaxWeight_Hidden)
+									{
+										//Show가 더 크다
 										tmpVisible = true;
 									}
-									else
+									else if (tmpToggleOpt_MaxWeight_Shown < tmpToggleOpt_MaxWeight_Hidden)
 									{
 										//Hidden이 더 크다
 										tmpVisible = false;
 										tmpColor = Color.clear;
 									}
+									else
+									{
+										//같다면? (Weight가 0.5 : 0.5로 같은 경우)
+										if (tmpToggleOpt_KeyIndex_Shown > tmpToggleOpt_KeyIndex_Hidden)
+										{
+											//Show의 ParamSet의 키 인덱스가 더 크다.
+											tmpVisible = true;
+										}
+										else
+										{
+											//Hidden이 더 크다
+											tmpVisible = false;
+											tmpColor = Color.clear;
+										}
+									}
+								}
+								else if (tmpToggleOpt_IsAnyKey_Shown && !tmpToggleOpt_IsAny_Hidden)
+								{
+									//Show만 있다면
+									tmpVisible = true;
+								}
+								else if (!tmpToggleOpt_IsAnyKey_Shown && tmpToggleOpt_IsAny_Hidden)
+								{
+									//Hide만 있다면
+									tmpVisible = false;
+									tmpColor = Color.clear;
+								}
+								else
+								{
+									//둘다 없다면? 숨기자.
+									tmpVisible = false;
+									tmpColor = Color.clear;
+								}
+
+								//Show 상태면 Weight를 다시 역산해서 색상을 만들어야 한다.
+								if (tmpVisible && tmpToggleOpt_TotalWeight_Shown > 0.0f)
+								{
+									tmpColor.r = Mathf.Clamp01(tmpColor.r / tmpToggleOpt_TotalWeight_Shown);
+									tmpColor.g = Mathf.Clamp01(tmpColor.g / tmpToggleOpt_TotalWeight_Shown);
+									tmpColor.b = Mathf.Clamp01(tmpColor.b / tmpToggleOpt_TotalWeight_Shown);
+									tmpColor.a = Mathf.Clamp01(tmpColor.a / tmpToggleOpt_TotalWeight_Shown);
 								}
 							}
-							else if (tmpToggleOpt_IsAnyKey_Shown && !tmpToggleOpt_IsAny_Hidden)
+						}
+
+
+
+						//중요! 20.4.18
+						//애니메이션은 그룹별로 값을 모아야 한다.
+
+						//추가 v1.4.8 [루트 모션]
+						//루트 모션의 루트 본에 대한 처리의 경우, tmpMatrix의 DeltaPos 부분의 값을 RootUnit에 전달한다.
+						//DetaPos만큼 Root Parent를 이동시킬 것이다.
+
+						_curAnimLayeredParam._totalWeight += layerWeight;
+
+						if (_curAnimLayeredParam._iCurAnimClip == 0)
+						{
+							//첫번째 애니메이션 클립일 때
+							//레이어의 블렌드 방식은 첫번째 클립의 값을 따른다.
+							if (_keyAnimPlayUnit.BlendMethod == apAnimPlayUnit.BLEND_METHOD.Interpolation)
 							{
-								//Show만 있다면
-								tmpVisible = true;
-							}
-							else if (!tmpToggleOpt_IsAnyKey_Shown && tmpToggleOpt_IsAny_Hidden)
-							{
-								//Hide만 있다면
-								tmpVisible = false;
-								tmpColor = Color.clear;
+								_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Interpolation;
 							}
 							else
 							{
-								//둘다 없다면? 숨기자.
-								tmpVisible = false;
-								tmpColor = Color.clear;
+								_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Additive;
 							}
 
-							//Show 상태면 Weight를 다시 역산해서 색상을 만들어야 한다.
-							if (tmpVisible && tmpToggleOpt_TotalWeight_Shown > 0.0f)
+							_curAnimLayeredParam._isCalculated = true;
+
+							//Matrix를 그대로 할당.
+
+							_curAnimLayeredParam._cal_Matrix.SetTRSForLerp(tmpMatrix);
+
+
+							//v1.4.8 : 루트 모션
+							//0번째 애니메이션 레이어에서만 동작한다.
+							if (isRootMotionBone && _curAnimLayeredParam._layerIndex == 0)
 							{
-								tmpColor.r = Mathf.Clamp01(tmpColor.r / tmpToggleOpt_TotalWeight_Shown);
-								tmpColor.g = Mathf.Clamp01(tmpColor.g / tmpToggleOpt_TotalWeight_Shown);
-								tmpColor.b = Mathf.Clamp01(tmpColor.b / tmpToggleOpt_TotalWeight_Shown);
-								tmpColor.a = Mathf.Clamp01(tmpColor.a / tmpToggleOpt_TotalWeight_Shown);
+								rootUnit.AddRootMotionData(_keyAnimClip, ref tmpMatrix._pos, 1.0f);//시작은 Weight가 1
 							}
 						}
-					}
-
-
-
-					//중요! 20.4.18
-					//애니메이션은 그룹별로 값을 모아야 한다.
-
-					//추가 v1.4.8 [루트 모션]
-					//루트 모션의 루트 본에 대한 처리의 경우, tmpMatrix의 DeltaPos 부분의 값을 RootUnit에 전달한다.
-					//DetaPos만큼 Root Parent를 이동시킬 것이다.
-
-					_curAnimLayeredParam._totalWeight += layerWeight;
-
-					if (_curAnimLayeredParam._iCurAnimClip == 0)
-					{
-						//첫번째 애니메이션 클립일 때
-						//레이어의 블렌드 방식은 첫번째 클립의 값을 따른다.
-						if (_keyAnimPlayUnit.BlendMethod == apAnimPlayUnit.BLEND_METHOD.Interpolation)
-						{
-							_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Interpolation;
-						}
 						else
 						{
-							_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Additive;
+							//두번째 클립부터는 무조건 Interpolation 방식으로 뒤에 값을 추가해야한다. <중요>
+							_curAnimLayeredParam._cal_Matrix.LerpMatrixLayered(tmpMatrix, layerWeight);
+
+							//v1.4.8 : 루트 모션
+							//0번째 애니메이션 레이어에서만 동작한다.
+							if (isRootMotionBone && _curAnimLayeredParam._layerIndex == 0)
+							{
+								rootUnit.AddRootMotionData(_keyAnimClip, ref tmpMatrix._pos, layerWeight);
+							}
 						}
 
-						_curAnimLayeredParam._isCalculated = true;
-
-						//Matrix를 그대로 할당.
-						
-						_curAnimLayeredParam._cal_Matrix.SetTRSForLerp(tmpMatrix);
-
-
-						//v1.4.8 : 루트 모션
-						//0번째 애니메이션 레이어에서만 동작한다.
-						if(isRootMotionBone && _curAnimLayeredParam._layerIndex == 0)
+						//색상 옵션도 레이어 파라미터에 넣자.
+						if (tmpIsColoredKeyParamSetGroup)
 						{
-							rootUnit.AddRootMotionData(_keyAnimClip, ref tmpMatrix._pos, 1.0f);//시작은 Weight가 1
+							//레이어 내에서는 무조건 Interpolation이다.
+							if (_curAnimLayeredParam._nCal_Color == 0)
+							{
+								//첫번째는 그대로 대입
+								_curAnimLayeredParam._cal_Color = tmpColor;
+								_curAnimLayeredParam._cal_Visible = tmpVisible;
+							}
+							else
+							{
+								//두번째부터는 Interpolation
+								_curAnimLayeredParam._cal_Color = apUtil.BlendColor_ITP(
+																	_curAnimLayeredParam._cal_Color,
+																	tmpColor,
+																	layerWeight);
+
+								//Visible은 OR연산
+								_curAnimLayeredParam._cal_Visible |= tmpVisible;
+							}
+
+
+
+							_curAnimLayeredParam._isCal_Color = true;
+							_curAnimLayeredParam._nCal_Color++;
 						}
+
+
+						//Extra Option > 레이어 파라미터
+						if (_isExtraPropertyEnabled)
+						{
+							if (tmpExtra_DepthChanged)
+							{
+								_curAnimLayeredParam._isCal_ExtraDepth = true;
+								_curAnimLayeredParam._cal_ExtraDepth = tmpExtra_DeltaDepth;
+
+								_isAnimAnyExtraCalculated = true;
+							}
+							else
+							{
+								_curAnimLayeredParam._isCal_ExtraDepth = false;
+								_curAnimLayeredParam._cal_ExtraDepth = 0;
+							}
+
+							if (tmpExtra_TextureChanged)
+							{
+								_curAnimLayeredParam._isCal_ExtraTexture = true;
+								_curAnimLayeredParam._cal_ExtraTexture = tmpExtra_TextureData;
+								_curAnimLayeredParam._cal_ExtraTextureID = tmpExtra_TextureDataID;
+
+								_isAnimAnyExtraCalculated = true;
+							}
+							else
+							{
+								_curAnimLayeredParam._isCal_ExtraTexture = false;
+								_curAnimLayeredParam._cal_ExtraTexture = null;
+								_curAnimLayeredParam._cal_ExtraTextureID = -1;
+							}
+						}
+
+						_curAnimLayeredParam._iCurAnimClip++;
+
+						iCalculatedSubParam++;
 					}
-					else
-					{
-						//두번째 클립부터는 무조건 Interpolation 방식으로 뒤에 값을 추가해야한다. <중요>
-						_curAnimLayeredParam._cal_Matrix.LerpMatrixLayered(tmpMatrix, layerWeight);
-
-						//v1.4.8 : 루트 모션
-						//0번째 애니메이션 레이어에서만 동작한다.
-						if(isRootMotionBone && _curAnimLayeredParam._layerIndex == 0)
-						{
-							rootUnit.AddRootMotionData(_keyAnimClip, ref tmpMatrix._pos, layerWeight);
-						}
-					}
-
-					//색상 옵션도 레이어 파라미터에 넣자.
-					if (tmpIsColoredKeyParamSetGroup)
-					{
-						//레이어 내에서는 무조건 Interpolation이다.
-						if (_curAnimLayeredParam._nCal_Color == 0)
-						{
-							//첫번째는 그대로 대입
-							_curAnimLayeredParam._cal_Color = tmpColor;
-							_curAnimLayeredParam._cal_Visible = tmpVisible;
-						}
-						else
-						{
-							//두번째부터는 Interpolation
-							_curAnimLayeredParam._cal_Color = apUtil.BlendColor_ITP(
-																_curAnimLayeredParam._cal_Color,
-																tmpColor,
-																layerWeight);
-
-							//Visible은 OR연산
-							_curAnimLayeredParam._cal_Visible |= tmpVisible;
-						}
-
-						
-
-						_curAnimLayeredParam._isCal_Color = true;
-						_curAnimLayeredParam._nCal_Color++;
-					}
-
-
-					//Extra Option > 레이어 파라미터
-					if (_isExtraPropertyEnabled)
-					{
-						if (tmpExtra_DepthChanged)
-						{
-							_curAnimLayeredParam._isCal_ExtraDepth = true;
-							_curAnimLayeredParam._cal_ExtraDepth = tmpExtra_DeltaDepth;
-
-							_isAnimAnyExtraCalculated = true;
-						}
-						else
-						{
-							_curAnimLayeredParam._isCal_ExtraDepth = false;
-							_curAnimLayeredParam._cal_ExtraDepth = 0;
-						}
-
-						if (tmpExtra_TextureChanged)
-						{
-							_curAnimLayeredParam._isCal_ExtraTexture = true;
-							_curAnimLayeredParam._cal_ExtraTexture = tmpExtra_TextureData;
-							_curAnimLayeredParam._cal_ExtraTextureID = tmpExtra_TextureDataID;
-
-							_isAnimAnyExtraCalculated = true;
-						}
-						else
-						{
-							_curAnimLayeredParam._isCal_ExtraTexture = false;
-							_curAnimLayeredParam._cal_ExtraTexture = null;
-							_curAnimLayeredParam._cal_ExtraTextureID = -1;
-						}
-					}
-
-					_curAnimLayeredParam._iCurAnimClip++;
-					
-					iCalculatedSubParam++;
 				}
+				
 				
 				
 				
@@ -5890,7 +5904,13 @@ namespace AnyPortrait
 
 			apOptCalculatedResultParam calParam = null;
 
-			for (int iCalParam = 0; iCalParam < _calculatedResultParams.Count; iCalParam++)
+			int nCRP = _calculatedResultParams != null ? _calculatedResultParams.Count : 0;
+			if(nCRP == 0)
+			{
+				return;
+			}
+
+			for (int iCalParam = 0; iCalParam < nCRP; iCalParam++)
 			{
 				calParam = _calculatedResultParams[iCalParam];
 
@@ -5912,10 +5932,15 @@ namespace AnyPortrait
 				
 				//초기화
 				//신버전
-				for (int iVR = 0; iVR < calParamVertRequestList.Count; iVR++)
+				int nCalParamVertRequests = calParamVertRequestList != null ? calParamVertRequestList.Count : 0;
+				if (nCalParamVertRequests > 0)
 				{
-					calParamVertRequestList[iVR].InitCalculate();
+					for (int iVR = 0; iVR < nCalParamVertRequests; iVR++)
+					{
+						calParamVertRequestList[iVR].InitCalculate();
+					}
 				}
+				
 				
 				calParam._result_IsVisible = true;
 
@@ -5926,7 +5951,15 @@ namespace AnyPortrait
 
 				//SubList (ParamSetGroup을 키값으로 레이어화된 데이터)를 순회하면서 먼저 계산한다.
 				//레이어간 병합 과정에 신경 쓸것
-				for (int iSubList = 0; iSubList < subParamGroupList.Count; iSubList++)
+
+				int nSubParamGroups = subParamGroupList != null ? subParamGroupList.Count : 0;
+				if(nSubParamGroups == 0)
+				{
+					calParam._isAvailable = true;//Rigging은 그냥 true
+					continue;
+				}
+
+				for (int iSubList = 0; iSubList < nSubParamGroups; iSubList++)
 				{
 					curSubList = subParamGroupList[iSubList];
 
@@ -5950,20 +5983,23 @@ namespace AnyPortrait
 
 					//float totalWeight = 0.0f;
 					//int nCalculated = 0;
-					
+
 					//Param (MorphKey에 따라서)을 기준으로 데이터를 넣어준다.
 					//Dist에 따른 ParamWeight를 가중치로 적용한다.
 
-					
-					for (int iPV = 0; iPV < nParamKeys; iPV++)
+					if (nParamKeys > 0)
 					{
-						paramKeyValue = subParamKeyValueList[iPV];
+						for (int iPV = 0; iPV < nParamKeys; iPV++)
+						{
+							paramKeyValue = subParamKeyValueList[iPV];
 
-						paramKeyValue._weight = 1.0f;
+							paramKeyValue._weight = 1.0f;
 
-						//totalWeight += paramKeyValue._weight;
-						//nCalculated++;//Visible 계산을 위해 "paramKey 계산 횟수"를 카운트하자
-					}//--- Params
+							//totalWeight += paramKeyValue._weight;
+							//nCalculated++;//Visible 계산을 위해 "paramKey 계산 횟수"를 카운트하자
+						}//--- Params
+					}
+					
 
 
 					//이제 tmp값을 Result에 넘겨주자
@@ -5976,17 +6012,6 @@ namespace AnyPortrait
 
 					//변경
 					calParam._totalParamSetGroupWeight += 1.0f;
-
-					//삭제 19.5.25 : 리깅에선 필요없는 코드
-					//if (nCalculated == 0)
-					//{
-					//	tmpVisible = true;
-					//}
-
-
-					
-					//삭제 19.5.25 : 필요없는 코드
-					//iCalculatedSubParam++;
 
 				}//-SubList (ParamSetGroup을 키값으로 따로 적용한다.)
 				calParam._isAvailable = true;
@@ -6006,7 +6031,8 @@ namespace AnyPortrait
 		
 		private void Calculate_Physics_UseModMeshSet(float tDelta)
 		{
-			if (_calculatedResultParams.Count == 0)
+			int nCRP = _calculatedResultParams != null ? _calculatedResultParams.Count : 0;
+			if(nCRP == 0)
 			{
 				return;
 			}
@@ -6881,8 +6907,14 @@ namespace AnyPortrait
 			//추가 : Bone을 대상으로 하는가
 			//Bone대상이면 ModBone을 사용해야한다.
 			//bool isBoneTarget = false;//>TF
+
+			int nCRP = _calculatedResultParams != null ? _calculatedResultParams.Count : 0;
+			if(nCRP == 0)
+			{
+				return;
+			}
 			
-			for (int i = 0; i < _calculatedResultParams.Count; i++)
+			for (int i = 0; i < nCRP; i++)
 			{
 				calParam = _calculatedResultParams[i];
 
@@ -6918,7 +6950,8 @@ namespace AnyPortrait
 				calParam._isColorCalculated = false;
 
 				//>Color
-				calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+				//calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+				calParam._result_Color = _defaultColor;
 				calParam._result_IsVisible = false;
 
 
@@ -6943,8 +6976,14 @@ namespace AnyPortrait
 				iColoredKeyParamSetGroup = 0;//<<실제 Color 처리가 된 ParamSetGroup의 개수
 				tmpIsColoredKeyParamSetGroup = false;
 
+				int nSubParamGroups = subParamGroupList != null ? subParamGroupList.Count : 0;
+				if(nSubParamGroups == 0)
+				{
+					calParam._isAvailable = false;
+					continue;
+				}
 
-				for (int iSubList = 0; iSubList < subParamGroupList.Count; iSubList++)
+				for (int iSubList = 0; iSubList < nSubParamGroups; iSubList++)
 				{
 					curSubList = subParamGroupList[iSubList];
 
@@ -7020,9 +7059,9 @@ namespace AnyPortrait
 					}
 
 
-					
+
 					//ModMesh를 활용하는 타입인 경우 >> ModMeshSet으로 변경
-					
+
 					//>TF
 					//apMatrix defaultMatrixOfRenderUnit = null;					
 					//if(calParam._targetOptTransform != null)
@@ -7031,208 +7070,186 @@ namespace AnyPortrait
 					//}
 
 
-
-					for (int iPV = 0; iPV < nParamKeys; iPV++)
+					if (nParamKeys > 0)
 					{
-						paramKeyValue = subParamKeyValueList[iPV];
-
-						// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
-						//if (!paramKeyValue._isCalculated) { continue; }
-
-						tmpSubModMesh_Transform = paramKeyValue._modifiedMeshSet.SubModMesh_Transform;
-
-						//ParamSetWeight를 추가
-						tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
-
-						//> TF
-						//Weight에 맞게 Matrix를 만들자
-						//if(paramKeyValue._isAnimRotationBias)
-						//{
-						//	//추가 : RotationBias가 있다면 미리 계산된 Bias Matrix를 사용한다.
-						//	//이전 : apMatrix
-						//	//tmpMatrix.AddMatrix(paramKeyValue.AnimRotationBiasedMatrix, paramKeyValue._weight, false);
-
-						//	//변경 3.27 : apMatrixCal
-						//	tmpMatrix.AddMatrixParallel_ModMesh(paramKeyValue.AnimRotationBiasedMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight);
-						//}
-						//else
-						//{
-						//	//이전
-						//	//tmpMatrix.AddMatrixParallel(paramKeyValue._modifiedMesh._transformMatrix, paramKeyValue._weight);
-
-						//	//ModMeshSet으로 변경
-						//	tmpMatrix.AddMatrixParallel_ModMesh(tmpSubModMesh_Transform._transformMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight/*, isDebug*/);
-						//}
-
-
-						//색상 처리
-						if (tmpIsColoredKeyParamSetGroup)
+						for (int iPV = 0; iPV < nParamKeys; iPV++)
 						{
-							tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
-							if (tmpSubModMesh_Color != null)
+							paramKeyValue = subParamKeyValueList[iPV];
+
+							// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
+							//if (!paramKeyValue._isCalculated) { continue; }
+
+							tmpSubModMesh_Transform = paramKeyValue._modifiedMeshSet.SubModMesh_Transform;
+
+							//ParamSetWeight를 추가
+							tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
+
+							//색상 처리
+							if (tmpIsColoredKeyParamSetGroup)
 							{
-								if (!tmpIsToggleShowHideOption)
+								tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
+								if (tmpSubModMesh_Color != null)
 								{
-									//기본방식
-									if (tmpSubModMesh_Color._isVisible)
+									if (!tmpIsToggleShowHideOption)
 									{
-										tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-										tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
-									}
-									else
-									{
-										tmpParamColor = tmpSubModMesh_Color._meshColor;
-										tmpParamColor.a = 0.0f;
-										tmpColor += tmpParamColor * paramKeyValue._weight;
-									}
-								}
-								else
-								{
-									//추가 20.2.24 : 토글 방식의 ShowHide 방식
-									if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
-									{
-										//paramKeyValue._paramSet.ControlParamValue
-										tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-										tmpVisible = true;//< 일단 이것도 true
-
-										//토글용 처리
-										tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
-
-										//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
-										if (!tmpToggleOpt_IsAnyKey_Shown)
+										//기본방식
+										if (tmpSubModMesh_Color._isVisible)
 										{
-											tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
+											tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+											tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
 										}
 										else
 										{
-											//Show Key Index 중 가장 작은 값을 기준으로 한다.
-											tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
+											tmpParamColor = tmpSubModMesh_Color._meshColor;
+											tmpParamColor.a = 0.0f;
+											tmpColor += tmpParamColor * paramKeyValue._weight;
 										}
-
-
-										tmpToggleOpt_IsAnyKey_Shown = true;
-
-										tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
-										tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
-
 									}
 									else
 									{
-										//토글용 처리
-										tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
-
-										if (!tmpToggleOpt_IsAny_Hidden)
+										//추가 20.2.24 : 토글 방식의 ShowHide 방식
+										if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
 										{
-											tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
+											//paramKeyValue._paramSet.ControlParamValue
+											tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+											tmpVisible = true;//< 일단 이것도 true
+
+											//토글용 처리
+											tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+
+											//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
+											if (!tmpToggleOpt_IsAnyKey_Shown)
+											{
+												tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
+											}
+											else
+											{
+												//Show Key Index 중 가장 작은 값을 기준으로 한다.
+												tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
+											}
+
+
+											tmpToggleOpt_IsAnyKey_Shown = true;
+
+											tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
+											tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
+
 										}
 										else
 										{
-											//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
-											tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
-										}
+											//토글용 처리
+											tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
 
-										tmpToggleOpt_IsAny_Hidden = true;
-										tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
-										tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
-									}
-								}
-							}
-						}
+											if (!tmpToggleOpt_IsAny_Hidden)
+											{
+												tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
+											}
+											else
+											{
+												//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
+												tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
+											}
 
-						nColorCalculated++;
-
-
-						//---------------------------------------------
-						//추가 12.5 : Extra Option
-						if (_isExtraPropertyEnabled)
-						{
-							//변경 : ModMeshSet을 이용하는 것으로 변경
-							tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
-
-							if (tmpSubModMesh_Extra != null
-									&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
-									)
-							{
-								//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
-								float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
-								float bias = 0.0001f;
-								float overlapBias = 0.01f;
-								float cutOut = 0.0f;
-								bool isExactWeight = false;
-								if (IsAnimated)
-								{
-									switch (paramKeyValue._animKeyPos)
-									{
-										case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
-											isExactWeight = true;
-											break;
-										case apOptCalculatedResultParam.AnimKeyPos.NextKey:
-											cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
-											break; //Next Key라면 Prev와의 CutOut을 가져온다.
-										case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
-											cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
-											break;//Prev Key라면 Next와의 CutOut을 가져온다.
-									}
-								}
-								else
-								{
-									cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
-								}
-
-								cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
-
-								if (isExactWeight)
-								{
-									extraWeight = 10000.0f;
-								}
-								else if (cutOut < bias)
-								{
-									//정확하면 최대값
-									//아니면 적용안함
-									if (extraWeight > 1.0f - bias)	{ extraWeight = 10000.0f; }
-									else							{ extraWeight = -1.0f; }
-								}
-								else
-								{
-									if (extraWeight < 1.0f - cutOut)	{ extraWeight = -1.0f; }
-									else								{ extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
-								}
-
-								if (extraWeight > 0.0f)
-								{
-									if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
-									{
-										//2-1. Depth 이벤트
-										if (extraWeight > tmpExtra_DepthMaxWeight)
-										{
-											//가중치가 최대값보다 큰 경우
-											tmpExtra_DepthMaxWeight = extraWeight;
-											tmpExtra_DepthChanged = true;
-											tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
-										}
-
-									}
-									if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
-									{
-										//2-2. Texture 이벤트
-										if (extraWeight > tmpExtra_TextureMaxWeight)
-										{
-											//가중치가 최대값보다 큰 경우
-											tmpExtra_TextureMaxWeight = extraWeight;
-											tmpExtra_TextureChanged = true;
-											tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
-											tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
+											tmpToggleOpt_IsAny_Hidden = true;
+											tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
+											tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
 										}
 									}
 								}
 							}
+
+							nColorCalculated++;
+
+
+							//---------------------------------------------
+							//추가 12.5 : Extra Option
+							if (_isExtraPropertyEnabled)
+							{
+								//변경 : ModMeshSet을 이용하는 것으로 변경
+								tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
+
+								if (tmpSubModMesh_Extra != null
+										&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
+										)
+								{
+									//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
+									float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
+									float bias = 0.0001f;
+									float overlapBias = 0.01f;
+									float cutOut = 0.0f;
+									bool isExactWeight = false;
+									if (IsAnimated)
+									{
+										switch (paramKeyValue._animKeyPos)
+										{
+											case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
+												isExactWeight = true;
+												break;
+											case apOptCalculatedResultParam.AnimKeyPos.NextKey:
+												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
+												break; //Next Key라면 Prev와의 CutOut을 가져온다.
+											case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
+												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
+												break;//Prev Key라면 Next와의 CutOut을 가져온다.
+										}
+									}
+									else
+									{
+										cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
+									}
+
+									cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
+
+									if (isExactWeight)
+									{
+										extraWeight = 10000.0f;
+									}
+									else if (cutOut < bias)
+									{
+										//정확하면 최대값
+										//아니면 적용안함
+										if (extraWeight > 1.0f - bias) { extraWeight = 10000.0f; }
+										else { extraWeight = -1.0f; }
+									}
+									else
+									{
+										if (extraWeight < 1.0f - cutOut) { extraWeight = -1.0f; }
+										else { extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
+									}
+
+									if (extraWeight > 0.0f)
+									{
+										if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
+										{
+											//2-1. Depth 이벤트
+											if (extraWeight > tmpExtra_DepthMaxWeight)
+											{
+												//가중치가 최대값보다 큰 경우
+												tmpExtra_DepthMaxWeight = extraWeight;
+												tmpExtra_DepthChanged = true;
+												tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
+											}
+
+										}
+										if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
+										{
+											//2-2. Texture 이벤트
+											if (extraWeight > tmpExtra_TextureMaxWeight)
+											{
+												//가중치가 최대값보다 큰 경우
+												tmpExtra_TextureMaxWeight = extraWeight;
+												tmpExtra_TextureChanged = true;
+												tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
+												tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
+											}
+										}
+									}
+								}
+							}
+							//---------------------------------------------
 						}
-						//---------------------------------------------
 					}
-
-					//>TF
-					//tmpMatrix.CalculateScale_FromAdd();
-					//tmpMatrix.CalculateLocalPos_ModMesh(defaultMatrixOfRenderUnit/*, isDebug*/);//추가 (20.9.11) : 위치 보간이슈 수정
+					
 
 					//추가 : ParamSetWeight를 사용한다면 -> LayerWeight x ParamSetWeight(0~1)을 사용한다.
 					if (!_isUseParamSetWeight)
@@ -7254,58 +7271,9 @@ namespace AnyPortrait
 					{
 						tmpVisible = true;
 						tmpColor = _defaultColor;
-						
-						//TF
-						//if (!isBoneTarget)
-						//{
-						//	tmpMatrix.SetIdentity();
-						//	tmpColor = _defaultColor;
-						//}
 					}
 
 					calParam._totalParamSetGroupWeight += layerWeight;//<<수정 : 나중에 Modifier 자체의 Weight를 적용할 수 있게 만든다.
-
-
-					#region [미사용 코드] TF
-					//if (iCalculatedSubParam == 0)
-					//{
-					//	//위 코드를 하나로 합쳤다.
-					//	//이전 : apMatrix로 계산된 tmpMatrix
-					//	//calParam._result_Matrix.SetTRS(	tmpMatrix._pos * layerWeight,
-					//	//								tmpMatrix._angleDeg * layerWeight,
-					//	//								tmpMatrix._scale * layerWeight + Vector2.one * (1.0f - layerWeight));
-
-					//	//변경 3.27 : apMatrixCal로 계산된 tmpMatrix
-					//	calParam._result_Matrix.SetTRSForLerp(tmpMatrix);
-
-					//}
-					//else
-					//{
-					//	switch (keyParamSetGroup._blendMethod)
-					//	{
-					//		case apModifierParamSetGroup.BLEND_METHOD.Additive:
-					//			{
-					//				//이전 : apMatrix로 계산
-					//				//calParam._result_Matrix.AddMatrix(tmpMatrix, layerWeight, true);
-
-					//				//변경 3.27 : apMatrixCal로 계산
-					//				calParam._result_Matrix.AddMatrixLayered(tmpMatrix, layerWeight);
-					//			}
-					//			break;
-
-					//		case apModifierParamSetGroup.BLEND_METHOD.Interpolation:
-					//			{
-					//				//이전 : apMatrix로 계산
-					//				//calParam._result_Matrix.LerpMartix(tmpMatrix, layerWeight);
-
-					//				//변경 3.27 : apMatrixCal로 계산
-					//				calParam._result_Matrix.LerpMatrixLayered(tmpMatrix, layerWeight);
-					//			}
-					//			break;
-					//	}
-
-					//} 
-					#endregion
 
 
 					//토글 방식이면 tmpColor, tmpVisible을 다시 설정한다.
@@ -7412,10 +7380,6 @@ namespace AnyPortrait
 				else
 				{
 					calParam._isAvailable = true;
-
-					//>TF
-					////변경 : apMatrixCal로 계산한 경우
-					//calParam._result_Matrix.CalculateScale_FromLerp();
 				}
 			}
 		}
@@ -7434,7 +7398,13 @@ namespace AnyPortrait
 			//Bone을 대상으로 하는가 : Bone대상이면 ModBone을 사용해야한다.
 			//bool isBoneTarget = false;//>TF
 
-			for (int i = 0; i < _calculatedResultParams.Count; i++)
+			int nCRP = _calculatedResultParams != null ? _calculatedResultParams.Count : 0;
+			if(nCRP == 0)
+			{
+				return;
+			}
+
+			for (int i = 0; i < nCRP; i++)
 			{
 				calParam = _calculatedResultParams[i];
 
@@ -7475,7 +7445,8 @@ namespace AnyPortrait
 				calParam._isColorCalculated = false;
 
 				//>Color
-				calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+				//calParam._result_Color = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+				calParam._result_Color = _defaultColor;
 				calParam._result_IsVisible = false;
 
 
@@ -7520,556 +7491,543 @@ namespace AnyPortrait
 				int iTargetSubList = 0;
 				apAnimPlayMapping.LiveUnit curUnit = null;
 
-				for (int iUnit = 0; iUnit < _animPlayMapping._nAnimClips; iUnit++)
+				int nAnimClips = _animPlayMapping._nAnimClips;
+				if (nAnimClips > 0)
 				{
-					curUnit = _animPlayMapping._liveUnits_Sorted[iUnit];
-					if(!curUnit._isLive)
+					for (int iUnit = 0; iUnit < nAnimClips; iUnit++)
 					{
-						//재생 종료
-						//이 뒤는 모두 재생이 안되는 애니메이션이다.
-						break;
-					}
-
-					iTargetSubList = curUnit._animIndex;
-					curSubList = calParam._subParamKeyValueList_AnimSync[iTargetSubList];
-					if(curSubList == null)
-					{
-						//이게 Null이라는 것은, 이 AnimClip에 대한 TimelineLayer와 Mod는 없다는 것
-						continue;
-					}
-					
-					//----------------------여기까지
-
-
-					//이전 방식
-					//int nParamKeys = curSubList._subParamKeyValues.Count;//Sub Params
-					//subParamKeyValueList = curSubList._subParamKeyValues;
-
-					//다른 방식 20.11.24 : 모든 ParamKeyValue가 아니라, 유효한 ParamKeyValue만 체크한다.
-					int nValidParamKeyValues = curSubList._nResultAnimKey;
-					if(nValidParamKeyValues == 0)
-					{
-						continue;
-					}
-					
-
-
-					paramKeyValue = null;
-
-					keyParamSetGroup = curSubList._keyParamSetGroup;
-
-					//삭제 20.11.24 : 위에서 AnimPlayMapping의 LiveUnit에서 미리 결정된다.
-					////애니메이션 모디파이어에서 실행되지 않은 애니메이션에 대한 PSG는 생략한다.
-					//if (!keyParamSetGroup.IsAnimEnabled)
-					//{
-					//	//(KeyParamSetGroup이 AnimClip > Timeline (Modifier) > TimelineLayer에 해당한다.)
-					//	continue;
-					//}
-
-
-					//이 로직이 추가된다. (20.4.18)
-					_keyAnimClip = keyParamSetGroup._keyAnimClip;
-					_keyAnimPlayUnit = _keyAnimClip._parentPlayUnit;
-
-					//레이어별로 데이터를 그룹으로 만들어서 계산하자
-					if (_curAnimLayer != _keyAnimPlayUnit._layer || _curAnimLayeredParam == null)
-					{
-						//다음 레이어를 꺼내자
-						//- 풀에 이미 생성된 레이어가 있다면 가져오고, 없으면 생성한다.
-						if (_nAnimLayeredParams < _animLayeredParams.Count)
+						curUnit = _animPlayMapping._liveUnits_Sorted[iUnit];
+						if (!curUnit._isLive)
 						{
-							//가져올 레이어 파라미터가 있다.
-							_curAnimLayeredParam = _animLayeredParams[_nAnimLayeredParams];
-							_curAnimLayeredParam.ReadyToUpdate();
-						}
-						else
-						{
-							//풀에 레이어 파라미터가 없으므로 새로 만들어서 풀에 넣어주자
-							//생성자에 ReadyToUpdate가 포함되어 있다.
-
-							//>TF
-							//_curAnimLayeredParam = AnimLayeredParam.Make_TF(_nAnimLayeredParams);
-
-							//>Color
-							_curAnimLayeredParam = AnimLayeredParam.Make_Color(_nAnimLayeredParams);
-
-							_animLayeredParams.Add(_curAnimLayeredParam);
+							//재생 종료
+							//이 뒤는 모두 재생이 안되는 애니메이션이다.
+							break;
 						}
 
-						_curAnimLayer = _keyAnimPlayUnit._layer;
-						_nAnimLayeredParams++;//사용된 레이어 파라미터의 개수
-					}
+						iTargetSubList = curUnit._animIndex;
+						curSubList = calParam._subParamKeyValueList_AnimSync[iTargetSubList];
+						if (curSubList == null)
+						{
+							//이게 Null이라는 것은, 이 AnimClip에 대한 TimelineLayer와 Mod는 없다는 것
+							continue;
+						}
+
+						//----------------------여기까지
+
+
+						//이전 방식
+						//int nParamKeys = curSubList._subParamKeyValues.Count;//Sub Params
+						//subParamKeyValueList = curSubList._subParamKeyValues;
+
+						//다른 방식 20.11.24 : 모든 ParamKeyValue가 아니라, 유효한 ParamKeyValue만 체크한다.
+						int nValidParamKeyValues = curSubList._nResultAnimKey;
+						if (nValidParamKeyValues == 0)
+						{
+							continue;
+						}
 
 
 
+						paramKeyValue = null;
 
-					//레이어 내부의 임시 데이터를 먼저 초기화
-					//tmpMatrix.SetZero();//>TF
+						keyParamSetGroup = curSubList._keyParamSetGroup;
 
-					tmpColor = Color.clear;
-
-					tmpVisible = false;
-
-					tmpTotalParamSetWeight = 0.0f;
-					nColorCalculated = 0;
-
-					//KeyParamSetGroup이 Color를 지원하는지 체크
-					//tmpIsColoredKeyParamSetGroup = _isColorProperty && keyParamSetGroup._isColorPropertyEnabled && !isBoneTarget;
-					tmpIsColoredKeyParamSetGroup = true;//>Color (이 조건문이 의미없다)
-
-
-					//추가 20.2.24 : 색상 토글 옵션 > 애니메이션에서는 무조건 false
-					//tmpIsToggleShowHideOption = !IsAnimated && tmpIsColoredKeyParamSetGroup && keyParamSetGroup._isToggleShowHideWithoutBlend;
-					tmpIsToggleShowHideOption = false;
-
-					#region [미사용 코드] tmpIsToggleShowHideOption는 항상 false다
-					//if (tmpIsToggleShowHideOption)
-					//{
-					//	tmpToggleOpt_IsAnyKey_Shown = false;
-					//	tmpToggleOpt_TotalWeight_Shown = 0.0f;
-					//	tmpToggleOpt_MaxWeight_Shown = 0.0f;
-					//	tmpToggleOpt_KeyIndex_Shown = 0.0f;
-					//	tmpToggleOpt_IsAny_Hidden = false;
-					//	tmpToggleOpt_TotalWeight_Hidden = 0.0f;
-					//	tmpToggleOpt_MaxWeight_Hidden = 0.0f;
-					//	tmpToggleOpt_KeyIndex_Hidden = 0.0f;
-					//} 
-					#endregion
-
-
-					//변경 20.4.20 : 초기화 위치가 여기여야 한다.
-					if(_isExtraPropertyEnabled)
-					{
-						//추가 12.5 : Extra Option 계산 값				
-						tmpExtra_DepthChanged = false;
-						tmpExtra_TextureChanged = false;
-						tmpExtra_DeltaDepth = 0;
-						tmpExtra_TextureDataID = 0;
-						tmpExtra_TextureData = null;
-						tmpExtra_DepthMaxWeight = -1.0f;//최대 Weight 값
-						tmpExtra_TextureMaxWeight = -1.0f;//최대 Weight 값
-					}
-
-
-
-					//ModMesh를 활용하는 타입인 경우 >> ModMeshSet으로 변경
-					//추가 20.9.11 : 정밀한 보간을 위해 Default Matrix가 필요하다.
-					//>TF
-					//apMatrix defaultMatrixOfRenderUnit = null;
-					//if(calParam._targetOptTransform != null)
-					//{
-					//	defaultMatrixOfRenderUnit = calParam._targetOptTransform._defaultMatrix;
-					//}
-
-
-					//변경 20.11.24 모든 키프레임 순회 방식 제거
-					//이전 방식
-					
-					//변경 20.11.24 : 전체 체크 > 이미 보간된 것만 체크
-					for (int iPV = 0; iPV < nValidParamKeyValues; iPV++)
-					{
-						paramKeyValue = curSubList._resultAnimKeyPKVs[iPV];//보간이 완료된 PKV만 가져온다.
-
-						//여기까지...
-
-						// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
-						//if (!paramKeyValue._isCalculated) { continue; }
-
-						tmpSubModMesh_Transform = paramKeyValue._modifiedMeshSet.SubModMesh_Transform;
-
-						//ParamSetWeight를 추가
-						tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
-
-						//>TF
-						////Weight에 맞게 Matrix를 만들자
-						//if (paramKeyValue._isAnimRotationBias)
+						//삭제 20.11.24 : 위에서 AnimPlayMapping의 LiveUnit에서 미리 결정된다.
+						////애니메이션 모디파이어에서 실행되지 않은 애니메이션에 대한 PSG는 생략한다.
+						//if (!keyParamSetGroup.IsAnimEnabled)
 						//{
-						//	//추가 : RotationBias가 있다면 미리 계산된 Bias Matrix를 사용한다.
-						//	tmpMatrix.AddMatrixParallel_ModMesh(paramKeyValue.AnimRotationBiasedMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight);
-						//}
-						//else
-						//{
-						//	//ModMeshSet으로 변경
-						//	tmpMatrix.AddMatrixParallel_ModMesh(tmpSubModMesh_Transform._transformMatrix, defaultMatrixOfRenderUnit, paramKeyValue._weight);
+						//	//(KeyParamSetGroup이 AnimClip > Timeline (Modifier) > TimelineLayer에 해당한다.)
+						//	continue;
 						//}
 
 
-						//색상 처리
-						tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
-						if (tmpSubModMesh_Color != null)
+						//이 로직이 추가된다. (20.4.18)
+						_keyAnimClip = keyParamSetGroup._keyAnimClip;
+						_keyAnimPlayUnit = _keyAnimClip._parentPlayUnit;
+
+						//레이어별로 데이터를 그룹으로 만들어서 계산하자
+						if (_curAnimLayer != _keyAnimPlayUnit._layer || _curAnimLayeredParam == null)
 						{
-							#region [미사용 코드] tmpIsToggleShowHideOption는 항상 false다.
-							//if (!tmpIsToggleShowHideOption)
-							//{
-							//	//기본방식
-							//	if (tmpSubModMesh_Color._isVisible)
-							//	{
-							//		tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-							//		tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
-							//	}
-							//	else
-							//	{
-							//		tmpParamColor = tmpSubModMesh_Color._meshColor;
-							//		tmpParamColor.a = 0.0f;
-							//		tmpColor += tmpParamColor * paramKeyValue._weight;
-							//	}
-							//}
-							//else
-							//{
-							//	//추가 20.2.24 : 토글 방식의 ShowHide 방식
-							//	if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
-							//	{
-							//		//paramKeyValue._paramSet.ControlParamValue
-							//		tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-							//		tmpVisible = true;//< 일단 이것도 true
-
-							//		//토글용 처리
-							//		tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
-
-							//		//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
-							//		if (!tmpToggleOpt_IsAnyKey_Shown)
-							//		{
-							//			tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
-							//		}
-							//		else
-							//		{
-							//			//Show Key Index 중 가장 작은 값을 기준으로 한다.
-							//			tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
-							//		}
-
-
-							//		tmpToggleOpt_IsAnyKey_Shown = true;
-
-							//		tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
-							//		tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
-
-							//	}
-							//	else
-							//	{
-							//		//토글용 처리
-							//		tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
-
-							//		if (!tmpToggleOpt_IsAny_Hidden)
-							//		{
-							//			tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
-							//		}
-							//		else
-							//		{
-							//			//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
-							//			tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
-							//		}
-
-							//		tmpToggleOpt_IsAny_Hidden = true;
-							//		tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
-							//		tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
-							//	}
-							//} 
-							#endregion
-
-							//기본방식
-							if (tmpSubModMesh_Color._isVisible)
+							//다음 레이어를 꺼내자
+							//- 풀에 이미 생성된 레이어가 있다면 가져오고, 없으면 생성한다.
+							if (_nAnimLayeredParams < _animLayeredParams.Count)
 							{
-								tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
-								tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
+								//가져올 레이어 파라미터가 있다.
+								_curAnimLayeredParam = _animLayeredParams[_nAnimLayeredParams];
+								_curAnimLayeredParam.ReadyToUpdate();
 							}
 							else
 							{
-								tmpParamColor = tmpSubModMesh_Color._meshColor;
-								tmpParamColor.a = 0.0f;
-								tmpColor += tmpParamColor * paramKeyValue._weight;
+								//풀에 레이어 파라미터가 없으므로 새로 만들어서 풀에 넣어주자
+								//생성자에 ReadyToUpdate가 포함되어 있다.
+
+								//>TF
+								//_curAnimLayeredParam = AnimLayeredParam.Make_TF(_nAnimLayeredParams);
+
+								//>Color
+								_curAnimLayeredParam = AnimLayeredParam.Make_Color(_nAnimLayeredParams);
+
+								_animLayeredParams.Add(_curAnimLayeredParam);
 							}
+
+							_curAnimLayer = _keyAnimPlayUnit._layer;
+							_nAnimLayeredParams++;//사용된 레이어 파라미터의 개수
 						}
 
-						nColorCalculated++;
 
 
-						//---------------------------------------------
-						//추가 12.5 : Extra Option
+
+						//레이어 내부의 임시 데이터를 먼저 초기화
+						//tmpMatrix.SetZero();//>TF
+
+						tmpColor = Color.clear;
+
+						tmpVisible = false;
+
+						tmpTotalParamSetWeight = 0.0f;
+						nColorCalculated = 0;
+
+						//KeyParamSetGroup이 Color를 지원하는지 체크
+						//tmpIsColoredKeyParamSetGroup = _isColorProperty && keyParamSetGroup._isColorPropertyEnabled && !isBoneTarget;
+						tmpIsColoredKeyParamSetGroup = true;//>Color (이 조건문이 의미없다)
+
+
+						//추가 20.2.24 : 색상 토글 옵션 > 애니메이션에서는 무조건 false
+						//tmpIsToggleShowHideOption = !IsAnimated && tmpIsColoredKeyParamSetGroup && keyParamSetGroup._isToggleShowHideWithoutBlend;
+						tmpIsToggleShowHideOption = false;
+
+						#region [미사용 코드] tmpIsToggleShowHideOption는 항상 false다
+						//if (tmpIsToggleShowHideOption)
+						//{
+						//	tmpToggleOpt_IsAnyKey_Shown = false;
+						//	tmpToggleOpt_TotalWeight_Shown = 0.0f;
+						//	tmpToggleOpt_MaxWeight_Shown = 0.0f;
+						//	tmpToggleOpt_KeyIndex_Shown = 0.0f;
+						//	tmpToggleOpt_IsAny_Hidden = false;
+						//	tmpToggleOpt_TotalWeight_Hidden = 0.0f;
+						//	tmpToggleOpt_MaxWeight_Hidden = 0.0f;
+						//	tmpToggleOpt_KeyIndex_Hidden = 0.0f;
+						//} 
+						#endregion
+
+
+						//변경 20.4.20 : 초기화 위치가 여기여야 한다.
 						if (_isExtraPropertyEnabled)
 						{
-							//변경 : ModMeshSet을 이용하는 것으로 변경
-							tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
+							//추가 12.5 : Extra Option 계산 값				
+							tmpExtra_DepthChanged = false;
+							tmpExtra_TextureChanged = false;
+							tmpExtra_DeltaDepth = 0;
+							tmpExtra_TextureDataID = 0;
+							tmpExtra_TextureData = null;
+							tmpExtra_DepthMaxWeight = -1.0f;//최대 Weight 값
+							tmpExtra_TextureMaxWeight = -1.0f;//최대 Weight 값
+						}
 
-							if (tmpSubModMesh_Extra != null
-									&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
-									)
+
+
+						//ModMesh를 활용하는 타입인 경우 >> ModMeshSet으로 변경
+						//추가 20.9.11 : 정밀한 보간을 위해 Default Matrix가 필요하다.
+						
+
+						//변경 20.11.24 모든 키프레임 순회 방식 제거
+						//이전 방식
+
+						//변경 20.11.24 : 전체 체크 > 이미 보간된 것만 체크
+						for (int iPV = 0; iPV < nValidParamKeyValues; iPV++)
+						{
+							paramKeyValue = curSubList._resultAnimKeyPKVs[iPV];//보간이 완료된 PKV만 가져온다.
+
+							//여기까지...
+
+							// [ v1.4.7 삭제 : _isCalculated는 삭제되었고, 계산된 리스트만 순회한다. ]
+							//if (!paramKeyValue._isCalculated) { continue; }
+
+							tmpSubModMesh_Transform = paramKeyValue._modifiedMeshSet.SubModMesh_Transform;
+
+							//ParamSetWeight를 추가
+							tmpTotalParamSetWeight += paramKeyValue._weight * paramKeyValue._paramSet._overlapWeight;
+
+
+
+							//색상 처리
+							tmpSubModMesh_Color = paramKeyValue._modifiedMeshSet.SubModMesh_Color;
+							if (tmpSubModMesh_Color != null)
 							{
-								//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
-								float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
-								float bias = 0.0001f;
-								float overlapBias = 0.01f;
-								float cutOut = 0.0f;
-								bool isExactWeight = false;
-								if (IsAnimated)
+								#region [미사용 코드] tmpIsToggleShowHideOption는 항상 false다.
+								//if (!tmpIsToggleShowHideOption)
+								//{
+								//	//기본방식
+								//	if (tmpSubModMesh_Color._isVisible)
+								//	{
+								//		tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+								//		tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
+								//	}
+								//	else
+								//	{
+								//		tmpParamColor = tmpSubModMesh_Color._meshColor;
+								//		tmpParamColor.a = 0.0f;
+								//		tmpColor += tmpParamColor * paramKeyValue._weight;
+								//	}
+								//}
+								//else
+								//{
+								//	//추가 20.2.24 : 토글 방식의 ShowHide 방식
+								//	if (tmpSubModMesh_Color._isVisible && paramKeyValue._weight > 0.0f)
+								//	{
+								//		//paramKeyValue._paramSet.ControlParamValue
+								//		tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+								//		tmpVisible = true;//< 일단 이것도 true
+
+								//		//토글용 처리
+								//		tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+
+								//		//0.5 Weight시 인덱스 비교를 위해 키 인덱스 위치를 저장하자.
+								//		if (!tmpToggleOpt_IsAnyKey_Shown)
+								//		{
+								//			tmpToggleOpt_KeyIndex_Shown = tmpToggleOpt_KeyIndex_Cal;
+								//		}
+								//		else
+								//		{
+								//			//Show Key Index 중 가장 작은 값을 기준으로 한다.
+								//			tmpToggleOpt_KeyIndex_Shown = (tmpToggleOpt_KeyIndex_Cal < tmpToggleOpt_KeyIndex_Shown ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Shown);
+								//		}
+
+
+								//		tmpToggleOpt_IsAnyKey_Shown = true;
+
+								//		tmpToggleOpt_TotalWeight_Shown += paramKeyValue._weight;
+								//		tmpToggleOpt_MaxWeight_Shown = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Shown ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Shown);
+
+								//	}
+								//	else
+								//	{
+								//		//토글용 처리
+								//		tmpToggleOpt_KeyIndex_Cal = paramKeyValue._paramSet.ComparableIndex;
+
+								//		if (!tmpToggleOpt_IsAny_Hidden)
+								//		{
+								//			tmpToggleOpt_KeyIndex_Hidden = tmpToggleOpt_KeyIndex_Cal;
+								//		}
+								//		else
+								//		{
+								//			//Hidden Key Index 중 가장 큰 값을 기준으로 한다.
+								//			tmpToggleOpt_KeyIndex_Hidden = (tmpToggleOpt_KeyIndex_Cal > tmpToggleOpt_KeyIndex_Hidden ? tmpToggleOpt_KeyIndex_Cal : tmpToggleOpt_KeyIndex_Hidden);
+								//		}
+
+								//		tmpToggleOpt_IsAny_Hidden = true;
+								//		tmpToggleOpt_TotalWeight_Hidden += paramKeyValue._weight;
+								//		tmpToggleOpt_MaxWeight_Hidden = (paramKeyValue._weight > tmpToggleOpt_MaxWeight_Hidden ? paramKeyValue._weight : tmpToggleOpt_MaxWeight_Hidden);
+								//	}
+								//} 
+								#endregion
+
+								//기본방식
+								if (tmpSubModMesh_Color._isVisible)
 								{
-									switch (paramKeyValue._animKeyPos)
-									{
-										case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
-											isExactWeight = true;
-											break;
-										case apOptCalculatedResultParam.AnimKeyPos.NextKey:
-											cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
-											break; //Next Key라면 Prev와의 CutOut을 가져온다.
-										case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
-											cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
-											break;//Prev Key라면 Next와의 CutOut을 가져온다.
-									}
+									tmpColor += tmpSubModMesh_Color._meshColor * paramKeyValue._weight;
+									tmpVisible = true;//하나라도 Visible이면 Visible이 된다.
 								}
 								else
 								{
-									cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
+									tmpParamColor = tmpSubModMesh_Color._meshColor;
+									tmpParamColor.a = 0.0f;
+									tmpColor += tmpParamColor * paramKeyValue._weight;
 								}
+							}
 
-								cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
+							nColorCalculated++;
 
-								if (isExactWeight)
-								{
-									extraWeight = 10000.0f;
-								}
-								else if (cutOut < bias)
-								{
-									//정확하면 최대값
-									//아니면 적용안함
-									if (extraWeight > 1.0f - bias)	{ extraWeight = 10000.0f; }
-									else							{ extraWeight = -1.0f; }
-								}
-								else
-								{
-									if (extraWeight < 1.0f - cutOut)	{ extraWeight = -1.0f; }
-									else								{ extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
-								}
 
-								if (extraWeight > 0.0f)
+							//---------------------------------------------
+							//추가 12.5 : Extra Option
+							if (_isExtraPropertyEnabled)
+							{
+								//변경 : ModMeshSet을 이용하는 것으로 변경
+								tmpSubModMesh_Extra = paramKeyValue._modifiedMeshSet.SubModMesh_Extra;
+
+								if (tmpSubModMesh_Extra != null
+										&& (tmpSubModMesh_Extra._extraValue._isDepthChanged || tmpSubModMesh_Extra._extraValue._isTextureChanged)
+										)
 								{
-									if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
+									//현재 ParamKeyValue의 CutOut된 가중치를 구해야한다.
+									float extraWeight = paramKeyValue._weight;//<<일단 가중치를 더한다.
+									float bias = 0.0001f;
+									float overlapBias = 0.01f;
+									float cutOut = 0.0f;
+									bool isExactWeight = false;
+									if (IsAnimated)
 									{
-										//2-1. Depth 이벤트
-										if (extraWeight > tmpExtra_DepthMaxWeight)
+										switch (paramKeyValue._animKeyPos)
 										{
-											//가중치가 최대값보다 큰 경우
-											tmpExtra_DepthMaxWeight = extraWeight;
-											tmpExtra_DepthChanged = true;
-											tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
+											case apOptCalculatedResultParam.AnimKeyPos.ExactKey:
+												isExactWeight = true;
+												break;
+											case apOptCalculatedResultParam.AnimKeyPos.NextKey:
+												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimPrev;
+												break; //Next Key라면 Prev와의 CutOut을 가져온다.
+											case apOptCalculatedResultParam.AnimKeyPos.PrevKey:
+												cutOut = tmpSubModMesh_Extra._extraValue._weightCutout_AnimNext;
+												break;//Prev Key라면 Next와의 CutOut을 가져온다.
 										}
-
 									}
-									if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
+									else
 									{
-										//2-2. Texture 이벤트
-										if (extraWeight > tmpExtra_TextureMaxWeight)
+										cutOut = tmpSubModMesh_Extra._extraValue._weightCutout;
+									}
+
+									cutOut = Mathf.Clamp01(cutOut + overlapBias);//살짝 겹치게
+
+									if (isExactWeight)
+									{
+										extraWeight = 10000.0f;
+									}
+									else if (cutOut < bias)
+									{
+										//정확하면 최대값
+										//아니면 적용안함
+										if (extraWeight > 1.0f - bias) { extraWeight = 10000.0f; }
+										else { extraWeight = -1.0f; }
+									}
+									else
+									{
+										if (extraWeight < 1.0f - cutOut) { extraWeight = -1.0f; }
+										else { extraWeight = (extraWeight - (1.0f - cutOut)) / cutOut; }
+									}
+
+									if (extraWeight > 0.0f)
+									{
+										if (tmpSubModMesh_Extra._extraValue._isDepthChanged)
 										{
-											//가중치가 최대값보다 큰 경우
-											tmpExtra_TextureMaxWeight = extraWeight;
-											tmpExtra_TextureChanged = true;
-											tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
-											tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
+											//2-1. Depth 이벤트
+											if (extraWeight > tmpExtra_DepthMaxWeight)
+											{
+												//가중치가 최대값보다 큰 경우
+												tmpExtra_DepthMaxWeight = extraWeight;
+												tmpExtra_DepthChanged = true;
+												tmpExtra_DeltaDepth = tmpSubModMesh_Extra._extraValue._deltaDepth;
+											}
+
+										}
+										if (tmpSubModMesh_Extra._extraValue._isTextureChanged)
+										{
+											//2-2. Texture 이벤트
+											if (extraWeight > tmpExtra_TextureMaxWeight)
+											{
+												//가중치가 최대값보다 큰 경우
+												tmpExtra_TextureMaxWeight = extraWeight;
+												tmpExtra_TextureChanged = true;
+												tmpExtra_TextureData = tmpSubModMesh_Extra._extraValue._linkedTextureData;
+												tmpExtra_TextureDataID = tmpSubModMesh_Extra._extraValue._textureDataID;
+											}
 										}
 									}
 								}
 							}
+							//---------------------------------------------
 						}
-						//---------------------------------------------
-					}
-
-					//>TF
-					//tmpMatrix.CalculateScale_FromAdd();
-					//tmpMatrix.CalculateLocalPos_ModMesh(defaultMatrixOfRenderUnit);//추가 (20.9.11) : 위치 보간이슈 수정
-
-					//추가 : ParamSetWeight를 사용한다면 -> LayerWeight x ParamSetWeight(0~1)을 사용한다.
-
-
-					
-					if (!_isUseParamSetWeight)
-					{
-						layerWeight = Mathf.Clamp01(curUnit._playWeight);//변경 20.11.23 : 일일이 계산된 KeyParamSetGroup의 Weight대신, 일괄 계산된 LiveUnit의 값을 이용
-					}
-					else
-					{
-						layerWeight = Mathf.Clamp01(curUnit._playWeight * Mathf.Clamp01(tmpTotalParamSetWeight));//변경 20.11.23 : 위와 동일
-					}
-
-					if (layerWeight < 0.001f)
-					{
-						continue;
-					}
-
-					//if ((nColorCalculated == 0 && _isColorProperty) || isBoneTarget)
-					if (nColorCalculated == 0)//>Color
-					{
-						tmpVisible = true;
-						tmpColor = _defaultColor;
-						
-						//if (!isBoneTarget)
-						//{
-						//	tmpMatrix.SetIdentity();
-						//	tmpColor = _defaultColor;
-						//}
-					}
-
-
-
-					//20.4.18 : 애니메이션 로직은 레이어별로 처리를 하므로, 색상 로직을 위로 올려서 여기서 미리 처리한다.
-					#region [미사용 코드] tmpIsToggleShowHideOption는 항상 false다.
-					//if (tmpIsColoredKeyParamSetGroup)
-					//{
-					//	//토글 방식이면 tmpColor, tmpVisible을 다시 설정한다.
-					//	if (tmpIsToggleShowHideOption)
-					//	{
-					//		if (tmpToggleOpt_IsAnyKey_Shown && tmpToggleOpt_IsAny_Hidden)
-					//		{
-					//			//Show / Hide가 모두 있다면 토글 대상
-					//			if (tmpToggleOpt_MaxWeight_Shown > tmpToggleOpt_MaxWeight_Hidden)
-					//			{
-					//				//Show가 더 크다
-					//				tmpVisible = true;
-					//			}
-					//			else if (tmpToggleOpt_MaxWeight_Shown < tmpToggleOpt_MaxWeight_Hidden)
-					//			{
-					//				//Hidden이 더 크다
-					//				tmpVisible = false;
-					//				tmpColor = Color.clear;
-					//			}
-					//			else
-					//			{
-					//				//같다면? (Weight가 0.5 : 0.5로 같은 경우)
-					//				if (tmpToggleOpt_KeyIndex_Shown > tmpToggleOpt_KeyIndex_Hidden)
-					//				{
-					//					//Show의 ParamSet의 키 인덱스가 더 크다.
-					//					tmpVisible = true;
-					//				}
-					//				else
-					//				{
-					//					//Hidden이 더 크다
-					//					tmpVisible = false;
-					//					tmpColor = Color.clear;
-					//				}
-					//			}
-					//		}
-					//		else if (tmpToggleOpt_IsAnyKey_Shown && !tmpToggleOpt_IsAny_Hidden)
-					//		{
-					//			//Show만 있다면
-					//			tmpVisible = true;
-					//		}
-					//		else if (!tmpToggleOpt_IsAnyKey_Shown && tmpToggleOpt_IsAny_Hidden)
-					//		{
-					//			//Hide만 있다면
-					//			tmpVisible = false;
-					//			tmpColor = Color.clear;
-					//		}
-					//		else
-					//		{
-					//			//둘다 없다면? 숨기자.
-					//			tmpVisible = false;
-					//			tmpColor = Color.clear;
-					//		}
-
-					//		//Show 상태면 Weight를 다시 역산해서 색상을 만들어야 한다.
-					//		if (tmpVisible && tmpToggleOpt_TotalWeight_Shown > 0.0f)
-					//		{
-					//			tmpColor.r = Mathf.Clamp01(tmpColor.r / tmpToggleOpt_TotalWeight_Shown);
-					//			tmpColor.g = Mathf.Clamp01(tmpColor.g / tmpToggleOpt_TotalWeight_Shown);
-					//			tmpColor.b = Mathf.Clamp01(tmpColor.b / tmpToggleOpt_TotalWeight_Shown);
-					//			tmpColor.a = Mathf.Clamp01(tmpColor.a / tmpToggleOpt_TotalWeight_Shown);
-					//		}
-					//	}
-					//} 
-					#endregion
-
-
-
-					//중요! 20.4.18
-					//애니메이션은 그룹별로 값을 모아야 한다.
-					_curAnimLayeredParam._totalWeight += layerWeight;
-
-					if (_curAnimLayeredParam._iCurAnimClip == 0)
-					{
-						//첫번째 애니메이션 클립일 때
-						//레이어의 블렌드 방식은 첫번째 클립의 값을 따른다.
-						if (_keyAnimPlayUnit.BlendMethod == apAnimPlayUnit.BLEND_METHOD.Interpolation)
-						{
-							_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Interpolation;
-						}
-						else
-						{
-							_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Additive;
-						}
-
-						_curAnimLayeredParam._isCalculated = true;
 
 						//>TF
-						////Matrix를 그대로 할당.
-						//_curAnimLayeredParam._cal_Matrix.SetTRSForLerp(tmpMatrix);
-					}
-					//else
-					//{
-					//	//>TF
-					//	////두번째 클립부터는 무조건 Interpolation 방식으로 뒤에 값을 추가해야한다. <중요>
-					//	//_curAnimLayeredParam._cal_Matrix.LerpMatrixLayered(tmpMatrix, layerWeight);
-					//}
+						//tmpMatrix.CalculateScale_FromAdd();
+						//tmpMatrix.CalculateLocalPos_ModMesh(defaultMatrixOfRenderUnit);//추가 (20.9.11) : 위치 보간이슈 수정
+
+						//추가 : ParamSetWeight를 사용한다면 -> LayerWeight x ParamSetWeight(0~1)을 사용한다.
 
 
-					//색상 옵션도 레이어 파라미터에 넣자.
-					//레이어 내에서는 무조건 Interpolation이다.
-					if (_curAnimLayeredParam._nCal_Color == 0)
-					{
-						//첫번째는 그대로 대입
-						_curAnimLayeredParam._cal_Color = tmpColor;
-						_curAnimLayeredParam._cal_Visible = tmpVisible;
-					}
-					else
-					{
-						//두번째부터는 Interpolation
-						_curAnimLayeredParam._cal_Color = apUtil.BlendColor_ITP(
-															_curAnimLayeredParam._cal_Color,
-															tmpColor,
-															layerWeight);
 
-						//Visible은 OR연산
-						_curAnimLayeredParam._cal_Visible |= tmpVisible;
-					}
-
-						
-
-					_curAnimLayeredParam._isCal_Color = true;
-					_curAnimLayeredParam._nCal_Color++;
-
-
-					//Extra Option > 레이어 파라미터
-					if (_isExtraPropertyEnabled)
-					{
-						if (tmpExtra_DepthChanged)
+						if (!_isUseParamSetWeight)
 						{
-							_curAnimLayeredParam._isCal_ExtraDepth = true;
-							_curAnimLayeredParam._cal_ExtraDepth = tmpExtra_DeltaDepth;
-
-							_isAnimAnyExtraCalculated = true;
+							layerWeight = Mathf.Clamp01(curUnit._playWeight);//변경 20.11.23 : 일일이 계산된 KeyParamSetGroup의 Weight대신, 일괄 계산된 LiveUnit의 값을 이용
 						}
 						else
 						{
-							_curAnimLayeredParam._isCal_ExtraDepth = false;
-							_curAnimLayeredParam._cal_ExtraDepth = 0;
+							layerWeight = Mathf.Clamp01(curUnit._playWeight * Mathf.Clamp01(tmpTotalParamSetWeight));//변경 20.11.23 : 위와 동일
 						}
 
-						if (tmpExtra_TextureChanged)
+						if (layerWeight < 0.001f)
 						{
-							_curAnimLayeredParam._isCal_ExtraTexture = true;
-							_curAnimLayeredParam._cal_ExtraTexture = tmpExtra_TextureData;
-							_curAnimLayeredParam._cal_ExtraTextureID = tmpExtra_TextureDataID;
+							continue;
+						}
 
-							_isAnimAnyExtraCalculated = true;
+						//if ((nColorCalculated == 0 && _isColorProperty) || isBoneTarget)
+						if (nColorCalculated == 0)//>Color
+						{
+							tmpVisible = true;
+							tmpColor = _defaultColor;
+
+							//if (!isBoneTarget)
+							//{
+							//	tmpMatrix.SetIdentity();
+							//	tmpColor = _defaultColor;
+							//}
+						}
+
+
+
+						//20.4.18 : 애니메이션 로직은 레이어별로 처리를 하므로, 색상 로직을 위로 올려서 여기서 미리 처리한다.
+						#region [미사용 코드] tmpIsToggleShowHideOption는 항상 false다.
+						//if (tmpIsColoredKeyParamSetGroup)
+						//{
+						//	//토글 방식이면 tmpColor, tmpVisible을 다시 설정한다.
+						//	if (tmpIsToggleShowHideOption)
+						//	{
+						//		if (tmpToggleOpt_IsAnyKey_Shown && tmpToggleOpt_IsAny_Hidden)
+						//		{
+						//			//Show / Hide가 모두 있다면 토글 대상
+						//			if (tmpToggleOpt_MaxWeight_Shown > tmpToggleOpt_MaxWeight_Hidden)
+						//			{
+						//				//Show가 더 크다
+						//				tmpVisible = true;
+						//			}
+						//			else if (tmpToggleOpt_MaxWeight_Shown < tmpToggleOpt_MaxWeight_Hidden)
+						//			{
+						//				//Hidden이 더 크다
+						//				tmpVisible = false;
+						//				tmpColor = Color.clear;
+						//			}
+						//			else
+						//			{
+						//				//같다면? (Weight가 0.5 : 0.5로 같은 경우)
+						//				if (tmpToggleOpt_KeyIndex_Shown > tmpToggleOpt_KeyIndex_Hidden)
+						//				{
+						//					//Show의 ParamSet의 키 인덱스가 더 크다.
+						//					tmpVisible = true;
+						//				}
+						//				else
+						//				{
+						//					//Hidden이 더 크다
+						//					tmpVisible = false;
+						//					tmpColor = Color.clear;
+						//				}
+						//			}
+						//		}
+						//		else if (tmpToggleOpt_IsAnyKey_Shown && !tmpToggleOpt_IsAny_Hidden)
+						//		{
+						//			//Show만 있다면
+						//			tmpVisible = true;
+						//		}
+						//		else if (!tmpToggleOpt_IsAnyKey_Shown && tmpToggleOpt_IsAny_Hidden)
+						//		{
+						//			//Hide만 있다면
+						//			tmpVisible = false;
+						//			tmpColor = Color.clear;
+						//		}
+						//		else
+						//		{
+						//			//둘다 없다면? 숨기자.
+						//			tmpVisible = false;
+						//			tmpColor = Color.clear;
+						//		}
+
+						//		//Show 상태면 Weight를 다시 역산해서 색상을 만들어야 한다.
+						//		if (tmpVisible && tmpToggleOpt_TotalWeight_Shown > 0.0f)
+						//		{
+						//			tmpColor.r = Mathf.Clamp01(tmpColor.r / tmpToggleOpt_TotalWeight_Shown);
+						//			tmpColor.g = Mathf.Clamp01(tmpColor.g / tmpToggleOpt_TotalWeight_Shown);
+						//			tmpColor.b = Mathf.Clamp01(tmpColor.b / tmpToggleOpt_TotalWeight_Shown);
+						//			tmpColor.a = Mathf.Clamp01(tmpColor.a / tmpToggleOpt_TotalWeight_Shown);
+						//		}
+						//	}
+						//} 
+						#endregion
+
+
+
+						//중요! 20.4.18
+						//애니메이션은 그룹별로 값을 모아야 한다.
+						_curAnimLayeredParam._totalWeight += layerWeight;
+
+						if (_curAnimLayeredParam._iCurAnimClip == 0)
+						{
+							//첫번째 애니메이션 클립일 때
+							//레이어의 블렌드 방식은 첫번째 클립의 값을 따른다.
+							if (_keyAnimPlayUnit.BlendMethod == apAnimPlayUnit.BLEND_METHOD.Interpolation)
+							{
+								_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Interpolation;
+							}
+							else
+							{
+								_curAnimLayeredParam._blendMethod = apModifierParamSetGroup.BLEND_METHOD.Additive;
+							}
+
+							_curAnimLayeredParam._isCalculated = true;
+
+							//>TF
+							////Matrix를 그대로 할당.
+							//_curAnimLayeredParam._cal_Matrix.SetTRSForLerp(tmpMatrix);
+						}
+						//else
+						//{
+						//	//>TF
+						//	////두번째 클립부터는 무조건 Interpolation 방식으로 뒤에 값을 추가해야한다. <중요>
+						//	//_curAnimLayeredParam._cal_Matrix.LerpMatrixLayered(tmpMatrix, layerWeight);
+						//}
+
+
+						//색상 옵션도 레이어 파라미터에 넣자.
+						//레이어 내에서는 무조건 Interpolation이다.
+						if (_curAnimLayeredParam._nCal_Color == 0)
+						{
+							//첫번째는 그대로 대입
+							_curAnimLayeredParam._cal_Color = tmpColor;
+							_curAnimLayeredParam._cal_Visible = tmpVisible;
 						}
 						else
 						{
-							_curAnimLayeredParam._isCal_ExtraTexture = false;
-							_curAnimLayeredParam._cal_ExtraTexture = null;
-							_curAnimLayeredParam._cal_ExtraTextureID = -1;
-						}
-					}
+							//두번째부터는 Interpolation
+							_curAnimLayeredParam._cal_Color = apUtil.BlendColor_ITP(
+																_curAnimLayeredParam._cal_Color,
+																tmpColor,
+																layerWeight);
 
-					_curAnimLayeredParam._iCurAnimClip++;
-					
-					iCalculatedSubParam++;
+							//Visible은 OR연산
+							_curAnimLayeredParam._cal_Visible |= tmpVisible;
+						}
+
+
+
+						_curAnimLayeredParam._isCal_Color = true;
+						_curAnimLayeredParam._nCal_Color++;
+
+
+						//Extra Option > 레이어 파라미터
+						if (_isExtraPropertyEnabled)
+						{
+							if (tmpExtra_DepthChanged)
+							{
+								_curAnimLayeredParam._isCal_ExtraDepth = true;
+								_curAnimLayeredParam._cal_ExtraDepth = tmpExtra_DeltaDepth;
+
+								_isAnimAnyExtraCalculated = true;
+							}
+							else
+							{
+								_curAnimLayeredParam._isCal_ExtraDepth = false;
+								_curAnimLayeredParam._cal_ExtraDepth = 0;
+							}
+
+							if (tmpExtra_TextureChanged)
+							{
+								_curAnimLayeredParam._isCal_ExtraTexture = true;
+								_curAnimLayeredParam._cal_ExtraTexture = tmpExtra_TextureData;
+								_curAnimLayeredParam._cal_ExtraTextureID = tmpExtra_TextureDataID;
+
+								_isAnimAnyExtraCalculated = true;
+							}
+							else
+							{
+								_curAnimLayeredParam._isCal_ExtraTexture = false;
+								_curAnimLayeredParam._cal_ExtraTexture = null;
+								_curAnimLayeredParam._cal_ExtraTextureID = -1;
+							}
+						}
+
+						_curAnimLayeredParam._iCurAnimClip++;
+
+						iCalculatedSubParam++;
+					}
 				}
+				
 				
 				
 				
@@ -8098,37 +8056,6 @@ namespace AnyPortrait
 
 					calParam._totalParamSetGroupWeight += _layeredAnimWeightClamped;
 
-
-					//>TF
-					//if (iAnimLayeredParam == 0)
-					//{
-					//	//Matrix 할당
-					//	calParam._result_Matrix.SetTRSForLerp(_curAnimLayeredParam._cal_Matrix);
-					//}
-					//else
-					//{
-					//	//레이어의 블렌드 방식에 따라 값 적용
-					//	switch (_curAnimLayeredParam._blendMethod)
-					//	{
-					//		case apModifierParamSetGroup.BLEND_METHOD.Additive:
-					//			{
-					//				//변경 3.27 : apMatrixCal로 계산
-					//				calParam._result_Matrix.AddMatrixLayered(
-					//									_curAnimLayeredParam._cal_Matrix, 
-					//									_layeredAnimWeightClamped);
-					//			}
-					//			break;
-
-					//		case apModifierParamSetGroup.BLEND_METHOD.Interpolation:
-					//			{
-					//				//변경 3.27 : apMatrixCal로 계산
-					//				calParam._result_Matrix.LerpMatrixLayered(
-					//									_curAnimLayeredParam._cal_Matrix, 
-					//									_layeredAnimWeightClamped);
-					//			}
-					//			break;
-					//	}
-					//}
 
 					//색상 처리
 					if(_curAnimLayeredParam._isCal_Color)
@@ -8223,11 +8150,19 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apOptCalculatedResultParam GetCalculatedResultParam(apOptTransform targetOptTransform)
 		{
-			return _calculatedResultParams.Find(delegate (apOptCalculatedResultParam a)
-			{
-				return a._targetOptTransform == targetOptTransform && a._targetBone == null;
-			});
+			//이전 (GC 발생)
+			//return _calculatedResultParams.Find(delegate (apOptCalculatedResultParam a)
+			//{
+			//	return a._targetOptTransform == targetOptTransform && a._targetBone == null;
+			//});
+
+			//변경 v1.5.0
+			s_GetCalResultParam_TargetTransform = targetOptTransform;
+			return _calculatedResultParams.Find(s_GetCalResultParamByTransform_Func);
 		}
+
+		
+		
 
 		/// <summary>
 		/// GetCalculatedResultParam의 ModBone 버전.
@@ -8238,14 +8173,40 @@ namespace AnyPortrait
 		/// <returns></returns>
 		public apOptCalculatedResultParam GetCalculatedResultParam_Bone(apOptTransform targetOptTransform, apOptBone bone, apOptTransform ownerOptTransform)
 		{
-			return _calculatedResultParams.Find(delegate (apOptCalculatedResultParam a)
-			{
-				return a._targetOptTransform == targetOptTransform && a._targetBone == bone
-				&& a._ownerOptTransform == ownerOptTransform;
-			});
+			//이전 (GC 발생)
+			//return _calculatedResultParams.Find(delegate (apOptCalculatedResultParam a)
+			//{
+			//	return a._targetOptTransform == targetOptTransform
+			//			&& a._targetBone == bone
+			//			&& a._ownerOptTransform == ownerOptTransform;
+			//});
+
+			//변경 v1.5.0
+			s_GetCalResultParam_TargetTransform = targetOptTransform;
+			s_GetCalResultParam_Bone = bone;
+			s_GetCalResultParam_OwnerTransform = ownerOptTransform;
+
+			return _calculatedResultParams.Find(s_GetCalResultParamByBone_Func);
 		}
 
 
+		private static apOptTransform s_GetCalResultParam_TargetTransform = null;
+		private static apOptBone s_GetCalResultParam_Bone = null;
+		private static apOptTransform s_GetCalResultParam_OwnerTransform = null;
+
+		private static Predicate<apOptCalculatedResultParam> s_GetCalResultParamByTransform_Func = FUNC_GetCalResultParamByTransform;
+		private static bool FUNC_GetCalResultParamByTransform(apOptCalculatedResultParam a)
+		{
+			return a._targetOptTransform == s_GetCalResultParam_TargetTransform && a._targetBone == null;
+		}
+
+		private static Predicate<apOptCalculatedResultParam> s_GetCalResultParamByBone_Func = FUNC_GetCalResultParamByBone;
+		private static bool FUNC_GetCalResultParamByBone(apOptCalculatedResultParam a)
+		{
+			return a._targetOptTransform == s_GetCalResultParam_TargetTransform
+						&& a._targetBone == s_GetCalResultParam_Bone
+						&& a._ownerOptTransform == s_GetCalResultParam_OwnerTransform;
+		}
 	}
 
 }

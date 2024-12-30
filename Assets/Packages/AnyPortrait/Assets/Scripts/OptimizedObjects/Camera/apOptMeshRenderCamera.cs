@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -208,7 +208,7 @@ namespace AnyPortrait
 				//Debug.Log("++ 커맨드 버퍼를 카메라에 등록 : " + _debugName);
 			}
 
-			public void ReleaseEvent()
+			public void ReleaseEvent(bool isSRP)
 			{
 				//Debug.LogError(">> ReleaseEvent : " + _debugName);
 				//기존의 데이터를 날려야 한다.
@@ -216,7 +216,13 @@ namespace AnyPortrait
 				{
 					if(_commandBuffer != null)
 					{
-						_camera.RemoveCommandBuffer(CameraEvent.BeforeForwardOpaque, _commandBuffer);
+						//v1.5.1 : SRP에서는 커맨드 버퍼 함수 실행하면 안된다.
+						if(!isSRP)
+						{
+							//Built-In인 경우
+							_camera.RemoveCommandBuffer(CameraEvent.BeforeForwardOpaque, _commandBuffer);
+						}
+
 						_commandBuffer = null;
 
 						//Debug.LogError("-- 커맨드 버퍼를 카메라에서 제거 : " + _debugName);
@@ -233,7 +239,7 @@ namespace AnyPortrait
 				}
 			}
 
-			public void ReleaseAll()
+			public void ReleaseAll(bool isSRP)
 			{
 				//Debug.LogError(">> ReleaseAll : " + _debugName);
 				//기존의 데이터를 날려야 한다.
@@ -241,7 +247,12 @@ namespace AnyPortrait
 				{
 					if(_commandBuffer != null)
 					{
-						_camera.RemoveCommandBuffer(CameraEvent.BeforeForwardOpaque, _commandBuffer);
+						if(!isSRP)//v1.5.1
+						{
+							//Built-In인 경우
+							_camera.RemoveCommandBuffer(CameraEvent.BeforeForwardOpaque, _commandBuffer);
+						}
+
 						_commandBuffer = null;
 
 						//Debug.LogError("-- 커맨드 버퍼를 카메라에서 제거 : " + _debugName);
@@ -328,6 +339,7 @@ namespace AnyPortrait
 		private int _nCameras = 0;
 
 		private apOptMesh _parentOptMesh = null;
+		private bool _isSRP = false;//v1.5.1 추가
 		
 
 		//Single인 경우 : 빠른 접근을 위해서
@@ -357,6 +369,7 @@ namespace AnyPortrait
 		public apOptMeshRenderCamera(apOptMesh parentOptMesh)
 		{
 			_parentOptMesh = parentOptMesh;
+			_isSRP = _parentOptMesh._isUseSRP;//v1.5.1 추가
 
 			if (_cameraRenderDataList == null)
 			{
@@ -401,11 +414,12 @@ namespace AnyPortrait
 				return;
 			}
 
+			int nCamRenderData = _cameraRenderDataList != null ? _cameraRenderDataList.Count : 0;
 			CameraRenderData camData = null;
-			for (int i = 0; i < _cameraRenderDataList.Count; i++)
+			for (int i = 0; i < nCamRenderData; i++)
 			{
 				camData = _cameraRenderDataList[i];
-				camData.ReleaseAll();
+				camData.ReleaseAll(_isSRP);
 			}
 
 			//Status : NoCamera가 아니라면 Camera만 생성된 상태로 변경
@@ -424,11 +438,13 @@ namespace AnyPortrait
 				return;
 			}
 
+			int nCamData = _cameraRenderDataList != null ? _cameraRenderDataList.Count : 0;
 			CameraRenderData camData = null;
-			for (int i = 0; i < _cameraRenderDataList.Count; i++)
+
+			for (int i = 0; i < nCamData; i++)
 			{
 				camData = _cameraRenderDataList[i];
-				camData.ReleaseEvent();
+				camData.ReleaseEvent(_isSRP);
 			}
 
 			//Status : 이벤트가 생성되었다면 그 전 상태로 변경
@@ -447,7 +463,7 @@ namespace AnyPortrait
 
 		// Function
 		//-----------------------------------------------
-		public void Refresh(bool isRefreshForce, bool isUseSRP, apOptMainCamera mainCamera)
+		public void Refresh(bool isRefreshForce, apOptMainCamera mainCamera)
 		{
 			//변경 : mainCamera에서 Refresh를 통합으로 하고, 변경 사항이 있는 경우에만 갱신
 			//그대로 유지할지 확인
@@ -538,7 +554,7 @@ namespace AnyPortrait
 						if(!_cal_curCamRenderData._isUpdated)
 						{
 							//저장된 렌더 텍스쳐, 커맨드 버퍼 등을 Release
-							_cal_curCamRenderData.ReleaseAll();
+							_cal_curCamRenderData.ReleaseAll(_isSRP);
 							isAnyReleased = true;
 						}
 					}
@@ -592,172 +608,6 @@ namespace AnyPortrait
 			
 			_isAllSameForward = mainCamera.IsAllSameForward;
 			_isAllCameraOrthographic = mainCamera.IsAllOrthographic;
-			
-
-#region [미사용 코드]
-			////- 카메라의 개수
-			////- 현재 카메라가 유효한지
-			//bool isNeedToRefresh = false;
-			//Camera[] sceneCameras = Camera.allCameras;
-			//int nSceneCameras = (sceneCameras != null ? sceneCameras.Length : 0);
-
-			//if (nSceneCameras == 0)
-			//{
-			//	//카메라가 없네요.
-			//	if (_numberOfCameraType != NumberOfCameraType.None)
-			//	{
-			//		Clear();
-			//	}
-			//	return;
-			//}
-
-			//if(!isRefreshForce)
-			//{
-			//	//조건을 체크하자
-			//	if (_numberOfCameraType == NumberOfCameraType.None
-			//		|| _mainData == null
-			//		|| _cameraRenderDataList.Count == 0
-			//		|| _nCameras == 0
-			//		|| _prevNumSceneCamera != nSceneCameras)
-			//	{
-			//		//초기화 된 상태이거나 씬의 카메라 개수가 다르다면
-			//		isNeedToRefresh = true;
-			//	}
-			//	else
-			//	{
-			//		//존재하는 카메라가 유효하지 않다면
-			//		if(_numberOfCameraType == NumberOfCameraType.Single)
-			//		{
-			//			//1개 일때
-			//			if(!IsLookMesh(_mainData._camera))
-			//			{
-			//				//Single 카메라가 제대로 바라보고 있지 않다면
-			//				isNeedToRefresh = true;
-			//			}
-			//		}
-			//		else
-			//		{
-			//			//여러개일때
-			//			CameraRenderData curCamData = null;
-			//			for (int i = 0; i < _nCameras; i++)
-			//			{
-			//				curCamData = _cameraRenderDataList[i];
-			//				if(curCamData == null 
-			//					|| curCamData._camera == null
-			//					|| !IsLookMesh(curCamData._camera))
-			//				{
-			//					isNeedToRefresh = true;
-			//					break;
-			//				}
-
-			//			}
-			//		}
-			//	}
-			//}
-			//else
-			//{
-			//	//무조건 Refresh
-			//	isNeedToRefresh = true;
-			//}
-
-			//if(!isNeedToRefresh)
-			//{
-			//	//카메라를 새로 갱신할 필요가 없다.
-			//	//카메라의 Forward와 타입만 비교하자.
-			//	_isAllSameForward = true;
-			//	_isAllCameraOrthographic = true;
-			//	if(_numberOfCameraType == NumberOfCameraType.Multiple)
-			//	{
-			//		CameraRenderData curCamData = null;
-			//		Vector3 mainForward = _mainData._transform.forward;
-			//		for (int i = 0; i < _nCameras; i++)
-			//		{
-			//			curCamData = _cameraRenderDataList[i];
-			//			if(!curCamData._camera.orthographic)
-			//			{
-			//				//하나라도 Orthographic이 아니라면..
-			//				_isAllCameraOrthographic = false;
-			//			}
-			//			if(Mathf.Abs(curCamData._transform.forward.x - mainForward.x) > 0.01f ||
-			//				Mathf.Abs(curCamData._transform.forward.y - mainForward.y) > 0.01f ||
-			//				Mathf.Abs(curCamData._transform.forward.z - mainForward.z) > 0.01f)
-			//			{
-			//				//Forward가 하나라도 다르다면
-			//				_isAllSameForward = false;
-			//			}
-			//		}
-			//	}
-			//	return;
-			//}
-
-			////다시 Refresh를 해야한다.
-			//if(_numberOfCameraType != NumberOfCameraType.None)
-			//{
-			//	//일단 초기화
-			//	Clear();
-			//}
-
-			////씬 카메라를 찾아서 추가하자
-			//if (nSceneCameras > 0)
-			//{
-			//	Camera curSceneCamera = null;
-			//	for (int i = 0; i < sceneCameras.Length; i++)
-			//	{
-			//		curSceneCamera = sceneCameras[i];
-			//		if (curSceneCamera != null && IsLookMesh(curSceneCamera))
-			//		{
-			//			//바라보고 있는 카메라다. > 추가
-			//			CameraRenderData newCamData = new CameraRenderData(_parentOptMesh, curSceneCamera);
-			//			_cameraRenderDataList.Add(newCamData);
-			//			_camera2RenderData.Add(curSceneCamera, newCamData);
-			//		}
-			//	}
-			//}
-			//_nCameras = _cameraRenderDataList.Count;
-			//_prevNumSceneCamera = nSceneCameras;
-
-			//if(_nCameras == 0)
-			//{
-			//	_numberOfCameraType = NumberOfCameraType.None;
-			//	_mainData = null;
-			//}
-			//else if(_nCameras == 1)
-			//{
-			//	_numberOfCameraType = NumberOfCameraType.Single;
-			//	_mainData = _cameraRenderDataList[0];
-			//}
-			//else
-			//{
-			//	_numberOfCameraType = NumberOfCameraType.Multiple;
-			//	_mainData = _cameraRenderDataList[0];
-			//}
-
-
-			////새로 갱신 후 카메라의 Forward와 Ortho타입만 비교하자.
-			//_isAllSameForward = true;
-			//_isAllCameraOrthographic = true;
-			//if(_numberOfCameraType == NumberOfCameraType.Multiple)
-			//{
-			//	CameraRenderData curCamData = null;
-			//	Vector3 mainForward = _mainData._transform.forward;
-			//	for (int i = 0; i < _nCameras; i++)
-			//	{
-			//		curCamData = _cameraRenderDataList[i];
-			//		if(!curCamData._camera.orthographic)
-			//		{
-			//			//하나라도 Orthographic이 아니라면..
-			//			_isAllCameraOrthographic = false;
-			//		}
-			//		if(Mathf.Abs(curCamData._transform.forward.x - mainForward.x) > 0.01f ||
-			//			Mathf.Abs(curCamData._transform.forward.y - mainForward.y) > 0.01f ||
-			//			Mathf.Abs(curCamData._transform.forward.z - mainForward.z) > 0.01f)
-			//		{
-			//			//Forward가 하나라도 다르다면
-			//			_isAllSameForward = false;
-			//		}
-			//	}
-			//} 
-#endregion
 		}
 
 

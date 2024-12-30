@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -160,17 +160,69 @@ namespace AnyPortrait
 
 			_paramSetList.Clear();
 
-			for (int i = 0; i < srcParamSetGroup._paramSetList.Count; i++)
+			int nSrcParamSets = srcParamSetGroup._paramSetList != null ? srcParamSetGroup._paramSetList.Count : 0;
+
+			if (nSrcParamSets > 0)
 			{
-				apModifierParamSet srcParamSet = srcParamSetGroup._paramSetList[i];
-
-				apOptParamSet optParamSet = new apOptParamSet();
-				optParamSet.LinkParamSetGroup(this, portrait);
-				optParamSet.BakeModifierParamSet(srcParamSet, portrait, isUseModMeshSet);
+				bool isAnimTarget = _syncTarget == apModifierParamSetGroup.SYNC_TARGET.KeyFrame;
 
 
-				_paramSetList.Add(optParamSet);
+
+
+				if (isAnimTarget)
+				{
+					//[v1.5.0]
+					//애니메이션 타입의 경우, 사용된 Keyframe에 2개 이상의 ParamSet이 동시에 참조하는 버그가 있을 수 있다.
+					//이를 막는 로직을 수행하자
+					List<int> checkedKeyframeUniqueIDs = new List<int>();
+
+					for (int i = 0; i < nSrcParamSets; i++)
+					{
+						apModifierParamSet srcParamSet = srcParamSetGroup._paramSetList[i];
+
+						bool isValidParamSet = false;
+						if(!checkedKeyframeUniqueIDs.Contains(srcParamSet._keyframeUniqueID))
+						{
+							//유효하다
+							isValidParamSet = true;
+							checkedKeyframeUniqueIDs.Add(srcParamSet._keyframeUniqueID);
+						}
+						
+						if(!isValidParamSet)
+						{
+							//이 부분에서 중복 키프레임 검출됨
+							//Debug.LogError("중복된 키프레임 연결 [Bake:" + srcParamSet._keyframeUniqueID + "]");
+							continue;
+						}
+
+						apOptParamSet optParamSet = new apOptParamSet();
+						optParamSet.BakeModifierParamSet(srcParamSet, this, portrait, isUseModMeshSet);
+						optParamSet.LinkParamSetGroup(this, portrait);
+
+						_paramSetList.Add(optParamSet);
+
+					}
+				}
+				else
+				{
+					//일반 타입은 그냥 넣자
+					for (int i = 0; i < nSrcParamSets; i++)
+					{
+						apModifierParamSet srcParamSet = srcParamSetGroup._paramSetList[i];
+
+						apOptParamSet optParamSet = new apOptParamSet();
+						optParamSet.BakeModifierParamSet(srcParamSet, this, portrait, isUseModMeshSet);
+						optParamSet.LinkParamSetGroup(this, portrait);
+
+
+						_paramSetList.Add(optParamSet);
+					}
+				}
+				
+
+				
 			}
+			
 
 			//_isEnabled = srcParamSetGroup._isEnabled;//v1.4.5 : 삭제됨
 			_layerIndex = srcParamSetGroup._layerIndex;

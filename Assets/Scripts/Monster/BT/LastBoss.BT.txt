@@ -1,0 +1,113 @@
+tree("Root")
+    sequence
+        tree("Idle")
+        tree("Phase0")
+        tree("PhaseChange")
+        tree("Phase1")
+        tree("PhaseChange")
+        tree("Phase2")
+
+// 플레이어가 보스방에 들어가기 전 보스 대기 상태
+tree("Idle")
+  not
+    repeat
+      not
+        isEnemyCloserThan(999.9)  // 플레이어가 인식 범위에 들어오면 Idle 종료
+
+// 1페이즈
+tree("Phase0") 
+  not                          // Phase 종료 조건 달성했을 때 Fail 대신 Succeed 반환하도록 not 게이트 사용
+    repeat 
+      sequence
+        isHpOverPhaseLimit(0)           // HP 체크하고 만약 HP가 기준 아래(=fail)일 경우 Phase2로 이행
+        mute                            // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지   
+            fallback                    // 여기서부터 실제 패턴 등장
+                // 패턴 1
+                sequence
+                    // 조건 1
+                    not CheckCountGEQ("EnergyBall", 1)  // 카운트가 1이면 에너지볼이 씬에 이미 존재한다는 뜻
+                    tree("EnergyBall")
+                    AddCount("EnergyBall")          
+                random
+                    // 패턴 2
+                    sequence
+                        // 조건 2
+                        tree("CrossBlade")
+                    // 패턴 3
+                    sequence
+                        // 조건 1
+                        tree("Laser")
+                    // 패턴 4
+                    sequence
+                        tree("Ivy")
+
+// 2페이즈
+tree("Phase1")
+  repeat                                
+    sequence
+        isHpOverPhaseLimit(1)
+        mute                                // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지
+            fallback                    // 여기서부터 실제 패턴 등장
+                // 패턴 1
+                sequence
+                    // 조건 1
+                    not CheckCountGEQ("EnergyBall", 1)  // 카운트가 1이면 에너지볼이 씬에 이미 존재한다는 뜻
+                    tree("EnergyBall")
+                    AddCount("EnergyBall")          
+                random
+                    // 패턴 2
+                    sequence
+                        // 조건 2
+                        tree("CrossBlade")
+                    // 패턴 3
+                    sequence
+                        // 조건 1
+                        tree("Laser")
+                    // 패턴 4
+                    sequence
+                        tree("Ivy")
+
+// 3페이즈 (마지막)
+tree("Phase2")
+  repeat                                // 마지막 Phase에서는 HP 체크할 필요 없음.
+    mute                                // 패턴 하나의 실패로 발생한 fail 때문에 페이즈 바뀌는 거 방지
+        fallback                    // 여기서부터 실제 패턴 등장
+            // 패턴 1
+            sequence
+                // 조건 1
+                not CheckCountGEQ("EnergyBall", 1)  // 카운트가 1이면 에너지볼이 씬에 이미 존재한다는 뜻
+                tree("EnergyBall")
+                AddCount("EnergyBall")          
+            random
+                // 패턴 2
+                sequence
+                    // 조건 2
+                    tree("CrossBlade")
+                // 패턴 3
+                sequence
+                    // 조건 1
+                    tree("Laser")
+                // 패턴 4
+                sequence
+                    tree("Ivy")
+
+
+// 페이즈 전환 시
+tree("PhaseChange")
+    sequence
+        RoarAttack()
+
+// 여기서부터는 각각의 공격패턴만 따로 구현한 서브트리들
+tree("EnergyBall")
+    EnergyBallAttack()
+
+
+tree("CrossBlade")
+    CrossBladeAttack()
+
+
+tree("Laser")
+    LaserAttack()
+
+tree("Ivy")
+    IvyAttack()

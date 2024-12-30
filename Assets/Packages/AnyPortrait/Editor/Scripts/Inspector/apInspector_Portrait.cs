@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -459,6 +459,7 @@ namespace AnyPortrait
 			//return;
 			if (apEditor.IsOpen())
 			{
+				EditorGUILayout.BeginVertical(GUILayout.Width(width_Inspector));
 				//에디터가 작동중에는 안보이도록 하자
 				//EditorGUILayout.LabelField("Editor is opened");
 				GUILayout.Space(10);
@@ -466,7 +467,7 @@ namespace AnyPortrait
 				EditorGUILayout.LabelField(_guiContent_EditorIsOpen, GUILayout.Height(40));
 
 				//Profiler.EndSample();
-
+				EditorGUILayout.EndVertical();
 				return;
 			}
 
@@ -983,7 +984,22 @@ namespace AnyPortrait
 						}
 						GUI.FocusControl(null);
 					}
-				
+
+
+					if (next_MeshUpdateFrequency == apPortrait.MESH_UPDATE_FREQUENCY.FixedFrames_NotSync)
+					{
+						//v1.4.9 : FPS 스케일 옵션 (Sync가 아닌 경우에만)
+						apPortrait.FIXED_UPDATE_FPS_SCALE_OPTION next_MeshUpdateFPSScaled = (apPortrait.FIXED_UPDATE_FPS_SCALE_OPTION)EditorGUILayout.EnumPopup(
+																										"FPS Scale Option",
+																										_targetPortrait._meshRefreshFPSScaleOption);
+						if (next_MeshUpdateFPSScaled != _targetPortrait._meshRefreshFPSScaleOption)
+						{
+							RecordUndo();
+							_targetPortrait._meshRefreshFPSScaleOption = next_MeshUpdateFPSScaled;
+							GUI.FocusControl(null);
+						}
+					}
+					
 				}
 			}
 			
@@ -1120,6 +1136,25 @@ namespace AnyPortrait
 						RecordUndo();
 
 						_targetPortrait._billboardType = nextBillboard;
+					}
+				}
+
+				if(_targetPortrait._billboardType != apPortrait.BILLBOARD_TYPE.None)
+				{
+					GUILayout.Space(5);
+
+					EditorGUI.BeginChangeCheck();
+
+					apPortrait.BILLBOARD_PARENT_ROTATION nextBillboardParent = (apPortrait.BILLBOARD_PARENT_ROTATION)EditorGUILayout.EnumPopup("Parent's Rotation", _targetPortrait._billboardParentRotation);
+
+					if (EditorGUI.EndChangeCheck())
+					{
+						if(nextBillboardParent != _targetPortrait._billboardParentRotation)
+						{
+							RecordUndo();
+							_targetPortrait._billboardParentRotation = nextBillboardParent;
+						}
+
 					}
 				}
 			}
@@ -1615,11 +1650,13 @@ namespace AnyPortrait
 								
 								if (nextAnimationClip != curAnimClip._animationClipForMecanim)
 								{
-									UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-									Undo.IncrementCurrentGroup();
+									
+									//Undo.IncrementCurrentGroup();//삭제 v1.5.0
 									Undo.RegisterCompleteObjectUndo(_targetPortrait, "Animation Changed");
 
 									curAnimClip._animationClipForMecanim = nextAnimationClip;
+
+									EditorUtility.SetDirty(_targetPortrait);
 								}
 							}
 							catch (Exception)
@@ -1701,12 +1738,12 @@ namespace AnyPortrait
 
 			bool isNextUsingMecanim = EditorGUILayout.Toggle("Use Mecanim", _targetPortrait._isUsingMecanim);
 			if (_targetPortrait._isUsingMecanim != isNextUsingMecanim)
-			{
-				UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-				Undo.IncrementCurrentGroup();
+			{	
 				Undo.RegisterCompleteObjectUndo(_targetPortrait, "Mecanim Setting Changed");
 
 				_targetPortrait._isUsingMecanim = isNextUsingMecanim;
+
+				EditorUtility.SetDirty(_targetPortrait);
 			}
 
 
@@ -1715,11 +1752,11 @@ namespace AnyPortrait
 				AnimationClip nextEmptyAnimClip = EditorGUILayout.ObjectField("Empty Anim Clip", _targetPortrait._emptyAnimClipForMecanim, typeof(AnimationClip), false) as AnimationClip;
 				if (nextEmptyAnimClip != _targetPortrait._emptyAnimClipForMecanim)
 				{
-					UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-					Undo.IncrementCurrentGroup();
 					Undo.RegisterCompleteObjectUndo(_targetPortrait, "Animation Changed");
 
 					_targetPortrait._emptyAnimClipForMecanim = nextEmptyAnimClip;
+
+					EditorUtility.SetDirty(_targetPortrait);
 				}
 
 				//GUILayout.Space(10);
@@ -1764,8 +1801,6 @@ namespace AnyPortrait
 
 					if (GUILayout.Button("Add / Check Animator", GUILayout.Height(25)))
 					{
-						UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-						Undo.IncrementCurrentGroup();
 						Undo.RegisterCompleteObjectUndo(_targetPortrait, "Mecanim Setting Changed");
 
 						Animator animator = _targetPortrait.gameObject.GetComponent<Animator>();
@@ -1774,6 +1809,8 @@ namespace AnyPortrait
 							animator = _targetPortrait.gameObject.AddComponent<Animator>();
 						}
 						_targetPortrait._animator = animator;
+
+						EditorUtility.SetDirty(_targetPortrait);
 					}
 				}
 				else
@@ -1781,8 +1818,6 @@ namespace AnyPortrait
 					//2. Animator가 있다면
 					if (GUILayout.Button("Refresh Layers", GUILayout.Height(25)))
 					{
-						UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-						Undo.IncrementCurrentGroup();
 						Undo.RegisterCompleteObjectUndo(_targetPortrait, "Mecanim Setting Changed");
 
 						//Animator의 Controller가 있는지 체크해야한다.
@@ -1821,6 +1856,8 @@ namespace AnyPortrait
 								}
 							}
 						}
+
+						EditorUtility.SetDirty(_targetPortrait);
 					}
 					GUILayout.Space(5);
 					EditorGUILayout.LabelField("Animator Controller Layers");
@@ -1836,11 +1873,11 @@ namespace AnyPortrait
 
 						if (nextBlendType != layer._blendType)
 						{
-							UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-							Undo.IncrementCurrentGroup();
 							Undo.RegisterCompleteObjectUndo(_targetPortrait, "Mecanim Setting Changed");
 
 							_targetPortrait._animatorLayerBakedData[i]._blendType = nextBlendType;
+
+							EditorUtility.SetDirty(_targetPortrait);
 						}
 					}
 				}
@@ -1864,8 +1901,6 @@ namespace AnyPortrait
 				if(nextTimelineTracks != _nTimelineTrackSet)
 				{
 					//TimelineTrackSet의 개수가 바뀌었다. 
-					UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-					Undo.IncrementCurrentGroup();
 					Undo.RegisterCompleteObjectUndo(_targetPortrait, "Track Setting Changed");
 					_nTimelineTrackSet = nextTimelineTracks;
 					if(_nTimelineTrackSet < 0)
@@ -1906,6 +1941,7 @@ namespace AnyPortrait
 					}
 
 
+					EditorUtility.SetDirty(_targetPortrait);
 					apEditorUtil.ReleaseGUIFocus();
 						
 				}
@@ -1993,7 +2029,6 @@ namespace AnyPortrait
 			apPortrait.ANIM_EVENT_CALL_MODE nextAnimCallMode = (apPortrait.ANIM_EVENT_CALL_MODE)EditorGUILayout.EnumPopup("Event Method", _targetPortrait._animEventCallMode);
 			if (nextAnimCallMode != _targetPortrait._animEventCallMode)
 			{
-				Undo.IncrementCurrentGroup();
 				Undo.RegisterCompleteObjectUndo(_targetPortrait, "Animation Setting Changed");
 
 				_targetPortrait._animEventCallMode = nextAnimCallMode;
@@ -2005,7 +2040,7 @@ namespace AnyPortrait
 				}
 				_targetPortrait._unityEventWrapper.Bake(_targetPortrait);
 
-				apEditorUtil.SetEditorDirty();
+				EditorUtility.SetDirty(_targetPortrait);
 			}
 
 			if (_targetPortrait._animEventCallMode == apPortrait.ANIM_EVENT_CALL_MODE.SendMessage)
@@ -2017,12 +2052,11 @@ namespace AnyPortrait
 
 				if (nextEventListener != _targetPortrait._optAnimEventListener)
 				{
-					Undo.IncrementCurrentGroup();
 					Undo.RegisterCompleteObjectUndo(_targetPortrait, "Animation Setting Changed");
 
 					_targetPortrait._optAnimEventListener = nextEventListener;
 
-					apEditorUtil.SetEditorDirty();
+					EditorUtility.SetDirty(_targetPortrait);
 				}
 
 				//애니메이션 이벤트가 존재하는 경우
@@ -2137,13 +2171,12 @@ namespace AnyPortrait
 								{
 									//Undo 등록
 									//메소드 초기화 및 리스트 작성									
-									Undo.IncrementCurrentGroup();
 									Undo.RegisterCompleteObjectUndo(_targetPortrait, "Event Changed");
 
 									curTMSet._target = nextMonoTarget;
 									curTMSet._methodName = "";
 
-									apEditorUtil.SetEditorDirty();
+									EditorUtility.SetDirty(_targetPortrait);
 								}
 							}
 							catch (Exception) { }
@@ -2170,23 +2203,21 @@ namespace AnyPortrait
 						GUILayout.Space(width - (37));
 						if (GUILayout.Button(_guiContent_AddButton, _guiStyle_buttonIcon, GUILayout.Width(width_TM_Remove), GUILayout.Height(20)))
 						{
-							Undo.IncrementCurrentGroup();
 							Undo.RegisterCompleteObjectUndo(_targetPortrait, "Event Changed");
 
 							curUnityEvent._targetMethods.Add(new apUnityEvent.TargetMethodSet());
 
-							apEditorUtil.SetEditorDirty();
+							EditorUtility.SetDirty(_targetPortrait);
 						}
 						EditorGUILayout.EndHorizontal();
 
 						if (removeTMSet != null)
 						{
-							Undo.IncrementCurrentGroup();
 							Undo.RegisterCompleteObjectUndo(_targetPortrait, "Event Changed");
 
 							curUnityEvent._targetMethods.Remove(removeTMSet);
 
-							apEditorUtil.SetEditorDirty();
+							EditorUtility.SetDirty(_targetPortrait);
 
 							removeTMSet = null;
 						}
@@ -2209,7 +2240,6 @@ namespace AnyPortrait
 						//하나씩 대상을 입력하자.
 						if (_targetBatchMonoListener != null)
 						{
-							Undo.IncrementCurrentGroup();
 							Undo.RegisterCompleteObjectUndo(_targetPortrait, "Event Changed");
 
 							for (int iUEvent = 0; iUEvent < nUnityEvents; iUEvent++)
@@ -2218,7 +2248,7 @@ namespace AnyPortrait
 								curUnityEvent.AssignCommonMonoTarget(_targetBatchMonoListener);
 							}
 
-							apEditorUtil.SetEditorDirty();
+							EditorUtility.SetDirty(_targetPortrait);
 						}
 					}
 					EditorGUILayout.EndHorizontal();
@@ -2245,7 +2275,6 @@ namespace AnyPortrait
 						if (isAnyInvalid)
 						{
 							//유효하지 않은걸 모두 삭제하자
-							Undo.IncrementCurrentGroup();
 							Undo.RegisterCompleteObjectUndo(_targetPortrait, "Event Changed");
 
 							for (int iUEvent = 0; iUEvent < nUnityEvents; iUEvent++)
@@ -2254,7 +2283,7 @@ namespace AnyPortrait
 								curUnityEvent.RemoveInvalidMethodSetInEditor();
 							}
 
-							apEditorUtil.SetEditorDirty();
+							EditorUtility.SetDirty(_targetPortrait);
 
 							Debug.Log("AnyPortrait : Invalid event methods have been removed.");
 						}
@@ -3399,13 +3428,12 @@ namespace AnyPortrait
 				return;
 			}
 
-			Undo.IncrementCurrentGroup();
 			Undo.RegisterCompleteObjectUndo(_targetPortrait, "Event Changed");
 
 			targetMethodSet._target = monoObj;
 			targetMethodSet._methodName = methodInfo.Name;
 
-			apEditorUtil.SetEditorDirty();
+			EditorUtility.SetDirty(_targetPortrait);
 			apEditorUtil.ReleaseGUIFocus();
 			if(Event.current != null)
 			{
@@ -3648,9 +3676,6 @@ namespace AnyPortrait
 				Undo.RecordObject(_targetPortrait, "Portrait Changed");
 				EditorUtility.SetDirty(_targetPortrait);
 			}
-			UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-			
-			
 		}
 
 		

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -380,9 +380,15 @@ namespace AnyPortrait
 			if(applyToContent)
 			{
 				//Unity 2019.3에서 툴팁이 이상하게 보인다. 이 버전에서는 툴팁을 삭제하자
-#if UNITY_2019_3_OR_NEWER
+				//>Unity 2022부터는 괜찮다. 다시 부활
+#if UNITY_2022_1_OR_NEWER
+				//2022에서는 툴팁이 보인다.
+				_guiContent.tooltip = _sb_ToolTip.ToString();
+#elif UNITY_2019_3_OR_NEWER
+				//2019~2021에서는 툴팁이 보이지 않는다.
 				_guiContent.tooltip = null;
 #else
+				//그 이전은 다시 보인다.
 				_guiContent.tooltip = _sb_ToolTip.ToString();
 #endif		
 			}
@@ -393,8 +399,15 @@ namespace AnyPortrait
 		/// </summary>
 		/// <param name="text"></param>
 		public void SetToolTip(string tooltip)
-		{	
-#if UNITY_2019_3_OR_NEWER
+		{
+#if UNITY_2022_1_OR_NEWER
+			//2022부터는 툴팁이 다시 보인다.
+			ClearToolTip(false);
+			_sb_ToolTip.Append(tooltip);
+
+			_guiContent.tooltip = _sb_ToolTip.ToString();
+
+#elif UNITY_2019_3_OR_NEWER
 			//Unity 2019.3에서 툴팁이 이상하게 보인다. 이 버전에서는 툴팁을 삭제하자
 			//툴팁 로직 삭제
 #else
@@ -403,6 +416,9 @@ namespace AnyPortrait
 
 			_guiContent.tooltip = _sb_ToolTip.ToString();
 #endif	
+
+
+
 			_isVisible = true;
 		}
 
@@ -412,67 +428,85 @@ namespace AnyPortrait
 		/// <param name="text"></param>
 		public void AppendToolTip(string text, bool applyToContent)
 		{
-#if UNITY_2019_3_OR_NEWER
+#if UNITY_2022_1_OR_NEWER
+			//2022부터는 툴팁이 다시 괜찮다.
+			if(_sb_ToolTip == null) { _sb_ToolTip = new StringBuilder(TOOLTIP_CAPACITY); }
+			_sb_ToolTip.Append(text);
+
+			if(applyToContent) { _guiContent.tooltip = _sb_ToolTip.ToString(); }
+
+#elif UNITY_2019_3_OR_NEWER
 			//Unity 2019.3에서 툴팁이 이상하게 보인다. 이 버전에서는 툴팁을 삭제하자
 			//툴팁 로직 삭제
 #else
-			if(_sb_ToolTip == null)
-			{
-				_sb_ToolTip = new StringBuilder(TOOLTIP_CAPACITY);
-			}
+			if(_sb_ToolTip == null) { _sb_ToolTip = new StringBuilder(TOOLTIP_CAPACITY); }
 			_sb_ToolTip.Append(text);
 
-			if(applyToContent)
-			{
-				_guiContent.tooltip = _sb_ToolTip.ToString();
-			}
+			if(applyToContent) { _guiContent.tooltip = _sb_ToolTip.ToString(); }
 #endif	
 			_isVisible = true;
 		}
 
 		public void AppendToolTip(int intValue, bool applyToContent)
 		{
-#if UNITY_2019_3_OR_NEWER
+#if UNITY_2022_1_OR_NEWER
+			//2022부터는 툴팁을 다시 부활시킨다.
+			if(_sb_ToolTip == null) { _sb_ToolTip = new StringBuilder(TOOLTIP_CAPACITY); }
+			_sb_ToolTip.Append(intValue);
+
+			if(applyToContent) { _guiContent.tooltip = _sb_ToolTip.ToString(); }
+
+#elif UNITY_2019_3_OR_NEWER
 			//Unity 2019.3에서 툴팁이 이상하게 보인다. 이 버전에서는 툴팁을 삭제하자
 			//툴팁 로직 삭제
 #else
-			if(_sb_ToolTip == null)
-			{
-				_sb_ToolTip = new StringBuilder(TOOLTIP_CAPACITY);
-			}
+			if(_sb_ToolTip == null) { _sb_ToolTip = new StringBuilder(TOOLTIP_CAPACITY); }
 			_sb_ToolTip.Append(intValue);
 
-			if(applyToContent)
-			{
-				_guiContent.tooltip = _sb_ToolTip.ToString();
-			}
+			if(applyToContent) { _guiContent.tooltip = _sb_ToolTip.ToString(); }
 #endif
 			_isVisible = true;
 		}
 
 		public void AppendToolTip(float floatValue, bool applyToContent)
 		{
-#if UNITY_2019_3_OR_NEWER
+#if UNITY_2022_1_OR_NEWER
+			//2022부터는 툴팁 다시 부활
+			if(_sb_ToolTip == null) { _sb_ToolTip = new StringBuilder(TOOLTIP_CAPACITY); }
+			_sb_ToolTip.Append(floatValue);
+
+			if(applyToContent) { _guiContent.tooltip = _sb_ToolTip.ToString(); }
+
+#elif UNITY_2019_3_OR_NEWER
 			//Unity 2019.3에서 툴팁이 이상하게 보인다. 이 버전에서는 툴팁을 삭제하자
 			//툴팁 로직 삭제
 #else
-			if(_sb_ToolTip == null)
-			{
-				_sb_ToolTip = new StringBuilder(TOOLTIP_CAPACITY);
-			}
+			if(_sb_ToolTip == null) { _sb_ToolTip = new StringBuilder(TOOLTIP_CAPACITY); }
 			_sb_ToolTip.Append(floatValue);
 
-			if(applyToContent)
-			{
-				_guiContent.tooltip = _sb_ToolTip.ToString();
-			}
+			if(applyToContent) { _guiContent.tooltip = _sb_ToolTip.ToString(); }
 #endif
 			_isVisible = true;
 		}
 
 		public void AppendToolTip(Vector2 vec2Value, bool applyToContent)
 		{
-#if UNITY_2019_3_OR_NEWER
+#if UNITY_2022_1_OR_NEWER
+			//2022부터는 툴팁 다시 부활
+			if(_sb_ToolTip == null) { _sb_ToolTip = new StringBuilder(TOOLTIP_CAPACITY); }
+			_sb_ToolTip.Append('(');
+			_sb_ToolTip.Append(vec2Value.x);
+			_sb_ToolTip.Append(',');
+			_sb_ToolTip.Append(' ');
+			_sb_ToolTip.Append(vec2Value.y);
+			_sb_ToolTip.Append(')');
+
+			if(applyToContent)
+			{
+				_guiContent.tooltip = _sb_ToolTip.ToString();
+			}
+
+#elif UNITY_2019_3_OR_NEWER
 			//Unity 2019.3에서 툴팁이 이상하게 보인다. 이 버전에서는 툴팁을 삭제하자
 			//툴팁 로직 삭제
 #else
@@ -524,7 +558,18 @@ namespace AnyPortrait
 				_guiContent.image = null;
 			}
 
-#if UNITY_2019_3_OR_NEWER
+#if UNITY_2022_1_OR_NEWER
+			//2022부터는 툴팁 다시 부활
+			if(tooltip != null)
+			{
+				SetToolTip(tooltip);
+			}
+			else
+			{
+				_guiContent.tooltip = null;
+			}
+
+#elif UNITY_2019_3_OR_NEWER
 			//Unity 2019.3에서 툴팁이 이상하게 보인다. 이 버전에서는 툴팁을 삭제하자
 			//툴팁 로직 삭제
 			_guiContent.tooltip = null;
@@ -560,7 +605,19 @@ namespace AnyPortrait
 			{
 				_guiContent.image = null;
 			}
-#if UNITY_2019_3_OR_NEWER
+
+#if UNITY_2022_1_OR_NEWER
+			//2022부터는 툴팁 다시 부활
+			if(tooltip != null)
+			{
+				SetToolTip(tooltip);
+			}
+			else
+			{
+				_guiContent.tooltip = null;
+			}
+
+#elif UNITY_2019_3_OR_NEWER
 			//Unity 2019.3에서 툴팁이 이상하게 보인다. 이 버전에서는 툴팁을 삭제하자
 			//툴팁 로직 삭제
 			_guiContent.tooltip = null;

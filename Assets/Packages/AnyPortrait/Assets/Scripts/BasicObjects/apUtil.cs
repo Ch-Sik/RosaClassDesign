@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -184,6 +184,103 @@ namespace AnyPortrait
 
 
 		/// <summary>
+		/// +- 180도 즈음에서 각도 Min-Max Clamp를 비교하기가 어렵다.
+		/// 범위를 보정하여 Clamp를 한다.
+		/// Clamp가 발생했을때 isClamped
+		/// </summary>
+		/// <returns></returns>
+		public static float AngleClamp360WithResult(float angle, float minAngle, float maxAngle, out bool isClamped)
+		{
+			//return Mathf.Clamp(angle, minAngle, maxAngle);
+
+			//입력된 각도에 맞게 minAngle, maxAngle을 고친다.
+			if (minAngle < angle && angle < maxAngle)
+			{
+				//이미 Clamp 범위 안에 들어갔다.
+				isClamped = false;
+				return angle;
+			}
+
+			if (maxAngle > angle + 360.0f)
+			{
+
+				//범위가 +360 더 돌아있다.
+				minAngle -= 360.0f;
+				maxAngle -= 360.0f;
+				//Debug.Log("Clamp 범위 보정 : " + angle + " / (" + (minAngle + 360.0f) + " ~ " + (maxAngle + 360.0f) + ") >> (" + minAngle + " ~ " + maxAngle + ")");
+
+			}
+			else if (minAngle < angle - 360.0f)
+			{
+				//범위가 -360 더 돌아있다
+				minAngle += 360.0f;
+				maxAngle += 360.0f;
+
+				//Debug.Log("Clamp 범위 보정 : " + angle + " / (" + (minAngle - 360.0f) + " ~ " + (maxAngle - 360.0f) + ") >> (" + minAngle + " ~ " + maxAngle + ")");
+			}
+
+			//범위가 보정되었으므로 다시 Clamp
+			if (minAngle < angle && angle < maxAngle)
+			{
+				//이미 Clamp 범위 안에 들어갔다.
+				isClamped = false;
+				return angle;
+			}
+
+			//각도가 Clamped되었다.
+			isClamped = true;
+			return Mathf.Clamp(angle, minAngle, maxAngle);
+		}
+
+
+		/// <summary>
+		/// +- 180도 즈음에서 각도 Min-Max 범위를 벗어났다면 true 리턴
+		/// </summary>
+		/// <returns></returns>
+		public static bool IsAngleClamped(float angle, float minAngle, float maxAngle)
+		{
+			//return Mathf.Clamp(angle, minAngle, maxAngle);
+
+			//입력된 각도에 맞게 minAngle, maxAngle을 고친다.
+			if (minAngle < angle && angle < maxAngle)
+			{
+				//이미 Clamp 범위 안에 들어갔다.
+				return false;
+			}
+
+			if (maxAngle > angle + 360.0f)
+			{
+
+				//범위가 +360 더 돌아있다.
+				minAngle -= 360.0f;
+				maxAngle -= 360.0f;
+				//Debug.Log("Clamp 범위 보정 : " + angle + " / (" + (minAngle + 360.0f) + " ~ " + (maxAngle + 360.0f) + ") >> (" + minAngle + " ~ " + maxAngle + ")");
+
+			}
+			else if (minAngle < angle - 360.0f)
+			{
+				//범위가 -360 더 돌아있다
+				minAngle += 360.0f;
+				maxAngle += 360.0f;
+
+				//Debug.Log("Clamp 범위 보정 : " + angle + " / (" + (minAngle - 360.0f) + " ~ " + (maxAngle - 360.0f) + ") >> (" + minAngle + " ~ " + maxAngle + ")");
+			}
+
+			//범위가 보정되었으므로 다시 Clamp
+			if (minAngle < angle && angle < maxAngle)
+			{
+				//이미 Clamp 범위 안에 들어갔다.
+				return false;
+			}
+
+			//각도가 밖으로 벗어나서 Clamped되었다.
+			return true;
+		}
+
+
+
+
+		/// <summary>
 		/// SrcAngle의 +0, +360, -360의 값 중에서 TargetAngle과 가장 비슷한 각도를 리턴한다.
 		/// 360도로 인하여 실제로 가까운 회전값을 찾기 위함
 		/// </summary>
@@ -224,7 +321,6 @@ namespace AnyPortrait
 					return srcAngle - 360;
 				}
 			}
-
 		}
 
 		/// <summary>
@@ -254,7 +350,7 @@ namespace AnyPortrait
 				}
 			}
 
-			return AngleTo180(angleA * (1.0f - weight) + angleB * weight);
+			return AngleTo180(angleA * (1.0f - weight) + (angleB * weight));
 		}
 
 

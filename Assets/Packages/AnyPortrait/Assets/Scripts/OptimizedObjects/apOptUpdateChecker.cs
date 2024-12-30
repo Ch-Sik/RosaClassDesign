@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -33,7 +33,7 @@ namespace AnyPortrait
 		//토큰의 FPS 범위
 		private const int MAX_TOKEN_FPS = 60;
 		private const int MIN_TOKEN_FPS = 2;
-		
+
 		//이 카운트동안 Update 호출이 되지 않았다면, 이 토큰은 더이상 사용되지 않는 것
 		private const int MAX_TOKEN_UNUSED_COUNT = 10;
 		private const int MAX_TOKENLIST_UNUSED_COUNT = 60;
@@ -41,7 +41,7 @@ namespace AnyPortrait
 		// SubClass
 		//---------------------------------------------------
 		public class UpdateToken
-		{	
+		{
 			//리뉴얼 코드
 			private int _FPS = -1;
 			private int _unusedCount = 0;
@@ -51,7 +51,7 @@ namespace AnyPortrait
 			private int _slotIndex = 0;
 			private float _elapsedTime = 0.0f;
 			private float _resultElapsedTime = 0.0f;
-			
+
 			private TokenList _parentTokenList = null;
 			private bool _isUpdatable = false;
 
@@ -61,7 +61,7 @@ namespace AnyPortrait
 			public UpdateToken(int fps)
 			{
 				//이전
-				
+
 
 				//리뉴얼
 				_FPS = fps;
@@ -93,7 +93,7 @@ namespace AnyPortrait
 				_unusedCount = 0;//업데이트가 되었다면 카운트를 0으로 초기화
 
 				_isUpdatable = isUpdatableFrame;
-				if(_isUpdatable)
+				if (_isUpdatable)
 				{
 					//업데이트가 될 것이라면 경과 시간을 갱신한다.
 					_resultElapsedTime = _elapsedTime;
@@ -126,8 +126,8 @@ namespace AnyPortrait
 
 			//Get
 			public int SlotIndex { get { return _slotIndex; } }
-			public TokenList ParentTokenList {  get { return _parentTokenList; } }
-			public float ResultElapsedTime {  get { return _resultElapsedTime; } }
+			public TokenList ParentTokenList { get { return _parentTokenList; } }
+			public float ResultElapsedTime { get { return _resultElapsedTime; } }
 
 			//연속으로 업데이트 요청이 없었다면, 성능을 위해서 토큰을 리스트에서 삭제하자.
 			public bool IsRemovable { get { return _unusedCount > MAX_TOKEN_UNUSED_COUNT; } }
@@ -163,15 +163,15 @@ namespace AnyPortrait
 			{
 				_FPS = fps;
 
-				if(_tokens_All == null)
+				if (_tokens_All == null)
 				{
 					_tokens_All = new List<UpdateToken>();
 				}
-				if(_tokens_PerSlots == null)
+				if (_tokens_PerSlots == null)
 				{
 					_tokens_PerSlots = new Dictionary<int, List<UpdateToken>>();
 				}
-				if(_removableTokens == null)
+				if (_removableTokens == null)
 				{
 					_removableTokens = new List<UpdateToken>();
 				}
@@ -189,7 +189,7 @@ namespace AnyPortrait
 				for (int i = 0; i < _tokens_All.Count; i++)
 				{
 					curToken = _tokens_All[i];
-					if(curToken == null)
+					if (curToken == null)
 					{
 						//null이면 나중에 삭제를 해야한다.
 						continue;
@@ -211,16 +211,16 @@ namespace AnyPortrait
 				//- 슬롯이 많으면 애니메이션의 FPS가 줄어들며, 슬롯이 적으면 분산이 덜 되서 게임 성능에 영향을 더 준다.
 				//- 게임 프레임이 60 밑으로 떨어진다면, 슬롯을 늘려서 성능을 보전해야한다.
 				float gameOptParam = 1.0f;
-				if(gameFPS < 60)
+				if (gameFPS < 60)
 				{
 					//게임 프레임이 60밑으로 떨어지면 강제로 슬롯을 늘려서 처리를 분산시키고 애니메이션 FPS를 줄인다.
 					gameOptParam = 60.0f / (float)gameFPS;
 				}
 
 				int nextSlotSize = (int)(((float)gameFPS / (float)_FPS) + 0.5f);
-				
-				
-				if(nextSlotSize < 2)
+
+
+				if (nextSlotSize < 2)
 				{
 					nextSlotSize = 2;//슬롯 최소 개수는 2이다. (최소 한번의 스킵은 있어야 한다.)
 				}
@@ -230,7 +230,7 @@ namespace AnyPortrait
 
 				//Debug.Log("Set Game FPS : " + gameFPS + " / Token FPS : " + _FPS + " / Next Slot Size : " + nextSlotSize);
 
-				if(nextSlotSize != _slotSize)
+				if (nextSlotSize != _slotSize)
 				{
 					//초기화
 					//Debug.LogError("Slot Size Changed : " + _slotSize + " > " + nextSlotSize);
@@ -251,26 +251,26 @@ namespace AnyPortrait
 					for (int i = 0; i < _tokens_All.Count; i++)
 					{
 						curToken = _tokens_All[i];
-						
-						if(curToken == null)
+
+						if (curToken == null)
 						{
 							//null인 토큰은 나중에 삭제를 하자
 							continue;
 						}
-						
+
 						curToken.SetSlotIndex(curSlotIndex);//인덱스 변경
 						_tokens_PerSlots[curSlotIndex].Add(curToken);//변경된 인덱스에 따른 슬롯 리스트에 재할당
 
 						//슬롯 인덱스는 0, 1, 2... 0, 1, 2..식으로 반복된다.
 						curSlotIndex++;
-						if(curSlotIndex >= _slotSize)
+						if (curSlotIndex >= _slotSize)
 						{
 							curSlotIndex = 0;
 						}
 					}
 
 					//커서가 슬롯 사이즈보다 크면 다시 0으로 초기화
-					if(_updateCursor >= _slotSize)
+					if (_updateCursor >= _slotSize)
 					{
 						_updateCursor = 0;
 					}
@@ -281,9 +281,9 @@ namespace AnyPortrait
 			public bool AddAndUpdateToken(UpdateToken token)
 			{
 				//추가하거나 이미 있다면 인덱스 체크 후 갱신
-				
+
 				bool isNeedToAssignIndex = false;//슬롯 인덱스를 할당해야 하는가
-				if(!_tokens_All.Contains(token))
+				if (!_tokens_All.Contains(token))
 				{
 					//새로 추가했다면
 					_tokens_All.Add(token);
@@ -295,12 +295,12 @@ namespace AnyPortrait
 					//이미 있다면
 					//인덱스가 유효한지 확인하자
 					int prevSlotIndex = token.SlotIndex;
-					if(prevSlotIndex < 0 || prevSlotIndex >= _slotSize)
+					if (prevSlotIndex < 0 || prevSlotIndex >= _slotSize)
 					{
 						//기존의 슬롯 인덱스가 유효하지 않다.
 						isNeedToAssignIndex = true;
 					}
-					else if(!_tokens_PerSlots[prevSlotIndex].Contains(token))
+					else if (!_tokens_PerSlots[prevSlotIndex].Contains(token))
 					{
 						//슬롯의 리스트에 존재하지 않다면 다시 할당하자.
 						isNeedToAssignIndex = true;
@@ -316,7 +316,7 @@ namespace AnyPortrait
 						}
 					}
 				}
-				if(isNeedToAssignIndex)
+				if (isNeedToAssignIndex)
 				{
 					//중요!
 					//최적의 슬롯 인덱스를 찾아서 토크에 할당하고, 슬롯 리스트에도 추가한다.
@@ -353,7 +353,7 @@ namespace AnyPortrait
 				}
 			}
 
-			
+
 			/// <summary>
 			/// 토큰들을 상대로 업데이트 되어야 할지, 삭제될지를 정하고, 토큰들에 기록을 해준다.
 			/// - 업데이트 여부는 여기서 정하지 말고 삭제 여부만 정하자
@@ -369,13 +369,13 @@ namespace AnyPortrait
 				for (int i = 0; i < nAllTokens; i++)
 				{
 					curToken = _tokens_All[i];
-					if(curToken == null)
+					if (curToken == null)
 					{
 						//null토큰이 있다면 삭제를 해야한다.
 						isAnyNullToken = true;
 						continue;
 					}
-					if(curToken.IsRemovable)
+					if (curToken.IsRemovable)
 					{
 						isAnyRemovable = true;
 						_removableTokens.Add(curToken);
@@ -391,28 +391,28 @@ namespace AnyPortrait
 
 
 				_updateCursor += 1;//커서 증가
-				if(_updateCursor >= _slotSize)
+				if (_updateCursor >= _slotSize)
 				{
 					_updateCursor = 0;
 				}
 
-				if(!isAnyRemovable && !isAnyNullToken)
+				if (!isAnyRemovable && !isAnyNullToken)
 				{
 					return;
 				}
 
-				if(isAnyNullToken)
+				if (isAnyNullToken)
 				{
 					//Null 토큰을 삭제하자.
 					//int nRemoved = _tokens_All.RemoveAll(delegate(UpdateToken a)
-					_tokens_All.RemoveAll(delegate(UpdateToken a)
+					_tokens_All.RemoveAll(delegate (UpdateToken a)
 					{
 						return a == null;
 					});
 
 					for (int iSlot = 0; iSlot < _slotSize; iSlot++)
 					{
-						_tokens_PerSlots[iSlot].RemoveAll(delegate(UpdateToken a)
+						_tokens_PerSlots[iSlot].RemoveAll(delegate (UpdateToken a)
 						{
 							return a == null;
 						});
@@ -428,7 +428,7 @@ namespace AnyPortrait
 					for (int i = 0; i < _removableTokens.Count; i++)
 					{
 						curToken = _removableTokens[i];
-						if(curToken == null)
+						if (curToken == null)
 						{
 							continue;
 						}
@@ -450,8 +450,8 @@ namespace AnyPortrait
 			{
 				int optSlotIndex = -1;
 				int minNumTokens = -1;
-				
-				if(_slotSize == 0)
+
+				if (_slotSize == 0)
 				{
 					return -1;
 				}
@@ -460,7 +460,7 @@ namespace AnyPortrait
 				for (int i = 0; i < _slotSize; i++)
 				{
 					curTokens = _tokens_PerSlots[i].Count;
-					if(minNumTokens < 0 || curTokens < minNumTokens)
+					if (minNumTokens < 0 || curTokens < minNumTokens)
 					{
 						//가장 적은 토큰 개수를 가진 슬롯의 인덱스를 반영한다.
 						minNumTokens = curTokens;
@@ -473,14 +473,14 @@ namespace AnyPortrait
 
 			// Get
 			//연속으로 업데이트가 없었다면 토큰 리스트 자체를 삭제한다.
-			public bool IsRemovable { get { return _unusedCount >  MAX_TOKENLIST_UNUSED_COUNT; } }
+			public bool IsRemovable { get { return _unusedCount > MAX_TOKENLIST_UNUSED_COUNT; } }
 
 
 			// Debug Text
 			//현재 상태를 출력하자
-#if UNITY_EDITOR			
+#if UNITY_EDITOR
 			public string GetDebugText()
-			{	
+			{
 				string result = "[" + _FPS + " ( " + _slotSize + " Slots ) ] : ";
 				for (int i = 0; i < _slotSize; i++)
 				{
@@ -510,7 +510,7 @@ namespace AnyPortrait
 		//DeltaTime 기록 배열이 모두 찰때마다 평균값을 새로 계산한다.
 		private const int INIT_GAME_FPS = 60;
 		private const int NUM_FPS_RECORDS = 300;//60FPS 기준으로 5초마다 평균 계산
-		
+
 		//실제 게임의 FPS 범위
 		private const int MAX_GAME_FPS = 150;
 		private const int MIN_GAME_FPS = 15;
@@ -532,6 +532,11 @@ namespace AnyPortrait
 		//---------------------------------------------------
 		private apOptUpdateChecker()
 		{
+			Init();
+		}
+
+		public void Init()
+		{
 			//초기화
 			_fps2Tokens.Clear();
 			_removableTokenLists.Clear();
@@ -541,6 +546,20 @@ namespace AnyPortrait
 			InitFPSRecords();
 		}
 
+
+#if UNITY_2020_1_OR_NEWER
+		//[v1.5.0] Reload Domain 옵션 비활성화시 static 필드 초기화가 안되는데, 이 기능에 영향을 줘버린다.
+		//Reload Domain 비활성화 + 게임 시작시 강제로 초기화를 호출해야한다.
+		// 참조 : https://docs.unity3d.com/kr/2022.3/Manual/DomainReloading.html
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		private static void InitDomain()
+		{
+			if(_instance != null)
+			{
+				_instance.Init();
+			}
+		}
+#endif
 
 		// Functions
 		//---------------------------------------------------
@@ -622,6 +641,12 @@ namespace AnyPortrait
 		public UpdateToken OnUpdate(UpdateToken token, int fps, float deltaTime)
 		{
 			//상태가 바뀌면 초기화를 해야한다.
+			if(_state == STATE.Ready)
+			{
+				//초기화 상태에서 토큰이 만들어졌다면 이상하다
+				token = null;
+			}
+
 			if(_state != STATE.Update)
 			{
 				foreach (KeyValuePair<int, TokenList> keyValuePair in _fps2Tokens)
