@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -59,14 +59,20 @@ namespace AnyPortrait
 		//빌보드
 		private apPortrait.BILLBOARD_TYPE _cmn_BillboardOption = apPortrait.BILLBOARD_TYPE.None;
 		private bool _cmn_IsForceCamSortModeToOrthographic = true;//빌보드시 Sort Mode를 Orthographic 강제하기 옵션
+		private apPortrait.BILLBOARD_PARENT_ROTATION _cmn_BillboardParentRotation = apPortrait.BILLBOARD_PARENT_ROTATION.Ignore;
 
 		//Shadow
 		private apPortrait.SHADOW_CASTING_MODE _cmn_CastShadows = apPortrait.SHADOW_CASTING_MODE.Off;
 		private bool _cmn_IsReceiveShadows = false;
 
+		//Light Prove (v1.5.0)
+		private apPortrait.LIGHT_PROBE_USAGE _cmn_LightProbeUsage = apPortrait.LIGHT_PROBE_USAGE.Off;
+		private apPortrait.REFLECTION_PROBE_USAGE _cmn_ReflectionProbeUsage = apPortrait.REFLECTION_PROBE_USAGE.Off;
+
 		// VR 렌더 텍스쳐 사이즈 (이건 개별이다)
 		private apPortrait.VR_SUPPORT_MODE _cmn_VRSupported = apPortrait.VR_SUPPORT_MODE.None;
 		private apPortrait.VR_RT_SIZE _cmn_VRRtSize = apPortrait.VR_RT_SIZE.ByMeshSettings;
+		private apPortrait.CAMERA_CHECK_MODE _cmn_CameraCheckMode = apPortrait.CAMERA_CHECK_MODE.CurrentCameraMainly;
 
 		// Flipped Mesh 검출법
 		private apPortrait.FLIPPED_MESH_CHECK _cmn_FlippedMeshOption = apPortrait.FLIPPED_MESH_CHECK.TransformOnly;
@@ -81,13 +87,31 @@ namespace AnyPortrait
 		private bool _cmn_TeleportCorrection = true;
 		private float _cmn_TeleportDist = 0.5f;
 
+		//v1.5.0 : 텔레포트 옵션 추가
+		private bool _cmn_TeleportPositionEnabled = true;
+		private bool _cmn_TeleportRotationEnabled = true;
+		private bool _cmn_TeleportScaleEnabled = true;
+		private float _cmn_TeleportRotationOffset = 30.0f;
+		private float _cmn_TeleportScaleOffset = 0.2f;
+
+
+
 		//메시 업데이트 빈도
 		private apPortrait.MESH_UPDATE_FREQUENCY _cmn_MeshUpdateFrequency = apPortrait.MESH_UPDATE_FREQUENCY.EveryFrames;
 		private int _cmn_MeshUpdateFPS = 24;
+		private apPortrait.FIXED_UPDATE_FPS_SCALE_OPTION _cmn_MeshUpdateFPSScale = apPortrait.FIXED_UPDATE_FPS_SCALE_OPTION.Fixed;
+
+		//보이지 않는 메시 업데이트
+		private apPortrait.INVISIBLE_MESH_UPDATE _cmn_InvisibleMeshUpdate = apPortrait.INVISIBLE_MESH_UPDATE.NotUpdate;
+
+		//[v1.5.1] 클리핑 메시 업데이트
+		private apPortrait.CLIPPING_MESH_UPDATE _cmn_ClippingUpdate = apPortrait.CLIPPING_MESH_UPDATE.InUpdateRoutine;
 
 		//메인 로직 위치
 		private apPortrait.PROCESS_EVENT_ON _cmn_MainLogicProcess = apPortrait.PROCESS_EVENT_ON.LateUpdate;
 
+		//IK 방식
+		private apPortrait.IK_METHOD _cmn_IKMethod = apPortrait.IK_METHOD.FABRIK;
 
 		//저장/파싱 변수
 		private apStringWrapper _strWrapper = null;
@@ -128,14 +152,16 @@ namespace AnyPortrait
 			//빌보드
 			BillboardType,
 			ForceCamSortToOrtho,
+			BillboardParentRotation,
 
 			//Shadow
 			CastShadows,
 			ReceiveShadows,
 
-			//VR 설정
+			//VR/카메라 설정
 			VRSupported,
 			VRRTSize,
+			CameraCheckMode,
 
 			//Flipped Mesh 검출법
 			FlippedMeshCheck,
@@ -149,13 +175,34 @@ namespace AnyPortrait
 			//텔레포트 보정
 			TeleportCorrection,
 			TeleportDist,
+			//v1.5.0 : 텔레포트 옵션 추가
+			TeleportPositionEnabled,
+			TeleportRotationEnabled,
+			TeleportScaleEnabled,
+			TeleportRotationOffset,
+			TeleportScaleOffset,
 
 			//v1.4.7 : 업데이트 빈도
 			MeshUpdateFrequency,
 			MeshUpdateFPS,
+			MeshUpdateFPSScaled,
+
+			//v1.5.0 : 보이지 않는 메시
+			InvisibleMeshUpdate,
+
+			//v1.5.1 : 클리핑 업데이트
+			ClippingUpdate,
 
 			//v1.4.8 : 메인 로직 업데이트 함수 위치
-			MainLogicEvent
+			MainLogicEvent,
+
+			//v1.5.0 : IK 방식 / 라이트프로브
+			IKMethod,
+			LightProbe,
+			ReflectionProbe,
+
+
+
 		}
 
 
@@ -223,12 +270,17 @@ namespace AnyPortrait
 
 			_cmn_BillboardOption = apPortrait.BILLBOARD_TYPE.None;
 			_cmn_IsForceCamSortModeToOrthographic = true;
+			_cmn_BillboardParentRotation = apPortrait.BILLBOARD_PARENT_ROTATION.Ignore;
 
 			_cmn_CastShadows = apPortrait.SHADOW_CASTING_MODE.Off;
 			_cmn_IsReceiveShadows = false;
 
+			_cmn_LightProbeUsage = apPortrait.LIGHT_PROBE_USAGE.Off;
+			_cmn_ReflectionProbeUsage = apPortrait.REFLECTION_PROBE_USAGE.Off;
+
 			_cmn_VRSupported = apPortrait.VR_SUPPORT_MODE.None;
 			_cmn_VRRtSize = apPortrait.VR_RT_SIZE.ByMeshSettings;
+			_cmn_CameraCheckMode = apPortrait.CAMERA_CHECK_MODE.CurrentCameraMainly;
 
 			_cmn_FlippedMeshOption = apPortrait.FLIPPED_MESH_CHECK.TransformOnly;
 
@@ -239,10 +291,22 @@ namespace AnyPortrait
 			_cmn_TeleportCorrection = false;
 			_cmn_TeleportDist = 10.0f;
 
-			_cmn_MeshUpdateFrequency = apPortrait.MESH_UPDATE_FREQUENCY.EveryFrames;
+			//v1.5.0
+			_cmn_TeleportPositionEnabled = true;
+			_cmn_TeleportRotationEnabled = true;
+			_cmn_TeleportScaleEnabled = true;
+			_cmn_TeleportRotationOffset = 30.0f;
+			_cmn_TeleportScaleOffset = 0.2f;
+
+			_cmn_MeshUpdateFrequency = apPortrait.MESH_UPDATE_FREQUENCY.EveryFrames;			
 			_cmn_MeshUpdateFPS = 24;
+			_cmn_MeshUpdateFPSScale = apPortrait.FIXED_UPDATE_FPS_SCALE_OPTION.Fixed;
+
+			_cmn_InvisibleMeshUpdate = apPortrait.INVISIBLE_MESH_UPDATE.NotUpdate;
+			_cmn_ClippingUpdate = apPortrait.CLIPPING_MESH_UPDATE.InUpdateRoutine;
 
 			_cmn_MainLogicProcess = apPortrait.PROCESS_EVENT_ON.LateUpdate;
+			_cmn_IKMethod = apPortrait.IK_METHOD.FABRIK;
 		}
 
 		private void InitKeyStrIDs()
@@ -279,6 +343,8 @@ namespace AnyPortrait
 			//빌보드
 			AddKeyStrID(KEY_TYPES.BillboardType, "BillboardType");
 			AddKeyStrID(KEY_TYPES.ForceCamSortToOrtho, "ForceCamSortToOrtho");
+			AddKeyStrID(KEY_TYPES.BillboardParentRotation, "BillboardParentRotation");
+			
 
 			//Shadow
 			AddKeyStrID(KEY_TYPES.CastShadows, "CastShadows");
@@ -287,6 +353,7 @@ namespace AnyPortrait
 			//VR 설정
 			AddKeyStrID(KEY_TYPES.VRSupported, "VRSupported");
 			AddKeyStrID(KEY_TYPES.VRRTSize, "VRRTSize");
+			AddKeyStrID(KEY_TYPES.CameraCheckMode, "CameraCheckMode");
 
 			//Flipped Mesh 검출법
 			AddKeyStrID(KEY_TYPES.FlippedMeshCheck, "FlippedMeshCheck");
@@ -301,12 +368,34 @@ namespace AnyPortrait
 			AddKeyStrID(KEY_TYPES.TeleportCorrection, "TeleportCorrection");
 			AddKeyStrID(KEY_TYPES.TeleportDist, "TeleportDist");
 
+			//v1.5.0 : 추가
+			AddKeyStrID(KEY_TYPES.TeleportPositionEnabled, "TeleportPositionEnabled");
+			AddKeyStrID(KEY_TYPES.TeleportRotationEnabled, "TeleportRotationEnabled");
+			AddKeyStrID(KEY_TYPES.TeleportScaleEnabled, "TeleportScaleEnabled");
+			AddKeyStrID(KEY_TYPES.TeleportRotationOffset, "TeleportRotationOffset");
+			AddKeyStrID(KEY_TYPES.TeleportScaleOffset, "TeleportScaleOffset");
+
 			//메시 업데이트 빈도
 			AddKeyStrID(KEY_TYPES.MeshUpdateFrequency, "MeshUpdateFrequency");
 			AddKeyStrID(KEY_TYPES.MeshUpdateFPS, "MeshUpdateFPS");
+			AddKeyStrID(KEY_TYPES.MeshUpdateFPSScaled, "MeshUpdateScaled");
+
+			//보이지 않는 메시
+			AddKeyStrID(KEY_TYPES.InvisibleMeshUpdate, "InvisibleMeshUpdate");
+
+			//클리핑 업데이트
+			AddKeyStrID(KEY_TYPES.ClippingUpdate, "ClippingMeshUpdate");
+			
 
 			//메인 로직 이벤트 위치
 			AddKeyStrID(KEY_TYPES.MainLogicEvent, "MainLogicEvent");
+
+			//IK 방식
+			AddKeyStrID(KEY_TYPES.IKMethod, "IKMethod");
+
+			//라이트 프로브
+			AddKeyStrID(KEY_TYPES.LightProbe, "LightProbe");
+			AddKeyStrID(KEY_TYPES.ReflectionProbe, "ReflectionProbe");
 
 		}
 
@@ -356,14 +445,20 @@ namespace AnyPortrait
 				//빌보드
 				SavePref_Int(sw, KEY_TYPES.BillboardType, (int)_cmn_BillboardOption);
 				SavePref_Bool(sw, KEY_TYPES.ForceCamSortToOrtho, _cmn_IsForceCamSortModeToOrthographic);
+				SavePref_Int(sw, KEY_TYPES.BillboardParentRotation, (int)_cmn_BillboardParentRotation);
 
 				//Shadow
 				SavePref_Int(sw, KEY_TYPES.CastShadows, (int)_cmn_CastShadows);
 				SavePref_Bool(sw, KEY_TYPES.ReceiveShadows, _cmn_IsReceiveShadows);
 
+				//Light Probe
+				SavePref_Int(sw, KEY_TYPES.LightProbe, (int)_cmn_LightProbeUsage);
+				SavePref_Int(sw, KEY_TYPES.ReflectionProbe, (int)_cmn_ReflectionProbeUsage);
+
 				//VR 렌더 텍스쳐 사이즈
 				SavePref_Int(sw, KEY_TYPES.VRSupported, (int)_cmn_VRSupported);
 				SavePref_Int(sw, KEY_TYPES.VRRTSize, (int)_cmn_VRRtSize);
+				SavePref_Int(sw, KEY_TYPES.CameraCheckMode, (int)_cmn_CameraCheckMode);
 
 				//Flipped Mesh 검출법
 				SavePref_Int(sw, KEY_TYPES.FlippedMeshCheck, (int)_cmn_FlippedMeshOption);
@@ -378,12 +473,29 @@ namespace AnyPortrait
 				SavePref_Bool(sw, KEY_TYPES.TeleportCorrection, _cmn_TeleportCorrection);
 				SavePref_Float(sw, KEY_TYPES.TeleportDist, _cmn_TeleportDist);
 
+				//v1.5.0 : 텔레포트 옵션 추가
+				SavePref_Bool(sw, KEY_TYPES.TeleportPositionEnabled, _cmn_TeleportPositionEnabled);
+				SavePref_Bool(sw, KEY_TYPES.TeleportRotationEnabled, _cmn_TeleportRotationEnabled);
+				SavePref_Bool(sw, KEY_TYPES.TeleportScaleEnabled, _cmn_TeleportScaleEnabled);
+				SavePref_Float(sw, KEY_TYPES.TeleportRotationOffset, _cmn_TeleportRotationOffset);
+				SavePref_Float(sw, KEY_TYPES.TeleportScaleOffset, _cmn_TeleportScaleOffset);
+
 				//메시 업데이트 빈도
 				SavePref_Int(sw, KEY_TYPES.MeshUpdateFrequency, (int)_cmn_MeshUpdateFrequency);
 				SavePref_Int(sw, KEY_TYPES.MeshUpdateFPS, _cmn_MeshUpdateFPS);
+				SavePref_Int(sw, KEY_TYPES.MeshUpdateFPSScaled, (int)_cmn_MeshUpdateFPSScale);
+
+				//보이지 않는 메시
+				SavePref_Int(sw, KEY_TYPES.InvisibleMeshUpdate, (int)_cmn_InvisibleMeshUpdate);
+
+				//클리핑 업데이트
+				SavePref_Int(sw, KEY_TYPES.ClippingUpdate, (int)_cmn_ClippingUpdate);
+				
 
 				//메인 로직 이벤트
 				SavePref_Int(sw, KEY_TYPES.MainLogicEvent, (int)_cmn_MainLogicProcess);
+				SavePref_Int(sw, KEY_TYPES.IKMethod, (int)_cmn_IKMethod);
+				
 
 				//------------------------------
 
@@ -536,14 +648,22 @@ namespace AnyPortrait
 						//빌보드
 						case KEY_TYPES.BillboardType: _cmn_BillboardOption = (apPortrait.BILLBOARD_TYPE)LoadPref_Int(ref strValue); break;
 						case KEY_TYPES.ForceCamSortToOrtho: _cmn_IsForceCamSortModeToOrthographic = LoadPref_Bool(ref strValue); break;
+						case KEY_TYPES.BillboardParentRotation: _cmn_BillboardParentRotation = (apPortrait.BILLBOARD_PARENT_ROTATION)LoadPref_Int(ref strValue); break;
+							
 
 						//Shadow
 						case KEY_TYPES.CastShadows: _cmn_CastShadows = (apPortrait.SHADOW_CASTING_MODE)LoadPref_Int(ref strValue); break;
 						case KEY_TYPES.ReceiveShadows: _cmn_IsReceiveShadows = LoadPref_Bool(ref strValue); break;
 
+						//Light Prove [v1.5.0]
+						case KEY_TYPES.LightProbe: _cmn_LightProbeUsage = (apPortrait.LIGHT_PROBE_USAGE)LoadPref_Int(ref strValue); break;
+						case KEY_TYPES.ReflectionProbe: _cmn_ReflectionProbeUsage = (apPortrait.REFLECTION_PROBE_USAGE)LoadPref_Int(ref strValue); break;
+
+
 						//VR 렌더 모드
 						case KEY_TYPES.VRSupported: _cmn_VRSupported = (apPortrait.VR_SUPPORT_MODE)LoadPref_Int(ref strValue); break;
 						case KEY_TYPES.VRRTSize: _cmn_VRRtSize = (apPortrait.VR_RT_SIZE)LoadPref_Int(ref strValue); break;
+						case KEY_TYPES.CameraCheckMode: _cmn_CameraCheckMode = (apPortrait.CAMERA_CHECK_MODE)LoadPref_Int(ref strValue); break;
 
 						//Flipped Mesh 검출법
 						case KEY_TYPES.FlippedMeshCheck: _cmn_FlippedMeshOption = (apPortrait.FLIPPED_MESH_CHECK)LoadPref_Int(ref strValue); break;
@@ -557,13 +677,26 @@ namespace AnyPortrait
 						//텔레포트 보정
 						case KEY_TYPES.TeleportCorrection: _cmn_TeleportCorrection = LoadPref_Bool(ref strValue); break;
 						case KEY_TYPES.TeleportDist: _cmn_TeleportDist = LoadPref_Float(ref strValue); break;
+						
+						//v1.5.0 : 텔레포트 옵션 추가
+						case KEY_TYPES.TeleportPositionEnabled: _cmn_TeleportPositionEnabled = LoadPref_Bool(ref strValue); break;
+						case KEY_TYPES.TeleportRotationEnabled:  _cmn_TeleportRotationEnabled = LoadPref_Bool(ref strValue); break;
+						case KEY_TYPES.TeleportScaleEnabled: _cmn_TeleportScaleEnabled = LoadPref_Bool(ref strValue); break;
+						case KEY_TYPES.TeleportRotationOffset:  _cmn_TeleportRotationOffset = LoadPref_Float(ref strValue); break;
+						case KEY_TYPES.TeleportScaleOffset:  _cmn_TeleportScaleOffset = LoadPref_Float(ref strValue); break;
 
 						//메시 업데이트 빈도
 						case KEY_TYPES.MeshUpdateFrequency: _cmn_MeshUpdateFrequency = (apPortrait.MESH_UPDATE_FREQUENCY)LoadPref_Int(ref strValue); break;
 						case KEY_TYPES.MeshUpdateFPS: _cmn_MeshUpdateFPS = LoadPref_Int(ref strValue); break;
+						case KEY_TYPES.MeshUpdateFPSScaled: _cmn_MeshUpdateFPSScale = (apPortrait.FIXED_UPDATE_FPS_SCALE_OPTION)LoadPref_Int(ref strValue); break;
+
+						//보이지 않는 메시 빈도
+						case KEY_TYPES.InvisibleMeshUpdate: _cmn_InvisibleMeshUpdate = (apPortrait.INVISIBLE_MESH_UPDATE)LoadPref_Int(ref strValue); break;
+						case KEY_TYPES.ClippingUpdate: _cmn_ClippingUpdate = (apPortrait.CLIPPING_MESH_UPDATE)LoadPref_Int(ref strValue); break;
 
 						//메인 로직 이벤트
 						case KEY_TYPES.MainLogicEvent: _cmn_MainLogicProcess = (apPortrait.PROCESS_EVENT_ON)LoadPref_Int(ref strValue); break;
+						case KEY_TYPES.IKMethod: _cmn_IKMethod = (apPortrait.IK_METHOD)LoadPref_Int(ref strValue); break;
 					}
 				}
 
@@ -696,10 +829,12 @@ namespace AnyPortrait
 
 			//빌보드
 			if (_cmn_BillboardOption != portrait._billboardType
-				|| _cmn_IsForceCamSortModeToOrthographic != portrait._isForceCamSortModeToOrthographic)
+				|| _cmn_IsForceCamSortModeToOrthographic != portrait._isForceCamSortModeToOrthographic
+				|| _cmn_BillboardParentRotation != portrait._billboardParentRotation)
 			{
 				_cmn_BillboardOption = portrait._billboardType;
 				_cmn_IsForceCamSortModeToOrthographic = portrait._isForceCamSortModeToOrthographic;
+				_cmn_BillboardParentRotation = portrait._billboardParentRotation;
 				isAnyChanged = true;
 			}
 
@@ -712,12 +847,32 @@ namespace AnyPortrait
 				isAnyChanged = true;
 			}
 
+			//Light Probe
+			if(_cmn_LightProbeUsage != portrait._meshLightProbeUsage)
+			{
+				_cmn_LightProbeUsage = portrait._meshLightProbeUsage;
+				isAnyChanged = true;
+			}
+
+			if(_cmn_ReflectionProbeUsage != portrait._meshReflectionProbeUsage)
+			{
+				_cmn_ReflectionProbeUsage = portrait._meshReflectionProbeUsage;
+				isAnyChanged = true;
+			}
+
 			// VR 렌더 텍스쳐 사이즈 (이건 개별이다)
 			if (_cmn_VRSupported != portrait._vrSupportMode
 				|| _cmn_VRRtSize != portrait._vrRenderTextureSize)
 			{
 				_cmn_VRSupported = portrait._vrSupportMode;
 				_cmn_VRRtSize = portrait._vrRenderTextureSize;
+				isAnyChanged = true;
+			}
+
+			//카메라 체크 모드
+			if(_cmn_CameraCheckMode != portrait._cameraCheckMode)
+			{
+				_cmn_CameraCheckMode = portrait._cameraCheckMode;
 				isAnyChanged = true;
 			}
 
@@ -742,27 +897,63 @@ namespace AnyPortrait
 				isAnyChanged = true;
 			}
 
-			//텔레포트 보정
+			//텔레포트 보정 (v1.5.0에서 수정)
 			if (_cmn_TeleportCorrection != portrait._isTeleportCorrectionOption
-				|| Mathf.Abs(_cmn_TeleportDist - portrait._teleportMovementDist) > 0.001f)
+				|| _cmn_TeleportPositionEnabled != portrait._teleportPositionEnabled
+				|| _cmn_TeleportRotationEnabled != portrait._teleportRotationEnabled
+				|| _cmn_TeleportScaleEnabled != portrait._teleportScaleEnabled
+				|| Mathf.Abs(_cmn_TeleportDist - portrait._teleportMovementDist) > 0.001f
+				|| Mathf.Abs(_cmn_TeleportRotationOffset - portrait._teleportRotationOffset) > 0.001f
+				|| Mathf.Abs(_cmn_TeleportScaleOffset - portrait._teleportScaleOffset) > 0.001f)
 			{
 				_cmn_TeleportCorrection = portrait._isTeleportCorrectionOption;
 				_cmn_TeleportDist = portrait._teleportMovementDist;
+
+				//v1.5.0
+				_cmn_TeleportPositionEnabled = portrait._teleportPositionEnabled;
+				_cmn_TeleportRotationEnabled = portrait._teleportRotationEnabled;
+				_cmn_TeleportScaleEnabled = portrait._teleportScaleEnabled;
+				_cmn_TeleportRotationOffset = portrait._teleportRotationOffset;
+				_cmn_TeleportScaleOffset = portrait._teleportScaleOffset;
+
 				isAnyChanged = true;
 			}
 
 			//메시 업데이트 빈도
 			if(_cmn_MeshUpdateFrequency != portrait._meshRefreshRateOption
-				|| _cmn_MeshUpdateFPS != portrait._meshRefreshRateFPS)
+				|| _cmn_MeshUpdateFPS != portrait._meshRefreshRateFPS
+				|| _cmn_MeshUpdateFPSScale != portrait._meshRefreshFPSScaleOption
+				)
 			{
 				_cmn_MeshUpdateFrequency = portrait._meshRefreshRateOption;
 				_cmn_MeshUpdateFPS = portrait._meshRefreshRateFPS;
+				_cmn_MeshUpdateFPSScale = portrait._meshRefreshFPSScaleOption;
+				isAnyChanged = true;
+			}
+
+			//보이지 않는 메시
+			if(_cmn_InvisibleMeshUpdate != portrait._invisibleMeshUpdate)
+			{
+				_cmn_InvisibleMeshUpdate = portrait._invisibleMeshUpdate;
+				isAnyChanged = true;
+			}
+
+			//클리핑 업데이트
+			if(_cmn_ClippingUpdate != portrait._clippingMeshUpdate)
+			{
+				_cmn_ClippingUpdate = portrait._clippingMeshUpdate;
 				isAnyChanged = true;
 			}
 
 			if(_cmn_MainLogicProcess != portrait._mainProcessEvent)
 			{
 				_cmn_MainLogicProcess = portrait._mainProcessEvent;
+				isAnyChanged = true;
+			}
+
+			if(_cmn_IKMethod != portrait._IKMethod)
+			{
+				_cmn_IKMethod = portrait._IKMethod;
 				isAnyChanged = true;
 			}
 
@@ -801,12 +992,17 @@ namespace AnyPortrait
 
 			_cmn_BillboardOption = apPortrait.BILLBOARD_TYPE.None;
 			_cmn_IsForceCamSortModeToOrthographic = true;
+			_cmn_BillboardParentRotation = apPortrait.BILLBOARD_PARENT_ROTATION.Ignore;
 
 			_cmn_CastShadows = apPortrait.SHADOW_CASTING_MODE.Off;
 			_cmn_IsReceiveShadows = false;
 
+			_cmn_LightProbeUsage = apPortrait.LIGHT_PROBE_USAGE.Off;
+			_cmn_ReflectionProbeUsage = apPortrait.REFLECTION_PROBE_USAGE.Off;
+
 			_cmn_VRSupported = apPortrait.VR_SUPPORT_MODE.None;
 			_cmn_VRRtSize = apPortrait.VR_RT_SIZE.ByMeshSettings;
+			_cmn_CameraCheckMode = apPortrait.CAMERA_CHECK_MODE.CurrentCameraMainly;
 
 			_cmn_FlippedMeshOption = apPortrait.FLIPPED_MESH_CHECK.TransformOnly;
 
@@ -817,10 +1013,22 @@ namespace AnyPortrait
 			_cmn_TeleportCorrection = false;
 			_cmn_TeleportDist = 10.0f;
 
+			//v1.5.0 : 텔레포트 옵션 추가
+			_cmn_TeleportPositionEnabled = true;
+			_cmn_TeleportRotationEnabled = true;
+			_cmn_TeleportScaleEnabled = true;
+			_cmn_TeleportRotationOffset = 30.0f;
+			_cmn_TeleportScaleOffset = 0.2f;
+
 			_cmn_MeshUpdateFrequency = apPortrait.MESH_UPDATE_FREQUENCY.EveryFrames;
 			_cmn_MeshUpdateFPS = 24;
+			_cmn_MeshUpdateFPSScale = apPortrait.FIXED_UPDATE_FPS_SCALE_OPTION.Fixed;
+
+			_cmn_InvisibleMeshUpdate = apPortrait.INVISIBLE_MESH_UPDATE.NotUpdate;
+			_cmn_ClippingUpdate = apPortrait.CLIPPING_MESH_UPDATE.InUpdateRoutine;
 
 			_cmn_MainLogicProcess = apPortrait.PROCESS_EVENT_ON.LateUpdate;
+			_cmn_IKMethod = apPortrait.IK_METHOD.FABRIK;
 
 			//저장
 			Save();
@@ -854,14 +1062,20 @@ namespace AnyPortrait
 			//빌보드
 			portrait._billboardType = _cmn_BillboardOption;
 			portrait._isForceCamSortModeToOrthographic = _cmn_IsForceCamSortModeToOrthographic;
+			portrait._billboardParentRotation = _cmn_BillboardParentRotation;
 
 			//Shadow
 			portrait._meshShadowCastingMode = _cmn_CastShadows;
 			portrait._meshReceiveShadow = _cmn_IsReceiveShadows;
 
+			//Light Prove
+			portrait._meshLightProbeUsage = _cmn_LightProbeUsage;
+			portrait._meshReflectionProbeUsage = _cmn_ReflectionProbeUsage;
+
 			// VR 렌더 텍스쳐 사이즈 (이건 개별이다)
 			portrait._vrSupportMode = _cmn_VRSupported;
 			portrait._vrRenderTextureSize = _cmn_VRRtSize;
+			portrait._cameraCheckMode = _cmn_CameraCheckMode;
 
 			// Flipped Mesh 검출법
 			portrait._flippedMeshOption = _cmn_FlippedMeshOption;
@@ -876,12 +1090,29 @@ namespace AnyPortrait
 			portrait._isTeleportCorrectionOption = _cmn_TeleportCorrection;
 			portrait._teleportMovementDist = _cmn_TeleportDist;
 
+			//v1.5.0 텔레포트 옵션 추가
+			portrait._teleportPositionEnabled = _cmn_TeleportPositionEnabled;
+			portrait._teleportRotationEnabled = _cmn_TeleportRotationEnabled;
+			portrait._teleportScaleEnabled = _cmn_TeleportScaleEnabled;
+			portrait._teleportRotationOffset = _cmn_TeleportRotationOffset;
+			portrait._teleportScaleOffset = _cmn_TeleportScaleOffset;
+
 			//메시 업데이트 빈도
 			portrait._meshRefreshRateOption = _cmn_MeshUpdateFrequency;
 			portrait._meshRefreshRateFPS = _cmn_MeshUpdateFPS;
+			portrait._meshRefreshFPSScaleOption = _cmn_MeshUpdateFPSScale;
+
+			//보이지 않는 메시
+			portrait._invisibleMeshUpdate = _cmn_InvisibleMeshUpdate;
+
+			//클리핑 업데이트
+			portrait._clippingMeshUpdate = _cmn_ClippingUpdate;
 
 			//메인 로직 이벤트
 			portrait._mainProcessEvent = _cmn_MainLogicProcess;
+
+			//IK 방식
+			portrait._IKMethod = _cmn_IKMethod;
 		}
 
 		/// <summary>
@@ -909,6 +1140,7 @@ namespace AnyPortrait
 
 			portrait._billboardType = apPortrait.BILLBOARD_TYPE.None;
 			portrait._isForceCamSortModeToOrthographic = true;
+			portrait._billboardParentRotation = apPortrait.BILLBOARD_PARENT_ROTATION.Ignore;
 
 			portrait._meshShadowCastingMode = apPortrait.SHADOW_CASTING_MODE.Off;
 			portrait._meshReceiveShadow = false;
@@ -924,9 +1156,18 @@ namespace AnyPortrait
 
 			portrait._isTeleportCorrectionOption = false;
 			portrait._teleportMovementDist = 10.0f;
+			//v1.5.0 추가
+			portrait._teleportRotationOffset = 30.0f;
+			portrait._teleportScaleOffset = 0.2f;
+			portrait._teleportPositionEnabled = true;
+			portrait._teleportRotationEnabled = true;
+			portrait._teleportScaleEnabled = true;
 
 			portrait._meshRefreshRateOption = apPortrait.MESH_UPDATE_FREQUENCY.EveryFrames;
 			portrait._meshRefreshRateFPS = 24;
+
+			portrait._invisibleMeshUpdate = apPortrait.INVISIBLE_MESH_UPDATE.NotUpdate;
+			portrait._clippingMeshUpdate = apPortrait.CLIPPING_MESH_UPDATE.InUpdateRoutine;
 		}
 
 
@@ -958,14 +1199,20 @@ namespace AnyPortrait
 		//빌보드
 		public apPortrait.BILLBOARD_TYPE Common_BillboardOption { get { return _cmn_BillboardOption; } }
 		public bool Common_IsForceCamSortModeToOrthographic { get { return _cmn_IsForceCamSortModeToOrthographic; } }
+		public apPortrait.BILLBOARD_PARENT_ROTATION Common_BillboardParentRotation { get { return _cmn_BillboardParentRotation; } }
 
 		//Shadow
 		public apPortrait.SHADOW_CASTING_MODE Common_CastShadows { get { return _cmn_CastShadows; } }
 		public bool Common_IsReceiveShadows { get { return _cmn_IsReceiveShadows; } }
 
+		//Light Probe / Reflection Probe
+		public apPortrait.LIGHT_PROBE_USAGE Common_LightProbeUsage { get { return _cmn_LightProbeUsage; } }
+		public apPortrait.REFLECTION_PROBE_USAGE Common_ReflectionProbeUsage { get { return _cmn_ReflectionProbeUsage; } }
+
 		// VR 렌더 텍스쳐
 		public apPortrait.VR_SUPPORT_MODE Common_VRSupported { get { return _cmn_VRSupported; } }
 		public apPortrait.VR_RT_SIZE Common_VRRenterTextureSize { get { return _cmn_VRRtSize; } }
+		public apPortrait.CAMERA_CHECK_MODE Common_CameraCheckMode { get { return _cmn_CameraCheckMode; } }
 
 		// Flipped Mesh 검출법
 		public apPortrait.FLIPPED_MESH_CHECK Common_FlippedMeshOption { get { return _cmn_FlippedMeshOption; } }
@@ -980,12 +1227,29 @@ namespace AnyPortrait
 		public bool Common_TeleportCorrection { get { return _cmn_TeleportCorrection; } }
 		public float Common_TeleportDist { get { return _cmn_TeleportDist; } }
 
+		//v1.5.0 : 추가된 텔레포트 옵션
+		public bool Common_TeleportPositionEnabled { get { return _cmn_TeleportPositionEnabled; } }
+		public bool Common_TeleportRotationEnabled { get { return _cmn_TeleportRotationEnabled; } }
+		public bool Common_TeleportScaleEnabled { get { return _cmn_TeleportScaleEnabled; } }
+		public float Common_TeleportRotationOffset { get { return _cmn_TeleportRotationOffset; } }
+		public float Common_TeleportScaleOffset { get { return _cmn_TeleportScaleOffset; } }
+
 		//메시 업데이트 빈도
 		public apPortrait.MESH_UPDATE_FREQUENCY Common_MeshUpdateFrequency { get { return _cmn_MeshUpdateFrequency; } }
 		public int Common_MeshUpdateFPS { get { return _cmn_MeshUpdateFPS; } }
+		public apPortrait.FIXED_UPDATE_FPS_SCALE_OPTION Common_MeshUpdateFPSScaled { get { return _cmn_MeshUpdateFPSScale; } }
+
+		//보이지 않는 메시
+		public apPortrait.INVISIBLE_MESH_UPDATE Common_InvisibleMeshUpdate { get {  return _cmn_InvisibleMeshUpdate; } }
+
+		//클리핑 업데이트
+		public apPortrait.CLIPPING_MESH_UPDATE Common_ClippingUpdate { get { return _cmn_ClippingUpdate; } }
 
 		//메인 로직 위치
 		public apPortrait.PROCESS_EVENT_ON Common_MainProcessEvent { get { return _cmn_MainLogicProcess; } }
+
+		//IK 방식
+		public apPortrait.IK_METHOD Common_IKMethod { get { return _cmn_IKMethod; } }
 
 	}
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -13,10 +13,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using UnityEngineInternal;
 
 namespace AnyPortrait
 {
@@ -230,2075 +228,2060 @@ namespace AnyPortrait
 			if (Editor._rootUnitEditMode == apEditor.ROOTUNIT_EDIT_MODE.Setting)
 			{
 				//1. Setting 메뉴
-				//------------------------------------------------
-				//1. 연결된 MeshGroup 설정 (+ 해제)
-				apMeshGroup targetMeshGroup = rootUnit._childMeshGroup;
-
-				if (_strWrapper_64 == null)
-				{
-					_strWrapper_64 = new apStringWrapper(64);
-				}
-				_strWrapper_64.Clear();
-
-				//string strMeshGroupName = "";
-				Color bgColor = Color.black;
-				if (targetMeshGroup != null)
-				{
-					//strMeshGroupName = "[" + targetMeshGroup._name + "]";
-					_strWrapper_64.Append(apStringFactory.I.Bracket_2_L, false);
-					_strWrapper_64.Append(targetMeshGroup._name, false);
-					_strWrapper_64.Append(apStringFactory.I.Bracket_2_R, true);
-
-					bgColor = new Color(0.4f, 1.0f, 0.5f, 1.0f);
-				}
-				else
-				{
-					//strMeshGroupName = "Error! No MeshGroup Linked";
-
-					_strWrapper_64.Append(apStringFactory.I.ErrorNoMeshGroupLinked, true);
-
-					bgColor = new Color(1.0f, 0.5f, 0.5f, 1.0f);
-				}
-				GUI.backgroundColor = bgColor;
-
-				//GUIStyle guiStyleBox = new GUIStyle(GUI.skin.box);
-				//guiStyleBox.alignment = TextAnchor.MiddleCenter;
-				//guiStyleBox.normal.textColor = apEditorUtil.BoxTextColor;
-
-				GUILayout.Box(_strWrapper_64.ToString(), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(35));
-
-				GUI.backgroundColor = prevColor;
-
-				GUILayout.Space(10);
-				apEditorUtil.GUI_DelimeterBoxH(width - 10);
-				GUILayout.Space(10);
-
-				//2. 애니메이션 제어
-
-				apAnimClip curAnimClip = RootUnitAnimClip;
-				bool isAnimClipAvailable = (curAnimClip != null);
-
-
-				Texture2D icon_FirstFrame = Editor.ImageSet.Get(apImageSet.PRESET.Anim_FirstFrame);
-				Texture2D icon_PrevFrame = Editor.ImageSet.Get(apImageSet.PRESET.Anim_PrevFrame);
-
-				Texture2D icon_NextFrame = Editor.ImageSet.Get(apImageSet.PRESET.Anim_NextFrame);
-				Texture2D icon_LastFrame = Editor.ImageSet.Get(apImageSet.PRESET.Anim_LastFrame);
-
-				Texture2D icon_PlayPause = null;
-				if (curAnimClip != null)
-				{
-					if (curAnimClip.IsPlaying_Editor) { icon_PlayPause = Editor.ImageSet.Get(apImageSet.PRESET.Anim_Pause); }
-					else { icon_PlayPause = Editor.ImageSet.Get(apImageSet.PRESET.Anim_Play); }
-				}
-				else
-				{
-					icon_PlayPause = Editor.ImageSet.Get(apImageSet.PRESET.Anim_Play);
-				}
-
-				int btnSize = 30;
-				int btnWidth_Play = 45;
-				int btnWidth_PrevNext = 35;
-				int btnWidth_FirstLast = (width - (btnWidth_Play + btnWidth_PrevNext * 2 + 4 * 3 + 5)) / 2;
-				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(btnSize));
-				GUILayout.Space(2);
-				if (apEditorUtil.ToggledButton_2Side(icon_FirstFrame, false, isAnimClipAvailable, btnWidth_FirstLast, btnSize))
-				{
-					if (curAnimClip != null)
-					{
-						curAnimClip.SetFrame_Editor(curAnimClip.StartFrame);
-						curAnimClip.Pause_Editor();
-						Editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
-					}
-				}
-				if (apEditorUtil.ToggledButton_2Side(icon_PrevFrame, false, isAnimClipAvailable, btnWidth_PrevNext, btnSize))
-				{
-					if (curAnimClip != null)
-					{
-						int prevFrame = curAnimClip.CurFrame - 1;
-						if (prevFrame < curAnimClip.StartFrame && curAnimClip.IsLoop)
-						{
-							prevFrame = curAnimClip.EndFrame;
-						}
-						curAnimClip.SetFrame_Editor(prevFrame);
-						curAnimClip.Pause_Editor();
-						Editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
-					}
-				}
-				if (apEditorUtil.ToggledButton_2Side(icon_PlayPause, false, isAnimClipAvailable, btnWidth_Play, btnSize))
-				{
-					if (curAnimClip != null)
-					{
-						if (curAnimClip.IsPlaying_Editor)
-						{
-							curAnimClip.Pause_Editor();
-						}
-						else
-						{
-							if (curAnimClip.CurFrame == curAnimClip.EndFrame &&
-								!curAnimClip.IsLoop)
-							{
-								curAnimClip.SetFrame_Editor(curAnimClip.StartFrame);
-							}
-
-							curAnimClip.Play_Editor();
-						}
-						Editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
-
-
-					}
-				}
-				if (apEditorUtil.ToggledButton_2Side(icon_NextFrame, false, isAnimClipAvailable, btnWidth_PrevNext, btnSize))
-				{
-					if (curAnimClip != null)
-					{
-						int nextFrame = curAnimClip.CurFrame + 1;
-						if (nextFrame > curAnimClip.EndFrame && curAnimClip.IsLoop)
-						{
-							nextFrame = curAnimClip.StartFrame;
-						}
-						curAnimClip.SetFrame_Editor(nextFrame);
-						curAnimClip.Pause_Editor();
-						Editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
-					}
-				}
-				if (apEditorUtil.ToggledButton_2Side(icon_LastFrame, false, isAnimClipAvailable, btnWidth_FirstLast, btnSize))
-				{
-					if (curAnimClip != null)
-					{
-						curAnimClip.SetFrame_Editor(curAnimClip.EndFrame);
-						curAnimClip.Pause_Editor();
-						Editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
-					}
-				}
-
-				EditorGUILayout.EndHorizontal();
-
-				int curFrame = 0;
-				int startFrame = 0;
-				int endFrame = 10;
-				if (curAnimClip != null)
-				{
-					curFrame = curAnimClip.CurFrame;
-					startFrame = curAnimClip.StartFrame;
-					endFrame = curAnimClip.EndFrame;
-				}
-				int sliderFrame = EditorGUILayout.IntSlider(curFrame, startFrame, endFrame, apGUILOFactory.I.Width(width));
-				if (sliderFrame != curFrame)
-				{
-					if (curAnimClip != null)
-					{
-						curAnimClip.SetFrame_Editor(sliderFrame);
-						curAnimClip.Pause_Editor();
-						Editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
-					}
-				}
-
-				GUILayout.Space(5);
-
-				//추가 : 자동 플레이하는 AnimClip을 선택한다.
-				bool isAutoPlayAnimClip = false;
-				if (curAnimClip != null)
-				{
-					isAutoPlayAnimClip = (_portrait._autoPlayAnimClipID == curAnimClip._uniqueID);
-				}
-				if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.AutoPlayEnabled), Editor.GetUIWord(UIWORD.AutoPlayDisabled), isAutoPlayAnimClip, curAnimClip != null, width, 25))//"Auto Play Enabled", "Auto Play Disabled"
-				{
-					if (curAnimClip != null)
-					{
-						apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Portrait_SettingChanged, 
-															Editor, 
-															_portrait, 
-															//null, 
-															false,
-															apEditorUtil.UNDO_STRUCT.ValueOnly);
-
-						if (_portrait._autoPlayAnimClipID == curAnimClip._uniqueID)
-						{
-							//선택됨 -> 선택 해제
-							_portrait._autoPlayAnimClipID = -1;
-
-						}
-						else
-						{
-							//선택 해제 -> 선택
-							_portrait._autoPlayAnimClipID = curAnimClip._uniqueID;
-						}
-
-
-					}
-
-				}
-
-
-				GUILayout.Space(10);
-				apEditorUtil.GUI_DelimeterBoxH(width - 10);
-				GUILayout.Space(10);
-
-				//3. 애니메이션 리스트
-				List<apAnimClip> subAnimClips = RootUnitAnimClipList;
-				EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.AnimationClips), apGUILOFactory.I.Width(width));//"Animation Clips"
-				GUILayout.Space(5);
-				if (subAnimClips != null && subAnimClips.Count > 0)
-				{
-					apAnimClip nextSelectedAnimClip = null;
-
-
-					Rect lastRect = GUILayoutUtility.GetLastRect();
-
-					int scrollWidth = width - 20;
-
-					//Texture2D icon_Anim = Editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_Animation);
-
-					GUIStyle curGUIStyle = null;//최적화된 코드
-					for (int i = 0; i < subAnimClips.Count; i++)
-					{
-						//GUIStyle curGUIStyle = guiNone;
-						curGUIStyle = null;
-
-						apAnimClip subAnimClip = subAnimClips[i];
-						if (subAnimClip == curAnimClip)
-						{
-							lastRect = GUILayoutUtility.GetLastRect();
-
-							//if (EditorGUIUtility.isProSkin)
-							//{
-							//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-							//}
-							//else
-							//{
-							//	GUI.backgroundColor = new Color(0.4f, 0.8f, 1.0f, 1.0f);
-							//}
-
-							//int offsetHeight = 20 + 3;
-							int offsetHeight = 1 + 3;
-							if (i == 0)
-							{
-								offsetHeight = 4 + 3;
-							}
-
-							//GUI.Box(new Rect(lastRect.x, lastRect.y + offsetHeight, scrollWidth + 35, 24), apStringFactory.I.None);
-							//GUI.backgroundColor = prevColor;
-
-							//변경 v1.4.2
-							apEditorUtil.DrawListUnitBG(lastRect.x + 1, lastRect.y + offsetHeight, scrollWidth + 35 - 2, 24, apEditorUtil.UNIT_BG_STYLE.Main);
-
-							//curGUIStyle = guiSelected;
-							curGUIStyle = apGUIStyleWrapper.I.None_White2Cyan;
-						}
-						else
-						{
-							curGUIStyle = apGUIStyleWrapper.I.None_LabelColor;
-						}
-
-						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(scrollWidth - 5));
-						GUILayout.Space(5);
-
-						if (_guiContent_Overall_SelectedAnimClp == null)
-						{
-							_guiContent_Overall_SelectedAnimClp = new apGUIContentWrapper();
-							_guiContent_Overall_SelectedAnimClp.SetImage(Editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_Animation));
-						}
-						_guiContent_Overall_SelectedAnimClp.ClearText(false);
-						_guiContent_Overall_SelectedAnimClp.AppendSpaceText(1, false);
-						_guiContent_Overall_SelectedAnimClp.AppendText(subAnimClip._name, true);
-
-
-						//변경
-						if (GUILayout.Button(_guiContent_Overall_SelectedAnimClp.Content,
-												curGUIStyle,
-												apGUILOFactory.I.Width(scrollWidth - 5), apGUILOFactory.I.Height(24)))
-						{
-							nextSelectedAnimClip = subAnimClip;
-						}
-						EditorGUILayout.EndHorizontal();
-						GUILayout.Space(4);
-
-					}
-
-					if (nextSelectedAnimClip != null)
-					{
-						for (int i = 0; i < Editor._portrait._animClips.Count; i++)
-						{
-							Editor._portrait._animClips[i]._isSelectedInEditor = false;
-						}
-
-						_curRootUnitAnimClip = nextSelectedAnimClip;
-						_curRootUnitAnimClip.LinkEditor(Editor._portrait);
-						_curRootUnitAnimClip.RefreshTimelines(null, null);//<<모든 타임라인 Refresh
-						_curRootUnitAnimClip.SetFrame_Editor(_curRootUnitAnimClip.StartFrame);
-						_curRootUnitAnimClip.Pause_Editor();
-
-						_curRootUnitAnimClip._isSelectedInEditor = true;
-
-
-						//통계 재계산 요청
-						SetStatisticsRefresh();
-
-						Editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
-
-						//Debug.Log("Select Root Unit Anim Clip : " + _curRootUnitAnimClip._name);
-					}
-				}
-
-
-
-				GUILayout.Space(20);
-				apEditorUtil.GUI_DelimeterBoxH(width - 10);
-				GUILayout.Space(20);
-				//MainMesh에서 해제
-
-				if(_guiContent_Overall_Unregister == null)
-				{
-					_guiContent_Overall_Unregister = new apGUIContentWrapper();
-				}
-				_guiContent_Overall_Unregister.ClearText(false);
-				_guiContent_Overall_Unregister.AppendSpaceText(2, false);
-				_guiContent_Overall_Unregister.AppendText(Editor.GetUIWord(UIWORD.UnregistRootUnit), true);
-				_guiContent_Overall_Unregister.SetImage(_editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_RemoveTransform));
-				
-
-				if (GUILayout.Button(	_guiContent_Overall_Unregister.Content,
-										apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))//"Unregist Root Unit"
-				{
-					//Debug.LogError("TODO : MainMeshGroup 해제");
-					apMeshGroup targetRootMeshGroup = rootUnit._childMeshGroup;
-					if (targetRootMeshGroup != null)
-					{
-						apEditorUtil.SetRecord_PortraitMeshGroup(	apUndoGroupData.ACTION.Portrait_SetMeshGroup, 
-																	Editor, 
-																	_portrait, 
-																	targetRootMeshGroup, 
-																	//null, 
-																	false, 
-																	true,
-																	apEditorUtil.UNDO_STRUCT.StructChanged);
-
-						_portrait._mainMeshGroupIDList.Remove(targetRootMeshGroup._uniqueID);
-						_portrait._mainMeshGroupList.Remove(targetRootMeshGroup);
-
-						_portrait._rootUnits.Remove(rootUnit);
-
-						SelectNone();
-
-						Editor.RefreshControllerAndHierarchy(false);
-						Editor.SetHierarchyFilter(apEditor.HIERARCHY_FILTER.RootUnit, true);
-					}
-				}
+				Draw_Overall_Setting(width);
 			}
 			else
 			{
 				//2. Capture 메뉴
-				//-------------------------------------------
+				Draw_Overall_Capture(width);
+			}
+		}
 
-				//>>여기서부터
-				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(subTabHeight));
-				GUILayout.Space(5);
-				if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Capture_Thumbnail),
-												1, Editor.GetUIWord(UIWORD.CaptureTabThumbnail),
-												Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.Thumbnail, true, subTabWidth, subTabHeight,
-												apStringFactory.I.MakeAThumbnail))//"Make a Thumbnail"
+		/// <summary>
+		/// Root Unit의 Setting 탭
+		/// </summary>
+		/// <param name="width"></param>
+		private void Draw_Overall_Setting(int width)
+		{			
+			apRootUnit rootUnit = RootUnit;
+			apMeshGroup targetMeshGroup = rootUnit._childMeshGroup;
+			Color prevColor = GUI.backgroundColor;
+
+			//------------------------------------------------
+			//1. 연결된 MeshGroup 설정 (+ 해제)
+			
+
+			if (_strWrapper_64 == null)
+			{
+				_strWrapper_64 = new apStringWrapper(64);
+			}
+			_strWrapper_64.Clear();
+
+			//string strMeshGroupName = "";
+			Color bgColor = Color.black;
+			if (targetMeshGroup != null)
+			{
+				_strWrapper_64.Append(apStringFactory.I.Bracket_2_L, false);
+				_strWrapper_64.Append(targetMeshGroup._name, false);
+				_strWrapper_64.Append(apStringFactory.I.Bracket_2_R, true);
+
+				bgColor = new Color(0.4f, 1.0f, 0.5f, 1.0f);
+			}
+			else
+			{
+				_strWrapper_64.Append(apStringFactory.I.ErrorNoMeshGroupLinked, true);
+
+				bgColor = new Color(1.0f, 0.5f, 0.5f, 1.0f);
+			}
+			GUI.backgroundColor = bgColor;
+
+			GUILayout.Box(_strWrapper_64.ToString(), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(35));
+
+			GUI.backgroundColor = prevColor;
+
+			GUILayout.Space(10);
+			apEditorUtil.GUI_DelimeterBoxH(width - 10);
+			GUILayout.Space(10);
+
+
+			//2. 애니메이션 제어
+			apAnimClip curAnimClip = RootUnitAnimClip;
+			bool isAnimClipAvailable = (curAnimClip != null);
+
+			Texture2D icon_FirstFrame = _editor.ImageSet.Get(apImageSet.PRESET.Anim_FirstFrame);
+			Texture2D icon_PrevFrame = _editor.ImageSet.Get(apImageSet.PRESET.Anim_PrevFrame);
+
+			Texture2D icon_NextFrame = _editor.ImageSet.Get(apImageSet.PRESET.Anim_NextFrame);
+			Texture2D icon_LastFrame = _editor.ImageSet.Get(apImageSet.PRESET.Anim_LastFrame);
+
+			Texture2D icon_PlayPause = null;
+			if (curAnimClip != null)
+			{
+				if (curAnimClip.IsPlaying_Editor) { icon_PlayPause = _editor.ImageSet.Get(apImageSet.PRESET.Anim_Pause); }
+				else { icon_PlayPause = _editor.ImageSet.Get(apImageSet.PRESET.Anim_Play); }
+			}
+			else
+			{
+				icon_PlayPause = _editor.ImageSet.Get(apImageSet.PRESET.Anim_Play);
+			}
+
+			int btnSize = 30;
+			int btnWidth_Play = 45;
+			int btnWidth_PrevNext = 35;
+			int btnWidth_FirstLast = (width - (btnWidth_Play + btnWidth_PrevNext * 2 + 4 * 3 + 5)) / 2;
+
+			EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(btnSize));
+			GUILayout.Space(2);
+
+			//버튼 : 첫 프레임 <<
+			if (apEditorUtil.ToggledButton_2Side(icon_FirstFrame, false, isAnimClipAvailable, btnWidth_FirstLast, btnSize))
+			{
+				if (curAnimClip != null)
 				{
-					//"Thumbnail"
-					Editor._rootUnitCaptureMode = apEditor.ROOTUNIT_CAPTURE_MODE.Thumbnail;
+					curAnimClip.SetFrame_Editor(curAnimClip.StartFrame);
+					curAnimClip.Pause_Editor();
+					_editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
 				}
+			}
 
-				if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Capture_Image),
-												1, Editor.GetUIWord(UIWORD.CaptureTabScreenshot),
-												Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.ScreenShot, true, subTabWidth, subTabHeight,
-												apStringFactory.I.MakeAScreenshot))//"Make a Screenshot"
+			//버튼 : 이전 프레임 <
+			if (apEditorUtil.ToggledButton_2Side(icon_PrevFrame, false, isAnimClipAvailable, btnWidth_PrevNext, btnSize))
+			{
+				if (curAnimClip != null)
 				{
-					//"Screen Shot"
-					Editor._rootUnitCaptureMode = apEditor.ROOTUNIT_CAPTURE_MODE.ScreenShot;
-				}
-				EditorGUILayout.EndHorizontal();
-
-				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(subTabHeight));
-
-				GUILayout.Space(5);
-
-				if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Capture_GIF),
-												1, Editor.GetUIWord(UIWORD.CaptureTabGIFAnim),
-												Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.GIFAnimation, true, subTabWidth, subTabHeight,
-												apStringFactory.I.MakeAGIFAnimation))//"Make a GIF Animation"
-				{
-					//"GIF Anim"
-					Editor._rootUnitCaptureMode = apEditor.ROOTUNIT_CAPTURE_MODE.GIFAnimation;
-				}
-
-				if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Capture_Sprite),
-												1, Editor.GetUIWord(UIWORD.CaptureTabSpritesheet),
-												Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.SpriteSheet, true, subTabWidth, subTabHeight,
-												apStringFactory.I.MakeSpriteSheets))//"Make Spritesheets"
-				{
-					//"Spritesheet"
-					Editor._rootUnitCaptureMode = apEditor.ROOTUNIT_CAPTURE_MODE.SpriteSheet;
-				}
-				EditorGUILayout.EndHorizontal();
-
-				GUILayout.Space(10);
-
-
-				int settingWidth_Label = 80;
-				int settingWidth_Value = width - (settingWidth_Label + 8);
-
-				//각 캡쳐별로 설정을 한다.
-				//공통 설정도 있고 아닌 경우도 있다.
-
-				//Setting
-				//------------------------
-				//EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_Setting));//"Setting"
-				//GUILayout.Space(5);
-
-				// Position 설정
-				//------------------------
-
-				EditorGUI.BeginChangeCheck();
-
-				EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_Position));//"Position"
-
-				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-				EditorGUILayout.LabelField(apStringFactory.I.X, apGUILOFactory.I.Width(settingWidth_Label));
-				int nextPosX = EditorGUILayout.DelayedIntField(Editor._captureFrame_PosX, apGUILOFactory.I.Width(settingWidth_Value));
-				EditorGUILayout.EndHorizontal();
-
-				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-				EditorGUILayout.LabelField(apStringFactory.I.Y, apGUILOFactory.I.Width(settingWidth_Label));
-				int nextPosY = EditorGUILayout.DelayedIntField(Editor._captureFrame_PosY, apGUILOFactory.I.Width(settingWidth_Value));
-				EditorGUILayout.EndHorizontal();
-
-
-				if(EditorGUI.EndChangeCheck())
-				{
-					Editor._captureFrame_PosX = nextPosX;
-					Editor._captureFrame_PosY = nextPosY;
-
-					Editor.SaveEditorPref();
-					apEditorUtil.ReleaseGUIFocus();
-				}
-
-
-				GUILayout.Space(5);
-
-
-				// Capture Size
-				//------------------------
-
-				EditorGUI.BeginChangeCheck();
-
-				//Thumbnail인 경우 Width만 설정한다. (Height는 자동 계산)
-				EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_CaptureSize));//"Capture Size"
-
-				//Src Width
-				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-				//"Width"
-				EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_Width), apGUILOFactory.I.Width(settingWidth_Label));
-				int nextSrcSizeWidth = EditorGUILayout.DelayedIntField(Editor._captureFrame_SrcWidth, apGUILOFactory.I.Width(settingWidth_Value));
-				EditorGUILayout.EndHorizontal();
-
-
-				
-
-				int nextSrcSizeHeight = Editor._captureFrame_SrcHeight;
-				//Src Height : Tumbnail이 아닌 경우만
-				if (Editor._rootUnitCaptureMode != apEditor.ROOTUNIT_CAPTURE_MODE.Thumbnail)
-				{
-					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-
-					EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_Height), apGUILOFactory.I.Width(settingWidth_Label));//"Height"
-
-					nextSrcSizeHeight = EditorGUILayout.DelayedIntField(Editor._captureFrame_SrcHeight, apGUILOFactory.I.Width(settingWidth_Value));
-					EditorGUILayout.EndHorizontal();
-				}
-
-
-				if(EditorGUI.EndChangeCheck())
-				{	
-					if(nextSrcSizeWidth != Editor._captureFrame_SrcWidth)
+					int prevFrame = curAnimClip.CurFrame - 1;
+					if (prevFrame < curAnimClip.StartFrame && curAnimClip.IsLoop)
 					{
-						//크기 설정하기 [Width]
-						if (nextSrcSizeWidth < 8) { nextSrcSizeWidth = 8; }
-
-						//Aspect Ratio 옵션에 맞게 조절
-						if (Editor._isCaptureAspectRatioFixed)
-						{
-							//기존의 AspectRatio
-							//float aspectRatio = apEditorUtil.GetAspectRatio(Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight);
-
-							////Width가 바뀌었다. => Height를 맞추자
-							//Editor._captureFrame_SrcHeight = apEditorUtil.GetAspectRatio_Height(nextSrcSizeWidth, aspectRatio);
-
-							////>> Dst의 Width도 바꾸자 (만약 다르면 자동 보정)
-							//Editor._captureFrame_DstWidth = apEditorUtil.GetAspectRatio_Width(Editor._captureFrame_DstHeight, aspectRatio);
-							//Editor._captureFrame_SpriteUnitWidth = apEditorUtil.GetAspectRatio_Width(Editor._captureFrame_SpriteUnitHeight, aspectRatio);
-
-							//[v1.4.6]
-							SetCaptureSizeFixedAspectRatio_WidthChanged(
-															nextSrcSizeWidth,
-															ref Editor._captureFrame_SrcWidth, ref Editor._captureFrame_SrcHeight,
-															ref Editor._captureFrame_DstWidth, Editor._captureFrame_DstHeight,
-															ref Editor._captureFrame_SpriteUnitWidth, Editor._captureFrame_SpriteUnitHeight);
-						}
-
-						//Width 변경
-						Editor._captureFrame_SrcWidth = nextSrcSizeWidth;
+						prevFrame = curAnimClip.EndFrame;
 					}
-					else if(nextSrcSizeHeight != Editor._captureFrame_SrcHeight)
-					{
-						//크기 설정하기 [Height]
-						if (nextSrcSizeHeight < 8) { nextSrcSizeHeight = 8; }
-
-						//Aspect Ratio 옵션에 맞게 조절
-						if (Editor._isCaptureAspectRatioFixed)
-						{
-							////기존의 AspectRatio
-							//float aspectRatio = apEditorUtil.GetAspectRatio(Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight);
-
-							////Height가 바뀌었다. => Width를 맞추자
-							//Editor._captureFrame_SrcWidth = apEditorUtil.GetAspectRatio_Width(nextSrcSizeHeight, aspectRatio);
-
-							////>> Dst의 Height도 바꾸자 (만약 다르면 자동 보정)
-							//Editor._captureFrame_DstHeight = apEditorUtil.GetAspectRatio_Height(Editor._captureFrame_DstWidth, aspectRatio);
-							//Editor._captureFrame_SpriteUnitHeight = apEditorUtil.GetAspectRatio_Height(Editor._captureFrame_SpriteUnitWidth, aspectRatio);
-
-							//[v1.4.6]
-							SetCaptureSizeFixedAspectRatio_HeightChanged(
-															nextSrcSizeHeight,
-															ref Editor._captureFrame_SrcWidth, ref Editor._captureFrame_SrcHeight,
-															Editor._captureFrame_DstWidth, ref Editor._captureFrame_DstHeight,
-															Editor._captureFrame_SpriteUnitWidth, ref Editor._captureFrame_SpriteUnitHeight);
-						}
-
-						//Height 변경
-						Editor._captureFrame_SrcHeight = nextSrcSizeHeight;
-					}
-
-					Editor.SaveEditorPref();
-					apEditorUtil.ReleaseGUIFocus();
+					curAnimClip.SetFrame_Editor(prevFrame);
+					curAnimClip.Pause_Editor();
+					_editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
 				}
+			}
 
-				
-
-				GUILayout.Space(5);
-
-				// File Size (Dst)
-				//-------------------------------
-
-				EditorGUI.BeginChangeCheck();
-
-				int nextDstSizeWidth = Editor._captureFrame_DstWidth;
-				int nextDstSizeHeight = Editor._captureFrame_DstHeight;
-				int nextSpriteUnitSizeWidth = Editor._captureFrame_SpriteUnitWidth;
-				int nextSpriteUnitSizeHeight = Editor._captureFrame_SpriteUnitHeight;
-
-				//[v1.4.6]
-				int nextFocusOffsetX = Editor._captureFocusOffsetPX_X;
-				int nextFocusOffsetY = Editor._captureFocusOffsetPX_Y;
-
-				apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE nextSpritePackImageWidth = Editor._captureSpritePackImageWidth;
-				apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE nextSpritePackImageHeight = Editor._captureSpritePackImageHeight;
-				apEditor.CAPTURE_SPRITE_TRIM_METHOD nextSpriteTrimSize = Editor._captureSpriteTrimSize;
-				int nextSpriteMargin = Editor._captureFrame_SpriteMargin;
-				
-
-				//Screenshot / GIF Animation은 Dst Image Size를 결정한다.
-				if (Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.ScreenShot ||
-					Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.GIFAnimation)
+			//버튼 : 재생/정지
+			if (apEditorUtil.ToggledButton_2Side(icon_PlayPause, false, isAnimClipAvailable, btnWidth_Play, btnSize))
+			{
+				if (curAnimClip != null)
 				{
-					EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_ImageSize));//"Image Size"
-
-					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-					//"Width"
-					EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_Width), apGUILOFactory.I.Width(settingWidth_Label));
-					nextDstSizeWidth = EditorGUILayout.DelayedIntField(Editor._captureFrame_DstWidth, apGUILOFactory.I.Width(settingWidth_Value));
-					EditorGUILayout.EndHorizontal();
-
-					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-					//"Height"
-					EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_Height), apGUILOFactory.I.Width(settingWidth_Label));
-					nextDstSizeHeight = EditorGUILayout.DelayedIntField(Editor._captureFrame_DstHeight, apGUILOFactory.I.Width(settingWidth_Value));
-					EditorGUILayout.EndHorizontal();
-
-					GUILayout.Space(5);
-
-
-					//[v1.4.6] 포커스 미세 조정을 할 수 있다. [프로세서 2여야 함]
-					if(Editor._captureProcessor == apEditor.CAPTURE_PROCESSOR.Version2)
+					if (curAnimClip.IsPlaying_Editor)
 					{
-						EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.FocusOffset));
-
-						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-						//X
-						EditorGUILayout.LabelField(Editor.StringFactory.X, apGUILOFactory.I.Width(settingWidth_Label));
-						nextFocusOffsetX = EditorGUILayout.DelayedIntField(Editor._captureFocusOffsetPX_X, apGUILOFactory.I.Width(settingWidth_Value));
-						EditorGUILayout.EndHorizontal();
-
-						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-						//Y
-						EditorGUILayout.LabelField(Editor.StringFactory.Y, apGUILOFactory.I.Width(settingWidth_Label));
-						nextFocusOffsetY = EditorGUILayout.DelayedIntField(Editor._captureFocusOffsetPX_Y, apGUILOFactory.I.Width(settingWidth_Value));
-						EditorGUILayout.EndHorizontal();
-
-						GUILayout.Space(5);
-					}
-				}
-				else if (Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.SpriteSheet)
-				{
-					//Sprite Sheet는 Capture Unit과 Pack Image 사이즈, 압축 방식을 결정한다.
-					EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.ImageSizePerFrame));//"Image Size"
-					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-					//"Width"
-					EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_Width), apGUILOFactory.I.Width(settingWidth_Label));
-					nextSpriteUnitSizeWidth = EditorGUILayout.DelayedIntField(Editor._captureFrame_SpriteUnitWidth, apGUILOFactory.I.Width(settingWidth_Value));
-					EditorGUILayout.EndHorizontal();
-
-					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-					//"Height"
-					EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_Height), apGUILOFactory.I.Width(settingWidth_Label));
-					nextSpriteUnitSizeHeight = EditorGUILayout.DelayedIntField(Editor._captureFrame_SpriteUnitHeight, apGUILOFactory.I.Width(settingWidth_Value));
-					EditorGUILayout.EndHorizontal();
-
-					GUILayout.Space(5);
-
-
-
-					EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.SizeofSpritesheet));//"Size of Sprite Sheet"
-					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-					//"Width"
-					EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_Width), apGUILOFactory.I.Width(settingWidth_Label));
-					nextSpritePackImageWidth = (apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE)EditorGUILayout.Popup((int)Editor._captureSpritePackImageWidth, _captureSpritePackSizeNames, apGUILOFactory.I.Width(settingWidth_Value));
-					EditorGUILayout.EndHorizontal();
-					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-					//"Height"
-					EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_Height), apGUILOFactory.I.Width(settingWidth_Label));
-					nextSpritePackImageHeight = (apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE)EditorGUILayout.Popup((int)Editor._captureSpritePackImageHeight, _captureSpritePackSizeNames, apGUILOFactory.I.Width(settingWidth_Value));
-					EditorGUILayout.EndHorizontal();
-
-					if ((int)nextSpritePackImageWidth < 0) { nextSpritePackImageWidth = apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s256; }
-					else if ((int)nextSpritePackImageWidth > 4) { nextSpritePackImageWidth = apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s4096; }
-
-					if ((int)nextSpritePackImageHeight < 0) { nextSpritePackImageHeight = apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s256; }
-					else if ((int)nextSpritePackImageHeight > 4) { nextSpritePackImageHeight = apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s4096; }
-
-					GUILayout.Space(5);
-
-					EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.SpriteSizeCompression));//"Image size compression method"
-					nextSpriteTrimSize = (apEditor.CAPTURE_SPRITE_TRIM_METHOD)EditorGUILayout.EnumPopup(Editor._captureSpriteTrimSize, apGUILOFactory.I.Width(width));
-
-					GUILayout.Space(5);
-
-					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-					//"Width"
-					EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.SpriteMargin), apGUILOFactory.I.Width(settingWidth_Label));//"Margin"
-					nextSpriteMargin = EditorGUILayout.DelayedIntField(Editor._captureFrame_SpriteMargin, apGUILOFactory.I.Width(settingWidth_Value));
-					EditorGUILayout.EndHorizontal();
-
-					GUILayout.Space(5);
-
-
-					//[v1.4.6] 포커스 미세 조정을 할 수 있다. [프로세서 2여야 함]
-					if(Editor._captureProcessor == apEditor.CAPTURE_PROCESSOR.Version2)
-					{
-						EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.FocusOffset));
-
-						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-						//X
-						EditorGUILayout.LabelField(Editor.StringFactory.X, apGUILOFactory.I.Width(settingWidth_Label));
-						nextFocusOffsetX = EditorGUILayout.DelayedIntField(Editor._captureFocusOffsetPX_X, apGUILOFactory.I.Width(settingWidth_Value));
-						EditorGUILayout.EndHorizontal();
-
-						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-						//Y
-						EditorGUILayout.LabelField(Editor.StringFactory.Y, apGUILOFactory.I.Width(settingWidth_Label));
-						nextFocusOffsetY = EditorGUILayout.DelayedIntField(Editor._captureFocusOffsetPX_Y, apGUILOFactory.I.Width(settingWidth_Value));
-						EditorGUILayout.EndHorizontal();
-
-						GUILayout.Space(5);
-					}
-
-				}
-
-				if(EditorGUI.EndChangeCheck())
-				{
-					//크기 값들은 보정 + Aspect Ratio에 따라서 변경된다.
-					if (nextDstSizeWidth != Editor._captureFrame_DstWidth)
-					{
-						//1. Dst Size [Width 변경됨]
-						if (nextDstSizeWidth < 10) { nextDstSizeWidth = 10; }
-
-						if (Editor._isCaptureAspectRatioFixed)//Aspect Ratio 고정 옵션
-						{
-							//float aspectRatio = apEditorUtil.GetAspectRatio(Editor._captureFrame_DstWidth, Editor._captureFrame_DstHeight);
-
-							////Width가 바뀌었다. => Height를 맞추자
-							//Editor._captureFrame_DstHeight = apEditorUtil.GetAspectRatio_Height(nextDstSizeWidth, aspectRatio);
-
-							////>> 나머지도 바꾼다. => Width (만약 다르면 자동 보정)
-							//Editor._captureFrame_SrcWidth = apEditorUtil.GetAspectRatio_Width(Editor._captureFrame_SrcHeight, aspectRatio);
-							//Editor._captureFrame_SpriteUnitWidth = apEditorUtil.GetAspectRatio_Width(Editor._captureFrame_SpriteUnitHeight, aspectRatio);
-
-							//[v1.4.6]
-							SetCaptureSizeFixedAspectRatio_WidthChanged(
-															nextDstSizeWidth,
-															ref Editor._captureFrame_DstWidth, ref Editor._captureFrame_DstHeight,
-															ref Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight,
-															ref Editor._captureFrame_SpriteUnitWidth, Editor._captureFrame_SpriteUnitHeight);
-						}
-
-						//할당
-						Editor._captureFrame_DstWidth = nextDstSizeWidth;
-					}
-					else if (nextDstSizeHeight != Editor._captureFrame_DstHeight)
-					{
-						//2. Dst Size [Height] 변경됨
-						if (nextDstSizeHeight < 10) { nextDstSizeHeight = 10; }
-
-						if (Editor._isCaptureAspectRatioFixed)//Aspect Ratio 고정 옵션
-						{
-							//float aspectRatio = apEditorUtil.GetAspectRatio(Editor._captureFrame_DstWidth, Editor._captureFrame_DstHeight);
-
-							////Height가 바뀌었다. => Width를 맞추자
-							//Editor._captureFrame_DstWidth = apEditorUtil.GetAspectRatio_Width(nextDstSizeHeight, aspectRatio);
-
-							////>> 나머지도 바꾼다. => Height (만약 다르면 자동 보정)
-							//Editor._captureFrame_SrcHeight = apEditorUtil.GetAspectRatio_Height(Editor._captureFrame_SrcWidth, aspectRatio);
-							//Editor._captureFrame_SpriteUnitHeight = apEditorUtil.GetAspectRatio_Height(Editor._captureFrame_SpriteUnitWidth, aspectRatio);
-
-							//[v1.4.6]
-							SetCaptureSizeFixedAspectRatio_HeightChanged(
-															nextDstSizeHeight,
-															ref Editor._captureFrame_DstWidth, ref Editor._captureFrame_DstHeight,
-															Editor._captureFrame_SrcWidth, ref Editor._captureFrame_SrcHeight,
-															Editor._captureFrame_SpriteUnitWidth, ref Editor._captureFrame_SpriteUnitHeight);
-						}
-
-						//할당
-						Editor._captureFrame_DstHeight = nextDstSizeHeight;
-					}
-					else if (nextSpriteUnitSizeWidth != Editor._captureFrame_SpriteUnitWidth)
-					{
-						//3. SpriteUnit Size [Width] 변경됨
-						if (nextSpriteUnitSizeWidth < 10) { nextSpriteUnitSizeWidth = 10; }
-
-						if (Editor._isCaptureAspectRatioFixed)//Aspect Ratio 고정 옵션
-						{
-							//float aspectRatio = apEditorUtil.GetAspectRatio(Editor._captureFrame_SpriteUnitWidth, Editor._captureFrame_SpriteUnitHeight);
-
-							////Width가 바뀌었다. => Height를 맞추자
-							//Editor._captureFrame_SpriteUnitHeight = apEditorUtil.GetAspectRatio_Height(nextSpriteUnitSizeWidth, aspectRatio);
-
-							////>> 나머지도 바꾼다. => Width (만약 다르면 자동 보정)
-							//Editor._captureFrame_SrcWidth = apEditorUtil.GetAspectRatio_Width(Editor._captureFrame_SrcHeight, aspectRatio);
-							//Editor._captureFrame_DstWidth = apEditorUtil.GetAspectRatio_Width(Editor._captureFrame_DstHeight, aspectRatio);
-
-							//[v1.4.6]
-							SetCaptureSizeFixedAspectRatio_WidthChanged(
-															nextSpriteUnitSizeWidth,
-															ref Editor._captureFrame_SpriteUnitWidth, ref Editor._captureFrame_SpriteUnitHeight,
-															ref Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight,
-															ref Editor._captureFrame_DstWidth, Editor._captureFrame_DstHeight);
-						}
-
-						//할당
-						Editor._captureFrame_SpriteUnitWidth = nextSpriteUnitSizeWidth;
-					}
-					else if (nextSpriteUnitSizeHeight != Editor._captureFrame_SpriteUnitHeight)
-					{
-						//4. SpriteUnit Size [Height] 변경됨
-						if (nextSpriteUnitSizeHeight < 10) { nextSpriteUnitSizeHeight = 10; }
-
-						if (Editor._isCaptureAspectRatioFixed)//Aspect Ratio 고정 옵션
-						{
-							//float aspectRatio = apEditorUtil.GetAspectRatio(Editor._captureFrame_SpriteUnitWidth, Editor._captureFrame_SpriteUnitHeight);
-
-							////Height가 바뀌었다. => Width를 맞추자
-							//Editor._captureFrame_SpriteUnitWidth = apEditorUtil.GetAspectRatio_Width(nextSpriteUnitSizeHeight, aspectRatio);
-
-							////>> 나머지도 바꾼다. => Height (만약 다르면 자동 보정)
-							//Editor._captureFrame_SrcHeight = apEditorUtil.GetAspectRatio_Height(Editor._captureFrame_SrcWidth, aspectRatio);
-							//Editor._captureFrame_DstHeight = apEditorUtil.GetAspectRatio_Height(Editor._captureFrame_DstWidth, aspectRatio);
-
-							//[v1.4.6]
-							SetCaptureSizeFixedAspectRatio_HeightChanged(
-															nextSpriteUnitSizeHeight,
-															ref Editor._captureFrame_SpriteUnitWidth, ref Editor._captureFrame_SpriteUnitHeight,
-															Editor._captureFrame_SrcWidth, ref Editor._captureFrame_SrcHeight,
-															Editor._captureFrame_DstWidth, ref Editor._captureFrame_DstHeight);
-						}
-
-						//할당
-						Editor._captureFrame_SpriteUnitHeight = nextSpriteUnitSizeHeight;
+						curAnimClip.Pause_Editor();
 					}
 					else
 					{
-						//그 외의 값들은 그대로 할당
-						if (nextSpriteMargin < 0) { nextSpriteMargin = 0; }
+						if (curAnimClip.CurFrame == curAnimClip.EndFrame &&
+							!curAnimClip.IsLoop)
+						{
+							curAnimClip.SetFrame_Editor(curAnimClip.StartFrame);
+						}
 
-						Editor._captureFocusOffsetPX_X = nextFocusOffsetX;
-						Editor._captureFocusOffsetPX_Y = nextFocusOffsetY;
+						curAnimClip.Play_Editor();
+					}
+					_editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
 
-						Editor._captureSpritePackImageWidth = nextSpritePackImageWidth;
-						Editor._captureSpritePackImageHeight = nextSpritePackImageHeight;
-						Editor._captureSpriteTrimSize = nextSpriteTrimSize;
-						Editor._captureFrame_SpriteMargin = nextSpriteMargin;
+
+				}
+			}
+
+			//버튼 : 다음 프레임 >
+			if (apEditorUtil.ToggledButton_2Side(icon_NextFrame, false, isAnimClipAvailable, btnWidth_PrevNext, btnSize))
+			{
+				if (curAnimClip != null)
+				{
+					int nextFrame = curAnimClip.CurFrame + 1;
+					if (nextFrame > curAnimClip.EndFrame && curAnimClip.IsLoop)
+					{
+						nextFrame = curAnimClip.StartFrame;
+					}
+					curAnimClip.SetFrame_Editor(nextFrame);
+					curAnimClip.Pause_Editor();
+					_editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
+				}
+			}
+
+			//버튼 : 마지막 프레임 >>
+			if (apEditorUtil.ToggledButton_2Side(icon_LastFrame, false, isAnimClipAvailable, btnWidth_FirstLast, btnSize))
+			{
+				if (curAnimClip != null)
+				{
+					curAnimClip.SetFrame_Editor(curAnimClip.EndFrame);
+					curAnimClip.Pause_Editor();
+					_editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
+				}
+			}
+
+			EditorGUILayout.EndHorizontal();
+
+			int curFrame = 0;
+			int startFrame = 0;
+			int endFrame = 10;
+			if (curAnimClip != null)
+			{
+				curFrame = curAnimClip.CurFrame;
+				startFrame = curAnimClip.StartFrame;
+				endFrame = curAnimClip.EndFrame;
+			}
+
+			//타임 슬라이더
+			int sliderFrame = EditorGUILayout.IntSlider(curFrame, startFrame, endFrame, apGUILOFactory.I.Width(width));
+			if (sliderFrame != curFrame)
+			{
+				if (curAnimClip != null)
+				{
+					curAnimClip.SetFrame_Editor(sliderFrame);
+					curAnimClip.Pause_Editor();
+					_editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
+				}
+			}
+
+			GUILayout.Space(5);
+
+			//추가 : 자동 플레이하는 AnimClip을 선택한다.
+			bool isAutoPlayAnimClip = false;
+			if (curAnimClip != null)
+			{
+				isAutoPlayAnimClip = (_portrait._autoPlayAnimClipID == curAnimClip._uniqueID);
+			}
+
+			if (apEditorUtil.ToggledButton_2Side(	_editor.GetUIWord(UIWORD.AutoPlayEnabled),
+													_editor.GetUIWord(UIWORD.AutoPlayDisabled),
+													isAutoPlayAnimClip,
+													curAnimClip != null, width, 25))//"Auto Play Enabled", "Auto Play Disabled"
+			{
+				if (curAnimClip != null)
+				{
+					apEditorUtil.SetRecord_Portrait(	apUndoGroupData.ACTION.Portrait_SettingChanged, 
+														_editor, 
+														_portrait, 
+														//null, 
+														false,
+														apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+					if (_portrait._autoPlayAnimClipID == curAnimClip._uniqueID)
+					{
+						//선택됨 -> 선택 해제
+						_portrait._autoPlayAnimClipID = -1;
+
+					}
+					else
+					{
+						//선택 해제 -> 선택
+						_portrait._autoPlayAnimClipID = curAnimClip._uniqueID;
+					}
+				}
+			}
+
+
+			GUILayout.Space(10);
+			apEditorUtil.GUI_DelimeterBoxH(width - 10);
+			GUILayout.Space(10);
+
+
+			//3. 애니메이션 리스트
+			List<apAnimClip> subAnimClips = RootUnitAnimClipList;
+
+			//"Animation Clips"
+			EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.AnimationClips), apGUILOFactory.I.Width(width));
+			GUILayout.Space(5);
+
+			int nSubAnimClips = subAnimClips != null ? subAnimClips.Count : 0;
+			if (nSubAnimClips > 0)
+			{
+				apAnimClip nextSelectedAnimClip = null;
+
+				Rect lastRect = GUILayoutUtility.GetLastRect();
+
+				int scrollWidth = width - 20;
+
+				//Texture2D icon_Anim = Editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_Animation);
+
+				GUIStyle curGUIStyle = null;//최적화된 코드
+				for (int i = 0; i < nSubAnimClips; i++)
+				{
+					curGUIStyle = null;
+
+					apAnimClip subAnimClip = subAnimClips[i];
+					if (subAnimClip == curAnimClip)
+					{
+						lastRect = GUILayoutUtility.GetLastRect();
+
+						int offsetHeight = 1 + 3;
+						if (i == 0)
+						{
+							offsetHeight = 4 + 3;
+						}
+
+						apEditorUtil.DrawListUnitBG(lastRect.x + 1, lastRect.y + offsetHeight, scrollWidth + 35 - 2, 24, apEditorUtil.UNIT_BG_STYLE.Main);
+
+						curGUIStyle = apGUIStyleWrapper.I.None_MiddleLeft_White2Cyan;//[v1.5.0]
+					}
+					else
+					{
+						curGUIStyle = apGUIStyleWrapper.I.None_MiddleLeft_LabelColor;//[v1.5.0]
 					}
 
-					Editor.SaveEditorPref();
-					apEditorUtil.ReleaseGUIFocus();
+					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(scrollWidth - 5));
+					GUILayout.Space(5);
+
+					if (_guiContent_Overall_SelectedAnimClp == null)
+					{
+						_guiContent_Overall_SelectedAnimClp = new apGUIContentWrapper();
+						_guiContent_Overall_SelectedAnimClp.SetImage(Editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_Animation));
+					}
+					_guiContent_Overall_SelectedAnimClp.ClearText(false);
+					_guiContent_Overall_SelectedAnimClp.AppendSpaceText(1, false);
+					_guiContent_Overall_SelectedAnimClp.AppendText(subAnimClip._name, true);
+
+					if (GUILayout.Button(	_guiContent_Overall_SelectedAnimClp.Content,
+											curGUIStyle,
+											apGUILOFactory.I.Width(scrollWidth - 5), apGUILOFactory.I.Height(24)))
+					{
+						nextSelectedAnimClip = subAnimClip;
+					}
+					EditorGUILayout.EndHorizontal();
+					GUILayout.Space(4);
+
 				}
 
+				if (nextSelectedAnimClip != null)
+				{
+					
+					int nTotalAnimClips = _editor._portrait._animClips != null ? _editor._portrait._animClips.Count : 0;
+					if(nTotalAnimClips > 0)
+					{
+						for (int i = 0; i < nTotalAnimClips; i++)
+						{
+							_editor._portrait._animClips[i]._isSelectedInEditor = false;
+						}
+					}
+					
+
+					_curRootUnitAnimClip = nextSelectedAnimClip;
+					_curRootUnitAnimClip.LinkEditor(_editor._portrait);
+					_curRootUnitAnimClip.RefreshTimelines(null, null);//<<모든 타임라인 Refresh
+					_curRootUnitAnimClip.SetFrame_Editor(_curRootUnitAnimClip.StartFrame);
+					_curRootUnitAnimClip.Pause_Editor();
+
+					_curRootUnitAnimClip._isSelectedInEditor = true;
+
+					//통계 재계산 요청
+					SetStatisticsRefresh();
+
+					_editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
+				}
+			}
+
+			GUILayout.Space(20);
+			apEditorUtil.GUI_DelimeterBoxH(width - 10);
+			GUILayout.Space(20);
+
+			// Root Unit에서 해제하기 버튼
+			if(_guiContent_Overall_Unregister == null)
+			{
+				_guiContent_Overall_Unregister = new apGUIContentWrapper();
+			}
+			_guiContent_Overall_Unregister.ClearText(false);
+			_guiContent_Overall_Unregister.AppendSpaceText(2, false);
+			_guiContent_Overall_Unregister.AppendText(Editor.GetUIWord(UIWORD.UnregistRootUnit), true);
+			_guiContent_Overall_Unregister.SetImage(_editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_RemoveTransform));
+			
+
+			if (GUILayout.Button(	_guiContent_Overall_Unregister.Content,
+									apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))//"Unregist Root Unit"
+			{
+				//Debug.LogError("TODO : MainMeshGroup 해제");
+				apMeshGroup targetRootMeshGroup = rootUnit._childMeshGroup;
+				if (targetRootMeshGroup != null)
+				{
+					apEditorUtil.SetRecord_PortraitMeshGroup(	apUndoGroupData.ACTION.Portrait_SetMeshGroup, 
+																_editor, 
+																_portrait, 
+																targetRootMeshGroup, 
+																//null, 
+																false, 
+																true,
+																apEditorUtil.UNDO_STRUCT.StructChanged);
+
+					_portrait._mainMeshGroupIDList.Remove(targetRootMeshGroup._uniqueID);
+					_portrait._mainMeshGroupList.Remove(targetRootMeshGroup);
+
+					_portrait._rootUnits.Remove(rootUnit);
+
+					SelectNone();
+
+					_editor.RefreshControllerAndHierarchy(false);
+					_editor.SetHierarchyFilter(apEditor.HIERARCHY_FILTER.RootUnit, true);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Root Unit 메뉴의 Capture 탭
+		/// </summary>
+		/// <param name="width"></param>
+		private void Draw_Overall_Capture(int width)
+		{
+			int subTabWidth = (width / 2) - 5;
+			int subTabHeight = 24;
+			Color prevColor = GUI.backgroundColor;
+
+			//캡쳐 메뉴 버튼들
+			EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(subTabHeight));
+			GUILayout.Space(5);
+
+			//1. 썸네일
+			if (apEditorUtil.ToggledButton(	_editor.ImageSet.Get(apImageSet.PRESET.Capture_Thumbnail),
+											1, _editor.GetUIWord(UIWORD.CaptureTabThumbnail),
+											_editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.Thumbnail,
+											true, subTabWidth, subTabHeight,
+											apStringFactory.I.MakeAThumbnail))//"Make a Thumbnail"
+			{
+				//"Thumbnail"
+				_editor._rootUnitCaptureMode = apEditor.ROOTUNIT_CAPTURE_MODE.Thumbnail;
+			}
+
+			//2. 스크린샷 이미지
+			if (apEditorUtil.ToggledButton(	_editor.ImageSet.Get(apImageSet.PRESET.Capture_Image),
+											1, _editor.GetUIWord(UIWORD.CaptureTabScreenshot),
+											_editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.ScreenShot,
+											true, subTabWidth, subTabHeight,
+											apStringFactory.I.MakeAScreenshot))//"Make a Screenshot"
+			{
+				//"Screen Shot"
+				_editor._rootUnitCaptureMode = apEditor.ROOTUNIT_CAPTURE_MODE.ScreenShot;
+			}
+			EditorGUILayout.EndHorizontal();
+
+			EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(subTabHeight));
+
+			GUILayout.Space(5);
+
+			//3. GIF 이미지 / 애니메이션
+			if (apEditorUtil.ToggledButton(	_editor.ImageSet.Get(apImageSet.PRESET.Capture_GIF),
+											1, _editor.GetUIWord(UIWORD.CaptureTabGIFAnim),
+											_editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.GIFAnimation,
+											true, subTabWidth, subTabHeight,
+											apStringFactory.I.MakeAGIFAnimation))//"Make a GIF Animation"
+			{
+				//"GIF Anim"
+				_editor._rootUnitCaptureMode = apEditor.ROOTUNIT_CAPTURE_MODE.GIFAnimation;
+			}
+
+			//4. 스프라이트 시트
+			if (apEditorUtil.ToggledButton(	_editor.ImageSet.Get(apImageSet.PRESET.Capture_Sprite),
+											1, _editor.GetUIWord(UIWORD.CaptureTabSpritesheet),
+											_editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.SpriteSheet,
+											true, subTabWidth, subTabHeight,
+											apStringFactory.I.MakeSpriteSheets))//"Make Spritesheets"
+			{
+				//"Spritesheet"
+				_editor._rootUnitCaptureMode = apEditor.ROOTUNIT_CAPTURE_MODE.SpriteSheet;
+			}
+			EditorGUILayout.EndHorizontal();
+
+			GUILayout.Space(10);
 
 
-				//Color와 물리와 AspectRatio
+			int settingWidth_Label = 80;
+			int settingWidth_Value = width - (settingWidth_Label + 8);
 
+			//각 캡쳐별로 설정을 한다.
+			//공통 설정도 있고 아닌 경우도 있다.
+
+			// Setting
+			//------------------------
+			// 1. Position 설정			
+			EditorGUI.BeginChangeCheck();
+
+			EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_Position));//"Position"
+
+			// Position X
+			EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+			EditorGUILayout.LabelField(apStringFactory.I.X, apGUILOFactory.I.Width(settingWidth_Label));
+			int nextPosX = EditorGUILayout.DelayedIntField(_editor._captureFrame_PosX, apGUILOFactory.I.Width(settingWidth_Value));
+			EditorGUILayout.EndHorizontal();
+
+			// Position Y
+			EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+			EditorGUILayout.LabelField(apStringFactory.I.Y, apGUILOFactory.I.Width(settingWidth_Label));
+			int nextPosY = EditorGUILayout.DelayedIntField(_editor._captureFrame_PosY, apGUILOFactory.I.Width(settingWidth_Value));
+			EditorGUILayout.EndHorizontal();
+
+
+			if(EditorGUI.EndChangeCheck())
+			{
+				_editor._captureFrame_PosX = nextPosX;
+				_editor._captureFrame_PosY = nextPosY;
+
+				_editor.SaveEditorPref();//설정 저장
+				apEditorUtil.ReleaseGUIFocus();
+			}
+
+
+			GUILayout.Space(5);
+
+
+			// 2. Capture Size
+			EditorGUI.BeginChangeCheck();
+
+			//- Thumbnail인 경우 Width만 설정한다. (Height는 자동 계산)
+			//- 그 외에는 Width, Height를 각각 설정한다.
+			EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_CaptureSize));//"Capture Size"
+
+			EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+			
+			// Width 설정
+			EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_Width), apGUILOFactory.I.Width(settingWidth_Label));
+			int nextSrcSizeWidth = EditorGUILayout.DelayedIntField(_editor._captureFrame_SrcWidth, apGUILOFactory.I.Width(settingWidth_Value));
+			EditorGUILayout.EndHorizontal();
+			
+
+			// Height 설정 (썸네일이 아닌 경우만 설정 가능)
+			int nextSrcSizeHeight = _editor._captureFrame_SrcHeight;
+
+			if (_editor._rootUnitCaptureMode != apEditor.ROOTUNIT_CAPTURE_MODE.Thumbnail)
+			{
+				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+
+				EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_Height), apGUILOFactory.I.Width(settingWidth_Label));//"Height"
+
+				nextSrcSizeHeight = EditorGUILayout.DelayedIntField(_editor._captureFrame_SrcHeight, apGUILOFactory.I.Width(settingWidth_Value));
+				EditorGUILayout.EndHorizontal();
+			}
+
+			if(EditorGUI.EndChangeCheck())
+			{	
+				if(nextSrcSizeWidth != _editor._captureFrame_SrcWidth)
+				{
+					//크기 설정하기 [Width]
+					if (nextSrcSizeWidth < 8) { nextSrcSizeWidth = 8; }
+
+					//Aspect Ratio 옵션에 맞게 조절
+					if (_editor._isCaptureAspectRatioFixed)
+					{
+						//[v1.4.6] Aspect Ratio 계산하여 다시 설정
+						SetCaptureSizeFixedAspectRatio_WidthChanged(
+														nextSrcSizeWidth,
+														ref _editor._captureFrame_SrcWidth, ref _editor._captureFrame_SrcHeight,
+														ref _editor._captureFrame_DstWidth, _editor._captureFrame_DstHeight,
+														ref _editor._captureFrame_SpriteUnitWidth, _editor._captureFrame_SpriteUnitHeight);
+					}
+
+					// Width 변경
+					_editor._captureFrame_SrcWidth = nextSrcSizeWidth;
+				}
+				else if(nextSrcSizeHeight != _editor._captureFrame_SrcHeight)
+				{
+					//크기 설정하기 [Height]
+					if (nextSrcSizeHeight < 8) { nextSrcSizeHeight = 8; }
+
+					//Aspect Ratio 옵션에 맞게 조절
+					if (Editor._isCaptureAspectRatioFixed)
+					{
+						//[v1.4.6] Aspect Ratio 계산하여 다시 설정
+						SetCaptureSizeFixedAspectRatio_HeightChanged(
+														nextSrcSizeHeight,
+														ref _editor._captureFrame_SrcWidth, ref _editor._captureFrame_SrcHeight,
+														_editor._captureFrame_DstWidth, ref _editor._captureFrame_DstHeight,
+														_editor._captureFrame_SpriteUnitWidth, ref _editor._captureFrame_SpriteUnitHeight);
+					}
+
+					//Height 변경
+					_editor._captureFrame_SrcHeight = nextSrcSizeHeight;
+				}
+
+				_editor.SaveEditorPref();//설정을 저장한다.
+				apEditorUtil.ReleaseGUIFocus();
+			}
+
+
+			GUILayout.Space(5);
+
+			// 3. File Size (Dst) : 저장 크기
+			// 메뉴에 따라 설정 UI들이 모두 다르다.
+			EditorGUI.BeginChangeCheck();
+
+			int nextDstSizeWidth = _editor._captureFrame_DstWidth;
+			int nextDstSizeHeight = _editor._captureFrame_DstHeight;
+			int nextSpriteUnitSizeWidth = _editor._captureFrame_SpriteUnitWidth;
+			int nextSpriteUnitSizeHeight = _editor._captureFrame_SpriteUnitHeight;
+
+			//[v1.4.6]
+			int nextFocusOffsetX = _editor._captureFocusOffsetPX_X;
+			int nextFocusOffsetY = _editor._captureFocusOffsetPX_Y;
+
+			apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE nextSpritePackImageWidth = _editor._captureSpritePackImageWidth;
+			apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE nextSpritePackImageHeight = _editor._captureSpritePackImageHeight;
+			apEditor.CAPTURE_SPRITE_TRIM_METHOD nextSpriteTrimSize = _editor._captureSpriteTrimSize;
+			int nextSpriteMargin = _editor._captureFrame_SpriteMargin;
+			
+
+			
+			if (_editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.ScreenShot ||
+				_editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.GIFAnimation)
+			{
+				// [ Screenshot / GIF Animation의 경우 ]
+				//- Dst Image Size를 결정한다.
+
+				//"Image Size"
+				EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_ImageSize));
+
+				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+				//"Width"
+				EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_Width), apGUILOFactory.I.Width(settingWidth_Label));
+				nextDstSizeWidth = EditorGUILayout.DelayedIntField(_editor._captureFrame_DstWidth, apGUILOFactory.I.Width(settingWidth_Value));
+				EditorGUILayout.EndHorizontal();
+
+				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+				//"Height"
+				EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_Height), apGUILOFactory.I.Width(settingWidth_Label));
+				nextDstSizeHeight = EditorGUILayout.DelayedIntField(_editor._captureFrame_DstHeight, apGUILOFactory.I.Width(settingWidth_Value));
+				EditorGUILayout.EndHorizontal();
+
+				GUILayout.Space(5);
+
+
+				//[v1.4.6] 포커스 미세 조정을 할 수 있다. [프로세서 2여야 함]
+				if(_editor._captureProcessor == apEditor.CAPTURE_PROCESSOR.Version2)
+				{
+					EditorGUILayout.LabelField(_editor.GetUIWord(UIWORD.FocusOffset));
+
+					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+					//X
+					EditorGUILayout.LabelField(_editor.StringFactory.X, apGUILOFactory.I.Width(settingWidth_Label));
+					nextFocusOffsetX = EditorGUILayout.DelayedIntField(_editor._captureFocusOffsetPX_X, apGUILOFactory.I.Width(settingWidth_Value));
+					EditorGUILayout.EndHorizontal();
+
+					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+					//Y
+					EditorGUILayout.LabelField(_editor.StringFactory.Y, apGUILOFactory.I.Width(settingWidth_Label));
+					nextFocusOffsetY = EditorGUILayout.DelayedIntField(_editor._captureFocusOffsetPX_Y, apGUILOFactory.I.Width(settingWidth_Value));
+					EditorGUILayout.EndHorizontal();
+
+					GUILayout.Space(5);
+				}
+			}
+			else if (_editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.SpriteSheet)
+			{
+				// [ Sprite Sheet의 경우 ]
+				//- Capture Unit과 Pack Image 사이즈, 압축 방식을 결정한다.
+
+				//스프라이트 개별 크기
+				EditorGUILayout.LabelField(_editor.GetUIWord(UIWORD.ImageSizePerFrame));//"Image Size"
+				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+				//"Width"
+				EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_Width), apGUILOFactory.I.Width(settingWidth_Label));
+				nextSpriteUnitSizeWidth = EditorGUILayout.DelayedIntField(_editor._captureFrame_SpriteUnitWidth, apGUILOFactory.I.Width(settingWidth_Value));
+				EditorGUILayout.EndHorizontal();
+
+				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+				//"Height"
+				EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_Height), apGUILOFactory.I.Width(settingWidth_Label));
+				nextSpriteUnitSizeHeight = EditorGUILayout.DelayedIntField(_editor._captureFrame_SpriteUnitHeight, apGUILOFactory.I.Width(settingWidth_Value));
+				EditorGUILayout.EndHorizontal();
+
+				GUILayout.Space(5);
+
+				//스프라이트 시트의 크기
+				EditorGUILayout.LabelField(_editor.GetUIWord(UIWORD.SizeofSpritesheet));//"Size of Sprite Sheet"
+				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+				//"Width"
+				EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_Width), apGUILOFactory.I.Width(settingWidth_Label));
+				nextSpritePackImageWidth = (apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE)EditorGUILayout.Popup((int)_editor._captureSpritePackImageWidth, _captureSpritePackSizeNames, apGUILOFactory.I.Width(settingWidth_Value));
+				EditorGUILayout.EndHorizontal();
+				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+				//"Height"
+				EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_Height), apGUILOFactory.I.Width(settingWidth_Label));
+				nextSpritePackImageHeight = (apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE)EditorGUILayout.Popup((int)_editor._captureSpritePackImageHeight, _captureSpritePackSizeNames, apGUILOFactory.I.Width(settingWidth_Value));
+				EditorGUILayout.EndHorizontal();
+
+				if ((int)nextSpritePackImageWidth < 0) { nextSpritePackImageWidth = apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s256; }
+				else if ((int)nextSpritePackImageWidth > 4) { nextSpritePackImageWidth = apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s4096; }
+
+				if ((int)nextSpritePackImageHeight < 0) { nextSpritePackImageHeight = apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s256; }
+				else if ((int)nextSpritePackImageHeight > 4) { nextSpritePackImageHeight = apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s4096; }
+
+				GUILayout.Space(5);
+
+				//압축 방식
+				EditorGUILayout.LabelField(_editor.GetUIWord(UIWORD.SpriteSizeCompression));//"Image size compression method"
+				nextSpriteTrimSize = (apEditor.CAPTURE_SPRITE_TRIM_METHOD)EditorGUILayout.EnumPopup(_editor._captureSpriteTrimSize, apGUILOFactory.I.Width(width));
+
+				GUILayout.Space(5);
+
+				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+				//"Width"
+				EditorGUILayout.LabelField(_editor.GetUIWord(UIWORD.SpriteMargin), apGUILOFactory.I.Width(settingWidth_Label));//"Margin"
+				nextSpriteMargin = EditorGUILayout.DelayedIntField(_editor._captureFrame_SpriteMargin, apGUILOFactory.I.Width(settingWidth_Value));
+				EditorGUILayout.EndHorizontal();
+
+				GUILayout.Space(5);
+
+
+				//[v1.4.6] 포커스 미세 조정을 할 수 있다. [프로세서 2여야 함]
+				if(_editor._captureProcessor == apEditor.CAPTURE_PROCESSOR.Version2)
+				{
+					EditorGUILayout.LabelField(_editor.GetUIWord(UIWORD.FocusOffset));
+
+					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+					//X
+					EditorGUILayout.LabelField(_editor.StringFactory.X, apGUILOFactory.I.Width(settingWidth_Label));
+					nextFocusOffsetX = EditorGUILayout.DelayedIntField(_editor._captureFocusOffsetPX_X, apGUILOFactory.I.Width(settingWidth_Value));
+					EditorGUILayout.EndHorizontal();
+
+					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+					//Y
+					EditorGUILayout.LabelField(_editor.StringFactory.Y, apGUILOFactory.I.Width(settingWidth_Label));
+					nextFocusOffsetY = EditorGUILayout.DelayedIntField(_editor._captureFocusOffsetPX_Y, apGUILOFactory.I.Width(settingWidth_Value));
+					EditorGUILayout.EndHorizontal();
+
+					GUILayout.Space(5);
+				}
+
+			}
+
+			//크기 설정 변경 저장
+			if(EditorGUI.EndChangeCheck())
+			{
+				//크기 값들은 보정 + Aspect Ratio에 따라서 변경된다.
+				if (nextDstSizeWidth != _editor._captureFrame_DstWidth)
+				{
+					//1. Dst Size [Width 변경됨]
+					if (nextDstSizeWidth < 10) { nextDstSizeWidth = 10; }
+
+					if (_editor._isCaptureAspectRatioFixed)//Aspect Ratio 고정 옵션
+					{
+						//[v1.4.6] Aspect Ratio에 따라 변경됨
+						SetCaptureSizeFixedAspectRatio_WidthChanged(
+														nextDstSizeWidth,
+														ref _editor._captureFrame_DstWidth, ref _editor._captureFrame_DstHeight,
+														ref _editor._captureFrame_SrcWidth, _editor._captureFrame_SrcHeight,
+														ref _editor._captureFrame_SpriteUnitWidth, _editor._captureFrame_SpriteUnitHeight);
+					}
+
+					//Width 적용
+					_editor._captureFrame_DstWidth = nextDstSizeWidth;
+				}
+				else if (nextDstSizeHeight != _editor._captureFrame_DstHeight)
+				{
+					//2. Dst Size [Height] 변경됨
+					if (nextDstSizeHeight < 10) { nextDstSizeHeight = 10; }
+
+					if (_editor._isCaptureAspectRatioFixed)//Aspect Ratio 고정 옵션
+					{
+						//[v1.4.6] Aspect Ratio에 따라 변경됨
+						SetCaptureSizeFixedAspectRatio_HeightChanged(
+														nextDstSizeHeight,
+														ref _editor._captureFrame_DstWidth, ref _editor._captureFrame_DstHeight,
+														_editor._captureFrame_SrcWidth, ref _editor._captureFrame_SrcHeight,
+														_editor._captureFrame_SpriteUnitWidth, ref _editor._captureFrame_SpriteUnitHeight);
+					}
+
+					//Height 적용
+					_editor._captureFrame_DstHeight = nextDstSizeHeight;
+				}
+				else if (nextSpriteUnitSizeWidth != _editor._captureFrame_SpriteUnitWidth)
+				{
+					//3. SpriteUnit Size [Width] 변경됨
+					if (nextSpriteUnitSizeWidth < 10) { nextSpriteUnitSizeWidth = 10; }
+
+					if (_editor._isCaptureAspectRatioFixed)//Aspect Ratio 고정 옵션
+					{
+						//[v1.4.6] Aspect Ratio에 따라 변경됨
+						SetCaptureSizeFixedAspectRatio_WidthChanged(
+														nextSpriteUnitSizeWidth,
+														ref _editor._captureFrame_SpriteUnitWidth, ref _editor._captureFrame_SpriteUnitHeight,
+														ref _editor._captureFrame_SrcWidth, _editor._captureFrame_SrcHeight,
+														ref _editor._captureFrame_DstWidth, _editor._captureFrame_DstHeight);
+					}
+
+					//할당
+					_editor._captureFrame_SpriteUnitWidth = nextSpriteUnitSizeWidth;
+				}
+				else if (nextSpriteUnitSizeHeight != _editor._captureFrame_SpriteUnitHeight)
+				{
+					//4. SpriteUnit Size [Height] 변경됨
+					if (nextSpriteUnitSizeHeight < 10) { nextSpriteUnitSizeHeight = 10; }
+
+					if (_editor._isCaptureAspectRatioFixed)//Aspect Ratio 고정 옵션
+					{
+						//[v1.4.6] Aspect Ratio에 따라 변경됨
+						SetCaptureSizeFixedAspectRatio_HeightChanged(
+														nextSpriteUnitSizeHeight,
+														ref _editor._captureFrame_SpriteUnitWidth, ref _editor._captureFrame_SpriteUnitHeight,
+														_editor._captureFrame_SrcWidth, ref _editor._captureFrame_SrcHeight,
+														_editor._captureFrame_DstWidth, ref _editor._captureFrame_DstHeight);
+					}
+
+					//할당
+					_editor._captureFrame_SpriteUnitHeight = nextSpriteUnitSizeHeight;
+				}
+				else
+				{
+					//그 외의 값들은 그대로 할당
+					if (nextSpriteMargin < 0) { nextSpriteMargin = 0; }
+
+					_editor._captureFocusOffsetPX_X = nextFocusOffsetX;
+					_editor._captureFocusOffsetPX_Y = nextFocusOffsetY;
+
+					_editor._captureSpritePackImageWidth = nextSpritePackImageWidth;
+					_editor._captureSpritePackImageHeight = nextSpritePackImageHeight;
+					_editor._captureSpriteTrimSize = nextSpriteTrimSize;
+					_editor._captureFrame_SpriteMargin = nextSpriteMargin;
+				}
+
+				_editor.SaveEditorPref();//Pref에 저장
+				apEditorUtil.ReleaseGUIFocus();
+			}
+
+
+
+			// 4. Color와 물리와 AspectRatio
+
+			EditorGUI.BeginChangeCheck();
+
+			//배경 색상
+			EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30));
+			GUILayout.Space(5);
+			
+			//"BG Color"
+			EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_BGColor), apGUILOFactory.I.Width(settingWidth_Label));
+			try
+			{
+				_editor._captureFrame_Color = EditorGUILayout.ColorField(_editor._captureFrame_Color, apGUILOFactory.I.Width(settingWidth_Value));
+			}
+			catch (Exception) { }
+			EditorGUILayout.EndHorizontal();
+
+
+			if(EditorGUI.EndChangeCheck())
+			{
+				_editor.SaveEditorPref();//설정 저장
+			}
+
+			GUILayout.Space(5);
+
+			//GIF, Spritesheet인 경우 물리 효과를 정해야 한다.
+			if (_editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.GIFAnimation ||
+				_editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.SpriteSheet)
+			{
 				EditorGUI.BeginChangeCheck();
 
 				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30));
 				GUILayout.Space(5);
 
-				EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_BGColor), apGUILOFactory.I.Width(settingWidth_Label));//"BG Color"
-				//Color prevCaptureColor = Editor._captureFrame_Color;
-				try
-				{
-					Editor._captureFrame_Color = EditorGUILayout.ColorField(Editor._captureFrame_Color, apGUILOFactory.I.Width(settingWidth_Value));
-				}
-				catch (Exception) { }
+				EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_CaptureIsPhysics), apGUILOFactory.I.Width(width - (10 + 20)));
+				_editor._captureFrame_IsPhysics = EditorGUILayout.Toggle(_editor._captureFrame_IsPhysics, apGUILOFactory.I.Width(20));
 				EditorGUILayout.EndHorizontal();
-
+				GUILayout.Space(5);
 
 				if(EditorGUI.EndChangeCheck())
 				{
-					Editor.SaveEditorPref();
+					_editor.SaveEditorPref();//설정 저장
+					apEditorUtil.ReleaseGUIFocus();
+				}
+			}
+
+			GUILayout.Space(5);
+
+			//Aspect Ratio 설정 버튼
+			//- 썸네일 외의 메뉴에서는 화면비 고정 옵션 버튼이 추가로 나온다.
+			if (_editor._rootUnitCaptureMode != apEditor.ROOTUNIT_CAPTURE_MODE.Thumbnail)
+			{
+				//Thumbnail이 아니라면 Aspect Ratio가 중요하다
+				if (apEditorUtil.ToggledButton_2Side(_editor.GetText(TEXT.DLG_FixedAspectRatio), _editor.GetText(TEXT.DLG_NotFixedAspectRatio), _editor._isCaptureAspectRatioFixed, true, width, 20))
+				{
+					_editor._isCaptureAspectRatioFixed = !_editor._isCaptureAspectRatioFixed;
+
+					if (_editor._isCaptureAspectRatioFixed)
+					{
+						//AspectRatio를 고정한 상태
+						//- Dst계열 변수를 Src에 맞춘다.
+						//- Height를 고정, Width를 맞춘다.
+
+						float srcAspectRatio = apEditorUtil.GetAspectRatio(_editor._captureFrame_SrcWidth, _editor._captureFrame_SrcHeight);
+
+						_editor._captureFrame_SpriteUnitWidth = apEditorUtil.GetAspectRatio_Width(_editor._captureFrame_SpriteUnitHeight, srcAspectRatio);
+						_editor._captureFrame_DstWidth = apEditorUtil.GetAspectRatio_Width(_editor._captureFrame_DstHeight, srcAspectRatio);
+					}
+
+					_editor.SaveEditorPref();//설정을 저장한다.
+					apEditorUtil.ReleaseGUIFocus();
 				}
 
 				GUILayout.Space(5);
+			}
 
-				if (Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.GIFAnimation ||
-					Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.SpriteSheet)
+			GUILayout.Space(10);
+			apEditorUtil.GUI_DelimeterBoxH(width);
+			GUILayout.Space(10);
+
+			
+			//[v1.5.1] 캡쳐 설정을 저장/내보내기
+			EditorGUILayout.LabelField(_editor.GetText(TEXT.ExportImportSettings));
+			EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(subTabHeight));
+			GUILayout.Space(5);
+			if(GUILayout.Button(_editor.GetUIWord(UIWORD.Export), apGUILOFactory.I.Width(subTabWidth), apGUILOFactory.I.Height(22)))
+			{
+				string defaultFileName = "CaptureSettings_" + apBackup.GetCurrentTimeString();
+				string savePath = EditorUtility.SaveFilePanel(	"Save Capture Settings",
+																apEditorUtil.GetLastOpenSaveFileDirectoryPath(apEditorUtil.SAVED_LAST_FILE_PATH.CapturePref),
+																defaultFileName,
+																apCapturePref.EXP);
+
+				if(!string.IsNullOrEmpty(savePath))
 				{
-					//GIF, Spritesheet인 경우 물리 효과를 정해야 한다.
-					EditorGUI.BeginChangeCheck();
+					//유효한 파일이라면
 
-					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30));
-					GUILayout.Space(5);
+					//이스케이프 문자 삭제
+					savePath = apUtil.ConvertEscapeToPlainText(savePath);
 
-					EditorGUILayout.LabelField(Editor.GetText(TEXT.DLG_CaptureIsPhysics), apGUILOFactory.I.Width(width - (10 + 20)));
-					Editor._captureFrame_IsPhysics = EditorGUILayout.Toggle(Editor._captureFrame_IsPhysics, apGUILOFactory.I.Width(20));
-					EditorGUILayout.EndHorizontal();
-					GUILayout.Space(5);
-
-					if(EditorGUI.EndChangeCheck())
+					//저장
+					bool saveResult = apCapturePref.SaveCurrent(_editor, savePath);
+					if(saveResult)
 					{
-						Editor.SaveEditorPref();
-						apEditorUtil.ReleaseGUIFocus();
+						_editor.Notification("Settings Saved [" + savePath + "]", false, false);
+
+						//마지막 경로 저장
+						apEditorUtil.SetLastExternalOpenSaveFilePath(savePath, apEditorUtil.SAVED_LAST_FILE_PATH.CapturePref);
+					}
+					else
+					{
+						_editor.Notification("Save Failed", false, false);
 					}
 				}
+			}
+			if(GUILayout.Button(_editor.GetUIWord(UIWORD.Import), apGUILOFactory.I.Width(subTabWidth), apGUILOFactory.I.Height(22)))
+			{
+				string filePath = EditorUtility.OpenFilePanel(	"Load Capture Setting File",
+																apEditorUtil.GetLastOpenSaveFileDirectoryPath(apEditorUtil.SAVED_LAST_FILE_PATH.CapturePref),
+																apCapturePref.EXP);
 
-				GUILayout.Space(5);
-
-				if (Editor._rootUnitCaptureMode != apEditor.ROOTUNIT_CAPTURE_MODE.Thumbnail)
+				if(!string.IsNullOrEmpty(filePath))
 				{
-					//Thumbnail이 아니라면 Aspect Ratio가 중요하다
-					//Aspect Ratio
-					if (apEditorUtil.ToggledButton_2Side(Editor.GetText(TEXT.DLG_FixedAspectRatio), Editor.GetText(TEXT.DLG_NotFixedAspectRatio), Editor._isCaptureAspectRatioFixed, true, width, 20))
+					//추가 21.7.3 : 이스케이프 문자 삭제
+					filePath = apUtil.ConvertEscapeToPlainText(filePath);
+
+					//열기를 하자
+					apCapturePref.LOAD_RESULT loadResult = apCapturePref.LoadFile(_editor, filePath);
+					switch (loadResult)
 					{
-						Editor._isCaptureAspectRatioFixed = !Editor._isCaptureAspectRatioFixed;
+						case apCapturePref.LOAD_RESULT.Success:
+							{
+								//성공시
+								_editor.Notification("Settings Loaded", false, false);
 
-						if (Editor._isCaptureAspectRatioFixed)
-						{
-							//AspectRatio를 굳혔다.
-							//Dst계열 변수를 Src에 맞춘다.
-							//Height를 고정, Width를 맞춘다.
+								//화면 위치 변경
+								_editor._scroll_CenterWorkSpace = _editor._captureSprite_ScreenPos * 0.01f;
 
-							float srcAspectRatio = apEditorUtil.GetAspectRatio(Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight);
+								//화면 줌
+								_editor._iZoomX100 = _editor._captureSprite_ScreenZoom;
+								if (_editor._iZoomX100 < 0)
+								{
+									_editor._iZoomX100 = 0;
+								}
+								else if (_editor._iZoomX100 >= _editor._zoomListX100.Length)
+								{
+									_editor._iZoomX100 = _editor._zoomListX100.Length - 1;
+								}
+								_editor._captureSprite_ScreenZoom = _editor._iZoomX100;
 
-							Editor._captureFrame_SpriteUnitWidth = apEditorUtil.GetAspectRatio_Width(Editor._captureFrame_SpriteUnitHeight, srcAspectRatio);
-							Editor._captureFrame_DstWidth = apEditorUtil.GetAspectRatio_Width(Editor._captureFrame_DstHeight, srcAspectRatio);
-						}
+								//저장
+								_editor.SaveEditorPref();
+							}
+							break;
 
-						Editor.SaveEditorPref();
-						apEditorUtil.ReleaseGUIFocus();
+						case apCapturePref.LOAD_RESULT.Failed_NoFile:
+							_editor.Notification("Load Failed : No file", false, false);
+							break;
+
+						case apCapturePref.LOAD_RESULT.Failed_Unknown:
+							_editor.Notification("Load Failed : Error occurred", false, false);
+							break;
 					}
 
-					GUILayout.Space(5);
+					//마지막 경로 저장
+					apEditorUtil.SetLastExternalOpenSaveFilePath(filePath, apEditorUtil.SAVED_LAST_FILE_PATH.CapturePref);
+
+					//화면 갱신
+					_editor.SetRepaint();
+					apEditorUtil.ReleaseGUIFocus();
 				}
+			}
+			EditorGUILayout.EndHorizontal();
 
 
+			GUILayout.Space(10);
+			apEditorUtil.GUI_DelimeterBoxH(width);
+			GUILayout.Space(10);
 
 
-				#region [미사용 코드] 삭제 v1.4.6
-				////AspectRatio를 맞추어보자
-				//if (Editor._isCaptureAspectRatioFixed)
-				//{
-				//	if (Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.ScreenShot ||
-				//		Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.GIFAnimation)
-				//	{
-				//		//Screenshot / GIFAnimation은 Src, Dst를 서로 맞춘다.
-				//		if (srcSizeWidth != Editor._captureFrame_SrcWidth)
-				//		{
-				//			//Width가 바뀌었다. => Height를 맞추자
-				//			srcSizeHeight = apEditorUtil.GetAspectRatio_Height(srcSizeWidth, Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight);
-				//			//>> Dst도 바꾸자 => Width
-				//			dstSizeWidth = apEditorUtil.GetAspectRatio_Width(dstSizeHeight, Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight);
-				//		}
-				//		else if (srcSizeHeight != Editor._captureFrame_SrcHeight)
-				//		{
-				//			//Height가 바뀌었다. => Width를 맞추자
-				//			srcSizeWidth = apEditorUtil.GetAspectRatio_Width(srcSizeHeight, Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight);
-				//			//>> Dst도 바꾸자 => Height
-				//			dstSizeHeight = apEditorUtil.GetAspectRatio_Height(dstSizeWidth, Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight);
-				//		}
-				//		else if (dstSizeWidth != Editor._captureFrame_DstWidth)
-				//		{
-				//			//Width가 바뀌었다. => Height를 맞추자
-				//			dstSizeHeight = apEditorUtil.GetAspectRatio_Height(dstSizeWidth, Editor._captureFrame_DstWidth, Editor._captureFrame_DstHeight);
-				//			//>> Src도 바꾸다 => Width
-				//			srcSizeWidth = apEditorUtil.GetAspectRatio_Width(srcSizeHeight, Editor._captureFrame_DstWidth, Editor._captureFrame_DstHeight);
-				//		}
-				//		else if (dstSizeHeight != Editor._captureFrame_DstHeight)
-				//		{
-				//			//Height가 바뀌었다. => Width를 맞추자
-				//			dstSizeWidth = apEditorUtil.GetAspectRatio_Width(dstSizeHeight, Editor._captureFrame_DstWidth, Editor._captureFrame_DstHeight);
-				//			//>> Dst도 바꾸자 => Height
-				//			srcSizeHeight = apEditorUtil.GetAspectRatio_Height(srcSizeWidth, Editor._captureFrame_DstWidth, Editor._captureFrame_DstHeight);
-				//		}
-				//	}
-				//	else if (Editor._rootUnitCaptureMode == apEditor.ROOTUNIT_CAPTURE_MODE.SpriteSheet)
-				//	{
-				//		//Sprite sheet는 Src, Unit을 맞춘다.
-				//		if (srcSizeWidth != Editor._captureFrame_SrcWidth)
-				//		{
-				//			//Width가 바뀌었다. => Height를 맞추자
-				//			srcSizeHeight = apEditorUtil.GetAspectRatio_Height(srcSizeWidth, Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight);
-				//			//>> Dst도 바꾸자 => Width
-				//			spriteUnitSizeWidth = apEditorUtil.GetAspectRatio_Width(spriteUnitSizeHeight, Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight);
-				//		}
-				//		else if (srcSizeHeight != Editor._captureFrame_SrcHeight)
-				//		{
-				//			//Height가 바뀌었다. => Width를 맞추자
-				//			srcSizeWidth = apEditorUtil.GetAspectRatio_Width(srcSizeHeight, Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight);
-				//			//>> Dst도 바꾸자 => Height
-				//			spriteUnitSizeHeight = apEditorUtil.GetAspectRatio_Height(spriteUnitSizeWidth, Editor._captureFrame_SrcWidth, Editor._captureFrame_SrcHeight);
-				//		}
-				//		else if (spriteUnitSizeWidth != Editor._captureFrame_SpriteUnitWidth)
-				//		{
-				//			//Width가 바뀌었다. => Height를 맞추자
-				//			spriteUnitSizeHeight = apEditorUtil.GetAspectRatio_Height(spriteUnitSizeWidth, Editor._captureFrame_SpriteUnitWidth, Editor._captureFrame_SpriteUnitHeight);
-				//			//>> Src도 바꾸다 => Width
-				//			srcSizeWidth = apEditorUtil.GetAspectRatio_Width(srcSizeHeight, Editor._captureFrame_SpriteUnitWidth, Editor._captureFrame_SpriteUnitHeight);
-				//		}
-				//		else if (spriteUnitSizeHeight != Editor._captureFrame_SpriteUnitHeight)
-				//		{
-				//			//Height가 바뀌었다. => Width를 맞추자
-				//			spriteUnitSizeWidth = apEditorUtil.GetAspectRatio_Width(spriteUnitSizeHeight, Editor._captureFrame_SpriteUnitWidth, Editor._captureFrame_SpriteUnitHeight);
-				//			//>> Dst도 바꾸자 => Height
-				//			srcSizeHeight = apEditorUtil.GetAspectRatio_Height(srcSizeWidth, Editor._captureFrame_SpriteUnitWidth, Editor._captureFrame_SpriteUnitHeight);
-				//		}
-				//	}
-				//} 
-				#endregion
+			if (_guiContent_Overall_MakeThumbnail == null)
+			{
+				_guiContent_Overall_MakeThumbnail = new apGUIContentWrapper();
+				_guiContent_Overall_MakeThumbnail.ClearText(false);
+				_guiContent_Overall_MakeThumbnail.AppendSpaceText(1, false);
+				_guiContent_Overall_MakeThumbnail.AppendText(_editor.GetText(TEXT.DLG_MakeThumbnail), true);
+				_guiContent_Overall_MakeThumbnail.SetImage(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportThumb));
+			}
 
-				#region [미사용 코드] 삭제 v1.4.6
-				//if (srcSizeWidth != Editor._captureFrame_SrcWidth
-				//	|| srcSizeHeight != Editor._captureFrame_SrcHeight
-				//	|| dstSizeWidth != Editor._captureFrame_DstWidth
-				//	|| dstSizeHeight != Editor._captureFrame_DstHeight
-				//	|| spriteUnitSizeWidth != Editor._captureFrame_SpriteUnitWidth
-				//	|| spriteUnitSizeHeight != Editor._captureFrame_SpriteUnitHeight
-				//	|| spritePackImageWidth != Editor._captureSpritePackImageWidth
-				//	|| spritePackImageHeight != Editor._captureSpritePackImageHeight
-				//	|| spriteTrimSize != Editor._captureSpriteTrimSize
-				//	|| spriteMargin != Editor._captureFrame_SpriteMargin
-				//	|| isPhysicsEnabled != Editor._captureFrame_IsPhysics
-				//	)
-				//{
-				//	if (srcSizeWidth < 10) { srcSizeWidth = 10; }
-				//	if (srcSizeHeight < 10) { srcSizeHeight = 10; }
-				//	Editor._captureFrame_SrcWidth = srcSizeWidth;
-				//	Editor._captureFrame_SrcHeight = srcSizeHeight;
+			if (_guiContent_Overall_TakeAScreenshot == null)
+			{
+				_guiContent_Overall_TakeAScreenshot = new apGUIContentWrapper();
+				_guiContent_Overall_TakeAScreenshot.ClearText(false);
+				_guiContent_Overall_TakeAScreenshot.AppendSpaceText(1, false);
+				_guiContent_Overall_TakeAScreenshot.AppendText(_editor.GetText(TEXT.DLG_TakeAScreenshot), true);
+				_guiContent_Overall_TakeAScreenshot.SetImage(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportScreenshot));
+			}
 
-				//	if (dstSizeWidth < 10) { dstSizeWidth = 10; }
-				//	if (dstSizeHeight < 10) { dstSizeHeight = 10; }
-				//	Editor._captureFrame_DstWidth = dstSizeWidth;
-				//	Editor._captureFrame_DstHeight = dstSizeHeight;
+			switch (Editor._rootUnitCaptureMode)
+			{
+				case apEditor.ROOTUNIT_CAPTURE_MODE.Thumbnail:
+					{
+						//1. 썸네일 캡쳐
+						EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_ThumbnailCapture));//"Thumbnail Capture"
+						GUILayout.Space(5);
+						string prev_ImageFilePath = _editor._portrait._imageFilePath_Thumbnail;
 
-				//	if (spriteUnitSizeWidth < 10) { spriteUnitSizeWidth = 10; }
-				//	if (spriteUnitSizeHeight < 10) { spriteUnitSizeHeight = 10; }
-				//	Editor._captureFrame_SpriteUnitWidth = spriteUnitSizeWidth;
-				//	Editor._captureFrame_SpriteUnitHeight = spriteUnitSizeHeight;
+						//Preview 이미지
+						GUILayout.Box(_editor._portrait._thumbnailImage, GUI.skin.label, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(width / 2));
 
-				//	Editor._captureSpritePackImageWidth = spritePackImageWidth;
-				//	Editor._captureSpritePackImageHeight = spritePackImageHeight;
-				//	Editor._captureSpriteTrimSize = spriteTrimSize;
+						//File Path
+						GUILayout.Space(5);
+						EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_FilePath));//"File Path"
+						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
+						GUILayout.Space(5);
 
-				//	if (spriteMargin < 0) { spriteMargin = 0; }
-				//	Editor._captureFrame_SpriteMargin = spriteMargin;
+						//파일 경로 > 
 
-				//	Editor._captureFrame_IsPhysics = isPhysicsEnabled;
-
-				//	Editor.SaveEditorPref();
-				//	apEditorUtil.ReleaseGUIFocus();
-				//}
-
-				//if (Mathf.Abs(prevCaptureColor.r - Editor._captureFrame_Color.r) > 0.01f
-				//	|| Mathf.Abs(prevCaptureColor.g - Editor._captureFrame_Color.g) > 0.01f
-				//	|| Mathf.Abs(prevCaptureColor.b - Editor._captureFrame_Color.b) > 0.01f
-				//	|| Mathf.Abs(prevCaptureColor.a - Editor._captureFrame_Color.a) > 0.01f)
-				//{
-				//	_editor.SaveEditorPref();
-				//	//색상은 GUIFocus를 null로 만들면 안되기에..
-				//} 
-				#endregion
-
-				GUILayout.Space(10);
-				apEditorUtil.GUI_DelimeterBoxH(width);
-				GUILayout.Space(10);
-
-
-				if (_guiContent_Overall_MakeThumbnail == null)
-				{
-					_guiContent_Overall_MakeThumbnail = new apGUIContentWrapper();
-					_guiContent_Overall_MakeThumbnail.ClearText(false);
-					_guiContent_Overall_MakeThumbnail.AppendSpaceText(1, false);
-					_guiContent_Overall_MakeThumbnail.AppendText(_editor.GetText(TEXT.DLG_MakeThumbnail), true);
-					_guiContent_Overall_MakeThumbnail.SetImage(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportThumb));
-				}
-
-				if (_guiContent_Overall_TakeAScreenshot == null)
-				{
-					_guiContent_Overall_TakeAScreenshot = new apGUIContentWrapper();
-					_guiContent_Overall_TakeAScreenshot.ClearText(false);
-					_guiContent_Overall_TakeAScreenshot.AppendSpaceText(1, false);
-					_guiContent_Overall_TakeAScreenshot.AppendText(_editor.GetText(TEXT.DLG_TakeAScreenshot), true);
-					_guiContent_Overall_TakeAScreenshot.SetImage(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportScreenshot));
-				}
-
-				switch (Editor._rootUnitCaptureMode)
-				{
-					case apEditor.ROOTUNIT_CAPTURE_MODE.Thumbnail:
+						_editor._portrait._imageFilePath_Thumbnail = EditorGUILayout.TextField(_editor._portrait._imageFilePath_Thumbnail, apGUILOFactory.I.Width(width - (68)));
+						if (GUILayout.Button(_editor.GetText(TEXT.DLG_Change), apGUILOFactory.I.Width(60)))//"Change"
 						{
-							//1. 썸네일 캡쳐
-							EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_ThumbnailCapture));//"Thumbnail Capture"
-							GUILayout.Space(5);
-							string prev_ImageFilePath = _editor._portrait._imageFilePath_Thumbnail;
-
-							//Preview 이미지
-							GUILayout.Box(_editor._portrait._thumbnailImage, GUI.skin.label, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(width / 2));
-
-							//File Path
-							GUILayout.Space(5);
-							EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_FilePath));//"File Path"
-							EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
-							GUILayout.Space(5);
-
-							//파일 경로 > 
-
-							_editor._portrait._imageFilePath_Thumbnail = EditorGUILayout.TextField(_editor._portrait._imageFilePath_Thumbnail, apGUILOFactory.I.Width(width - (68)));
-							if (GUILayout.Button(_editor.GetText(TEXT.DLG_Change), apGUILOFactory.I.Width(60)))//"Change"
+							string fileName = EditorUtility.SaveFilePanelInProject("Thumbnail File Path", _editor._portrait.name + "_Thumb.png", "png", "Please Enter a file name to save Thumbnail to");
+							if (!string.IsNullOrEmpty(fileName))
 							{
-								string fileName = EditorUtility.SaveFilePanelInProject("Thumbnail File Path", _editor._portrait.name + "_Thumb.png", "png", "Please Enter a file name to save Thumbnail to");
-								if (!string.IsNullOrEmpty(fileName))
-								{
-									_editor._portrait._imageFilePath_Thumbnail = apUtil.ConvertEscapeToPlainText(fileName);//변경 21.7.3 : 이스케이프 문자 삭제
-									apEditorUtil.ReleaseGUIFocus();
-								}
-							}
-							EditorGUILayout.EndHorizontal();
-
-							if (!_editor._portrait._imageFilePath_Thumbnail.Equals(prev_ImageFilePath))
-							{
-								//경로가 바뀌었다. -> 저장
-								apEditorUtil.SetEditorDirty();
-
-							}
-
-							//썸네일 만들기 버튼
-							if (GUILayout.Button(_guiContent_Overall_MakeThumbnail.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))
-							{
-								//Editor._captureProcessor == apEditor.CAPTURE_PROCESSOR.Version2
-
-
-								if (string.IsNullOrEmpty(_editor._portrait._imageFilePath_Thumbnail))
-								{
-									//EditorUtility.DisplayDialog("Thumbnail Creating Failed", "File Name is Empty", "Close");
-									EditorUtility.DisplayDialog(_editor.GetText(TEXT.ThumbCreateFailed_Title),
-																	_editor.GetText(TEXT.ThumbCreateFailed_Body_NoFile),
-																	_editor.GetText(TEXT.Close)
-																	);
-								}
-								else
-								{
-									//RequestExport(EXPORT_TYPE.Thumbnail);//<<이전 코드
-
-#if UNITY_2020
-									int a;
-#endif
-
-
-									StartMakeThumbnail();//<<새로운 코드
-
-								}
+								_editor._portrait._imageFilePath_Thumbnail = apUtil.ConvertEscapeToPlainText(fileName);//변경 21.7.3 : 이스케이프 문자 삭제
+								apEditorUtil.ReleaseGUIFocus();
 							}
 						}
-						break;
+						EditorGUILayout.EndHorizontal();
 
-					case apEditor.ROOTUNIT_CAPTURE_MODE.ScreenShot:
+						if (!_editor._portrait._imageFilePath_Thumbnail.Equals(prev_ImageFilePath))
 						{
-							//2. 스크린샷 캡쳐
-							EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_ScreenshotCapture));//"Screenshot Capture"
-							GUILayout.Space(5);
+							//경로가 바뀌었다. -> 저장
+							apEditorUtil.SetDirty(_editor);
+
+						}
+
+						//썸네일 만들기 버튼
+						if (GUILayout.Button(_guiContent_Overall_MakeThumbnail.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))
+						{
+							//Editor._captureProcessor == apEditor.CAPTURE_PROCESSOR.Version2
 
 
-							//화면 위치 (Sprite Capture 메뉴의 화면 보정 UI를 가져옴)
-							int width_ScreenPos = ((width - (10 + 30)) / 2) - 20;
-							GUILayout.Space(5);
-							EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
-							GUILayout.Space(4);
-							EditorGUILayout.LabelField(apStringFactory.I.X, apGUILOFactory.I.Width(15));
-							Editor._captureSprite_ScreenPos.x = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.x, apGUILOFactory.I.Width(width_ScreenPos));
-							EditorGUILayout.LabelField(apStringFactory.I.Y, apGUILOFactory.I.Width(15));
-							Editor._captureSprite_ScreenPos.y = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.y, apGUILOFactory.I.Width(width_ScreenPos));
-							//GUIStyle guiStyle_SetBtn = new GUIStyle(GUI.skin.button);
-							//guiStyle_SetBtn.margin = GUI.skin.textField.margin;
-
-							if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))//"Set"
+							if (string.IsNullOrEmpty(_editor._portrait._imageFilePath_Thumbnail))
 							{
-								Editor._scroll_CenterWorkSpace = Editor._captureSprite_ScreenPos * 0.01f;
-								Editor.SaveEditorPref();
-								apEditorUtil.ReleaseGUIFocus();
+								//EditorUtility.DisplayDialog("Thumbnail Creating Failed", "File Name is Empty", "Close");
+								EditorUtility.DisplayDialog(_editor.GetText(TEXT.ThumbCreateFailed_Title),
+																_editor.GetText(TEXT.ThumbCreateFailed_Body_NoFile),
+																_editor.GetText(TEXT.Close)
+																);
 							}
-
-							EditorGUILayout.EndHorizontal();
-										
-										
-							//Zoom
-							Rect lastRect = GUILayoutUtility.GetLastRect();
-							lastRect.x += 5;
-							lastRect.y += 25;
-							lastRect.width = width - (30 + 10 + 60 + 10);
-							lastRect.height = 20;
-
-							EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
-							GUILayout.Space(6);
-							GUILayout.Space(width - (30 + 10 + 60));
-							//Editor._captureSprite_ScreenZoom = EditorGUILayout.IntSlider(Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1, GUILayout.Width(width - (30 + 10 + 40)));
-							float fScreenZoom = GUI.HorizontalSlider(lastRect, Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1);
-							Editor._captureSprite_ScreenZoom = Mathf.Clamp((int)fScreenZoom, 0, Editor._zoomListX100.Length - 1);
-
-							EditorGUILayout.LabelField(Editor._zoomListX100_Label[Editor._captureSprite_ScreenZoom], apGUILOFactory.I.Width(60));
-							if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))//"Set"
+							else
 							{
-								Editor._iZoomX100 = Editor._captureSprite_ScreenZoom;
-								if (Editor._iZoomX100 < 0)
-								{
-									Editor._iZoomX100 = 0;
-								}
-								else if (Editor._iZoomX100 >= Editor._zoomListX100.Length)
-								{
-									Editor._iZoomX100 = Editor._zoomListX100.Length - 1;
-								}
-								Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
-								Editor.SaveEditorPref();
-								apEditorUtil.ReleaseGUIFocus();
-							}
-
-							EditorGUILayout.EndHorizontal();
-
-							//"Focus To Center"
-							if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.CaptureMoveToCenter), Editor.GetUIWord(UIWORD.CaptureMoveToCenter), false, true, width, 20))
-							{
-								Editor._scroll_CenterWorkSpace = Vector2.zero;
-								Editor._captureSprite_ScreenPos = Vector2.zero;
-								Editor.SaveEditorPref();
-								apEditorUtil.ReleaseGUIFocus();
-							}
-							EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-							GUILayout.Space(4);
-
-							if (_strWrapper_64 == null)
-							{
-								_strWrapper_64 = new apStringWrapper(64);
-							}
-
-							_strWrapper_64.Clear();
-							_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
-							_strWrapper_64.AppendSpace(1, false);
-							_strWrapper_64.Append(apStringFactory.I.Minus, true);
-
-							//"Zoom -"
-							if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
-							{
-								Editor._iZoomX100--;
-								if (Editor._iZoomX100 < 0) { Editor._iZoomX100 = 0; }
-								Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
-								Editor.SaveEditorPref();
-								apEditorUtil.ReleaseGUIFocus();
-							}
-
-							_strWrapper_64.Clear();
-							_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
-							_strWrapper_64.AppendSpace(1, false);
-							_strWrapper_64.Append(apStringFactory.I.Plus, true);
-
-							//"Zoom +"
-							if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
-							{
-								Editor._iZoomX100++;
-								if (Editor._iZoomX100 >= Editor._zoomListX100.Length) { Editor._iZoomX100 = Editor._zoomListX100.Length - 1; }
-								Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
-								Editor.SaveEditorPref();
-							}
-							EditorGUILayout.EndHorizontal();
-
-
-							GUILayout.Space(10);
-							apEditorUtil.GUI_DelimeterBoxH(width);
-							GUILayout.Space(10);
-
-
-							if (GUILayout.Button(_guiContent_Overall_TakeAScreenshot.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))
-							{
-								if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
-								{
-									StartTakeScreenShot();
-								}
+								StartMakeThumbnail();
 							}
 						}
-						break;
+					}
+					break;
 
-					case apEditor.ROOTUNIT_CAPTURE_MODE.GIFAnimation:
+				case apEditor.ROOTUNIT_CAPTURE_MODE.ScreenShot:
+					{
+						//2. 스크린샷 캡쳐
+						EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_ScreenshotCapture));//"Screenshot Capture"
+						GUILayout.Space(5);
+
+
+						//화면 위치 (Sprite Capture 메뉴의 화면 보정 UI를 가져옴)
+						int width_ScreenPos = ((width - (10 + 30)) / 2) - 20;
+						GUILayout.Space(5);
+						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
+						GUILayout.Space(4);
+						EditorGUILayout.LabelField(apStringFactory.I.X, apGUILOFactory.I.Width(15));
+						Editor._captureSprite_ScreenPos.x = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.x, apGUILOFactory.I.Width(width_ScreenPos));
+						EditorGUILayout.LabelField(apStringFactory.I.Y, apGUILOFactory.I.Width(15));
+						Editor._captureSprite_ScreenPos.y = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.y, apGUILOFactory.I.Width(width_ScreenPos));
+						//GUIStyle guiStyle_SetBtn = new GUIStyle(GUI.skin.button);
+						//guiStyle_SetBtn.margin = GUI.skin.textField.margin;
+
+						if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))//"Set"
 						{
-							//3. GIF 애니메이션 캡쳐
-							EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_GIFAnimation));//"GIF Animation"
-							GUILayout.Space(5);
+							Editor._scroll_CenterWorkSpace = Editor._captureSprite_ScreenPos * 0.01f;
+							Editor.SaveEditorPref();
+							apEditorUtil.ReleaseGUIFocus();
+						}
 
-							List<apAnimClip> subAnimClips = RootUnitAnimClipList;
+						EditorGUILayout.EndHorizontal();
+									
+									
+						//Zoom
+						Rect lastRect = GUILayoutUtility.GetLastRect();
+						lastRect.x += 5;
+						lastRect.y += 25;
+						lastRect.width = width - (30 + 10 + 60 + 10);
+						lastRect.height = 20;
 
-							string animName = _editor.GetText(TEXT.DLG_NotAnimation);
-							Color animBGColor = new Color(1.0f, 0.7f, 0.7f, 1.0f);
-							if (_captureSelectedAnimClip != null)
+						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
+						GUILayout.Space(6);
+						GUILayout.Space(width - (30 + 10 + 60));
+						//Editor._captureSprite_ScreenZoom = EditorGUILayout.IntSlider(Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1, GUILayout.Width(width - (30 + 10 + 40)));
+						float fScreenZoom = GUI.HorizontalSlider(lastRect, Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1);
+						Editor._captureSprite_ScreenZoom = Mathf.Clamp((int)fScreenZoom, 0, Editor._zoomListX100.Length - 1);
+
+						EditorGUILayout.LabelField(Editor._zoomListX100_Label[Editor._captureSprite_ScreenZoom], apGUILOFactory.I.Width(60));
+						if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))//"Set"
+						{
+							Editor._iZoomX100 = Editor._captureSprite_ScreenZoom;
+							if (Editor._iZoomX100 < 0)
 							{
-								animName = _captureSelectedAnimClip._name;
-								animBGColor = new Color(0.7f, 1.0f, 0.7f, 1.0f);
+								Editor._iZoomX100 = 0;
 							}
-
-							Color prevGUIColor = GUI.backgroundColor;
-							//GUIStyle guiStyleBox = new GUIStyle(GUI.skin.box);
-							//guiStyleBox.alignment = TextAnchor.MiddleCenter;
-							//guiStyleBox.normal.textColor = apEditorUtil.BoxTextColor;
-
-							GUI.backgroundColor = animBGColor;
-
-							GUILayout.Box(animName, apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30));
-
-							GUI.backgroundColor = prevGUIColor;
-
-							GUILayout.Space(5);
-
-
-							bool isDrawProgressBar = Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_GIF_ProgressBar);//"Capture GIF ProgressBar"
-							bool isDrawGIFAnimClips = Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_GIF_Clips);//"Capture GIF Clips"
-							try
+							else if (Editor._iZoomX100 >= Editor._zoomListX100.Length)
 							{
-								if (_captureMode != CAPTURE_MODE.None)
+								Editor._iZoomX100 = Editor._zoomListX100.Length - 1;
+							}
+							Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
+							Editor.SaveEditorPref();
+							apEditorUtil.ReleaseGUIFocus();
+						}
+
+						EditorGUILayout.EndHorizontal();
+
+						//"Focus To Center"
+						if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.CaptureMoveToCenter), Editor.GetUIWord(UIWORD.CaptureMoveToCenter), false, true, width, 20))
+						{
+							Editor._scroll_CenterWorkSpace = Vector2.zero;
+							Editor._captureSprite_ScreenPos = Vector2.zero;
+							Editor.SaveEditorPref();
+							apEditorUtil.ReleaseGUIFocus();
+						}
+						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+						GUILayout.Space(4);
+
+						if (_strWrapper_64 == null)
+						{
+							_strWrapper_64 = new apStringWrapper(64);
+						}
+
+						_strWrapper_64.Clear();
+						_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
+						_strWrapper_64.AppendSpace(1, false);
+						_strWrapper_64.Append(apStringFactory.I.Minus, true);
+
+						//"Zoom -"
+						if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
+						{
+							Editor._iZoomX100--;
+							if (Editor._iZoomX100 < 0) { Editor._iZoomX100 = 0; }
+							Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
+							Editor.SaveEditorPref();
+							apEditorUtil.ReleaseGUIFocus();
+						}
+
+						_strWrapper_64.Clear();
+						_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
+						_strWrapper_64.AppendSpace(1, false);
+						_strWrapper_64.Append(apStringFactory.I.Plus, true);
+
+						//"Zoom +"
+						if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
+						{
+							Editor._iZoomX100++;
+							if (Editor._iZoomX100 >= Editor._zoomListX100.Length) { Editor._iZoomX100 = Editor._zoomListX100.Length - 1; }
+							Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
+							Editor.SaveEditorPref();
+						}
+						EditorGUILayout.EndHorizontal();
+
+
+						GUILayout.Space(10);
+						apEditorUtil.GUI_DelimeterBoxH(width);
+						GUILayout.Space(10);
+
+
+						if (GUILayout.Button(_guiContent_Overall_TakeAScreenshot.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30)))
+						{
+							if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
+							{
+								StartTakeScreenShot();
+							}
+						}
+					}
+					break;
+
+				case apEditor.ROOTUNIT_CAPTURE_MODE.GIFAnimation:
+					{
+						//3. GIF 애니메이션 캡쳐
+						EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_GIFAnimation));//"GIF Animation"
+						GUILayout.Space(5);
+
+						List<apAnimClip> subAnimClips = RootUnitAnimClipList;
+
+						string animName = _editor.GetText(TEXT.DLG_NotAnimation);
+						Color animBGColor = new Color(1.0f, 0.7f, 0.7f, 1.0f);
+						if (_captureSelectedAnimClip != null)
+						{
+							animName = _captureSelectedAnimClip._name;
+							animBGColor = new Color(0.7f, 1.0f, 0.7f, 1.0f);
+						}
+
+						Color prevGUIColor = GUI.backgroundColor;
+						//GUIStyle guiStyleBox = new GUIStyle(GUI.skin.box);
+						//guiStyleBox.alignment = TextAnchor.MiddleCenter;
+						//guiStyleBox.normal.textColor = apEditorUtil.BoxTextColor;
+
+						GUI.backgroundColor = animBGColor;
+
+						GUILayout.Box(animName, apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(30));
+
+						GUI.backgroundColor = prevGUIColor;
+
+						GUILayout.Space(5);
+
+
+						bool isDrawProgressBar = Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_GIF_ProgressBar);//"Capture GIF ProgressBar"
+						bool isDrawGIFAnimClips = Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_GIF_Clips);//"Capture GIF Clips"
+						try
+						{
+							if (_captureMode != CAPTURE_MODE.None)
+							{
+								if (isDrawProgressBar)
 								{
-									if (isDrawProgressBar)
+									//캡쳐 중에는 다른 UI 제어 불가
+
+									if (_captureMode == CAPTURE_MODE.Capturing_GIF_Animation
+										|| _captureMode == CAPTURE_MODE.Capturing_MP4_Animation)
 									{
-										//캡쳐 중에는 다른 UI 제어 불가
+										EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.SpriteGIFWait));//"Please wait until finished. - TODO"
 
-										if (_captureMode == CAPTURE_MODE.Capturing_GIF_Animation
-											|| _captureMode == CAPTURE_MODE.Capturing_MP4_Animation)
+										float barRatio = Editor.SeqExporter.ProcessRatio;
+										string barLabel = (int)(Mathf.Clamp01(barRatio) * 100.0f) + " %";
+
+										string strTitleText = (_captureMode == CAPTURE_MODE.Capturing_GIF_Animation) ? "Exporting to GIF" : "Exporting to MP4";
+
+										bool isCancel = EditorUtility.DisplayCancelableProgressBar(strTitleText, "Processing... " + barLabel, barRatio);
+										_captureGIF_IsProgressDialog = true;
+										if (isCancel)
 										{
-											EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.SpriteGIFWait));//"Please wait until finished. - TODO"
-
-											float barRatio = Editor.SeqExporter.ProcessRatio;
-											string barLabel = (int)(Mathf.Clamp01(barRatio) * 100.0f) + " %";
-
-											string strTitleText = (_captureMode == CAPTURE_MODE.Capturing_GIF_Animation) ? "Exporting to GIF" : "Exporting to MP4";
-
-											bool isCancel = EditorUtility.DisplayCancelableProgressBar(strTitleText, "Processing... " + barLabel, barRatio);
-											_captureGIF_IsProgressDialog = true;
-											if (isCancel)
-											{
-												//취소 버튼을 눌렀다.
-												Editor.SeqExporter.RequestStop();
-												apEditorUtil.ReleaseGUIFocus();
-											}
+											//취소 버튼을 눌렀다.
+											Editor.SeqExporter.RequestStop();
+											apEditorUtil.ReleaseGUIFocus();
 										}
 									}
-
 								}
-								else
+
+							}
+							else
+							{
+								if (_captureGIF_IsProgressDialog)
 								{
-									if (_captureGIF_IsProgressDialog)
+									EditorUtility.ClearProgressBar();
+									_captureGIF_IsProgressDialog = false;
+								}
+
+								if (isDrawGIFAnimClips)
+								{
+									GUILayout.Space(10);
+									apEditorUtil.GUI_DelimeterBoxH(width);
+									GUILayout.Space(10);
+
+									EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.CaptureScreenPosZoom));//"Screen Position and Zoom"
+									GUILayout.Space(5);
+
+									//화면 위치
+									int width_ScreenPos = ((width - (10 + 30)) / 2) - 20;
+									GUILayout.Space(5);
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
+									GUILayout.Space(4);
+									EditorGUILayout.LabelField(apStringFactory.I.X, apGUILOFactory.I.Width(15));
+									Editor._captureSprite_ScreenPos.x = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.x, apGUILOFactory.I.Width(width_ScreenPos));
+									EditorGUILayout.LabelField(apStringFactory.I.Y, apGUILOFactory.I.Width(15));
+									Editor._captureSprite_ScreenPos.y = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.y, apGUILOFactory.I.Width(width_ScreenPos));
+									//GUIStyle guiStyle_SetBtn = new GUIStyle(GUI.skin.button);
+									//guiStyle_SetBtn.margin = GUI.skin.textField.margin;
+
+									if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))//"Set"
 									{
-										EditorUtility.ClearProgressBar();
-										_captureGIF_IsProgressDialog = false;
+										Editor._scroll_CenterWorkSpace = Editor._captureSprite_ScreenPos * 0.01f;
+										Editor.SaveEditorPref();
+										apEditorUtil.ReleaseGUIFocus();
 									}
 
-									if (isDrawGIFAnimClips)
+									EditorGUILayout.EndHorizontal();
+									
+									
+									//Zoom
+									Rect lastRect = GUILayoutUtility.GetLastRect();
+									lastRect.x += 5;
+									lastRect.y += 25;
+									lastRect.width = width - (30 + 10 + 60 + 10);
+									lastRect.height = 20;
+
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
+									GUILayout.Space(6);
+									GUILayout.Space(width - (30 + 10 + 60));
+									//Editor._captureSprite_ScreenZoom = EditorGUILayout.IntSlider(Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1, GUILayout.Width(width - (30 + 10 + 40)));
+									float fScreenZoom = GUI.HorizontalSlider(lastRect, Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1);
+									Editor._captureSprite_ScreenZoom = Mathf.Clamp((int)fScreenZoom, 0, Editor._zoomListX100.Length - 1);
+
+									EditorGUILayout.LabelField(Editor._zoomListX100_Label[Editor._captureSprite_ScreenZoom], apGUILOFactory.I.Width(60));
+									if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))//"Set"
 									{
-										GUILayout.Space(10);
-										apEditorUtil.GUI_DelimeterBoxH(width);
-										GUILayout.Space(10);
-
-										EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.CaptureScreenPosZoom));//"Screen Position and Zoom"
-										GUILayout.Space(5);
-
-										//화면 위치
-										int width_ScreenPos = ((width - (10 + 30)) / 2) - 20;
-										GUILayout.Space(5);
-										EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
-										GUILayout.Space(4);
-										EditorGUILayout.LabelField(apStringFactory.I.X, apGUILOFactory.I.Width(15));
-										Editor._captureSprite_ScreenPos.x = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.x, apGUILOFactory.I.Width(width_ScreenPos));
-										EditorGUILayout.LabelField(apStringFactory.I.Y, apGUILOFactory.I.Width(15));
-										Editor._captureSprite_ScreenPos.y = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.y, apGUILOFactory.I.Width(width_ScreenPos));
-										//GUIStyle guiStyle_SetBtn = new GUIStyle(GUI.skin.button);
-										//guiStyle_SetBtn.margin = GUI.skin.textField.margin;
-
-										if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))//"Set"
+										Editor._iZoomX100 = Editor._captureSprite_ScreenZoom;
+										if (Editor._iZoomX100 < 0)
 										{
-											Editor._scroll_CenterWorkSpace = Editor._captureSprite_ScreenPos * 0.01f;
-											Editor.SaveEditorPref();
-											apEditorUtil.ReleaseGUIFocus();
+											Editor._iZoomX100 = 0;
 										}
-
-										EditorGUILayout.EndHorizontal();
-										
-										
-										//Zoom
-										Rect lastRect = GUILayoutUtility.GetLastRect();
-										lastRect.x += 5;
-										lastRect.y += 25;
-										lastRect.width = width - (30 + 10 + 60 + 10);
-										lastRect.height = 20;
-
-										EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
-										GUILayout.Space(6);
-										GUILayout.Space(width - (30 + 10 + 60));
-										//Editor._captureSprite_ScreenZoom = EditorGUILayout.IntSlider(Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1, GUILayout.Width(width - (30 + 10 + 40)));
-										float fScreenZoom = GUI.HorizontalSlider(lastRect, Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1);
-										Editor._captureSprite_ScreenZoom = Mathf.Clamp((int)fScreenZoom, 0, Editor._zoomListX100.Length - 1);
-
-										EditorGUILayout.LabelField(Editor._zoomListX100_Label[Editor._captureSprite_ScreenZoom], apGUILOFactory.I.Width(60));
-										if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))//"Set"
+										else if (Editor._iZoomX100 >= Editor._zoomListX100.Length)
 										{
-											Editor._iZoomX100 = Editor._captureSprite_ScreenZoom;
-											if (Editor._iZoomX100 < 0)
-											{
-												Editor._iZoomX100 = 0;
-											}
-											else if (Editor._iZoomX100 >= Editor._zoomListX100.Length)
-											{
-												Editor._iZoomX100 = Editor._zoomListX100.Length - 1;
-											}
-											Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
-											Editor.SaveEditorPref();
-											apEditorUtil.ReleaseGUIFocus();
+											Editor._iZoomX100 = Editor._zoomListX100.Length - 1;
 										}
+										Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
+										Editor.SaveEditorPref();
+										apEditorUtil.ReleaseGUIFocus();
+									}
 
-										EditorGUILayout.EndHorizontal();
+									EditorGUILayout.EndHorizontal();
 
-										//"Focus To Center"
-										if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.CaptureMoveToCenter), Editor.GetUIWord(UIWORD.CaptureMoveToCenter), false, true, width, 20))
+									//"Focus To Center"
+									if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.CaptureMoveToCenter), Editor.GetUIWord(UIWORD.CaptureMoveToCenter), false, true, width, 20))
+									{
+										Editor._scroll_CenterWorkSpace = Vector2.zero;
+										Editor._captureSprite_ScreenPos = Vector2.zero;
+										Editor.SaveEditorPref();
+										apEditorUtil.ReleaseGUIFocus();
+									}
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+									GUILayout.Space(4);
+
+									if (_strWrapper_64 == null)
+									{
+										_strWrapper_64 = new apStringWrapper(64);
+									}
+
+									_strWrapper_64.Clear();
+									_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
+									_strWrapper_64.AppendSpace(1, false);
+									_strWrapper_64.Append(apStringFactory.I.Minus, true);
+
+									//"Zoom -"
+									if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
+									{
+										Editor._iZoomX100--;
+										if (Editor._iZoomX100 < 0) { Editor._iZoomX100 = 0; }
+										Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
+										Editor.SaveEditorPref();
+										apEditorUtil.ReleaseGUIFocus();
+									}
+
+									_strWrapper_64.Clear();
+									_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
+									_strWrapper_64.AppendSpace(1, false);
+									_strWrapper_64.Append(apStringFactory.I.Plus, true);
+
+									//"Zoom +"
+									if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
+									{
+										Editor._iZoomX100++;
+										if (Editor._iZoomX100 >= Editor._zoomListX100.Length) { Editor._iZoomX100 = Editor._zoomListX100.Length - 1; }
+										Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
+										Editor.SaveEditorPref();
+									}
+									EditorGUILayout.EndHorizontal();
+
+
+									GUILayout.Space(10);
+									apEditorUtil.GUI_DelimeterBoxH(width);
+									GUILayout.Space(10);
+
+									//Quality의 Min : 0, Max : 246이다.
+
+									//변경 11.4 : GIF 저장 퀄리티를 4개의 타입으로 나누고, Maximum 추가
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+									GUILayout.Space(5);
+
+									if (_strWrapper_64 == null)
+									{
+										_strWrapper_64 = new apStringWrapper(64);
+									}
+
+									_strWrapper_64.Clear();
+									_strWrapper_64.Append(apStringFactory.I.GIF, false);
+									_strWrapper_64.AppendSpace(1, false);
+									_strWrapper_64.Append(Editor.GetUIWord(UIWORD.Quality), true);
+
+									EditorGUILayout.LabelField(_strWrapper_64.ToString(), apGUILOFactory.I.Width(100));
+									apEditor.CAPTURE_GIF_QUALITY gifQulity = (apEditor.CAPTURE_GIF_QUALITY)EditorGUILayout.EnumPopup(_editor._captureFrame_GIFQuality, apGUILOFactory.I.Width(width - (5 + 100 + 5)));
+
+									if (gifQulity != _editor._captureFrame_GIFQuality)
+									{
+										_editor._captureFrame_GIFQuality = gifQulity;
+										_editor.SaveEditorPref();
+										apEditorUtil.ReleaseGUIFocus();
+									}
+
+									EditorGUILayout.EndHorizontal();
+
+									GUILayout.Space(5);
+									EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_LoopCount), apGUILOFactory.I.Width(width));//"Loop Count"
+									int loopCount = EditorGUILayout.DelayedIntField(_editor._captureFrame_GIFSampleLoopCount, apGUILOFactory.I.Width(width));
+									if (loopCount != _editor._captureFrame_GIFSampleLoopCount)
+									{
+										loopCount = Mathf.Clamp(loopCount, 1, 10);
+										_editor._captureFrame_GIFSampleLoopCount = loopCount;
+										_editor.SaveEditorPref();
+									}
+
+									GUILayout.Space(5);
+
+									_strWrapper_64.Clear();
+									_strWrapper_64.AppendSpace(1, false);
+									_strWrapper_64.Append(_editor.GetText(TEXT.DLG_TakeAGIFAnimation), true);
+
+									//string strTakeAGIFAnimation = " " + _editor.GetText(TEXT.DLG_TakeAGIFAnimation);
+
+									//"Take a GIF Animation", "Take a GIF Animation"
+									if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportGIF), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (_captureSelectedAnimClip != null), width, 30))
+									{
+										if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
 										{
-											Editor._scroll_CenterWorkSpace = Vector2.zero;
-											Editor._captureSprite_ScreenPos = Vector2.zero;
-											Editor.SaveEditorPref();
-											apEditorUtil.ReleaseGUIFocus();
+											StartGIFAnimation();
 										}
-										EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-										GUILayout.Space(4);
-
-										if (_strWrapper_64 == null)
-										{
-											_strWrapper_64 = new apStringWrapper(64);
-										}
-
-										_strWrapper_64.Clear();
-										_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
-										_strWrapper_64.AppendSpace(1, false);
-										_strWrapper_64.Append(apStringFactory.I.Minus, true);
-
-										//"Zoom -"
-										if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
-										{
-											Editor._iZoomX100--;
-											if (Editor._iZoomX100 < 0) { Editor._iZoomX100 = 0; }
-											Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
-											Editor.SaveEditorPref();
-											apEditorUtil.ReleaseGUIFocus();
-										}
-
-										_strWrapper_64.Clear();
-										_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
-										_strWrapper_64.AppendSpace(1, false);
-										_strWrapper_64.Append(apStringFactory.I.Plus, true);
-
-										//"Zoom +"
-										if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
-										{
-											Editor._iZoomX100++;
-											if (Editor._iZoomX100 >= Editor._zoomListX100.Length) { Editor._iZoomX100 = Editor._zoomListX100.Length - 1; }
-											Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
-											Editor.SaveEditorPref();
-										}
-										EditorGUILayout.EndHorizontal();
-
-
-										GUILayout.Space(10);
-										apEditorUtil.GUI_DelimeterBoxH(width);
-										GUILayout.Space(10);
-
-										//Quality의 Min : 0, Max : 246이다.
-
-										//변경 11.4 : GIF 저장 퀄리티를 4개의 타입으로 나누고, Maximum 추가
-										EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-										GUILayout.Space(5);
-
-										if (_strWrapper_64 == null)
-										{
-											_strWrapper_64 = new apStringWrapper(64);
-										}
-
-										_strWrapper_64.Clear();
-										_strWrapper_64.Append(apStringFactory.I.GIF, false);
-										_strWrapper_64.AppendSpace(1, false);
-										_strWrapper_64.Append(Editor.GetUIWord(UIWORD.Quality), true);
-
-										EditorGUILayout.LabelField(_strWrapper_64.ToString(), apGUILOFactory.I.Width(100));
-										apEditor.CAPTURE_GIF_QUALITY gifQulity = (apEditor.CAPTURE_GIF_QUALITY)EditorGUILayout.EnumPopup(_editor._captureFrame_GIFQuality, apGUILOFactory.I.Width(width - (5 + 100 + 5)));
-
-										if (gifQulity != _editor._captureFrame_GIFQuality)
-										{
-											_editor._captureFrame_GIFQuality = gifQulity;
-											_editor.SaveEditorPref();
-											apEditorUtil.ReleaseGUIFocus();
-										}
-
-										EditorGUILayout.EndHorizontal();
-
-										GUILayout.Space(5);
-										EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_LoopCount), apGUILOFactory.I.Width(width));//"Loop Count"
-										int loopCount = EditorGUILayout.DelayedIntField(_editor._captureFrame_GIFSampleLoopCount, apGUILOFactory.I.Width(width));
-										if (loopCount != _editor._captureFrame_GIFSampleLoopCount)
-										{
-											loopCount = Mathf.Clamp(loopCount, 1, 10);
-											_editor._captureFrame_GIFSampleLoopCount = loopCount;
-											_editor.SaveEditorPref();
-										}
-
-										GUILayout.Space(5);
-
-										_strWrapper_64.Clear();
-										_strWrapper_64.AppendSpace(1, false);
-										_strWrapper_64.Append(_editor.GetText(TEXT.DLG_TakeAGIFAnimation), true);
-
-										//string strTakeAGIFAnimation = " " + _editor.GetText(TEXT.DLG_TakeAGIFAnimation);
-
-										//"Take a GIF Animation", "Take a GIF Animation"
-										if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportGIF), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (_captureSelectedAnimClip != null), width, 30))
-										{
-											if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
-											{
-												StartGIFAnimation();
-											}
-										}
+									}
 
 
 #if UNITY_2017_4_OR_NEWER
-										_strWrapper_64.Clear();
-										_strWrapper_64.AppendSpace(1, false);
-										_strWrapper_64.Append(_editor.GetText(TEXT.DLG_ExportMP4), true);
+									_strWrapper_64.Clear();
+									_strWrapper_64.AppendSpace(1, false);
+									_strWrapper_64.Append(_editor.GetText(TEXT.DLG_ExportMP4), true);
 
-										//string strTakeAMP4Animation = " " + _editor.GetText(TEXT.DLG_ExportMP4);
+									//string strTakeAMP4Animation = " " + _editor.GetText(TEXT.DLG_ExportMP4);
 
-										if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportMP4), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (_captureSelectedAnimClip != null), width, 30))
+									if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportMP4), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (_captureSelectedAnimClip != null), width, 30))
+									{
+										if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
 										{
-											if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
-											{
-												StartMP4Animation();
-											}
+											StartMP4Animation();
 										}
+									}
 #endif
 
-										GUILayout.Space(10);
+									GUILayout.Space(10);
 
 
-										_strWrapper_64.Clear();
-										_strWrapper_64.AppendSpace(2, false);
-										_strWrapper_64.Append(_editor.GetText(TEXT.DLG_AnimationClips), true);
+									_strWrapper_64.Clear();
+									_strWrapper_64.AppendSpace(2, false);
+									_strWrapper_64.Append(_editor.GetText(TEXT.DLG_AnimationClips), true);
 
-										//"Animation Clips"
-										GUILayout.Button(_strWrapper_64.ToString(), apGUIStyleWrapper.I.None_LabelColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));//투명 버튼
+									//"Animation Clips"
+									GUILayout.Button(_strWrapper_64.ToString(), apGUIStyleWrapper.I.None_LabelColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));//투명 버튼
 
-										//애니메이션 클립 리스트를 만들어야 한다.
-										if (subAnimClips.Count > 0)
+									//애니메이션 클립 리스트를 만들어야 한다.
+									if (subAnimClips.Count > 0)
+									{
+
+										if (_guiContent_Overall_AnimItem == null)
 										{
+											_guiContent_Overall_AnimItem = new apGUIContentWrapper();
+											_guiContent_Overall_AnimItem.ClearText(true);
+											_guiContent_Overall_AnimItem.SetImage(_editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_Animation));
+										}
 
-											if (_guiContent_Overall_AnimItem == null)
+										GUIStyle curGUIStyle = null;//최적화 코드
+
+										apAnimClip nextSelectedAnimClip = null;
+										for (int i = 0; i < subAnimClips.Count; i++)
+										{
+											apAnimClip animClip = subAnimClips[i];
+
+											if (animClip == _captureSelectedAnimClip)
 											{
-												_guiContent_Overall_AnimItem = new apGUIContentWrapper();
-												_guiContent_Overall_AnimItem.ClearText(true);
-												_guiContent_Overall_AnimItem.SetImage(_editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_Animation));
+												lastRect = GUILayoutUtility.GetLastRect();
+												
+												//변경 v1.4.2
+												apEditorUtil.DrawListUnitBG(lastRect.x + 1, lastRect.y + 20, width + 20 - 2, 20, apEditorUtil.UNIT_BG_STYLE.Main);
+
+												//curGUIStyle = apGUIStyleWrapper.I.None_White2Cyan;
+												curGUIStyle = apGUIStyleWrapper.I.None_MiddleLeft_White2Cyan;//v1.5.0
+											}
+											else
+											{
+												//curGUIStyle = apGUIStyleWrapper.I.None_LabelColor;
+												curGUIStyle = apGUIStyleWrapper.I.None_MiddleLeft_LabelColor;//v1.5.0
 											}
 
-											GUIStyle curGUIStyle = null;//최적화 코드
 
-											apAnimClip nextSelectedAnimClip = null;
-											for (int i = 0; i < subAnimClips.Count; i++)
+
+											EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width - 50));
+											GUILayout.Space(15);
+
+											//이전
+											//if (GUILayout.Button(new GUIContent(" " + animClip._name, iconImage), curGUIStyle, GUILayout.Width(width - 35), GUILayout.Height(20)))
+
+											//변경
+											_guiContent_Overall_AnimItem.ClearText(false);
+											_guiContent_Overall_AnimItem.AppendSpaceText(1, false);
+											_guiContent_Overall_AnimItem.AppendText(animClip._name, true);
+
+											if (GUILayout.Button(_guiContent_Overall_AnimItem.Content, curGUIStyle, apGUILOFactory.I.Width(width - 35), apGUILOFactory.I.Height(20)))
 											{
-												apAnimClip animClip = subAnimClips[i];
-
-												if (animClip == _captureSelectedAnimClip)
-												{
-													lastRect = GUILayoutUtility.GetLastRect();
-													
-													#region [미사용 코드]
-													//prevCaptureColor = GUI.backgroundColor;
-
-													//if (EditorGUIUtility.isProSkin)
-													//{
-													//	GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-													//}
-													//else
-													//{
-													//	GUI.backgroundColor = new Color(0.4f, 0.8f, 1.0f, 1.0f);
-													//}
-
-													//GUI.Box(new Rect(lastRect.x, lastRect.y + 20, width + 20, 20), apStringFactory.I.None);
-													//GUI.backgroundColor = prevGUIColor; 
-													#endregion
-
-													//변경 v1.4.2
-													apEditorUtil.DrawListUnitBG(lastRect.x + 1, lastRect.y + 20, width + 20 - 2, 20, apEditorUtil.UNIT_BG_STYLE.Main);
-
-													curGUIStyle = apGUIStyleWrapper.I.None_White2Cyan;
-												}
-												else
-												{
-													curGUIStyle = apGUIStyleWrapper.I.None_LabelColor;
-												}
-
-
-
-												EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width - 50));
-												GUILayout.Space(15);
-
-												//이전
-												//if (GUILayout.Button(new GUIContent(" " + animClip._name, iconImage), curGUIStyle, GUILayout.Width(width - 35), GUILayout.Height(20)))
-
-												//변경
-												_guiContent_Overall_AnimItem.ClearText(false);
-												_guiContent_Overall_AnimItem.AppendSpaceText(1, false);
-												_guiContent_Overall_AnimItem.AppendText(animClip._name, true);
-
-												if (GUILayout.Button(_guiContent_Overall_AnimItem.Content, curGUIStyle, apGUILOFactory.I.Width(width - 35), apGUILOFactory.I.Height(20)))
-												{
-													nextSelectedAnimClip = animClip;
-												}
-
-												EditorGUILayout.EndHorizontal();
+												nextSelectedAnimClip = animClip;
 											}
 
-											if (nextSelectedAnimClip != null)
+											EditorGUILayout.EndHorizontal();
+										}
+
+										if (nextSelectedAnimClip != null)
+										{
+											for (int i = 0; i < _editor._portrait._animClips.Count; i++)
 											{
-												for (int i = 0; i < _editor._portrait._animClips.Count; i++)
-												{
-													_editor._portrait._animClips[i]._isSelectedInEditor = false;
-												}
-
-												nextSelectedAnimClip.LinkEditor(_editor._portrait);
-												nextSelectedAnimClip.RefreshTimelines(null, null);
-												nextSelectedAnimClip.SetFrame_Editor(nextSelectedAnimClip.StartFrame);
-												nextSelectedAnimClip.Pause_Editor();
-												nextSelectedAnimClip._isSelectedInEditor = true;
-
-												_captureSelectedAnimClip = nextSelectedAnimClip;
-
-												_editor._portrait._animPlayManager.SetAnimClip_Editor(_captureSelectedAnimClip);
-
-												Editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
+												_editor._portrait._animClips[i]._isSelectedInEditor = false;
 											}
+
+											nextSelectedAnimClip.LinkEditor(_editor._portrait);
+											nextSelectedAnimClip.RefreshTimelines(null, null);
+											nextSelectedAnimClip.SetFrame_Editor(nextSelectedAnimClip.StartFrame);
+											nextSelectedAnimClip.Pause_Editor();
+											nextSelectedAnimClip._isSelectedInEditor = true;
+
+											_captureSelectedAnimClip = nextSelectedAnimClip;
+
+											_editor._portrait._animPlayManager.SetAnimClip_Editor(_captureSelectedAnimClip);
+
+											Editor.SetMeshGroupChanged();//<<추가 : 강제 업데이트를 해야한다.
 										}
 									}
 								}
 							}
-							catch (Exception)
-							{
-								//Debug.LogError("GUI Exception : " + ex);
-								//Debug.Log("Capture Mode : " + _captureMode);
-								//Debug.Log("isDrawProgressBar : " + isDrawProgressBar);
-								//Debug.Log("isDrawGIFAnimClips : " + isDrawGIFAnimClips);
-								//Debug.Log("Event : " + Event.current.type);
-							}
-
-							Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_GIF_ProgressBar, _captureMode != CAPTURE_MODE.None);//"Capture GIF ProgressBar"
-							Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_GIF_Clips, _captureMode == CAPTURE_MODE.None);//"Capture GIF Clips"
 						}
-						break;
-
-					case apEditor.ROOTUNIT_CAPTURE_MODE.SpriteSheet:
+						catch (Exception)
 						{
-							//4. 스프라이트 시트 캡쳐
-							EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.SpriteSheet));//"Sprite Sheet"
-							GUILayout.Space(5);
+							//Debug.LogError("GUI Exception : " + ex);
+							//Debug.Log("Capture Mode : " + _captureMode);
+							//Debug.Log("isDrawProgressBar : " + isDrawProgressBar);
+							//Debug.Log("isDrawGIFAnimClips : " + isDrawGIFAnimClips);
+							//Debug.Log("Event : " + Event.current.type);
+						}
 
-							bool isDrawProgressBar = Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_Spritesheet_ProgressBar);//"Capture Spritesheet ProgressBar"
-							bool isDrawSpritesheetSettings = Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_Spritesheet_Settings);//"Capture Spritesheet Settings"
+						Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_GIF_ProgressBar, _captureMode != CAPTURE_MODE.None);//"Capture GIF ProgressBar"
+						Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_GIF_Clips, _captureMode == CAPTURE_MODE.None);//"Capture GIF Clips"
+					}
+					break;
 
-							try
+				case apEditor.ROOTUNIT_CAPTURE_MODE.SpriteSheet:
+					{
+						//4. 스프라이트 시트 캡쳐
+						EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.SpriteSheet));//"Sprite Sheet"
+						GUILayout.Space(5);
+
+						bool isDrawProgressBar = Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_Spritesheet_ProgressBar);//"Capture Spritesheet ProgressBar"
+						bool isDrawSpritesheetSettings = Editor.IsDelayedGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_Spritesheet_Settings);//"Capture Spritesheet Settings"
+
+						try
+						{
+							if (_captureMode != CAPTURE_MODE.None)
 							{
-								if (_captureMode != CAPTURE_MODE.None)
+								if (isDrawProgressBar)
 								{
-									if (isDrawProgressBar)
+									//캡쳐 중에는 다른 UI 제어 불가
+
+									if (_captureMode == CAPTURE_MODE.Capturing_Spritesheet)
 									{
-										//캡쳐 중에는 다른 UI 제어 불가
+										EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.SpriteGIFWait));//"Please wait until finished. - TODO"
+																											//Rect lastRect = GUILayoutUtility.GetLastRect();
 
-										if (_captureMode == CAPTURE_MODE.Capturing_Spritesheet)
+										//Rect barRect = new Rect(lastRect.x + 10, lastRect.y + 30, width - 20, 20);
+										//float barRatio = (float)(_captureGIF_CurAnimProcess) / (float)(_captureGIF_TotalAnimProcess);
+
+										float barRatio = Editor.SeqExporter.ProcessRatio;
+										string barLabel = (int)(Mathf.Clamp01(barRatio) * 100.0f) + " %";
+
+										//EditorGUI.ProgressBar(barRect, barRatio, barLabel);
+										bool isCancel = EditorUtility.DisplayCancelableProgressBar("Exporting to Sprite Sheet", "Processing... " + barLabel, barRatio);
+										_captureGIF_IsProgressDialog = true;
+										if (isCancel)
 										{
-											EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.SpriteGIFWait));//"Please wait until finished. - TODO"
-																											   //Rect lastRect = GUILayoutUtility.GetLastRect();
-
-											//Rect barRect = new Rect(lastRect.x + 10, lastRect.y + 30, width - 20, 20);
-											//float barRatio = (float)(_captureGIF_CurAnimProcess) / (float)(_captureGIF_TotalAnimProcess);
-
-											float barRatio = Editor.SeqExporter.ProcessRatio;
-											string barLabel = (int)(Mathf.Clamp01(barRatio) * 100.0f) + " %";
-
-											//EditorGUI.ProgressBar(barRect, barRatio, barLabel);
-											bool isCancel = EditorUtility.DisplayCancelableProgressBar("Exporting to Sprite Sheet", "Processing... " + barLabel, barRatio);
-											_captureGIF_IsProgressDialog = true;
-											if (isCancel)
-											{
-												Editor.SeqExporter.RequestStop();
-												apEditorUtil.ReleaseGUIFocus();
-											}
+											Editor.SeqExporter.RequestStop();
+											apEditorUtil.ReleaseGUIFocus();
 										}
 									}
 								}
-								else
+							}
+							else
+							{
+								if (_captureGIF_IsProgressDialog)
 								{
-									if (_captureGIF_IsProgressDialog)
+									EditorUtility.ClearProgressBar();
+									_captureGIF_IsProgressDialog = false;
+								}
+
+								if (isDrawSpritesheetSettings)
+								{
+									List<apAnimClip> subAnimClips = RootUnitAnimClipList;
+									int nSubAnimClips = subAnimClips != null ? subAnimClips.Count : 0;
+
+									//저장할 Anim Clip 체크 리스트 초기화
+									if (!_captureSprite_IsAnimClipInit)
 									{
-										EditorUtility.ClearProgressBar();
-										_captureGIF_IsProgressDialog = false;
+										if(_captureSprite_AnimClipInfos == null)
+										{
+											_captureSprite_AnimClipInfos = new List<CaptureAnimInfo>();
+										}
+										_captureSprite_AnimClipInfos.Clear();
+
+										if(nSubAnimClips > 0)
+										{
+											for (int i = 0; i < nSubAnimClips; i++)
+											{
+												_captureSprite_AnimClipInfos.Add(new CaptureAnimInfo(subAnimClips[i]));
+											}
+										}
+
+										_captureSprite_AnimSearchKeyword = "";
+										_captureSprite_IsAnimClipInit = true;
 									}
 
-									if (isDrawSpritesheetSettings)
+									int nAnimFlagInfos = _captureSprite_AnimClipInfos != null ? _captureSprite_AnimClipInfos.Count : 0;
+
+									Color prevGUIColor = GUI.backgroundColor;
+									//GUIStyle guiStyleBox = new GUIStyle(GUI.skin.box);
+									//guiStyleBox.alignment = TextAnchor.MiddleCenter;
+									//guiStyleBox.normal.textColor = apEditorUtil.BoxTextColor;
+
+									GUI.backgroundColor = new Color(0.7f, 1.0f, 0.7f, 1.0f);
+
+									if (_strWrapper_128 == null)
 									{
-										List<apAnimClip> subAnimClips = RootUnitAnimClipList;
+										_strWrapper_128 = new apStringWrapper(128);
+									}
 
-										//그 전에 AnimClip 갱신부터
-										if (!_captureSprite_IsAnimClipInit)
+									_strWrapper_128.Clear();
+									_strWrapper_128.Append(Editor.GetUIWord(UIWORD.ExpectedNumSprites), false);
+									_strWrapper_128.Append("\n", false);
+
+									//string strNumOfSprites = Editor.GetUIWord(UIWORD.ExpectedNumSprites) + "\n";//"Expected number of sprites - TODO\n";
+
+									int spriteTotalSize_X = 0;
+									int spriteTotalSize_Y = 0;
+									switch (Editor._captureSpritePackImageWidth)
+									{
+										case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s256: spriteTotalSize_X = 256; break;
+										case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s512: spriteTotalSize_X = 512; break;
+										case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s1024: spriteTotalSize_X = 1024; break;
+										case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s2048: spriteTotalSize_X = 2048; break;
+										case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s4096: spriteTotalSize_X = 4096; break;
+										default: spriteTotalSize_X = 256; break;
+									}
+
+									switch (Editor._captureSpritePackImageHeight)
+									{
+										case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s256: spriteTotalSize_Y = 256; break;
+										case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s512: spriteTotalSize_Y = 512; break;
+										case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s1024: spriteTotalSize_Y = 1024; break;
+										case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s2048: spriteTotalSize_Y = 2048; break;
+										case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s4096: spriteTotalSize_Y = 4096; break;
+										default: spriteTotalSize_Y = 256; break;
+									}
+									//X축 개수
+									int numXOfSprite = -1;
+									if (Editor._captureFrame_SpriteUnitWidth > 0 || Editor._captureFrame_SpriteUnitWidth < spriteTotalSize_X)
+									{
+										numXOfSprite = spriteTotalSize_X / Editor._captureFrame_SpriteUnitWidth;
+									}
+
+									//Y축 개수
+									int numYOfSprite = -1;
+									if (Editor._captureFrame_SpriteUnitHeight > 0 || Editor._captureFrame_SpriteUnitHeight < spriteTotalSize_Y)
+									{
+										numYOfSprite = spriteTotalSize_Y / Editor._captureFrame_SpriteUnitHeight;
+									}
+									if (numXOfSprite <= 0 || numYOfSprite <= 0)
+									{
+										//strNumOfSprites += Editor.GetUIWord(UIWORD.InvalidSpriteSizeSettings);//"Invalid size settings";
+
+										_strWrapper_128.Append(Editor.GetUIWord(UIWORD.InvalidSpriteSizeSettings), true);
+
+										GUI.backgroundColor = new Color(1.0f, 0.7f, 0.7f, 1.0f);
+									}
+									else
+									{
+										//strNumOfSprites += numXOfSprite + " X " + numYOfSprite;
+
+										_strWrapper_128.Append(numXOfSprite, false);
+										_strWrapper_128.AppendSpace(1, false);
+										_strWrapper_128.Append(apStringFactory.I.X, false);
+										_strWrapper_128.AppendSpace(1, false);
+										_strWrapper_128.Append(numYOfSprite, true);
+									}
+									GUILayout.Box(_strWrapper_128.ToString(), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(40));
+
+									GUI.backgroundColor = prevGUIColor;
+
+									GUILayout.Space(5);
+
+
+
+									//Export Format
+									int width_ToggleLabel = width - (10 + 30);
+									EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.ExportMetaFile));//"Export Meta File - TODO"
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+									GUILayout.Space(5);
+									EditorGUILayout.LabelField(apStringFactory.I.XML, apGUILOFactory.I.Width(width_ToggleLabel));//"XML"
+									bool isMetaXML = EditorGUILayout.Toggle(Editor._captureSpriteMeta_XML, apGUILOFactory.I.Width(30));
+									EditorGUILayout.EndHorizontal();
+
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+									GUILayout.Space(5);
+									EditorGUILayout.LabelField(apStringFactory.I.JSON, apGUILOFactory.I.Width(width_ToggleLabel));//"JSON"
+									bool isMetaJSON = EditorGUILayout.Toggle(Editor._captureSpriteMeta_JSON, apGUILOFactory.I.Width(30));
+									EditorGUILayout.EndHorizontal();
+
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+									GUILayout.Space(5);
+									EditorGUILayout.LabelField(apStringFactory.I.TXT, apGUILOFactory.I.Width(width_ToggleLabel));//"TXT"
+									bool isMetaTXT = EditorGUILayout.Toggle(Editor._captureSpriteMeta_TXT, apGUILOFactory.I.Width(30));
+									EditorGUILayout.EndHorizontal();
+
+									if (isMetaXML != Editor._captureSpriteMeta_XML
+										|| isMetaJSON != Editor._captureSpriteMeta_JSON
+										|| isMetaTXT != Editor._captureSpriteMeta_TXT
+										)
+									{
+										Editor._captureSpriteMeta_XML = isMetaXML;
+										Editor._captureSpriteMeta_JSON = isMetaJSON;
+										Editor._captureSpriteMeta_TXT = isMetaTXT;
+
+										_editor.SaveEditorPref();
+										apEditorUtil.ReleaseGUIFocus();
+									}
+
+									GUILayout.Space(5);
+
+									EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.CaptureScreenPosZoom));//"Screen Position and Zoom"
+									GUILayout.Space(5);
+
+									//화면 위치
+									int width_ScreenPos = ((width - (10 + 30)) / 2) - 20;
+									GUILayout.Space(5);
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
+									GUILayout.Space(4);
+									EditorGUILayout.LabelField(apStringFactory.I.X, apGUILOFactory.I.Width(15));
+									Editor._captureSprite_ScreenPos.x = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.x, apGUILOFactory.I.Width(width_ScreenPos));
+									EditorGUILayout.LabelField(apStringFactory.I.Y, apGUILOFactory.I.Width(15));
+									Editor._captureSprite_ScreenPos.y = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.y, apGUILOFactory.I.Width(width_ScreenPos));
+
+									//GUIStyle guiStyle_SetBtn = new GUIStyle(GUI.skin.button);
+									//guiStyle_SetBtn.margin = GUI.skin.textField.margin;
+
+									if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))
+									{
+										Editor._scroll_CenterWorkSpace = Editor._captureSprite_ScreenPos * 0.01f;
+										Editor.SaveEditorPref();
+										apEditorUtil.ReleaseGUIFocus();
+									}
+
+									EditorGUILayout.EndHorizontal();
+									//Zoom
+
+									Rect lastRect = GUILayoutUtility.GetLastRect();
+									lastRect.x += 5;
+									lastRect.y += 25;
+									lastRect.width = width - (30 + 10 + 60 + 10);
+									lastRect.height = 20;
+
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
+									GUILayout.Space(6);
+									GUILayout.Space(width - (30 + 10 + 60));
+									//Editor._captureSprite_ScreenZoom = EditorGUILayout.IntSlider(Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1, GUILayout.Width(width - (30 + 10 + 40)));
+									float fScreenZoom = GUI.HorizontalSlider(lastRect, Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1);
+									Editor._captureSprite_ScreenZoom = Mathf.Clamp((int)fScreenZoom, 0, Editor._zoomListX100.Length - 1);
+
+									EditorGUILayout.LabelField(Editor._zoomListX100_Label[Editor._captureSprite_ScreenZoom], apGUILOFactory.I.Width(60));
+									if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))
+									{
+										Editor._iZoomX100 = Editor._captureSprite_ScreenZoom;
+										if (Editor._iZoomX100 < 0)
 										{
-											_captureSprite_AnimClips.Clear();
-											_captureSprite_AnimClipFlags.Clear();
-											for (int i = 0; i < subAnimClips.Count; i++)
-											{
-												_captureSprite_AnimClips.Add(subAnimClips[i]);
-												_captureSprite_AnimClipFlags.Add(false);
-											}
-
-											_captureSprite_IsAnimClipInit = true;
+											Editor._iZoomX100 = 0;
 										}
-
-										Color prevGUIColor = GUI.backgroundColor;
-										//GUIStyle guiStyleBox = new GUIStyle(GUI.skin.box);
-										//guiStyleBox.alignment = TextAnchor.MiddleCenter;
-										//guiStyleBox.normal.textColor = apEditorUtil.BoxTextColor;
-
-										GUI.backgroundColor = new Color(0.7f, 1.0f, 0.7f, 1.0f);
-
-										if (_strWrapper_128 == null)
+										else if (Editor._iZoomX100 >= Editor._zoomListX100.Length)
 										{
-											_strWrapper_128 = new apStringWrapper(128);
+											Editor._iZoomX100 = Editor._zoomListX100.Length - 1;
 										}
+										Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
+										Editor.SaveEditorPref();
+										apEditorUtil.ReleaseGUIFocus();
+									}
 
-										_strWrapper_128.Clear();
-										_strWrapper_128.Append(Editor.GetUIWord(UIWORD.ExpectedNumSprites), false);
-										_strWrapper_128.Append("\n", false);
+									EditorGUILayout.EndHorizontal();
 
-										//string strNumOfSprites = Editor.GetUIWord(UIWORD.ExpectedNumSprites) + "\n";//"Expected number of sprites - TODO\n";
+									//"Focus To Center"
+									if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.CaptureMoveToCenter), Editor.GetUIWord(UIWORD.CaptureMoveToCenter), false, true, width, 20))
+									{
+										Editor._scroll_CenterWorkSpace = Vector2.zero;
+										Editor._captureSprite_ScreenPos = Vector2.zero;
+										Editor.SaveEditorPref();
+										apEditorUtil.ReleaseGUIFocus();
+									}
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+									GUILayout.Space(4);
 
-										int spriteTotalSize_X = 0;
-										int spriteTotalSize_Y = 0;
-										switch (Editor._captureSpritePackImageWidth)
+
+									if (_strWrapper_64 == null)
+									{
+										_strWrapper_64 = new apStringWrapper(64);
+									}
+
+									_strWrapper_64.Clear();
+									_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
+									_strWrapper_64.AppendSpace(1, false);
+									_strWrapper_64.Append(apStringFactory.I.Minus, true);
+
+									//"Zoom -"
+									if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
+									{
+										Editor._iZoomX100--;
+										if (Editor._iZoomX100 < 0) { Editor._iZoomX100 = 0; }
+										Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
+										Editor.SaveEditorPref();
+										apEditorUtil.ReleaseGUIFocus();
+									}
+
+									_strWrapper_64.Clear();
+									_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
+									_strWrapper_64.AppendSpace(1, false);
+									_strWrapper_64.Append(apStringFactory.I.Plus, true);
+
+									//"Zoom +"
+									if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
+									{
+										Editor._iZoomX100++;
+										if (Editor._iZoomX100 >= Editor._zoomListX100.Length) { Editor._iZoomX100 = Editor._zoomListX100.Length - 1; }
+										Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
+										Editor.SaveEditorPref();
+									}
+									EditorGUILayout.EndHorizontal();
+
+									GUILayout.Space(10);
+									apEditorUtil.GUI_DelimeterBoxH(width);
+									GUILayout.Space(10);
+
+									int nAnimClipToExport = 0;
+									if(nAnimFlagInfos > 0)
+									{
+										CaptureAnimInfo curAnimInfo = null;
+										for (int i = 0; i < nAnimFlagInfos; i++)
 										{
-											case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s256: spriteTotalSize_X = 256; break;
-											case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s512: spriteTotalSize_X = 512; break;
-											case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s1024: spriteTotalSize_X = 1024; break;
-											case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s2048: spriteTotalSize_X = 2048; break;
-											case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s4096: spriteTotalSize_X = 4096; break;
-											default: spriteTotalSize_X = 256; break;
-										}
-
-										switch (Editor._captureSpritePackImageHeight)
-										{
-											case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s256: spriteTotalSize_Y = 256; break;
-											case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s512: spriteTotalSize_Y = 512; break;
-											case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s1024: spriteTotalSize_Y = 1024; break;
-											case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s2048: spriteTotalSize_Y = 2048; break;
-											case apEditor.CAPTURE_SPRITE_PACK_IMAGE_SIZE.s4096: spriteTotalSize_Y = 4096; break;
-											default: spriteTotalSize_Y = 256; break;
-										}
-										//X축 개수
-										int numXOfSprite = -1;
-										if (Editor._captureFrame_SpriteUnitWidth > 0 || Editor._captureFrame_SpriteUnitWidth < spriteTotalSize_X)
-										{
-											numXOfSprite = spriteTotalSize_X / Editor._captureFrame_SpriteUnitWidth;
-										}
-
-										//Y축 개수
-										int numYOfSprite = -1;
-										if (Editor._captureFrame_SpriteUnitHeight > 0 || Editor._captureFrame_SpriteUnitHeight < spriteTotalSize_Y)
-										{
-											numYOfSprite = spriteTotalSize_Y / Editor._captureFrame_SpriteUnitHeight;
-										}
-										if (numXOfSprite <= 0 || numYOfSprite <= 0)
-										{
-											//strNumOfSprites += Editor.GetUIWord(UIWORD.InvalidSpriteSizeSettings);//"Invalid size settings";
-
-											_strWrapper_128.Append(Editor.GetUIWord(UIWORD.InvalidSpriteSizeSettings), true);
-
-											GUI.backgroundColor = new Color(1.0f, 0.7f, 0.7f, 1.0f);
-										}
-										else
-										{
-											//strNumOfSprites += numXOfSprite + " X " + numYOfSprite;
-
-											_strWrapper_128.Append(numXOfSprite, false);
-											_strWrapper_128.AppendSpace(1, false);
-											_strWrapper_128.Append(apStringFactory.I.X, false);
-											_strWrapper_128.AppendSpace(1, false);
-											_strWrapper_128.Append(numYOfSprite, true);
-										}
-										GUILayout.Box(_strWrapper_128.ToString(), apGUIStyleWrapper.I.Box_MiddleCenter_BoxTextColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(40));
-
-										GUI.backgroundColor = prevGUIColor;
-
-										GUILayout.Space(5);
-
-
-
-										//Export Format
-										int width_ToggleLabel = width - (10 + 30);
-										EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.ExportMetaFile));//"Export Meta File - TODO"
-										EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-										GUILayout.Space(5);
-										EditorGUILayout.LabelField(apStringFactory.I.XML, apGUILOFactory.I.Width(width_ToggleLabel));//"XML"
-										bool isMetaXML = EditorGUILayout.Toggle(Editor._captureSpriteMeta_XML, apGUILOFactory.I.Width(30));
-										EditorGUILayout.EndHorizontal();
-
-										EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-										GUILayout.Space(5);
-										EditorGUILayout.LabelField(apStringFactory.I.JSON, apGUILOFactory.I.Width(width_ToggleLabel));//"JSON"
-										bool isMetaJSON = EditorGUILayout.Toggle(Editor._captureSpriteMeta_JSON, apGUILOFactory.I.Width(30));
-										EditorGUILayout.EndHorizontal();
-
-										EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-										GUILayout.Space(5);
-										EditorGUILayout.LabelField(apStringFactory.I.TXT, apGUILOFactory.I.Width(width_ToggleLabel));//"TXT"
-										bool isMetaTXT = EditorGUILayout.Toggle(Editor._captureSpriteMeta_TXT, apGUILOFactory.I.Width(30));
-										EditorGUILayout.EndHorizontal();
-
-										if (isMetaXML != Editor._captureSpriteMeta_XML
-											|| isMetaJSON != Editor._captureSpriteMeta_JSON
-											|| isMetaTXT != Editor._captureSpriteMeta_TXT
-											)
-										{
-											Editor._captureSpriteMeta_XML = isMetaXML;
-											Editor._captureSpriteMeta_JSON = isMetaJSON;
-											Editor._captureSpriteMeta_TXT = isMetaTXT;
-
-											_editor.SaveEditorPref();
-											apEditorUtil.ReleaseGUIFocus();
-										}
-
-										GUILayout.Space(5);
-
-										EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.CaptureScreenPosZoom));//"Screen Position and Zoom"
-										GUILayout.Space(5);
-
-										//화면 위치
-										int width_ScreenPos = ((width - (10 + 30)) / 2) - 20;
-										GUILayout.Space(5);
-										EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
-										GUILayout.Space(4);
-										EditorGUILayout.LabelField(apStringFactory.I.X, apGUILOFactory.I.Width(15));
-										Editor._captureSprite_ScreenPos.x = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.x, apGUILOFactory.I.Width(width_ScreenPos));
-										EditorGUILayout.LabelField(apStringFactory.I.Y, apGUILOFactory.I.Width(15));
-										Editor._captureSprite_ScreenPos.y = EditorGUILayout.DelayedFloatField(Editor._captureSprite_ScreenPos.y, apGUILOFactory.I.Width(width_ScreenPos));
-
-										//GUIStyle guiStyle_SetBtn = new GUIStyle(GUI.skin.button);
-										//guiStyle_SetBtn.margin = GUI.skin.textField.margin;
-
-										if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))
-										{
-											Editor._scroll_CenterWorkSpace = Editor._captureSprite_ScreenPos * 0.01f;
-											Editor.SaveEditorPref();
-											apEditorUtil.ReleaseGUIFocus();
-										}
-
-										EditorGUILayout.EndHorizontal();
-										//Zoom
-
-										Rect lastRect = GUILayoutUtility.GetLastRect();
-										lastRect.x += 5;
-										lastRect.y += 25;
-										lastRect.width = width - (30 + 10 + 60 + 10);
-										lastRect.height = 20;
-
-										EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));
-										GUILayout.Space(6);
-										GUILayout.Space(width - (30 + 10 + 60));
-										//Editor._captureSprite_ScreenZoom = EditorGUILayout.IntSlider(Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1, GUILayout.Width(width - (30 + 10 + 40)));
-										float fScreenZoom = GUI.HorizontalSlider(lastRect, Editor._captureSprite_ScreenZoom, 0, Editor._zoomListX100.Length - 1);
-										Editor._captureSprite_ScreenZoom = Mathf.Clamp((int)fScreenZoom, 0, Editor._zoomListX100.Length - 1);
-
-										EditorGUILayout.LabelField(Editor._zoomListX100_Label[Editor._captureSprite_ScreenZoom], apGUILOFactory.I.Width(60));
-										if (GUILayout.Button(apStringFactory.I.Set, apGUIStyleWrapper.I.Button_TextFieldMargin, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(18)))
-										{
-											Editor._iZoomX100 = Editor._captureSprite_ScreenZoom;
-											if (Editor._iZoomX100 < 0)
-											{
-												Editor._iZoomX100 = 0;
-											}
-											else if (Editor._iZoomX100 >= Editor._zoomListX100.Length)
-											{
-												Editor._iZoomX100 = Editor._zoomListX100.Length - 1;
-											}
-											Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
-											Editor.SaveEditorPref();
-											apEditorUtil.ReleaseGUIFocus();
-										}
-
-										EditorGUILayout.EndHorizontal();
-
-										//"Focus To Center"
-										if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.CaptureMoveToCenter), Editor.GetUIWord(UIWORD.CaptureMoveToCenter), false, true, width, 20))
-										{
-											Editor._scroll_CenterWorkSpace = Vector2.zero;
-											Editor._captureSprite_ScreenPos = Vector2.zero;
-											Editor.SaveEditorPref();
-											apEditorUtil.ReleaseGUIFocus();
-										}
-										EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-										GUILayout.Space(4);
-
-
-										if (_strWrapper_64 == null)
-										{
-											_strWrapper_64 = new apStringWrapper(64);
-										}
-
-										_strWrapper_64.Clear();
-										_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
-										_strWrapper_64.AppendSpace(1, false);
-										_strWrapper_64.Append(apStringFactory.I.Minus, true);
-
-										//"Zoom -"
-										if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
-										{
-											Editor._iZoomX100--;
-											if (Editor._iZoomX100 < 0) { Editor._iZoomX100 = 0; }
-											Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
-											Editor.SaveEditorPref();
-											apEditorUtil.ReleaseGUIFocus();
-										}
-
-										_strWrapper_64.Clear();
-										_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureZoom), false);
-										_strWrapper_64.AppendSpace(1, false);
-										_strWrapper_64.Append(apStringFactory.I.Plus, true);
-
-										//"Zoom +"
-										if (apEditorUtil.ToggledButton_2Side(_strWrapper_64.ToString(), _strWrapper_64.ToString(), false, true, width / 2 - 2, 20))
-										{
-											Editor._iZoomX100++;
-											if (Editor._iZoomX100 >= Editor._zoomListX100.Length) { Editor._iZoomX100 = Editor._zoomListX100.Length - 1; }
-											Editor._captureSprite_ScreenZoom = Editor._iZoomX100;
-											Editor.SaveEditorPref();
-										}
-										EditorGUILayout.EndHorizontal();
-
-										GUILayout.Space(10);
-										apEditorUtil.GUI_DelimeterBoxH(width);
-										GUILayout.Space(10);
-
-										int nAnimClipToExport = 0;
-										for (int i = 0; i < _captureSprite_AnimClipFlags.Count; i++)
-										{
-											if (_captureSprite_AnimClipFlags[i])
+											curAnimInfo = _captureSprite_AnimClipInfos[i];
+											if (curAnimInfo._isSelected)
 											{
 												nAnimClipToExport++;
 											}
 										}
+									}
+									
+									_strWrapper_64.Clear();
+									_strWrapper_64.AppendSpace(1, false);
+									_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureExportSpriteSheets), true);
 
-										//string strTakeSpriteSheets = " " + Editor.GetUIWord(UIWORD.CaptureExportSpriteSheets);//"Export Sprite Sheets";
-										//string strTakeSequenceFiles = " " + Editor.GetUIWord(UIWORD.CaptureExportSeqFiles);//"Export Sequence Files";
-
-										_strWrapper_64.Clear();
-										_strWrapper_64.AppendSpace(1, false);
-										_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureExportSpriteSheets), true);
-
-										if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportSprite), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (numXOfSprite > 0 && numYOfSprite > 0 && nAnimClipToExport > 0), width, 30))
+									if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportSprite), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (numXOfSprite > 0 && numYOfSprite > 0 && nAnimClipToExport > 0), width, 30))
+									{
+										if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
 										{
-											if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
-											{
-												StartSpriteSheet(false);
-											}
+											StartSpriteSheet(false);
 										}
+									}
 
-										_strWrapper_64.Clear();
-										_strWrapper_64.AppendSpace(1, false);
-										_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureExportSeqFiles), true);
+									_strWrapper_64.Clear();
+									_strWrapper_64.AppendSpace(1, false);
+									_strWrapper_64.Append(Editor.GetUIWord(UIWORD.CaptureExportSeqFiles), true);
 
-										if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportSequence), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (nAnimClipToExport > 0), width, 25))
+									if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Capture_ExportSequence), _strWrapper_64.ToString(), _strWrapper_64.ToString(), false, (nAnimClipToExport > 0), width, 25))
+									{
+										if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
 										{
-											if (CheckCaptureIssues())//추가 : 캡쳐 처리 가능한지 확인
-											{
-												StartSpriteSheet(true);
-											}
+											StartSpriteSheet(true);
 										}
-										GUILayout.Space(5);
+									}
+									GUILayout.Space(5);
 
-										GUILayout.Space(10);
-										apEditorUtil.GUI_DelimeterBoxH(width);
-										GUILayout.Space(10);
+									GUILayout.Space(10);
+									apEditorUtil.GUI_DelimeterBoxH(width);
+									GUILayout.Space(10);
 
-										EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-										GUILayout.Space(4);
-										//"Select All"
-										if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.CaptureSelectAll), Editor.GetUIWord(UIWORD.CaptureSelectAll), false, true, width / 2 - 2, 20))
+									//추가 v1.5.1 : 검색 기능
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+									GUILayout.Space(4);
+									EditorGUILayout.LabelField(_editor.GetText(TEXT.DLG_Search), apGUILOFactory.I.Width(70));
+
+									EditorGUI.BeginChangeCheck();
+									string nextSearchKeyword = EditorGUILayout.DelayedTextField(_captureSprite_AnimSearchKeyword, apGUILOFactory.I.Width(width - 76));
+									if(EditorGUI.EndChangeCheck())
+									{
+										if(!string.Equals(_captureSprite_AnimSearchKeyword, nextSearchKeyword))
 										{
-											for (int i = 0; i < _captureSprite_AnimClipFlags.Count; i++)
+											//검색 키워드가 변경되었다.
+											_captureSprite_AnimSearchKeyword = nextSearchKeyword;
+
+											CaptureAnimInfo curAnimInfo = null;
+
+											if (nAnimFlagInfos > 0)
 											{
-												_captureSprite_AnimClipFlags[i] = true;
-											}
-										}
-										//"Deselect All"
-										if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.CaptureDeselectAll), Editor.GetUIWord(UIWORD.CaptureDeselectAll), false, true, width / 2 - 2, 20))
-										{
-											for (int i = 0; i < _captureSprite_AnimClipFlags.Count; i++)
-											{
-												_captureSprite_AnimClipFlags[i] = false;
-											}
-										}
-										EditorGUILayout.EndHorizontal();
-
-										GUILayout.Space(10);
-
-										//애니메이션 클립별로 "Export"할 것인지 지정
-										//GUIStyle guiStyle_None = new GUIStyle(GUIStyle.none);
-										//guiStyle_None.normal.textColor = GUI.skin.label.normal.textColor;
-
-
-										//"Animation Clips"
-										_strWrapper_64.Clear();
-										_strWrapper_64.AppendSpace(2, false);
-										_strWrapper_64.Append(_editor.GetText(TEXT.DLG_AnimationClips), true);
-
-										GUILayout.Button(_strWrapper_64.ToString(), apGUIStyleWrapper.I.None_LabelColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));//투명 버튼
-
-
-
-										//애니메이션 클립 리스트를 만들어야 한다.
-										if (subAnimClips.Count > 0)
-										{
-											if (_guiContent_Overall_AnimItem == null)
-											{
-												_guiContent_Overall_AnimItem = new apGUIContentWrapper();
-												_guiContent_Overall_AnimItem.ClearText(true);
-												_guiContent_Overall_AnimItem.SetImage(_editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_Animation));
-											}
-
-											//Texture2D iconImage = _editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_Animation);
-
-											for (int i = 0; i < subAnimClips.Count; i++)
-											{
-												//GUIStyle curGUIStyle = guiStyle_None;
-
-												apAnimClip animClip = subAnimClips[i];
-
-												//if (animClip == _captureSelectedAnimClip)
-												//{
-												//	Rect lastRect = GUILayoutUtility.GetLastRect();
-												//	prevCaptureColor = GUI.backgroundColor;
-
-												//	if (EditorGUIUtility.isProSkin)
-												//	{
-												//		GUI.backgroundColor = new Color(0.0f, 1.0f, 1.0f, 1.0f);
-												//	}
-												//	else
-												//	{
-												//		GUI.backgroundColor = new Color(0.4f, 0.8f, 1.0f, 1.0f);
-												//	}
-
-												//	GUI.Box(new Rect(lastRect.x, lastRect.y + 20, width + 20, 20), "");
-												//	GUI.backgroundColor = prevGUIColor;
-
-												//	curGUIStyle = guiStyle_Selected;
-												//}
-
-												EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width - 50));
-												GUILayout.Space(15);
-
-												//이전
-												//if (GUILayout.Button(new GUIContent(" " + animClip._name, iconImage), curGUIStyle, GUILayout.Width((width - 35) - 35), GUILayout.Height(20)))
-
-												//변경
-												_guiContent_Overall_AnimItem.ClearText(false);
-												_guiContent_Overall_AnimItem.AppendSpaceText(1, false);
-												_guiContent_Overall_AnimItem.AppendText(animClip._name, true);
-
-												if (GUILayout.Button(_guiContent_Overall_AnimItem.Content, apGUIStyleWrapper.I.None_LabelColor, apGUILOFactory.I.Width((width - 35) - 35), apGUILOFactory.I.Height(20)))
+												if (string.IsNullOrEmpty(_captureSprite_AnimSearchKeyword))
 												{
-													//nextSelectedAnimClip = animClip;
+													//검색 키워드가 없다면 모든 애니메이션 정보를 보여주자.
+													for (int i = 0; i < nAnimFlagInfos; i++)
+													{
+														curAnimInfo = _captureSprite_AnimClipInfos[i];
+														curAnimInfo._isVisible = true;
+													}
 												}
-												_captureSprite_AnimClipFlags[i] = EditorGUILayout.Toggle(_captureSprite_AnimClipFlags[i], apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(20));
+												else
+												{
+													//검색된 애니메이션 정보만 보여준다.
+													//만약 선택된 정보 중에서 숨겨지는 정보가 있다면 선택을 해제한다.
+													for (int i = 0; i < nAnimFlagInfos; i++)
+													{
+														curAnimInfo = _captureSprite_AnimClipInfos[i];
+														bool isSearched = false;
+														if(curAnimInfo._animClip != null)
+														{
+															if(curAnimInfo._animClip._name.Contains(_captureSprite_AnimSearchKeyword))
+															{
+																//검색되었다.
+																isSearched = true;
+															}
+														}
 
-												EditorGUILayout.EndHorizontal();
+														if(isSearched)
+														{
+															//검색되었다면
+															curAnimInfo._isVisible = true;
+														}
+														else
+														{
+															//검색되지 않았다면 (선택도 초기화)
+															curAnimInfo._isVisible = false;
+															curAnimInfo._isSelected = false;
+														}
+														
+													}
+												}
 											}
-
-
 										}
+
+										apEditorUtil.ReleaseGUIFocus();
+									}
+
+
+									EditorGUILayout.EndHorizontal();
+
+									GUILayout.Space(2);
+
+									EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+									GUILayout.Space(4);
+									//"Select All"
+									if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.CaptureSelectAll), Editor.GetUIWord(UIWORD.CaptureSelectAll), false, true, width / 2 - 2, 20))
+									{
+										if(nAnimFlagInfos > 0)
+										{
+											//검색된 객체 중에서 선택을 하자
+											CaptureAnimInfo curAnimInfo = null;
+											for (int i = 0; i < nAnimFlagInfos; i++)
+											{
+												curAnimInfo = _captureSprite_AnimClipInfos[i];
+												if(curAnimInfo._isVisible)
+												{
+													curAnimInfo._isSelected = true;
+												}
+												else
+												{
+													curAnimInfo._isSelected = false;//검색되지 않은건 선택 안함
+												}
+											}
+										}
+										
+									}
+									//"Deselect All"
+									if (apEditorUtil.ToggledButton_2Side(Editor.GetUIWord(UIWORD.CaptureDeselectAll), Editor.GetUIWord(UIWORD.CaptureDeselectAll), false, true, width / 2 - 2, 20))
+									{
+										//모든 선택을 해제한다.
+										if (nAnimFlagInfos > 0)
+										{
+											CaptureAnimInfo curAnimInfo = null;
+											for (int i = 0; i < nAnimFlagInfos; i++)
+											{
+												curAnimInfo = _captureSprite_AnimClipInfos[i];
+												curAnimInfo._isSelected = false;
+											}
+										}
+									}
+									EditorGUILayout.EndHorizontal();
+
+									GUILayout.Space(10);
+
+									//애니메이션 클립별로 "Export"할 것인지 지정
+									//GUIStyle guiStyle_None = new GUIStyle(GUIStyle.none);
+									//guiStyle_None.normal.textColor = GUI.skin.label.normal.textColor;
+
+
+									//"Animation Clips"
+									_strWrapper_64.Clear();
+									_strWrapper_64.AppendSpace(2, false);
+									_strWrapper_64.Append(_editor.GetText(TEXT.DLG_AnimationClips), true);
+
+									GUILayout.Button(_strWrapper_64.ToString(), apGUIStyleWrapper.I.None_LabelColor, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(20));//투명 버튼
+
+
+
+									//애니메이션 클립 리스트를 만들어야 한다.
+									if (nAnimFlagInfos > 0)
+									{
+										CaptureAnimInfo curAnimInfo = null;
+
+										if (_guiContent_Overall_AnimItem == null)
+										{
+											_guiContent_Overall_AnimItem = new apGUIContentWrapper();
+											_guiContent_Overall_AnimItem.ClearText(true);
+											_guiContent_Overall_AnimItem.SetImage(_editor.ImageSet.Get(apImageSet.PRESET.Hierarchy_Animation));
+										}
+
+										for (int i = 0; i < nAnimFlagInfos; i++)
+										{
+											curAnimInfo = _captureSprite_AnimClipInfos[i];
+											if(!curAnimInfo._isVisible)
+											{
+												//검색되지 않았다.
+												continue;
+											}
+											
+											EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width - 50));
+											GUILayout.Space(15);
+
+											//변경
+											_guiContent_Overall_AnimItem.ClearText(false);
+											_guiContent_Overall_AnimItem.AppendSpaceText(1, false);
+											_guiContent_Overall_AnimItem.AppendText(curAnimInfo._animClip._name, true);
+
+											if (GUILayout.Button(_guiContent_Overall_AnimItem.Content, apGUIStyleWrapper.I.None_LabelColor, apGUILOFactory.I.Width((width - 35) - 35), apGUILOFactory.I.Height(20)))
+											{
+												//nextSelectedAnimClip = animClip;
+											}
+											curAnimInfo._isSelected = EditorGUILayout.Toggle(curAnimInfo._isSelected, apGUILOFactory.I.Width(30), apGUILOFactory.I.Height(20));
+
+											EditorGUILayout.EndHorizontal();
+										}
+
+
 									}
 								}
 							}
-							catch (Exception ex)
-							{
-								Debug.LogError("GUI Exception : " + ex);
-
-							}
-
-							Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_Spritesheet_ProgressBar, _captureMode != CAPTURE_MODE.None);//"Capture Spritesheet ProgressBar"
-							Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_Spritesheet_Settings, _captureMode == CAPTURE_MODE.None);//"Capture Spritesheet Settings"
 						}
-						break;
-				}
+						catch (Exception ex)
+						{
+							Debug.LogError("GUI Exception : " + ex);
 
-				//이것도 Thumbnail이 아닌 경우
-				//Screenshot + GIF Animation : _captureFrame_DstWidth x _captureFrame_DstHeight을 사용한다.
-				//Sprite Sheet : 단위 유닛 크기 / 전체 이미지 파일 크기 (_captureFrame_DstWidth)의 두가지를 이용한다.
+						}
 
-				//1) Setting
-				//Position + Capture Size + File Size / BG Color / Aspect Ratio Fixed
-
-				//<Export 방식은 탭으로 구분한다>
-				//2) Thumbnail
-				// Size (Width) Preview / Path + Change / Make Thumbnail
-				//3) Screen Shot
-				// Size (Width / Height x Src + Dst) / Take a Screenshot
-				//4) GIF Animation
-				// Size (Width / Height x Src + Dst) Animation Clip Name / Quality / Loop Count / Animation Clips / Take a GIF Animation + ProgressBar
-				//5) Sprite
-				//- Size (개별 캡쳐 크기 / 전체 이미지 크기 / 
-				//- 출력 방식 : 스프라이트 시트 Only / Sprite + XML / Sprite + JSON
-				//- 
+						Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_Spritesheet_ProgressBar, _captureMode != CAPTURE_MODE.None);//"Capture Spritesheet ProgressBar"
+						Editor.SetGUIVisible(apEditor.DELAYED_UI_TYPE.Capture_Spritesheet_Settings, _captureMode == CAPTURE_MODE.None);//"Capture Spritesheet Settings"
+					}
+					break;
 			}
 		}
+
 
 		/// <summary>
 		/// 캡쳐 옵션에서 크기가 바뀌는 경우에 Aspect Ratio 유지 옵션이 켜진 상태에서 Width가 변경되면 호출되는 함수.
@@ -3027,7 +3010,26 @@ namespace AnyPortrait
 		//4. Sprite Sheet로 만들기
 		private void StartSpriteSheet(bool isSequenceFiles)
 		{
-			if (RootUnitAnimClipList.Count != _captureSprite_AnimClipFlags.Count || _editor.Select.RootUnit._childMeshGroup == null)
+			if (_editor.Select.RootUnit._childMeshGroup == null)
+			{
+				return;
+			}
+
+			List<CaptureAnimInfo> targetAnimInfos = new List<CaptureAnimInfo>();
+			int nAnimInfos = _captureSprite_AnimClipInfos != null ? _captureSprite_AnimClipInfos.Count : 0;
+
+			CaptureAnimInfo curInfo = null;
+			for (int i = 0; i < nAnimInfos; i++)
+			{
+				curInfo = _captureSprite_AnimClipInfos[i];
+				if(curInfo._animClip != null && curInfo._isSelected)
+				{
+					targetAnimInfos.Add(curInfo);//대상에 넣자
+				}
+			}
+
+			//대상 애니메이션이 없다.
+			if(targetAnimInfos.Count == 0)
 			{
 				return;
 			}
@@ -3110,8 +3112,8 @@ namespace AnyPortrait
 				Editor.Exporter.ClearCache();//v1.4.6 : RT 보정등을 위한 캐시를 초기화
 
 				bool isResult = Editor.SeqExporter.StartSpritesheet(_editor.Select.RootUnit,
-													RootUnitAnimClipList,
-													_captureSprite_AnimClipFlags,
+													//RootUnitAnimClipList, _captureSprite_AnimClipFlags,//이전
+													targetAnimInfos,//변경 v1.5.1
 													saveFilePath,
 													_editor._captureSpriteTrimSize == apEditor.CAPTURE_SPRITE_TRIM_METHOD.Compressed,
 													isSequenceFiles,
@@ -6834,6 +6836,7 @@ namespace AnyPortrait
 					{
 						Editor._meshGroupEditMode = apEditor.MESHGROUP_EDIT_MODE.Setting;
 						_isMeshGroupSetting_EditDefaultTransform = false;
+						_isBoneDefaultEditing = false;
 
 						//선택 모두 초기화
 						
@@ -6858,9 +6861,14 @@ namespace AnyPortrait
 						_rigEdit_isTestPosing = false;
 						SetBoneRiggingTest();
 
+						//[v1.5.0 추가] 탭 변경시 모디파이어 활성/비활성 갱신
+						AutoRefreshModifierExclusiveEditing();
 
 						//[v1.4.2] 리깅 도중에 탭 변경시, "모디파이어에 선택되지 않은 본/메시" 정보를 리셋한다.
 						SetEnableMeshGroupExEditingFlagsForce();
+
+						
+						
 
 
 						//스크롤 초기화 (오른쪽2)
@@ -6880,6 +6888,7 @@ namespace AnyPortrait
 					if (isExecutable)
 					{
 						Editor._meshGroupEditMode = apEditor.MESHGROUP_EDIT_MODE.Bone;
+						_isMeshGroupSetting_EditDefaultTransform = false;
 						_isBoneDefaultEditing = false;
 
 
@@ -6909,6 +6918,8 @@ namespace AnyPortrait
 
 						SetBoneEditing(false, true);
 
+						//[v1.5.0 추가] 탭 변경시 모디파이어 활성/비활성 갱신
+						AutoRefreshModifierExclusiveEditing();
 
 						//[v1.4.2] 리깅 도중에 탭 변경시, "모디파이어에 선택되지 않은 본/메시" 정보를 리셋한다.
 						SetEnableMeshGroupExEditingFlagsForce();
@@ -6945,36 +6956,44 @@ namespace AnyPortrait
 						SetBoneEditing(false, false);//Bone 처리는 종료 
 
 						Editor._meshGroupEditMode = apEditor.MESHGROUP_EDIT_MODE.Modifier;
+						_isMeshGroupSetting_EditDefaultTransform = false;
+						_isBoneDefaultEditing = false;
 
-						bool isSelectMod = false;
-						if (Modifier == null)
+						//[v1.5.0] 이전에 선택했던 Modifier를 찾자
+						apModifierBase lastMod = _lastSelectedModifier;
+						if(lastMod == null)
 						{
-							//이전에 선택했던 Modifier가 없다면..
+							lastMod = Modifier;
+						}
+
+						//선택된게 없다면 맨 위의 모디파이어를 선택
+						if (lastMod == null)
+						{
 							if (_meshGroup._modifierStack != null)
 							{
 								if (_meshGroup._modifierStack._modifiers.Count > 0)
 								{
 									//맨 위의 Modifier를 자동으로 선택해주자
 									int nMod = _meshGroup._modifierStack._modifiers.Count;
-									apModifierBase lastMod = _meshGroup._modifierStack._modifiers[nMod - 1];
-									SelectModifier(lastMod);
-									isSelectMod = true;
+									lastMod = _meshGroup._modifierStack._modifiers[nMod - 1];
 								}
 							}
 						}
+
+						//마지막으로 선택한걸 활성
+						if (lastMod != null)
+						{
+							SelectModifier(lastMod);
+							_lastSelectedModifier = lastMod;
+						}
 						else
 						{
-							SelectModifier(Modifier);
-
-							isSelectMod = true;
-						}
-
-						if (!isSelectMod)
-						{
 							SelectModifier(null);
+							_lastSelectedModifier = null;
 						}
 
-
+						//[v1.5.0 추가] 탭 변경시 모디파이어 활성/비활성 갱신
+						AutoRefreshModifierExclusiveEditing();
 
 						//스크롤 초기화 (오른쪽2)
 						Editor.ResetScrollPosition(false, false, false, true, false);
@@ -7557,6 +7576,9 @@ namespace AnyPortrait
 					if (isExecutable)
 					{
 						SelectModifier(modifier);
+
+						//[v1.5.0] 마지막으로 선택한 모디파이어로 저장
+						_lastSelectedModifier = modifier;
 					}
 				}
 			}
@@ -8538,8 +8560,8 @@ namespace AnyPortrait
 			//추가 20.6.1 : 다중 선택
 			bool isMultipleSelected = false;
 
-			List<apTransform_Mesh> selectedMeshTFs = GetSubSeletedMeshTFs(false);
-			List<apTransform_MeshGroup> selectedMeshGroupTFs = GetSubSeletedMeshGroupTFs(false);
+			List<apTransform_Mesh> selectedMeshTFs = GetSubSelectedMeshTFs(false);
+			List<apTransform_MeshGroup> selectedMeshGroupTFs = GetSubSelectedMeshGroupTFs(false);
 			int nSubSelectedMeshTFs_All = selectedMeshTFs.Count;
 			int nSubSelectedMeshGroupTFs_All = selectedMeshGroupTFs.Count;
 
@@ -9176,7 +9198,7 @@ namespace AnyPortrait
 									MeshTF_Main._customShader = nextCustomShader;
 
 									//apEditorUtil.ReleaseGUIFocus();
-									apEditorUtil.SetEditorDirty();
+									apEditorUtil.SetDirty(_editor);
 								}
 							}
 							catch (Exception) { }
@@ -9347,6 +9369,25 @@ namespace AnyPortrait
 												}
 											}
 											catch (Exception) { }
+										}
+										break;
+
+									case apTransform_Mesh.CustomMaterialProperty.SHADER_PROP_TYPE.Keyword:
+										{
+											EditorGUILayout.LabelField(apStringFactory.I.Keyword, apGUILOFactory.I.Width(width_PropLabel));//"Keyword"
+											bool nextBoolValue = EditorGUILayout.Toggle(matProp._value_Keyword, apGUILOFactory.I.Width(width_PropValue));
+											if (nextBoolValue != matProp._value_Keyword)
+											{
+												apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_DefaultSettingChanged, 
+																					Editor, 
+																					_meshGroup, 
+																					//MeshTF_Main, 
+																					false, true,
+																					apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+												matProp._value_Keyword = nextBoolValue;
+												apEditorUtil.ReleaseGUIFocus();
+											}
 										}
 										break;
 								}
@@ -10593,7 +10634,7 @@ namespace AnyPortrait
 				Color nextColor = EditorGUILayout.ColorField(prevBoneColor, apGUILOFactory.I.Width(widthValue));
 				if (nextColor != prevBoneColor)
 				{
-					apEditorUtil.SetEditorDirty();
+					
 					if(isRender_Single)
 					{
 						//[단일]
@@ -10604,6 +10645,7 @@ namespace AnyPortrait
 						//[다중]
 						_subObjects.Set_Bone_Shape_Color(nextColor);
 					}
+					apEditorUtil.SetDirty(_editor);
 				}
 			}
 			catch (Exception) { }
@@ -11212,8 +11254,41 @@ namespace AnyPortrait
 				{
 					float nextLowerAngle = prevJiggle_AngleMin;
 					float nextUpperAngle = prevJiggle_AngleMax;
+					
+					EditorGUI.BeginChangeCheck();
 					EditorGUILayout.MinMaxSlider(ref nextLowerAngle, ref nextUpperAngle, -180, 180, apGUILOFactory.I.Width(width));//<<이거 걍 쓰지 말까
+					if(EditorGUI.EndChangeCheck())
+					{
+						apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_BoneJiggleRangeChanged,
+															Editor,
+															_meshGroup,
+															true, false,
+															apEditorUtil.UNDO_STRUCT.ValueOnly);
 
+						nextLowerAngle = Mathf.Clamp(Mathf.Round(nextLowerAngle), -180.0f, 0.0f);
+						nextUpperAngle = Mathf.Clamp(Mathf.Round(nextUpperAngle), 0.0f, 180.0f);
+
+						if (isRender_Single)
+						{
+							//[단일]
+							curBone._jiggle_AngleLimit_Min = nextLowerAngle;
+							curBone._jiggle_AngleLimit_Max = nextUpperAngle;
+						}
+						else if (isRender_Multiple)
+						{
+							//[다중]
+							_subObjects.Set_Bone_Jiggle_AngleMin(nextLowerAngle);
+							_subObjects.Set_Bone_Jiggle_AngleMax(nextUpperAngle);
+						}
+
+						apEditorUtil.SetDirty(_editor);
+						apEditorUtil.ReleaseGUIFocus();
+
+						prevJiggle_AngleMin = nextLowerAngle;
+						prevJiggle_AngleMax = nextUpperAngle;
+					}
+
+					EditorGUI.BeginChangeCheck();
 					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
 					EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.Min), apGUILOFactory.I.Width(70));//"Min"
 					nextLowerAngle = EditorGUILayout.DelayedFloatField(nextLowerAngle, apGUILOFactory.I.Width(widthValue));
@@ -11224,46 +11299,58 @@ namespace AnyPortrait
 					nextUpperAngle = EditorGUILayout.DelayedFloatField(nextUpperAngle, apGUILOFactory.I.Width(widthValue));
 					EditorGUILayout.EndHorizontal();
 
-					if (Mathf.Abs(nextLowerAngle - prevJiggle_AngleMin) > 0.001f)
+					if(EditorGUI.EndChangeCheck())
 					{
-						//Undo에 저장하지 않는다.
-						//apEditorUtil.SetRecord_MeshGroup(apUndoGroupData.ACTION.MeshGroup_BoneSettingChanged, Editor, curBone._meshGroup, curBone, false, false);
-						apEditorUtil.SetEditorDirty();
-
-						nextLowerAngle = Mathf.Clamp(nextLowerAngle, -180.0f, 0.0f);
-						if (isRender_Single)
+						if (Mathf.Abs(nextLowerAngle - prevJiggle_AngleMin) > 0.001f)
 						{
-							//[단일]
-							curBone._jiggle_AngleLimit_Min = nextLowerAngle;
-						}
-						else if (isRender_Multiple)
-						{
-							//[다중]
-							_subObjects.Set_Bone_Jiggle_AngleMin(nextLowerAngle);
-						}
+							apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_BoneSettingChanged,
+																Editor,
+																_meshGroup,
+																false,
+																false,
+																apEditorUtil.UNDO_STRUCT.ValueOnly);
 
-						apEditorUtil.ReleaseGUIFocus();
-					}
+							nextLowerAngle = Mathf.Clamp(Mathf.Round(nextLowerAngle), -180.0f, 0.0f);
+							if (isRender_Single)
+							{
+								//[단일]
+								curBone._jiggle_AngleLimit_Min = nextLowerAngle;
+							}
+							else if (isRender_Multiple)
+							{
+								//[다중]
+								_subObjects.Set_Bone_Jiggle_AngleMin(nextLowerAngle);
+							}
 
-					if (Mathf.Abs(nextUpperAngle - prevJiggle_AngleMax) > 0.001f)
-					{
-						//Undo에 저장하지 않는다.
-						//apEditorUtil.SetRecord_MeshGroup(apUndoGroupData.ACTION.MeshGroup_BoneSettingChanged, Editor, curBone._meshGroup, curBone, false, false);
-						apEditorUtil.SetEditorDirty();
-						nextUpperAngle = Mathf.Clamp(nextUpperAngle, 0.0f, 180.0f);
-
-						if (isRender_Single)
-						{
-							//[단일]
-							curBone._jiggle_AngleLimit_Max = nextUpperAngle;
-						}
-						else if (isRender_Multiple)
-						{
-							//[다중]
-							_subObjects.Set_Bone_Jiggle_AngleMax(nextUpperAngle);
+							apEditorUtil.SetDirty(_editor);
+							apEditorUtil.ReleaseGUIFocus();
 						}
 
-						apEditorUtil.ReleaseGUIFocus();
+						if (Mathf.Abs(nextUpperAngle - prevJiggle_AngleMax) > 0.001f)
+						{
+							apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_BoneSettingChanged,
+																Editor,
+																_meshGroup,
+																false,
+																false,
+																apEditorUtil.UNDO_STRUCT.ValueOnly);
+							
+							nextUpperAngle = Mathf.Clamp(Mathf.Round(nextUpperAngle), 0.0f, 180.0f);
+
+							if (isRender_Single)
+							{
+								//[단일]
+								curBone._jiggle_AngleLimit_Max = nextUpperAngle;
+							}
+							else if (isRender_Multiple)
+							{
+								//[다중]
+								_subObjects.Set_Bone_Jiggle_AngleMax(nextUpperAngle);
+							}
+							
+							apEditorUtil.SetDirty(_editor);
+							apEditorUtil.ReleaseGUIFocus();
+						}
 					}
 				}
 
@@ -11675,54 +11762,139 @@ namespace AnyPortrait
 						//변경후 Lower : -360 ~ 360, Upper : -360 ~ 360 (크기만 맞춘다.)
 						float nextLowerAngle = curBone._IKAngleRange_Lower;
 						float nextUpperAngle = curBone._IKAngleRange_Upper;
-						//EditorGUILayout.MinMaxSlider(ref nextLowerAngle, ref nextUpperAngle, -360, 360, GUILayout.Width(widthValue));
+
+						//[v1.5.0 변경] UI 사용성 향상
+						
+						EditorGUI.BeginChangeCheck();
 						EditorGUILayout.MinMaxSlider(ref nextLowerAngle, ref nextUpperAngle, -360, 360, apGUILOFactory.I.Width(width));
-
-						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-						EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.Min), apGUILOFactory.I.Width(70));//"Min"
-						nextLowerAngle = EditorGUILayout.DelayedFloatField(nextLowerAngle, apGUILOFactory.I.Width(widthValue));
-						EditorGUILayout.EndHorizontal();
-
-						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-						EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.Max), apGUILOFactory.I.Width(70));//"Max"
-						nextUpperAngle = EditorGUILayout.DelayedFloatField(nextUpperAngle, apGUILOFactory.I.Width(widthValue));
-						EditorGUILayout.EndHorizontal();
-
-						//EditorGUILayout.EndHorizontal();
-
-
-						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
-						EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.Preferred), apGUILOFactory.I.Width(70));//"Preferred"
-						float nextPreferredAngle = EditorGUILayout.DelayedFloatField(curBone._IKAnglePreferred, apGUILOFactory.I.Width(widthValue));//<<정밀한 작업을 위해서 변경
-						EditorGUILayout.EndHorizontal();
-
-						if (nextLowerAngle != curBone._IKAngleRange_Lower ||
-							nextUpperAngle != curBone._IKAngleRange_Upper ||
-							nextPreferredAngle != curBone._IKAnglePreferred)
+						if(EditorGUI.EndChangeCheck())
 						{
+							apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_BoneIKRangeChanged,
+																Editor,
+																curBone._meshGroup,
+																true, false,
+																apEditorUtil.UNDO_STRUCT.ValueOnly);
 
-							//apEditorUtil.SetRecord_MeshGroup(apUndoGroupData.ACTION.MeshGroup_BoneSettingChanged, Editor, curBone._meshGroup, curBone, false, false);
-							apEditorUtil.SetEditorDirty();
-
-							nextLowerAngle = Mathf.Clamp(nextLowerAngle, -360, 360);
-							nextUpperAngle = Mathf.Clamp(nextUpperAngle, -360, 360);
-							nextPreferredAngle = Mathf.Clamp(nextPreferredAngle, -360, 360);
-
-							if (nextLowerAngle > nextUpperAngle)
-							{
-								float tmp = nextLowerAngle;
-								nextLowerAngle = nextUpperAngle;
-								nextUpperAngle = tmp;
-							}
+							nextLowerAngle = Mathf.Round(nextLowerAngle);
+							nextUpperAngle = Mathf.Round(nextUpperAngle);
 
 							curBone._IKAngleRange_Lower = nextLowerAngle;
 							curBone._IKAngleRange_Upper = nextUpperAngle;
-							curBone._IKAnglePreferred = nextPreferredAngle;
-							//isRefresh = true;
-							isAnyGUIAction = true;
 
-							apEditorUtil.ReleaseGUIFocus();
+							apEditorUtil.SetDirty(_editor);
 						}
+
+						EditorGUI.BeginChangeCheck();
+						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+						EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.Min), apGUILOFactory.I.Width(100));//"Min"
+						nextLowerAngle = EditorGUILayout.DelayedFloatField(nextLowerAngle, apGUILOFactory.I.Width(width - 110));
+						EditorGUILayout.EndHorizontal();
+
+						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+						EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.Max), apGUILOFactory.I.Width(100));//"Max"
+						nextUpperAngle = EditorGUILayout.DelayedFloatField(nextUpperAngle, apGUILOFactory.I.Width(width - 110));
+						EditorGUILayout.EndHorizontal();
+
+
+						if (EditorGUI.EndChangeCheck())
+						{
+							if (Mathf.Abs(nextLowerAngle - curBone._IKAngleRange_Lower) > 0.01f ||
+								Mathf.Abs(nextUpperAngle - curBone._IKAngleRange_Upper) > 0.01f)
+							{
+
+								apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_BoneSettingChanged,
+																	Editor,
+																	curBone._meshGroup,
+																	false, false,
+																	apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+								nextLowerAngle = Mathf.Round(nextLowerAngle);
+								nextUpperAngle = Mathf.Round(nextUpperAngle);
+
+								nextLowerAngle = Mathf.Clamp(nextLowerAngle, -360, 360);
+								nextUpperAngle = Mathf.Clamp(nextUpperAngle, -360, 360);
+
+								if (nextLowerAngle > nextUpperAngle)
+								{
+									float tmp = nextLowerAngle;
+									nextLowerAngle = nextUpperAngle;
+									nextUpperAngle = tmp;
+								}
+
+								curBone._IKAngleRange_Lower = nextLowerAngle;
+								curBone._IKAngleRange_Upper = nextUpperAngle;
+								//isRefresh = true;
+								isAnyGUIAction = true;
+
+								apEditorUtil.SetDirty(_editor);
+								apEditorUtil.ReleaseGUIFocus();
+							}
+						}
+
+						GUILayout.Space(2);
+
+						//[v1.5.0 추가 옵션]
+						//각도 제한 옵션
+						GUILayout.Space(2);
+						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+						EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.IK_SoftLimit), apGUILOFactory.I.Width(100));
+						bool isNextIKSoftLimit = EditorGUILayout.Toggle(curBone._isIKSoftAngleLimit, apGUILOFactory.I.Width(width - 110));
+						EditorGUILayout.EndHorizontal();
+
+
+						GUILayout.Space(5);
+
+						EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+						EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.IK_InitialPose), apGUILOFactory.I.Width(100));
+						apBone.IK_START_POSE nextStartPos = (apBone.IK_START_POSE)EditorGUILayout.Popup((int)curBone._IKInitPoseType, _propNames_IKInitPose, apGUILOFactory.I.Width(width - 110));
+						EditorGUILayout.EndHorizontal();
+
+						if(isNextIKSoftLimit != curBone._isIKSoftAngleLimit
+							|| nextStartPos != curBone._IKInitPoseType)
+						{
+							apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_BoneSettingChanged, 
+															Editor, 
+															curBone._meshGroup, 
+															//curBone, 
+															false, false,
+															apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+							curBone._isIKSoftAngleLimit = isNextIKSoftLimit;
+							curBone._IKInitPoseType = nextStartPos;
+							
+							apEditorUtil.SetDirty(_editor);
+							isAnyGUIAction = true;
+						}
+
+						if (_portrait._IKMethod == apPortrait.IK_METHOD.CCD || curBone._IKInitPoseType != apBone.IK_START_POSE.KeepCurrent)
+						{
+							//CCD 타입이거나 FABRIK이면서 Keep Current 타입이 아니라면 Prefer Angle을 설정하자
+							//Prefer 설정
+							EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.Preferred), apGUILOFactory.I.Width(width));
+							//Prefer는 슬라이더로도 조절할 수 있다.
+							EditorGUI.BeginChangeCheck();
+							float nextPreferredAngle = EditorGUILayout.Slider(curBone._IKAnglePreferred, -360.0f, 360.0f, apGUILOFactory.I.Width(width - 10));
+							if (EditorGUI.EndChangeCheck())
+							{
+								if (Mathf.Abs(nextPreferredAngle - curBone._IKAnglePreferred) > 0.01f)
+								{
+
+									apEditorUtil.SetRecord_MeshGroup(apUndoGroupData.ACTION.MeshGroup_BoneSettingChanged,
+																		Editor,
+																		curBone._meshGroup,
+																		false, false,
+																		apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+									nextPreferredAngle = Mathf.Clamp(Mathf.Round(nextPreferredAngle), -360, 360);
+
+									curBone._IKAnglePreferred = nextPreferredAngle;
+									isAnyGUIAction = true;
+
+									apEditorUtil.SetDirty(_editor);
+								}
+							}
+						}
+						
 					}
 				}
 
@@ -11756,6 +11928,12 @@ namespace AnyPortrait
 														apEditorUtil.UNDO_STRUCT.ValueOnly);
 
 						curBone._IKController._controllerType = nextIKControllerType;
+
+						//[v1.5.0 추가]
+						//IK Controller의 타입을 변경하면 메시 그룹의 IK RunNode를 갱신해야한다.
+						curBone._meshGroup.RefreshBoneIKRunNodes();
+
+
 						apEditorUtil.ReleaseGUIFocus();
 
 						#endregion
@@ -11781,10 +11959,6 @@ namespace AnyPortrait
 					}
 					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
 
-					//이전
-					//EditorGUILayout.LabelField(new GUIContent(" " + lookAtEffectorBoneName, Editor.ImageSet.Get(apImageSet.PRESET.Modifier_Rigging)), GUILayout.Width(width - 60));
-
-					//변경
 					_guiContent_Right_MeshGroup_RiggingIconAndText.SetText(1, lookAtEffectorBoneName);
 					EditorGUILayout.LabelField(_guiContent_Right_MeshGroup_RiggingIconAndText.Content, apGUILOFactory.I.Width(width - 60));
 
@@ -11879,6 +12053,61 @@ namespace AnyPortrait
 						}
 						EditorGUILayout.EndHorizontal();
 					}
+
+
+					GUILayout.Space(5);
+
+					// [V1.5.0] 추가
+					//실행 순서 (IK Depth)
+					
+					EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+					EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.IK_Depth), apGUILOFactory.I.Width(width - 60));//"Default FK/IK Weight"
+					EditorGUI.BeginChangeCheck();
+					int nextIKDepth = EditorGUILayout.DelayedIntField(curBone._IKDepth, apGUILOFactory.I.Width(58));
+					if(EditorGUI.EndChangeCheck())
+					{
+						if(nextIKDepth != curBone._IKDepth)
+						{
+							apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_BoneIKControllerChanged, 
+															Editor, 
+															curBone._meshGroup,
+															false, false,
+															apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+							curBone._IKDepth = nextIKDepth;
+
+							//순서를 갱신한다
+							MeshGroup.RefreshBoneIKRunNodes();
+
+							apEditorUtil.ReleaseGUIFocus();
+						}
+					}
+					EditorGUILayout.EndHorizontal();
+
+
+					//미사용 코드 : Head Correction은 폐기한다. (FABRIK)
+					//// [v1.5.0] 추가
+					//// (FABRIK의 경우) Tail쪽에서 지나치게 많이 회전하는 경향이 있고, 경우에 따라선 도달을 못하는 문제가 있어서
+					//// Head 본을 미리 회전시켜서 IK를 동작시키는 "보정 처리"를 한다.
+					//// 이때 "보정 처리"를 얼마나 할지에 대한 가중치 UI (0~1)
+					//EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(width));
+					//EditorGUILayout.LabelField("헤드 보정 비율", apGUILOFactory.I.Width(width - 60));
+					//EditorGUI.BeginChangeCheck();
+					//float nextHeadCorrectionRatio = EditorGUILayout.DelayedFloatField(curBone._IKCorrectRotatingHeadRatio, apGUILOFactory.I.Width(58));
+					//if(EditorGUI.EndChangeCheck())
+					//{
+					//	apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_BoneIKControllerChanged, 
+					//										Editor, 
+					//										curBone._meshGroup,
+					//										false, false,
+					//										apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+					//	curBone._IKCorrectRotatingHeadRatio = Mathf.Clamp01(nextHeadCorrectionRatio);
+					//	apEditorUtil.ReleaseGUIFocus();
+					//}
+					//EditorGUILayout.EndHorizontal();
+
+					
 
 
 					GUILayout.Space(5);
@@ -12705,11 +12934,13 @@ namespace AnyPortrait
 					apEditorUtil.DrawListUnitBG(lastRect.x + 1, lastRect.y + offsetHeight, scrollWidth + 35 - 2, 20, apEditorUtil.UNIT_BG_STYLE.Main);
 
 
-					curGUIStyle = apGUIStyleWrapper.I.None_White2Cyan;
+					//curGUIStyle = apGUIStyleWrapper.I.None_White2Cyan;
+					curGUIStyle = apGUIStyleWrapper.I.None_MiddleLeft_White2Cyan;//v1.5.0
 				}
 				else
 				{
-					curGUIStyle = apGUIStyleWrapper.I.None_LabelColor;
+					//curGUIStyle = apGUIStyleWrapper.I.None_LabelColor;
+					curGUIStyle = apGUIStyleWrapper.I.None_MiddleLeft_LabelColor;//v1.5.0
 				}
 
 				EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Width(scrollWidth - 5));
@@ -14017,6 +14248,8 @@ namespace AnyPortrait
 
 							if (GUILayout.Button(_guiContent_Modifier_AddToKeys.Content, apGUILOFactory.I.Width(width), apGUILOFactory.I.Height(50)))
 							{
+								//키 추가
+
 								//v1.4.2 : 모달 상태를 체크해야한다.
 								bool isExecutable = Editor.CheckModalAndExecutable();
 
@@ -14049,7 +14282,7 @@ namespace AnyPortrait
 									Editor.SetRepaint();
 
 									//추가 : ExEdit 모드가 아니라면, Modifier에 추가할 때 자동으로 ExEdit 상태로 전환
-									if (ExEditingMode == EX_EDIT.None && IsExEditable)
+									if (ExEditingMode == EX_EDIT.None && IsExEditable(true))
 									{
 										SetModifierExclusiveEditing(EX_EDIT.ExOnly_Edit);
 
@@ -15349,18 +15582,22 @@ namespace AnyPortrait
 			{
 				nSelectedVerts = selectedVerts.Count;
 
+				apModifiedVertexRig modVertRig = null;
 				//리스트에 넣을 Rig 리스트를 완성하자
-				for (int i = 0; i < selectedVerts.Count; i++)
+				for (int i = 0; i < nSelectedVerts; i++)
 				{
-					apModifiedVertexRig modVertRig = selectedVerts[i]._modVertRig;
+					modVertRig = selectedVerts[i]._modVertRig;
 					if (modVertRig == null)
 					{
 						// -ㅅ-?
 						continue;
 					}
-					for (int iPair = 0; iPair < modVertRig._weightPairs.Count; iPair++)
+
+					int nWeightPairs = modVertRig._weightPairs != null ? modVertRig._weightPairs.Count : 0;
+					apModifiedVertexRig.WeightPair pair = null;
+					for (int iPair = 0; iPair < nWeightPairs; iPair++)
 					{
-						apModifiedVertexRig.WeightPair pair = modVertRig._weightPairs[iPair];
+						pair = modVertRig._weightPairs[iPair];
 						VertRigData targetBoneData = _rigEdit_vertRigDataList.Find(delegate (VertRigData a)
 						{
 							return a._bone == pair._bone;
@@ -17944,7 +18181,7 @@ namespace AnyPortrait
 														apEditorUtil.UNDO_STRUCT.ValueOnly);
 				}
 
-				apEditorUtil.SetEditorDirty();
+				
 
 				//Start Frame과 Next Frame의 값이 뒤집혀져있는지 확인
 				if (nextStartFrame > nextEndFrame)
@@ -17962,7 +18199,7 @@ namespace AnyPortrait
 				//추가 20.4.14 : 애니메이션의 길이나 루프 설정이 바뀌면, 전체적으로 리프레시를 하자
 				animClip.RefreshTimelines(null, null);
 				
-
+				apEditorUtil.SetDirty(_editor);
 				apEditorUtil.ReleaseGUIFocus();
 			}
 
@@ -18033,6 +18270,7 @@ namespace AnyPortrait
 			int nMeshTF = 0;
 			int nMeshGroupTF = 0;
 			int nBones = 0;
+			int nControlParams = 0;//v1.5.0
 
 			bool isMultiSelected = false;
 
@@ -18151,7 +18389,6 @@ namespace AnyPortrait
 											}
 										}
 									}
-									
 								}
 							}
 							if (nMeshGroupTF > 0)
@@ -18560,80 +18797,120 @@ namespace AnyPortrait
 
 				case apAnimClip.LINK_TYPE.ControlParam:
 					{
-						if (SelectedControlParamOnAnimClip != null)
+						//v1.5.0 : 컨트롤 파라미터도 다중 선택 지원
+						nControlParams = _subObjects.NumControlParam;
+
+						isRegistered = false;
+
+						//타입 자체는 추가는 무조건 할 수 있다.
+						isAddableType = true;//[v1.4.4] 이게 누락되어 버그를 일으켰다.
+
+
+						if(nControlParams > 1)
 						{
-							apControlParam curSelectedControlParam = SelectedControlParamOnAnimClip;
-							
-							_guiContent_Right2_Animation_TargetObjectName.ClearText(false);
-							_guiContent_Right2_Animation_TargetObjectName.AppendText(apStringFactory.I.Bracket_2_L, false);
-							_guiContent_Right2_Animation_TargetObjectName.AppendText(curSelectedControlParam._keyName, false);
-							_guiContent_Right2_Animation_TargetObjectName.AppendText(apStringFactory.I.Bracket_2_R, true);//변경
+							// [ 다중 선택시 ] (v1.5.0)
+							isMultiSelected = true;
 
-							targetObject = curSelectedControlParam;
+							int nValidObjects = 0;//선택된 유효한 객체 (등록 여부 상관 없음)
 
-
-							//레이어로 등록 가능한가
-							//isAddableType = curTimeline.IsLayerAddableType(curSelectedControlParam); //>이건 체크할 필요가 없다. 모든 ControlParam이 이 타임라인에 등록할 수 있기 때문
-							isAddableType = true;//[v1.4.4] 이게 누락되어 버그를 일으켰다.
-
-
-							//v1.4.2
-							//이미 선택되었는지 여부를 먼저 확인할 수 있다.
-							//최적화 및 에러로 인하여 등록시 레이어 삭제가 가능하게 만듬
-							if(selectedLayer_Main != null)
+							List<apControlParam> controlParams = _subObjects.AllControlParamsForAnim;
+							apControlParam curCP = null;
+							for (int i = 0; i < nControlParams; i++)
 							{
-								if(selectedLayer_Main._linkedControlParam == curSelectedControlParam)
+								curCP = controlParams[i];
+								if(curCP == null) { continue; }
+
+								if(!curTimeline.IsObjectAddedInLayers(curCP))
 								{
-									//여기서 미리 빠르게 체크하자
-									isRegistered = true;
+									//등록이 안된 상태
+									isAddable = true;//추가할 수 있다.
 								}
+								else
+								{
+									//등록이 된 상태
+									isRegistered = true;//등록되었다.
+								}
+								nValidObjects += 1;
 							}
 
-							#region [미사용 코드]
-							//if(!curTimeline.IsObjectAddedInLayers(curSelectedControlParam))
-							//{
-							//	//추가되지 않음
-							//	isAddable = true;
-							//}
-							//else
-							//{
-							//	//추가된 상태
-							//	isAddable = false;
-							//	isRegistered = true;//<<등록됨
-							//} 
-							#endregion
-
-							//추가되지 않았다면 타임라인 기준으로 한번 더 확인하자
-							if(!isRegistered)
+							if(nValidObjects > 0)
 							{
-								if(curTimeline.IsObjectAddedInLayers(curSelectedControlParam))
-								{
-									//타임라인에서 확인해보니 이미 레이어로 등록된게 맞다.
-									isRegistered = true;
-								}
-							}
+								//선택된 개수에 따라 UI 이름을 정하자
+								_guiContent_Right2_Animation_TargetObjectName.ClearText(false);
+								_guiContent_Right2_Animation_TargetObjectName.AppendText(apStringFactory.I.Bracket_2_L, false);
+								_guiContent_Right2_Animation_TargetObjectName.AppendText(nValidObjects, false);
+								_guiContent_Right2_Animation_TargetObjectName.AppendSpaceText(1, false);
+								_guiContent_Right2_Animation_TargetObjectName.AppendText(Editor.GetUIWord(UIWORD.Objects), false);
+								_guiContent_Right2_Animation_TargetObjectName.AppendText(apStringFactory.I.Bracket_2_R, true);
 
-							if(isRegistered)
-							{
-								//이미 추가된 상태라면
-								isAddable = false;
+								isAnySelected = true;
 							}
 							else
 							{
-								//추가되지 않은 상태라면 새로 등록이 가능하다.
-								isAddable = true;
+								//선택된게 정말 없다.
+								_guiContent_Right2_Animation_TargetObjectName.ClearText(true);
 							}
-
-							isAnySelected = true;
 						}
 						else
 						{
-							_guiContent_Right2_Animation_TargetObjectName.ClearText(true);//추가
+							// [ 단일 선택시 ]
+							//한개가 선택되었거나 아예 선택되지 않은 상태
+							isMultiSelected = false;
+							if (SelectedControlParamOnAnimClip != null)
+							{
+								//선택된 파라미터가 있다.
+								apControlParam curSelectedControlParam = SelectedControlParamOnAnimClip;
+
+								_guiContent_Right2_Animation_TargetObjectName.ClearText(false);
+								_guiContent_Right2_Animation_TargetObjectName.AppendText(apStringFactory.I.Bracket_2_L, false);
+								_guiContent_Right2_Animation_TargetObjectName.AppendText(curSelectedControlParam._keyName, false);
+								_guiContent_Right2_Animation_TargetObjectName.AppendText(apStringFactory.I.Bracket_2_R, true);//변경
+
+								targetObject = curSelectedControlParam;
+
+
+								//v1.4.2
+								//이미 선택되었는지 여부를 먼저 확인할 수 있다.
+								//최적화 및 에러로 인하여 등록시 레이어 삭제가 가능하게 만듬
+								if (selectedLayer_Main != null)
+								{
+									if (selectedLayer_Main._linkedControlParam == curSelectedControlParam)
+									{
+										//여기서 미리 빠르게 체크하자
+										isRegistered = true;
+									}
+								}
+
+
+								//추가되지 않았다면 타임라인 기준으로 한번 더 확인하자
+								if (!isRegistered)
+								{
+									if (curTimeline.IsObjectAddedInLayers(curSelectedControlParam))
+									{
+										//타임라인에서 확인해보니 이미 레이어로 등록된게 맞다.
+										isRegistered = true;
+									}
+								}
+
+								if (isRegistered)
+								{
+									//이미 추가된 상태라면
+									isAddable = false;
+								}
+								else
+								{
+									//추가되지 않은 상태라면 새로 등록이 가능하다.
+									isAddable = true;
+								}
+
+								isAnySelected = true;
+							}
+							else
+							{
+								_guiContent_Right2_Animation_TargetObjectName.ClearText(true);//추가
+							}
 						}
-
-						//이전 : 전체 추가 불가
-						//isAddingLayerOnce = false;
-
+						
 						//변경 21.3.10 : 모든 컨트롤 파라미터 추가 가능
 						isAddingLayerOnce_ControlParams = true;
 					}
@@ -18870,10 +19147,7 @@ namespace AnyPortrait
 								if (isResult)
 								{
 									isRemoveTimelineLayer_Single = true;
-									if (isRender_Selected_Single)
-									{
-										removeLayer = curTimelineLayer_Main;
-									}
+									removeLayer = curTimelineLayer_Main;
 								}
 							}
 						}
@@ -19153,7 +19427,7 @@ namespace AnyPortrait
 			if (isRemoveTimelineLayer_Single)
 			{
 				//[단일 선택시]
-				if(isRender_Selected_Single && removeLayer != null)
+				if(removeLayer != null)
 				{
 					Editor.Controller.RemoveAnimTimelineLayer(removeLayer);
 				}
@@ -19250,7 +19524,7 @@ namespace AnyPortrait
 													Editor.GetUIWord(UIWORD.ModStartEditing),
 													Editor.GetUIWord(UIWORD.ModNotEditable),
 													_exclusiveEditing != EX_EDIT.None,
-													IsExEditable,
+													IsExEditable(true),
 													editToggleWidth, height,
 													apStringFactory.I.GetHotkeyTooltip_EditModeToggle(Editor.HotKeyMap)
 													))//"Enable/Disable Edit Mode (A)"
@@ -20941,7 +21215,7 @@ namespace AnyPortrait
 					//Timeline을 선택하기 전에
 					//Anim객체를 초기화한다. (안그러면 자동으로 선택된 오브젝트에 의해서 TimelineLayer를 선택하게 된다.)
 					SelectBone_ForAnimEdit(null, false, false, MULTI_SELECT.Main);
-					SelectControlParam_ForAnimEdit(null, false, false);
+					SelectControlParam_ForAnimEdit(null, false, false, MULTI_SELECT.Main);
 					SelectMeshTF_ForAnimEdit(null, false, false, MULTI_SELECT.Main);
 					SelectMeshGroupTF_ForAnimEdit(null, false, false, MULTI_SELECT.Main);
 
@@ -21357,48 +21631,49 @@ namespace AnyPortrait
 			//맨 하단은 키 복붙이나 View, 영역 등에 관련된 정보를 출력한다.
 			GUILayout.Space(10);
 
-			//Timeline 정렬
-			if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Anim_SortRegOrder),
-											Editor._timelineInfoSortType == apEditor.TIMELINE_INFO_SORT.Registered,
-											true, ctrlBtnSize_Small, ctrlBtnSize_Small,
-											apStringFactory.I.AnimTimelineSort_RegOrder))//"Sort by registeration order"
+			//v1.5.0 변경
+			//- UI들을 좁은 공간에 압축하기 위해서, 정렬 방식은 버튼 3개 > 1개로 줄이고, 누를때마다 변경되도록 한다.
+			bool isBtn_Sort = false;
+			switch (_editor._timelineInfoSortType)
 			{
-				Editor._timelineInfoSortType = apEditor.TIMELINE_INFO_SORT.Registered;
+				case apEditor.TIMELINE_INFO_SORT.Registered:
+					isBtn_Sort = apEditorUtil.ToggledButton(	_editor.ImageSet.Get(apImageSet.PRESET.Anim_SortRegOrder),
+																false, true, ctrlBtnSize_Small, ctrlBtnSize_Small, apStringFactory.I.AnimTimelineSort_RegOrder);
+					break;
+
+				case apEditor.TIMELINE_INFO_SORT.ABC:
+					isBtn_Sort = apEditorUtil.ToggledButton(	_editor.ImageSet.Get(apImageSet.PRESET.Anim_SortABC),
+																false, true, ctrlBtnSize_Small, ctrlBtnSize_Small, apStringFactory.I.AnimTImelineSort_Name);
+					break;
+				case apEditor.TIMELINE_INFO_SORT.Depth:
+					isBtn_Sort = apEditorUtil.ToggledButton(	_editor.ImageSet.Get(apImageSet.PRESET.Anim_SortDepth),
+																false, true, ctrlBtnSize_Small, ctrlBtnSize_Small, apStringFactory.I.AnimTimelineSort_Depth);
+					break;
+			}
+			if(isBtn_Sort)
+			{
+				//순서대로 변경된다.
+				switch (_editor._timelineInfoSortType)
+				{
+					case apEditor.TIMELINE_INFO_SORT.Registered: _editor._timelineInfoSortType = apEditor.TIMELINE_INFO_SORT.ABC; break;
+					case apEditor.TIMELINE_INFO_SORT.ABC: _editor._timelineInfoSortType = apEditor.TIMELINE_INFO_SORT.Depth; break;
+					case apEditor.TIMELINE_INFO_SORT.Depth: _editor._timelineInfoSortType = apEditor.TIMELINE_INFO_SORT.Registered; break;
+				}
 				Editor.SaveEditorPref();
 				Editor.RefreshTimelineLayers(apEditor.REFRESH_TIMELINE_REQUEST.Info | apEditor.REFRESH_TIMELINE_REQUEST.Timelines, null, null);
 			}
-
-			if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Anim_SortABC),
-											Editor._timelineInfoSortType == apEditor.TIMELINE_INFO_SORT.ABC,
-											true, ctrlBtnSize_Small, ctrlBtnSize_Small,
-											apStringFactory.I.AnimTImelineSort_Name))//"Sort by name"
-			{
-				Editor._timelineInfoSortType = apEditor.TIMELINE_INFO_SORT.ABC;
-				Editor.SaveEditorPref();
-				Editor.RefreshTimelineLayers(apEditor.REFRESH_TIMELINE_REQUEST.Info | apEditor.REFRESH_TIMELINE_REQUEST.Timelines, null, null);
-			}
-
-			if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Anim_SortDepth),
-											Editor._timelineInfoSortType == apEditor.TIMELINE_INFO_SORT.Depth,
-											true, ctrlBtnSize_Small, ctrlBtnSize_Small,
-											apStringFactory.I.AnimTimelineSort_Depth))//"Sort by Depth"
-			{
-				Editor._timelineInfoSortType = apEditor.TIMELINE_INFO_SORT.Depth;
-				Editor.SaveEditorPref();
-				Editor.RefreshTimelineLayers(apEditor.REFRESH_TIMELINE_REQUEST.Info | apEditor.REFRESH_TIMELINE_REQUEST.Timelines, null, null);
-
-			}
-
-			GUILayout.Space(20);
 
 			//"Unhide Layers"
-			if (apEditorUtil.ToggledButton(Editor.GetUIWord(UIWORD.UnhideLayers), !isAnyHidedLayer, 120, ctrlBtnSize_Small))
+			//변경 > 아이콘으로 표시
+			//if (apEditorUtil.ToggledButton(Editor.GetUIWord(UIWORD.UnhideLayers), !isAnyHidedLayer, 120, ctrlBtnSize_Small))
+			if (apEditorUtil.ToggledButton(isAnyHidedLayer ? _editor.ImageSet.Get(apImageSet.PRESET.Anim_UnhideLayers) : _editor.ImageSet.Get(apImageSet.PRESET.Anim_UnhideLayers_OFF),
+											false, isAnyHidedLayer, ctrlBtnSize_Small, ctrlBtnSize_Small, apStringFactory.I.AnimTimelineUnhideLayersTip))
 			{
 				Editor.ShowAllTimelineLayers();
 			}
 
-			GUILayout.Space(20);
 
+			GUILayout.Space(20);
 
 
 			// 타임라인 사이즈 (1, 2, 3)
@@ -21428,7 +21703,7 @@ namespace AnyPortrait
 
 
 			//Zoom
-			GUILayout.Space(4);
+			GUILayout.Space(20);
 
 			EditorGUILayout.BeginVertical(apGUILOFactory.I.Width(90));
 			//EditorGUILayout.LabelField("Zoom", GUILayout.Width(100), GUILayout.Height(15));
@@ -21450,19 +21725,23 @@ namespace AnyPortrait
 				Editor._timelineZoom_Index = nextTimelineIndex;
 			}
 			EditorGUILayout.EndVertical();
+			
+			GUILayout.Space(4);
 
 			//Fit은 유지
-
-			//if (GUILayout.Button(new GUIContent(" Fit", Editor.ImageSet.Get(apImageSet.PRESET.Anim_AutoZoom), "Zoom to fit the animation length"),
-			//						GUILayout.Width(80), GUILayout.Height(ctrlBtnSize_Small)))
-
 			if (_guiContent_Bottom_Animation_Fit == null)
 			{
 				//" Fit" / "Zoom to fit the animation length"
-				_guiContent_Bottom_Animation_Fit = apGUIContentWrapper.Make(apStringFactory.I.AnimTimelineFit, Editor.ImageSet.Get(apImageSet.PRESET.Anim_AutoZoom), apStringFactory.I.AnimTimelineFitTooltip);
+				//_guiContent_Bottom_Animation_Fit = apGUIContentWrapper.Make(apStringFactory.I.AnimTimelineFit, Editor.ImageSet.Get(apImageSet.PRESET.Anim_AutoZoom), apStringFactory.I.AnimTimelineFitTooltip);
+				//텍스트를 뺀다. [v1.5.0]
+				_guiContent_Bottom_Animation_Fit = apGUIContentWrapper.Make(Editor.ImageSet.Get(apImageSet.PRESET.Anim_AutoZoom), apStringFactory.I.AnimTimelineFitTooltip);
 			}
 
-			if (GUILayout.Button(_guiContent_Bottom_Animation_Fit.Content, apGUILOFactory.I.Width(80), apGUILOFactory.I.Height(ctrlBtnSize_Small)))
+			//if (GUILayout.Button(_guiContent_Bottom_Animation_Fit.Content, apGUIStyleWrapper.I.Box_MiddleCenter_BtnMargin_White2Cyan,
+			//						apGUILOFactory.I.Width(ctrlBtnSize_Small), apGUILOFactory.I.Height(ctrlBtnSize_Small)))
+			if (apEditorUtil.ToggledButton(Editor.ImageSet.Get(apImageSet.PRESET.Anim_AutoZoom),
+											false, true, ctrlBtnSize_Small, ctrlBtnSize_Small,
+											apStringFactory.I.AnimTimelineFitTooltip))
 			{
 				//Debug.LogError("TODO : Timeline AutoZoom");
 				//Width / 전체 Frame수 = 목표 WidthPerFrame
@@ -21490,26 +21769,52 @@ namespace AnyPortrait
 				}
 			}
 
-			GUILayout.Space(4);
-
 			//Auto Scroll
 			//" Auto Scroll"
 			if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Anim_AutoScroll),
-													1, Editor.GetUIWord(UIWORD.AutoScroll), Editor.GetUIWord(UIWORD.AutoScroll),
+													//1, Editor.GetUIWord(UIWORD.AutoScroll), Editor.GetUIWord(UIWORD.AutoScroll),
 													Editor._isAnimAutoScroll, true,
-													140, ctrlBtnSize_Small,
+													//140,
+													ctrlBtnSize_Small,
+													ctrlBtnSize_Small,
 													apStringFactory.I.AnimTimelineAutoScrollTooltip))//"Scrolls automatically according to the frame of the animation"
 			{
 				Editor._isAnimAutoScroll = !Editor._isAnimAutoScroll;
 			}
 
+			GUILayout.Space(20);
+
+			//[v1.5.0 추가]
+			//키프레임 스케일
+			if(_guiContent_Bottom_Animation_ScaleKeys == null)
+			{
+				_guiContent_Bottom_Animation_ScaleKeys = apGUIContentWrapper.Make(" " + _editor.GetUIWord(UIWORD.Stretch), Editor.ImageSet.Get(apImageSet.PRESET.Anim_RescaleFrames), apStringFactory.I.AnimTimelineStretchTip);
+			}
+
+			int nSelectedKeyframes = AnimKeyframes != null ? AnimKeyframes.Count : 0;
+
+			if (apEditorUtil.ToggledButton_2Side(_guiContent_Bottom_Animation_ScaleKeys,
+												false, nSelectedKeyframes > 0,
+												120,
+												ctrlBtnSize_Small))//"Scrolls automatically according to the frame of the animation"
+			{
+				//키프레임 다이얼로그 열기
+				List<apAnimKeyframe> selectedKeyframes = AnimKeyframes;
+				apAnimClip selectedAnimClip = AnimClip;
+				if(nSelectedKeyframes > 0 && selectedAnimClip != null)
+				{
+					//리스케일 다이얼로그를 열자
+					_loadKey_RescaleKeyframes = apDialog_RescaleKeyframes.ShowDialog(Editor, selectedAnimClip, selectedKeyframes, OnKeyframesRescaled);
+				}
+			}
+
 
 			//AutoKey
-			GUILayout.Space(6);
-			if (apEditorUtil.ToggledButton_2Side(Editor.ImageSet.Get(apImageSet.PRESET.Anim_AutoKey),
+			GUILayout.Space(4);
+			if (apEditorUtil.ToggledButton_2Side(	Editor.ImageSet.Get(apImageSet.PRESET.Anim_AutoKey),
 													1, Editor.GetUIWord(UIWORD.AutoKey), Editor.GetUIWord(UIWORD.AutoKey),
 													Editor._isAnimAutoKey, true,
-													140, ctrlBtnSize_Small,
+													120, ctrlBtnSize_Small,
 													apStringFactory.I.GetHotkeyTooltip_AnimTimelineAutoKeyTooltip(Editor.HotKeyMap)
 													))//"When you move the object, keyframes are automatically created"
 			{
@@ -21518,6 +21823,10 @@ namespace AnyPortrait
 				//마지막 값을 저장하자
 				EditorPrefs.SetBool("AnyPortrait_LastAnimAutoKeyValue", Editor._isAnimAutoKey);
 			}
+
+
+			
+
 
 
 			EditorGUILayout.EndHorizontal();
@@ -22726,7 +23035,12 @@ namespace AnyPortrait
 						}
 
 
-						apAnimCurveGL.DrawCurve(curveA, curveB, curveResult, curveGraphColorA, curveGraphColorB);
+						bool isChanged = apAnimCurveGL.DrawCurve(curveA, curveB, curveResult, curveGraphColorA, curveGraphColorB);
+						
+						if(isChanged)
+						{
+							apEditorUtil.SetDirty(_editor);
+						}
 
 
 						GUILayout.EndArea();
@@ -23620,18 +23934,17 @@ namespace AnyPortrait
 											_animTimelineCommonCurve.GetSyncCurveResult(iCurveType),
 											curveGraphColorA, curveGraphColorB);
 
-					//if (isCurves_Sync)
+					if (isCurveChanged)
 					{
-						if (isCurveChanged)
-						{
-							//커브가 바뀌었음을 알리자
-							_animTimelineCommonCurve.SetChanged();
-						}
+						//커브가 바뀌었음을 알리자
+						_animTimelineCommonCurve.SetChanged();
 
-						//마우스 입력에 따른 Sync
-						//_animTimelineCommonCurve.ApplySync(false, isLeftBtnPressed);
-						_animTimelineCommonCurve.ApplySync(iCurveType, false, isLeftBtnPressed);
+						apEditorUtil.SetDirty(_editor);
 					}
+
+					//마우스 입력에 따른 Sync
+					//_animTimelineCommonCurve.ApplySync(false, isLeftBtnPressed);
+					_animTimelineCommonCurve.ApplySync(iCurveType, false, isLeftBtnPressed);
 
 
 					//추가 21.5.19 : Curve 렌더링이 모두 끝났다.
@@ -23919,9 +24232,9 @@ namespace AnyPortrait
 				EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.LayerGUIColor));//"Layer GUI Color"
 				Color nextGUIColor = EditorGUILayout.ColorField(timelineLayer._guiColor, apGUILOFactory.I.Width(width));
 				if (nextGUIColor != timelineLayer._guiColor)
-				{
-					apEditorUtil.SetEditorDirty();
+				{	
 					timelineLayer._guiColor = nextGUIColor;
+					apEditorUtil.SetDirty(_editor);
 				}
 			}
 			catch (Exception) { }
@@ -24007,9 +24320,9 @@ namespace AnyPortrait
 				EditorGUILayout.LabelField(Editor.GetUIWord(UIWORD.LayerGUIColor));//"Layer GUI Color"
 				Color nextGUIColor = EditorGUILayout.ColorField(syncColor, apGUILOFactory.I.Width(width));
 				if (nextGUIColor != syncColor)
-				{
-					apEditorUtil.SetEditorDirty();
+				{	
 					_subObjects.Set_TimelineLayer_GUIColor(nextGUIColor);
+					apEditorUtil.SetDirty(_editor);
 				}
 			}
 			catch (Exception) { }

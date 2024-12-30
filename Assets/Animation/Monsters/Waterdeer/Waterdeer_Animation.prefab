@@ -662,6 +662,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &3873228600893448160
@@ -1059,6 +1060,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &2005384858416626080
@@ -1182,6 +1184,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -13501,6 +13506,8 @@ MonoBehaviour:
     _rules: []
   _guideLines:
     _lineInfos: []
+  _controlParamSnapShot:
+    _snapShots: []
   _optRootUnitList:
   - {fileID: 1806399304077091602}
   _optTransforms:
@@ -13585,6 +13592,7 @@ MonoBehaviour:
         _props_Vector: []
         _props_Texture: []
         _props_Color: []
+        _props_Keywords: []
         _isMergable: 0
   _optAnimEventListener: {fileID: 0}
   _animEventCallMode: 0
@@ -13600,7 +13608,7 @@ MonoBehaviour:
   _imageFilePath_Thumbnail: 
   _isPhysicsPlay_Editor: 1
   _bakeUnlinkedGroup: {fileID: 0}
-  _isImportant: 1
+  _isImportant: 0
   _autoPlayAnimClipID: -1
   _isOptimizedPortrait: 0
   _bakeTargetOptPortrait: {fileID: 0}
@@ -14464,12 +14472,16 @@ MonoBehaviour:
     _bakeOption_BlurOption: 1
     _bakeScale100: 100
   _bakedPsdSecondarySet: []
-  _billboardType: 3
+  _billboardType: 1
+  _billboardParentRotation: 2
   _vrSupportMode: 0
   _vrRenderTextureSize: 0
+  _cameraCheckMode: 0
   _isForceCamSortModeToOrthographic: 1
   _meshShadowCastingMode: 0
   _meshReceiveShadow: 0
+  _meshLightProbeUsage: 0
+  _meshReflectionProbeUsage: 0
   _timelineTrackSets: []
   _objectOrders:
     _orderSets_RootUnit:
@@ -14640,6 +14652,7 @@ MonoBehaviour:
       _value_Int: 0
       _value_Vector: {x: 0, y: 0, z: 0, w: 0}
       _value_Color: {r: 0, g: 0, b: 0, a: 1}
+      _value_Bool: 1
       _isCommonTexture: 1
       _commonTexturePath: 
       _value_CommonTexture: {fileID: 0}
@@ -14652,6 +14665,7 @@ MonoBehaviour:
       _value_Int: 0
       _value_Vector: {x: 0, y: 0, z: 0, w: 0}
       _value_Color: {r: 0, g: 0, b: 0, a: 1}
+      _value_Bool: 1
       _isCommonTexture: 1
       _commonTexturePath: 
       _value_CommonTexture: {fileID: 0}
@@ -14667,6 +14681,7 @@ MonoBehaviour:
       _value_Int: 0
       _value_Vector: {x: 0, y: 0, z: 0, w: 0}
       _value_Color: {r: 0, g: 0, b: 0, a: 1}
+      _value_Bool: 1
       _isCommonTexture: 1
       _commonTexturePath: 
       _value_CommonTexture: {fileID: 0}
@@ -14682,11 +14697,14 @@ MonoBehaviour:
       _value_Int: 0
       _value_Vector: {x: 0, y: 0, z: 0, w: 0}
       _value_Color: {r: 0, g: 0, b: 0, a: 1}
+      _value_Bool: 1
       _isCommonTexture: 1
       _commonTexturePath: 
       _value_CommonTexture: {fileID: 0}
       _imageTexturePairs: []
     _isNeedToSetBlackColoredAmbient: 0
+    _referenceMat: {fileID: 0}
+    _referenceMaterialPath: 
   _flippedMeshOption: 0
   _rootBoneScaleMethod: 0
   _unspecifiedAnimControlParamOption: 0
@@ -14694,7 +14712,13 @@ MonoBehaviour:
   _srcPrefabAssetForRestore: {fileID: 1344931218926041229}
   _isTeleportCorrectionOption: 0
   _teleportMovementDist: 10
+  _teleportRotationOffset: 30
+  _teleportScaleOffset: 0.2
+  _teleportPositionEnabled: 1
+  _teleportRotationEnabled: 1
+  _teleportScaleEnabled: 1
   _meshRefreshRateOption: 0
+  _meshRefreshFPSScaleOption: 0
   _meshRefreshRateFPS: 24
   _mainProcessEvent: 0
   _rootMotionModeOption: 0
@@ -14702,6 +14726,9 @@ MonoBehaviour:
   _rootMotionAxisOption_Y: 2
   _rootMotionTargetTransformType: 0
   _rootMotionSpecifiedParentTransform: {fileID: 0}
+  _IKMethod: 1
+  _invisibleMeshUpdate: 0
+  _clippingMeshUpdate: 0
 --- !u!1 &1377349669240373331
 GameObject:
   m_ObjectHideFlags: 0
@@ -15052,6 +15079,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -20.37735
   _IKAngleRange_Upper: 159.62265
   _IKAnglePreferred: 60
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 6470439032592872483}
     _chainUnits: []
@@ -15892,6 +15922,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 3902539282491593008}
     _chainUnits:
@@ -15909,6 +15942,9 @@ MonoBehaviour:
       _angleLocal_Prev: -15.864735
       _angleLocal_Delta: 0.18229675
       _isAngleContraint: 1
+      _isSoftLimit: 0
+      _initPose: 0
+      _angleParentToBase_Offset: 0
       _angleDir_Preferred: -60.587433
       _angleDir_Lower: -168.70064
       _angleDir_Upper: 4.5069275
@@ -15927,6 +15963,9 @@ MonoBehaviour:
       _angleLocal_Prev: -74.03994
       _angleLocal_Delta: -0.0838089
       _isAngleContraint: 0
+      _isSoftLimit: 0
+      _initPose: 0
+      _angleParentToBase_Offset: 0
       _angleDir_Preferred: -80.91686
       _angleDir_Lower: -170.91687
       _angleDir_Upper: 9.0831375
@@ -16457,6 +16496,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &3477237248398458585
@@ -16580,6 +16620,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 1010014591429965902}
     _chainUnits:
@@ -16597,6 +16640,9 @@ MonoBehaviour:
       _angleLocal_Prev: 22.31316
       _angleLocal_Delta: -0.17835999
       _isAngleContraint: 1
+      _isSoftLimit: 0
+      _initPose: 0
+      _angleParentToBase_Offset: 0
       _angleDir_Preferred: 78.01398
       _angleDir_Lower: -2.3633728
       _angleDir_Upper: 181.03285
@@ -16615,6 +16661,9 @@ MonoBehaviour:
       _angleLocal_Prev: -99.45672
       _angleLocal_Delta: 0.08299255
       _isAngleContraint: 0
+      _isSoftLimit: 0
+      _initPose: 0
+      _angleParentToBase_Offset: 0
       _angleDir_Preferred: -97.47873
       _angleDir_Lower: -187.47873
       _angleDir_Upper: -7.4787292
@@ -17081,6 +17130,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &7569089054431786873
@@ -17715,6 +17765,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &6715589453305332659
@@ -17917,6 +17968,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -18366,6 +18420,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &8117991944836448454
@@ -18729,6 +18784,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 42355480963651581}
     _chainUnits:
@@ -18746,6 +18804,9 @@ MonoBehaviour:
       _angleLocal_Prev: 24.749111
       _angleLocal_Delta: -0.13375092
       _isAngleContraint: 1
+      _isSoftLimit: 0
+      _initPose: 0
+      _angleParentToBase_Offset: 0
       _angleDir_Preferred: 82.47815
       _angleDir_Lower: 2.1007996
       _angleDir_Upper: 182.1008
@@ -18764,6 +18825,9 @@ MonoBehaviour:
       _angleLocal_Prev: -108.25594
       _angleLocal_Delta: 0.059295654
       _isAngleContraint: 0
+      _isSoftLimit: 0
+      _initPose: 0
+      _angleParentToBase_Offset: 0
       _angleDir_Preferred: -107.25639
       _angleDir_Lower: -197.2564
       _angleDir_Upper: -17.256393
@@ -18860,6 +18924,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -19549,6 +19616,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &7901725974147599962
@@ -19674,6 +19742,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -173.20755
   _IKAngleRange_Upper: 13.5849
   _IKAnglePreferred: -60
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 7752322312213810705}
     _chainUnits: []
@@ -20504,6 +20575,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &5519862700767551439
@@ -21938,6 +22010,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &8965256410530584970
@@ -23135,6 +23208,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &5934900274079482851
@@ -24042,6 +24116,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -24331,6 +24408,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 741589606916508161}
     _chainUnits: []
@@ -24780,6 +24860,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &1510146594445765420
@@ -24905,6 +24986,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -25002,6 +25086,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -20.37735
   _IKAngleRange_Upper: 163.01888
   _IKAnglePreferred: 60
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 7664749406548600805}
     _chainUnits: []
@@ -25856,6 +25943,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &2304710303721626030
@@ -39875,6 +39963,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -40668,6 +40759,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &7238522379384740656
@@ -52043,6 +52135,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &2192776751369331745
@@ -52168,6 +52261,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -168.1132
   _IKAngleRange_Upper: 5.0943604
   _IKAnglePreferred: -60
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 3418382657552181970}
     _chainUnits: []
@@ -52273,6 +52369,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -52368,6 +52467,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -53209,6 +53311,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &9027639044241876999
@@ -53332,6 +53435,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 6049566321840160012}
     _chainUnits: []
@@ -54087,6 +54193,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54135,6 +54244,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54183,6 +54295,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54231,6 +54346,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54279,6 +54397,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54327,6 +54448,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54375,6 +54499,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54423,6 +54550,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54471,6 +54601,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -168.1132
     _IKAngleRange_Upper: 5.0943604
     _IKAnglePreferred: -60
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54519,6 +54652,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54567,6 +54703,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54615,6 +54754,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -173.20755
     _IKAngleRange_Upper: 13.5849
     _IKAnglePreferred: -60
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54663,6 +54805,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54711,6 +54856,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54759,6 +54907,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54807,6 +54958,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54855,6 +55009,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54903,6 +55060,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54951,6 +55111,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -54999,6 +55162,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -20.37735
     _IKAngleRange_Upper: 159.62265
     _IKAnglePreferred: 60
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -55047,6 +55213,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -55095,6 +55264,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -55143,6 +55315,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -20.37735
     _IKAngleRange_Upper: 163.01888
     _IKAnglePreferred: 60
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -55191,6 +55366,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -55239,6 +55417,9 @@ MonoBehaviour:
     _IKAngleRange_Lower: -90
     _IKAngleRange_Upper: 90
     _IKAnglePreferred: 0
+    _IKDepth: 0
+    _isIKSoftAngleLimit: 1
+    _IKInitPoseType: 0
     _isRigTestPosing: 0
     _isSocketEnabled: 0
     _IKController:
@@ -55554,6 +55735,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &6210570226616053117
@@ -56066,6 +56248,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -56163,6 +56348,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -59021,6 +59209,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -59747,6 +59938,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &4704183396013103267
@@ -60460,6 +60652,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -60555,6 +60750,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -61484,6 +61682,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &4705593366590258465
@@ -62241,6 +62440,7 @@ MonoBehaviour:
     _props_Vector: []
     _props_Texture: []
     _props_Color: []
+    _props_Keywords: []
     _isMergable: 0
   _isUseSRP: 0
 --- !u!33 &4755023200417480714
@@ -62366,6 +62566,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -62461,6 +62664,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 0}
     _chainUnits: []
@@ -62836,6 +63042,9 @@ MonoBehaviour:
   _IKAngleRange_Lower: -90
   _IKAngleRange_Upper: 90
   _IKAnglePreferred: 0
+  _IKDepth: 0
+  _isIKSoftAngleLimit: 1
+  _IKInitPoseType: 0
   _IKChainSet:
     _bone: {fileID: 6636761319532624036}
     _chainUnits:
@@ -62853,6 +63062,9 @@ MonoBehaviour:
       _angleLocal_Prev: -15.727798
       _angleLocal_Delta: 0.16957092
       _isAngleContraint: 1
+      _isSoftLimit: 0
+      _initPose: 0
+      _angleParentToBase_Offset: 0
       _angleDir_Preferred: -58.740463
       _angleDir_Lower: -171.94801
       _angleDir_Upper: 14.844437
@@ -62871,6 +63083,9 @@ MonoBehaviour:
       _angleLocal_Prev: -56.89129
       _angleLocal_Delta: -0.07987213
       _isAngleContraint: 0
+      _isSoftLimit: 0
+      _initPose: 0
+      _angleParentToBase_Offset: 0
       _angleDir_Preferred: -64.72402
       _angleDir_Lower: -154.72403
       _angleDir_Upper: 25.275978

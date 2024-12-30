@@ -57,6 +57,7 @@ public class PlayerState : MonoBehaviour
             Debug.LogError("체력 UI 레퍼런스가 할당되지 않음!");
             return;
         }
+        stateUI.TakeDamage(amount);
 
         while (amount > 0)
         {

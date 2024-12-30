@@ -8,9 +8,11 @@ public class Task_A_Boss3ThrowRock : Task_A_Base
     [SerializeField] private GameObject rockPrefab;
     [SerializeField] private Transform thrower; // 바위를 잡고 휘두를, 발사될 위치.
     [SerializeField] private Transform receiver;    // 바위가 버섯에 튕겨났을 때 회수할 위치
+    [SerializeField] private float throwDelay;
     [SerializeField] private float throwSpeed = 3f;
 
     private GameObject rockInstance;
+    private bool throwed;
 
     [Task]
     void ThrowRock()
@@ -21,15 +23,21 @@ public class Task_A_Boss3ThrowRock : Task_A_Base
     protected override void OnStartupBegin()
     {
         // 바위 소환 & thrower에 부착
+        throwed = false;
         rockInstance = Instantiate(rockPrefab, thrower.position, Quaternion.identity, thrower);
         // 이후 thrower쪽 애니메이션에 의해 '휘둘러지는' 모션 출력
     }
 
-    protected override void OnActiveBegin()
+    protected override void OnActiveLast()
     {
-        Boss3Rock projectileComponent = rockInstance.GetComponent<Boss3Rock>();
-        projectileComponent.InitProjectile(GetCurrentDir().toVector2() * throwSpeed);
-        projectileComponent.returnPosition = receiver.position;
-        projectileComponent.damageReceiver = GetComponent<MonsterDamageReceiver>();
+        if (throwed) return;
+        if (activeTimer.duration > throwDelay)
+        {
+            Boss3Rock projectileComponent = rockInstance.GetComponent<Boss3Rock>();
+            projectileComponent.InitProjectile(GetCurrentDir().toVector2() * throwSpeed);
+            projectileComponent.returnPosition = receiver.position;
+            projectileComponent.damageReceiver = GetComponent<MonsterDamageReceiver>();
+            throwed = true;
+        }
     }
 }

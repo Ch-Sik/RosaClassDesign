@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -43,7 +43,7 @@ namespace AnyPortrait
 		
 		// Show Window
 		//------------------------------------------------------------------
-		[MenuItem("Window/AnyPortrait/Change Installation Path", false, 22)]
+		[MenuItem("Window/AnyPortrait/Change Installation Path", false, 742)]
 		public static void ShowDialog()
 		{
 			CloseDialog();
@@ -250,7 +250,18 @@ namespace AnyPortrait
 
 				EditorGUILayout.LabelField(_text_SetEditorPath);
 				GUILayout.Space(10);
-				EditorGUILayout.TextField(_text_CurrentPah);
+				//변경 v1.5.0 : 심볼릭 링크 등을 지정하려면 직접 설정해야한다.
+				EditorGUI.BeginChangeCheck();
+				string nextPath = EditorGUILayout.DelayedTextField(_text_CurrentPah);
+				if(EditorGUI.EndChangeCheck())
+				{
+					if(!string.Equals(nextPath, _text_CurrentPah))
+					{
+						_text_CurrentPah = nextPath;
+						apPathSetting.I.Save(nextPath);
+						_text_CurrentPah = apPathSetting.I.RefreshAndGetBasePath(true);//강제로 로드후 갱신
+					}
+				}
 
 				GUILayout.Space(5);
 				if (GUILayout.Button(_text_SetPathButton, GUILayout.Height(40)))

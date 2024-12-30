@@ -1,0 +1,414 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54c58b93f86daa14eb4b55c9445fa728, type: 3}
+  m_Name: 2-2
+  m_EditorClassIdentifier: 
+  ID: 202
+  textFileName: 2-2
+  data:
+  - type: 1
+    target: 5
+    emotion: 0
+    text: 
+    location: 1
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 9
+    target: 0
+    emotion: 0
+    text: 
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0.3
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 1
+    target: 1
+    emotion: 0
+    text: 
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 5
+    target: 0
+    emotion: 0
+    text: "\uD50C\uB7EC\uC774, \uB3C4\uB300\uCCB4 \uBB34\uC2A8 \uC77C\uC774\uC57C?"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uC5B8\uC81C \uB530\uB77C\uC628\uAC70\uC9C0? \uC800\uB9AC\uAC00! \uC545\uB2F9\uC774\uB791\uC740
+      \uB9D0 \uC548\uD574!"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uB0B4 \uC18C\uC911\uD55C \uC544\uC9C0\uD2B8\uB3C4 \uBD80\uC234\uB193\uACE0,
+      \uC774\uC81C \uB098\uD55C\uD14C \uD574\uCF54\uC9C0\uD558\uB824\uACE0 \uC628
+      \uAC70\uC9C0?"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 0
+    emotion: 0
+    text: "\uB098\uB294 \uC545\uB2F9\uC774 \uC544\uB0D0. \uADF8\uB9AC\uACE0 \uB108\uB97C
+      \uD574\uCF54\uC9C0\uD560 \uC0DD\uAC01\uB3C4 \uC5C6\uACE0."
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 5
+    target: 0
+    emotion: 0
+    text: "\uADF8\uB9AC\uACE0 \uC544\uC9C0\uD2B8\uB97C \uBD80\uC21C \uAC83\uB3C4
+      \uB098\uB294 \uBAA8\uB974\uB294 \uC77C\uC774\uC57C."
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\u2026\u2026"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\u2026\uC815\uB9D0?"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 5
+    target: 0
+    emotion: 0
+    text: "\uC9C4\uC9DC\uC57C. \uC5B8\uB2C8\uAC00 \uD50C\uB7EC\uC774\uB97C \uC808\uB300
+      \uD574\uCF54\uC9C0\uD558\uC9C0 \uC54A\uC744 \uAC70\uB77C\uACE0 \uC57D\uC18D\uD560\uAC8C. "
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 5
+    target: 5
+    emotion: 0
+    text: "\uADF8\uB7EC\uB2C8\uAE4C \uC9C4\uC815\uD558\uACE0 \uBB34\uC2A8 \uC77C\uC774
+      \uC788\uC5C8\uB294\uC9C0 \uC54C\uB824\uC904\uB798?"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uD6CC\uCA4D\u2026 \uC54C\uC558\uC5B4."
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uB0B4\uAC00 \uC544\uC9C0\uD2B8\uC5D0\uC11C \uC61B\uB0A0\uC5D0 \uC7A1\uC544\uB193\uC740
+      \uBB3C\uACE0\uAE30\uB97C \uAD6C\uC6CC\uC11C \uBA39\uC73C\uB824\uACE0 \uD558\uACE0
+      \uC788\uC5C8\uB294\uB370"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uC704\uC5D0\uC11C \uCEE4\uB2E4\uB780 \uADF8\uB9BC\uC790\uAC00 \uB4DC\uB9AC\uC6CC\uC9C0\uB354\uB2C8,
+      \uD558\uB298\uC5D0\uC11C \uCEE4\uB2E4\uB780 \uC0C8\uAC00 \uB0B4\uB824\uC624\uB294\uAC70\uC57C."
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uB0B4\uAC00 \uAE5C\uC9DD \uB180\uB77C\uC11C \uC544\uC9C0\uD2B8 \uBC16\uC73C\uB85C
+      \uB098\uAC14\uB2E4\uAC00 \uADF8 \uC0C8\uB791 \uB208\uC774 \uB9C8\uC8FC\uCCE4\uB294\uB370"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uC0C8\uAC00 \uAC11\uC790\uAE30 \uB098\uB97C \uBCF4\uACE0 \uD070 \uC18C\uB9AC\uB97C
+      \uC9C0\uB974\uB354\uB2C8\u2026"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uADFC\uCC98\uC5D0 \uCEE4\uB2E4\uB780 \uBC14\uC704\uB97C \uB4E4\uACE0
+      \uC544\uC9C0\uD2B8\uB85C \uB358\uC838\uC11C \uB0B4 \uC774\uC790\uD2B8\uB97C
+      \uBC15\uC0B4\uB0B4\uBC84\uB838\uC5B4!"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uAC8C\uB2E4\uAC00 \uBD80\uC21C \uC544\uC9C0\uD2B8\uB97C \uB4A4\uC9C0\uB354\uB2C8
+      \uB0B4\uAC00 \uBAA8\uC544\uB193\uC740 \uC0DD\uC120\uB3C4 \uB2E4 \uAC00\uC838\uAC00\uBC84\uB838\uACE0!"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uB0B4\uAC00\u2026 \uB0B4\uAC00 \uC5C4\uCCAD \uC5F4\uC2EC\uD788 \uBAA8\uC544\uB193\uC740
+      \uAC74\uB370\u2026 \uD6CC\uCA4D"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 5
+    target: 0
+    emotion: 0
+    text: "\uAC71\uC815\uD558\uC9C0 \uB9C8. \uC5B8\uB2C8\uAC00 \uADF8 \uBABB\uB41C
+      \uC0C8\uB97C \uD63C\uCB50\uB0B4\uC904\uAC8C."
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 5
+    target: 0
+    emotion: 0
+    text: "\uADF8\uB7EC\uB2C8\uAE4C, \uD50C\uB7EC\uC774? \uADF8 \uC0C8\uAC00 \uC5B4\uB290
+      \uBC29\uD5A5\uC73C\uB85C \uB0A0\uC544\uAC14\uB294\uC9C0 \uC54C\uB824\uC904
+      \uC218 \uC788\uC744\uAE4C?"
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uD6CC\uCA4D\u2026 \uC54C\uC558\uC5B4. \uB0B4\uAC00 \uC548\uB0B4\uD574\uC904\uAC8C."
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 4
+    target: 5
+    emotion: 0
+    text: "\uC774\uCABD\uC774\uC57C."
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 2
+    target: 5
+    emotion: 0
+    text: 
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 9
+    target: 0
+    emotion: 0
+    text: 
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 1
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0
+  - type: 12
+    target: 0
+    emotion: 0
+    text: 
+    location: 0
+    position: {x: 0, y: 0}
+    function:
+      m_PersistentCalls:
+        m_Calls: []
+    delay: 0
+    sfx: {fileID: 0}
+    flag:
+      flag: 
+      value: 0

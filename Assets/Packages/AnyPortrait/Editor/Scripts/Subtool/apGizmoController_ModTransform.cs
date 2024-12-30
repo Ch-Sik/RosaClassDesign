@@ -754,7 +754,7 @@ namespace AnyPortrait
 						//Vector2 bonePosW = curMousePosW;//절대 위치 이용
 
 						//IK 계산
-						apBone limitedHeadBone = bone.RequestIK_Limited(bonePosW, weight, true, Editor.Select.ModRegistableBones);
+						apBone limitedHeadBone = bone.RequestIK_Limited(bonePosW, weight, true, Editor._option_IKMethod, Editor.Select.ModRegistableBones);
 
 						if (limitedHeadBone == null)
 						{
@@ -3283,7 +3283,7 @@ namespace AnyPortrait
 						//Vector2 bonePosW = curMousePosW;//절대 위치 이용
 
 						//IK 계산
-						apBone limitedHeadBone = bone.RequestIK_Limited(bonePosW, weight, true, Editor.Select.ModRegistableBones);
+						apBone limitedHeadBone = bone.RequestIK_Limited(bonePosW, weight, true, Editor._option_IKMethod, Editor.Select.ModRegistableBones);
 
 						if (limitedHeadBone == null)
 						{
@@ -3297,6 +3297,8 @@ namespace AnyPortrait
 						while (true)
 						{
 							float deltaAngle = curIKBone._IKRequestAngleResult;
+
+							
 
 							//추가 20.10.9 : 부모 본이 있거나 부모 렌더 유닛의 크기가 한축만 뒤집혔다면 deltaAngle을 반전하자
 							if(curIKBone.IsNeedInvertIKDeltaAngle_Gizmo())

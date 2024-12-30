@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -500,17 +500,7 @@ namespace AnyPortrait
 					//Post-Update라면 패스
 					continue;
 				}
-				//이전
-				//if (_ca_CurModifier._isActive)
-				//{
-				//	//Debug.Log("[" + i + "] Pre Update - " + _modifiers[i]._modifierType + " (IsPre:" + _modifiers[i].IsPreUpdate + ")");
-				//	_ca_CurModifier.Calculate(tDelta);//<<
-				//}
-				//else
-				//{
-				//	_ca_CurModifier.InitCalcualte(tDelta);
-				//}
-
+				
 				//[v1.4.5] 변경. 모든 모디파이어는 항상 동작한다.
 				_ca_CurModifier.Calculate(tDelta);
 			}
@@ -531,21 +521,10 @@ namespace AnyPortrait
 					continue;
 				}
 
-				//이전
-				//if (_ca_CurModifier._isActive)
-				//{
-				//	_ca_CurModifier.Calculate(tDelta);//<<
-				//}
-				//else
-				//{
-				//	_ca_CurModifier.InitCalcualte(tDelta);
-				//}
-
 				//[v1.4.5] 변경
 				//모디파이어는 항상 활성화되어있다.
 				_ca_CurModifier.Calculate(tDelta);
 			}
-			//Debug.Log(">> Post");
 		}
 
 
@@ -617,10 +596,22 @@ namespace AnyPortrait
 		//--------------------------------------------
 		public apOptModifierUnitBase GetModifier(int uniqueID)
 		{
-			return _modifiers.Find(delegate (apOptModifierUnitBase a)
-			{
-				return a._uniqueID == uniqueID;
-			});
+			//이전 (GC 발생)
+			//return _modifiers.Find(delegate (apOptModifierUnitBase a)
+			//{
+			//	return a._uniqueID == uniqueID;
+			//});
+
+			//변경 (v1.5.0)
+			s_FindModifier_ID = uniqueID;
+			return _modifiers.Find(s_FindModifier_Func);
+		}
+
+		private static int s_FindModifier_ID = -1;
+		private static Predicate<apOptModifierUnitBase> s_FindModifier_Func = FUNC_FindModifier;
+		private static bool FUNC_FindModifier(apOptModifierUnitBase a)
+		{
+			return a._uniqueID == s_FindModifier_ID;
 		}
 	}
 }

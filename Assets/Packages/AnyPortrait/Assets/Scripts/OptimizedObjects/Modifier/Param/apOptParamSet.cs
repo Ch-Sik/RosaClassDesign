@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -178,8 +178,10 @@ namespace AnyPortrait
 
 		}
 
-		public void BakeModifierParamSet(apModifierParamSet srcParamSet, apPortrait portrait, bool isUseModMeshSet)
+		public void BakeModifierParamSet(apModifierParamSet srcParamSet, apOptParamSetGroup paramSetGroup, apPortrait portrait, bool isUseModMeshSet)
 		{	
+			_parentParamSetGroup = paramSetGroup;
+
 			_conSyncValue_Int = srcParamSet._conSyncValue_Int;
 			_conSyncValue_Float = srcParamSet._conSyncValue_Float;
 			_conSyncValue_Vector2 = srcParamSet._conSyncValue_Vector2;
@@ -190,7 +192,16 @@ namespace AnyPortrait
 
 			_overlapWeight = srcParamSet._overlapWeight;//OverlapWeight를 집어넣자
 
+			if(_meshData == null)
+			{
+				_meshData = new List<apOptModifiedMesh>();
+			}
 			_meshData.Clear();
+
+			if(_boneData == null)
+			{
+				_boneData = new List<apOptModifiedBone>();
+			}
 			_boneData.Clear();
 
 			//19.5.23 : meshSetData 추가

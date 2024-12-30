@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -85,15 +85,17 @@ namespace AnyPortrait
 		//Bone들의 World 좌표
 		//연산하면서 위치가 계속 바뀌지만, World Matrix로 반영하지 않고 별도로 계산하기 위해
 		public Vector2 _bonePosW = Vector2.zero;
-
+		
 		//만약 Head라면 이 값을 사용해야한다.
 		public Vector2 _parentPosW = Vector2.zero;
 		public float _angleWorld_Parent = 0.0f;
 
 		//만약 Tail이라면 완성된 World 값을 이용해서 Target Pos W를 구해야한다.
 		public Vector2 _targetPosW = Vector2.zero;
-
+		
 		public float _lengthBoneToTarget = 0.0f;
+
+		
 
 
 		/// <summary>
@@ -117,13 +119,26 @@ namespace AnyPortrait
 		public float _angleLocal_Delta = 0.0f;//<<이건 계산용 값이다. 업데이트시에 매번 바뀜
 
 
+		//Loop 도중에 실패하는 경우엔 복구를 해야한다.
+		private float _stored_AngleWorld_Next = 0.0f;
+		private float _stored_AngleLocal_Next = 0.0f;
+		private float _stored_AngleLocal_Delta = 0.0f;
+		private Vector2 _stored_BonePosW = Vector2.zero;
+		private Vector2 _stored_TargetPosW = Vector2.zero;
+		
+
 		public bool _isAngleContraint = false;
 
+		//[v1.5.0] 옵션 추가
+		public bool _isSoftLimit = false;//각도 제한이 걸릴 때, 약간 넘어가는 것도 허용
+		public apBone.IK_START_POSE _initPose = apBone.IK_START_POSE.PreferAngle;
+		//public float _initPoseWeight = 0.0f;//초기 포즈가 이번 루틴에서 얼마큼의 Weight를 가지고 동작하는지 여부
+
 		public float _angleParentToBase_Offset = 0.0f;
+
 		public float _angleDir_Preferred = 0.0f;
 		public float _angleDir_Lower = 0.0f;
 		public float _angleDir_Upper = 0.0f;
-		//public bool _isAngleDir_Plus = true;
 
 		public bool _isPreferredAngleAdapted = false;
 
@@ -175,61 +190,54 @@ namespace AnyPortrait
 		public void ReadyToSimulate(bool isUseIKMatrix = false)
 		{
 			_isAngleContraint = _baseBone._isIKAngleRange;
+			_isSoftLimit = _baseBone._isIKSoftAngleLimit;
+			_initPose = _baseBone._IKInitPoseType;
+			//_initPoseWeight = 1.0f;//기본은 1
+
+			// _baseBone._isIKCalculated = false;
+			// _baseBone._IKRequestAngleResult = 0.0f;
+
+			
 
 			
 			//현재의 Bone의 Pos World를 이용해서 Local 정보를 만들자
 
 			//<<삭제 (20.8.8) 플립은 아래에서 따로 계산한다.
-			//bool isXReverse = false;
 			if (!isUseIKMatrix)
 			{
 				//IK가 적용된 WorldMatrix를 사용하지 않을 때
 
-				//이전
-				//_bonePosW = _baseBone._worldMatrix._pos;
-				//_targetPosW = _targetBone._worldMatrix._pos;
-				
-				//변경 20.8.17 : 래핑
-				//_bonePosW = _baseBone._worldMatrix.Pos;
-				//_targetPosW = _targetBone._worldMatrix.Pos;
-
-				//변경 20.8.25 : IK용 좌표계의 값을 이용하자
+				//변경 20.8.25 : IK용 좌표계의 값을 이용하자				
 				_bonePosW = _baseBone._worldMatrix.Pos_IKSpace;
 				_targetPosW = _targetBone._worldMatrix.Pos_IKSpace;
-
-				//isXReverse = _baseBone._worldMatrix._scale.x < 0.0f;//삭제 20.8.8
 			}
 			else
 			{
 				//IK가 적용된 WorldMatrix를 사용할 때
-				
-				//이전
-				//_bonePosW = _baseBone._worldMatrix_IK._pos;
-				//_targetPosW = _targetBone._worldMatrix_IK._pos;
-
-				//변경 20.8.17 : 래핑
-				//_bonePosW = _baseBone._worldMatrix_IK.Pos;
-				//_targetPosW = _targetBone._worldMatrix_IK.Pos;
-
 				//변경 20.8.25 : IK용 좌표계의 값을 이용하자
 				_bonePosW = _baseBone._worldMatrix_IK.Pos_IKSpace;
 				_targetPosW = _targetBone._worldMatrix_IK.Pos_IKSpace;
-
-				//isXReverse = _baseBone._worldMatrix_IK._scale.x < 0.0f;//삭제 20.8.8
 			}
+
+
+			// if(_baseBone._name.Contains("Debug"))
+			// {
+			// 	Debug.Log("Ready To Simulate : Bone PosW : " + _bonePosW + " / Target : " + _targetPosW + " (" + _targetBone._name + ")");
+			// 	Debug.Log("Target Pos (Non-IK) : " + _targetBone._worldMatrix.Pos);
+			// 	Debug.Log("Use IK Matrix : " + isUseIKMatrix);
+			// }
+			
+
+			
 
 			if (_parentBone != null)
 			{
 				if (!isUseIKMatrix)
 				{
-					//_parentPosW = _parentBone._worldMatrix._pos;
-					//_parentPosW = _parentBone._worldMatrix.Pos;//래핑 20.8.17
 					_parentPosW = _parentBone._worldMatrix.Pos_IKSpace;//IK 좌표계 사용 20.8.25
 				}
 				else
 				{
-					//_parentPosW = _parentBone._worldMatrix_IK._pos;
-					//_parentPosW = _parentBone._worldMatrix_IK.Pos;//래핑 20.8.17
 					_parentPosW = _parentBone._worldMatrix_IK.Pos_IKSpace;//IK 좌표계 사용 20.8.25
 				}
 
@@ -242,42 +250,27 @@ namespace AnyPortrait
 
 				if (!isUseIKMatrix)
 				{
-					//_angleParentToBase_Offset = apUtil.AngleTo180((_angleWorld_Parent - _parentBone._worldMatrix._angleDeg) - 90);
-					//_angleParentToBase_Offset = apUtil.AngleTo180((_angleWorld_Parent - _parentBone._worldMatrix.Angle) - 90);//래핑 20.8.17
 					_angleParentToBase_Offset = apUtil.AngleTo180((_angleWorld_Parent - _parentBone._worldMatrix.Angle_IKSpace) - 90);//IK 좌표계 사용 20.8.25
 				}
 				else
 				{
-					//_angleParentToBase_Offset = apUtil.AngleTo180((_angleWorld_Parent - _parentBone._worldMatrix_IK._angleDeg) - 90);
 					_angleParentToBase_Offset = apUtil.AngleTo180((_angleWorld_Parent - _parentBone._worldMatrix_IK.Angle_IKSpace) - 90);//IK 좌표계 사용 20.8.25
 				}
 			}
 			else
 			{
-				//이전 : RootBone에서는 AngleConstraint가 지정되지 않는다.
-				//_parentPosW = Vector2.zero;
-				//_isAngleContraint = false;
-				//_angleWorld_Parent = 0.0f;
-				//_angleParentToBase_Offset = 0.0f;
-
-				//>>>변경
 				//RootBone에서도 AngleConstraint를 적용할 수 있다.
 				_parentPosW = Vector2.zero;
-				//_isAngleContraint = false;
 				_angleWorld_Parent = 0.0f;
 				_angleParentToBase_Offset = -90.0f;//<<실제 각도와 IK각도가 90만큼 차이가 있기 때문
 
-				//TODO : 이거 우쨔... Def가 아닌 Skew에서는 IKSpace에서 이 값이 무시되어야 한다.
-				//>> 이게 문제가 아닌가??
 				if (_baseBone._renderUnit != null)
 				{
 					//RenderUnit과의 계산
 					_angleWorld_Parent = _baseBone._renderUnit.WorldMatrixWrap._angleDeg;
 				}
 			}
-			//이전
-			//float defaultAngle180 = apUtil.AngleTo180(_baseBone._defaultMatrix._angleDeg - _angleParentToBase_Offset);
-
+			
 			//변경 20.8.8 [Flipped Scale 문제]
 			float baseBoneDefaultAngle = _baseBone._defaultMatrix._angleDeg;
 
@@ -403,15 +396,8 @@ namespace AnyPortrait
 			_angleWorld_Next = _angleWorld_Prev;
 
 			_angleLocal_Next = _angleWorld_Next - _angleWorld_Parent;
-
-			if (isUseIKMatrix)
-			{
-				//주의
-				//IK Matrix를 사용한다면, Prev값은 WorldMatrix(WorldMatrixIK가 아님)상에서의 벡터 각도를 사용해야한다.
-				_angleWorld_Prev = Vector2Angle(_targetBone._worldMatrix.Pos_IKSpace - _baseBone._worldMatrix.Pos_IKSpace);//IK 좌표계 20.8.25
-			}
+			_angleLocal_Prev = _angleLocal_Next;
 		}
-
 
 		/// <summary>
 		/// 현재 호출한 Bone Unit을 시작으로 Tail 방향으로 World를 갱신한다.
@@ -433,16 +419,125 @@ namespace AnyPortrait
 			//Local Angle에 따라 World Angle을 갱신한다.
 			_angleWorld_Next = _angleLocal_Next + _angleWorld_Parent;
 
+			_targetPosW.x = _bonePosW.x + _lengthBoneToTarget * Mathf.Cos(_angleWorld_Next * Mathf.Deg2Rad);
+			_targetPosW.y = _bonePosW.y + _lengthBoneToTarget * Mathf.Sin(_angleWorld_Next * Mathf.Deg2Rad);
+
 			//Child Unit도 같이 갱신해주자
 			if (_childChainUnit != null)
 			{
 				_childChainUnit.CalculateWorldRecursive();
 			}
-			else
+		}
+
+		/// <summary>
+		/// CalculateWorldRecursive의 FABRIK 버전. (Backward 순회 도중에 발생한다)
+		/// targetPosW를 항상 갱신하며, 본인 제외하고 bonePos를 갱신한다.
+		/// </summary>
+		/// <param name="startUnit"></param>
+		public void CalculateWorldRecursive_FABRIK(apBoneIKChainUnit startUnit)
+		{
+			if (_parentChainUnit != null && startUnit != this)
 			{
-				//엥 여기가 Tail인가염
-				_targetPosW.x = _bonePosW.x + _lengthBoneToTarget * Mathf.Cos(_angleWorld_Next * Mathf.Deg2Rad);
-				_targetPosW.y = _bonePosW.y + _lengthBoneToTarget * Mathf.Sin(_angleWorld_Next * Mathf.Deg2Rad);
+				//Parent 기준으로 Pos를 갱신한다.
+				_parentPosW = _parentChainUnit._bonePosW;
+				_angleWorld_Parent = _parentChainUnit._angleWorld_Next;
+
+				_bonePosW.x = _parentPosW.x + _parentChainUnit._lengthBoneToTarget * Mathf.Cos(_angleWorld_Parent * Mathf.Deg2Rad);
+				_bonePosW.y = _parentPosW.y + _parentChainUnit._lengthBoneToTarget * Mathf.Sin(_angleWorld_Parent * Mathf.Deg2Rad);
+			}
+
+			//Local Angle에 따라 World Angle을 갱신한다.
+			_angleWorld_Next = _angleLocal_Next + _angleWorld_Parent;
+
+			//TargetPos를 갱신한다.
+			_targetPosW.x = _bonePosW.x + _lengthBoneToTarget * Mathf.Cos(_angleWorld_Next * Mathf.Deg2Rad);
+			_targetPosW.y = _bonePosW.y + _lengthBoneToTarget * Mathf.Sin(_angleWorld_Next * Mathf.Deg2Rad);
+
+
+			
+			//Child Unit도 같이 갱신해주자
+			if (_childChainUnit != null)
+			{
+				_childChainUnit.CalculateWorldRecursive_FABRIK(startUnit);
+			}
+		}
+
+		public void CalculateWorld_FABRIK()
+		{
+			if (_parentChainUnit != null)
+			{
+				//Parent 기준으로 Pos를 갱신한다.
+				_parentPosW = _parentChainUnit._bonePosW;
+				_angleWorld_Parent = _parentChainUnit._angleWorld_Next;
+
+				_bonePosW.x = _parentPosW.x + _parentChainUnit._lengthBoneToTarget * Mathf.Cos(_angleWorld_Parent * Mathf.Deg2Rad);
+				_bonePosW.y = _parentPosW.y + _parentChainUnit._lengthBoneToTarget * Mathf.Sin(_angleWorld_Parent * Mathf.Deg2Rad);
+			}
+
+			//Local Angle에 따라 World Angle을 갱신한다.
+			_angleWorld_Next = _angleLocal_Next + _angleWorld_Parent;
+
+			
+			//TargetPos를 갱신한다.
+			_targetPosW.x = _bonePosW.x + _lengthBoneToTarget * Mathf.Cos(_angleWorld_Next * Mathf.Deg2Rad);
+			_targetPosW.y = _bonePosW.y + _lengthBoneToTarget * Mathf.Sin(_angleWorld_Next * Mathf.Deg2Rad);
+
+		}
+
+
+		/// <summary>
+		/// [v1.5.0]
+		/// IK의 초기 포즈 연산을 수행하기 위해 연산 플래그를 리셋한다.
+		/// </summary>
+		public void ResetIKInitPoseFlagRecursive()
+		{
+			//v1.5.0 : Base Bone의 중간 결과 갱신을 true로 변경한다.
+			//이후 다중 Effector Bone에 대한 초기 포즈 처리를 방지한다.
+			_baseBone._IKInitPoseWeightSum = 0.0f;
+
+			//Child Unit도 같이 갱신해주자
+			if (_childChainUnit != null)
+			{
+				_childChainUnit.ResetIKInitPoseFlagRecursive();
+			}
+		}
+
+
+		/// <summary>
+		/// IK 루프 도중에 Chain Unit의 값을 저장한다.
+		/// 실패시 복구하기 위함
+		/// </summary>
+		public void StoreChainValuesInLoopRecursive()
+		{
+			//Loop 도중에 실패하는 경우엔 복구를 해야한다.
+			_stored_AngleWorld_Next = _angleWorld_Next;
+			_stored_AngleLocal_Next = _angleLocal_Next;
+			_stored_AngleLocal_Delta = _angleLocal_Delta;
+			_stored_BonePosW = _bonePosW;
+			_stored_TargetPosW = _targetPosW;
+
+			if(_childChainUnit != null)
+			{
+				_childChainUnit.StoreChainValuesInLoopRecursive();
+			}
+		}
+
+		/// <summary>
+		/// IK 루프 도중에 저장된 값을 복구한다.
+		/// IK 실패시 호출된다.
+		/// </summary>
+		public void RestoreChainValuesInLoopRecursive()
+		{
+			//Loop 도중에 실패하는 경우엔 복구를 해야한다.
+			_angleWorld_Next = _stored_AngleWorld_Next;
+			_angleLocal_Next = _stored_AngleLocal_Next;
+			_angleLocal_Delta = _stored_AngleLocal_Delta;
+			_bonePosW = _stored_BonePosW;
+			_targetPosW = _stored_TargetPosW;
+
+			if(_childChainUnit != null)
+			{
+				_childChainUnit.RestoreChainValuesInLoopRecursive();
 			}
 		}
 
@@ -561,6 +656,14 @@ namespace AnyPortrait
 		public static float Vector2Angle(Vector2 dirVec)
 		{
 			return Mathf.Atan2(dirVec.y, dirVec.x) * Mathf.Rad2Deg;
+		}
+
+		public static Vector2 MakeTargetPos(float angleW, Vector2 bonePosW, float length)
+		{
+			return new Vector2(
+				(Mathf.Cos(angleW * Mathf.Deg2Rad) * length) + bonePosW.x,
+				(Mathf.Sin(angleW * Mathf.Deg2Rad) * length) + bonePosW.y
+				);
 		}
 
 		/// <summary>

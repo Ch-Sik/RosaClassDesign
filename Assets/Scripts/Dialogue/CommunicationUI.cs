@@ -126,8 +126,7 @@ public class CommunicationUI : MonoBehaviour
         {
             //Hide After show
             show = DOTween.Sequence()
-            .AppendCallback(() => targetImage.Hide())
-            .AppendInterval(tweenTime)
+            .Append(targetImage.image.DOFade(0, tweenTime).SetEase(Ease.Linear))
             .AppendCallback(() => targetImage.Show(target));
 
             return tweenTime * 2f;
@@ -148,6 +147,16 @@ public class CommunicationUI : MonoBehaviour
         return tweenTime;
     }
 
+    // 24.12.22) 한꺼번에 모두 숨기기 추가
+    public float HideAll()
+    {
+        for(int i=0; i<targetImages.Count; i++)
+        {
+            targetImages[i].Hide();
+        }
+        return tweenTime;
+    }
+
     //대상의 표정을 변경하는 함수
     public void SetEmotion(CommunicationTarget target, Emotion emotion)
     {
@@ -164,12 +173,15 @@ public class CommunicationUI : MonoBehaviour
     {
         //타겟 파인딩
         int index = FindTarget(target);
+        bool hasPortrait = true;
 
-        //없다면, 리턴
+        // 24.12.22) 없다면 없는대로 진행하도록 수정
         if (index == -1)
-            return;
+            hasPortrait = false;
 
-        TargetImage targetImage = targetImages[index];
+        TargetImage targetImage = null;
+        if(hasPortrait)
+            targetImage = targetImages[index];
 
         talk = DOTween.Sequence()
         .AppendCallback(() =>
@@ -180,7 +192,9 @@ public class CommunicationUI : MonoBehaviour
 
             for (int i = 0; i < targetImages.Count; i++)
                 targetImages[i].FadeOut(true);
-            targetImage.FadeIn(true);
+            
+            if(hasPortrait)
+                targetImage.FadeIn(true);
         })
         .Append(Dialogue.DOText(text, text.Length * 0.015f))
         .AppendCallback(() =>

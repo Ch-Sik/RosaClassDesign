@@ -614,10 +614,10 @@ MonoBehaviour:
   rigidbody: {fileID: 0}
   portrait: {fileID: 4821681170212478087}
   pandaBT: {fileID: 0}
-  isSuperArmour: 0
+  monsterAttackComponent: {fileID: 6180352387989304572}
+  isSuperArmour: 1
   tempSuperArmour: 0
   isInvincible: 1
-  ignoreDur: 2
   knockbackCoeff: 0
   ignoreKnockbackOnSuperArmour: 0
   useRagdoll: 0
@@ -746,6 +746,7 @@ MonoBehaviour:
   recoveryDrag: 3
   wallStunEnabled: 0
   wallStunDuration: 0
+  cliffStopEnabled: 1
 --- !u!50 &8508132543111365271
 Rigidbody2D:
   serializedVersion: 4

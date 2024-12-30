@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -1009,51 +1009,58 @@ namespace AnyPortrait
 													apEditorHierarchyUnit parentUnit,
 													HIERARCHY_TYPE hierarchyType)
 		{
-			apEditorHierarchyUnit unit = _units_All.Find(delegate (apEditorHierarchyUnit a)
-			{
-				if (obj != null)
-				{
-					if ((CATEGORY)a._savedKey == category)
-					{
-						if (a._savedObj == obj)
-						{
-							return true;
-						}
+			//이전 (GC 발생)
+			//apEditorHierarchyUnit unit = _units_All.Find(delegate (apEditorHierarchyUnit a)
+			//{
+			//	if (obj != null)
+			//	{
+			//		if ((CATEGORY)a._savedKey == category)
+			//		{
+			//			if (a._savedObj == obj)
+			//			{
+			//				return true;
+			//			}
 
-						if(a._savedObj is apTransform_Mesh && obj is apTransform_Mesh)
-						{
-							if((a._savedObj as apTransform_Mesh)._transformUniqueID == (obj as apTransform_Mesh)._transformUniqueID)
-							{
-								//Debug.Log("찾음 : 레퍼런스는 다르지만 Mesh TF ID가 동일하다.");
-								return true;
-							}
-						}
-						else if(a._savedObj is apTransform_MeshGroup && obj is apTransform_MeshGroup)
-						{
-							if((a._savedObj as apTransform_MeshGroup)._transformUniqueID == (obj as apTransform_MeshGroup)._transformUniqueID)
-							{
-								//Debug.Log("찾음 : 레퍼런스는 다르지만 MeshGroup TF ID가 동일하다.");
-								return true;
-							}
-						}
-						else if(a._savedObj is apBone && obj is apBone)
-						{
-							if((a._savedObj as apBone)._uniqueID == (obj as apBone)._uniqueID)
-							{
-								//Debug.Log("찾음 : 레퍼런스는 다르지만 Bone ID가 동일하다.");
-								return true;
-							}
-						}
-					}
-					return false;
+			//			if(a._savedObj is apTransform_Mesh && obj is apTransform_Mesh)
+			//			{
+			//				if((a._savedObj as apTransform_Mesh)._transformUniqueID == (obj as apTransform_Mesh)._transformUniqueID)
+			//				{
+			//					//Debug.Log("찾음 : 레퍼런스는 다르지만 Mesh TF ID가 동일하다.");
+			//					return true;
+			//				}
+			//			}
+			//			else if(a._savedObj is apTransform_MeshGroup && obj is apTransform_MeshGroup)
+			//			{
+			//				if((a._savedObj as apTransform_MeshGroup)._transformUniqueID == (obj as apTransform_MeshGroup)._transformUniqueID)
+			//				{
+			//					//Debug.Log("찾음 : 레퍼런스는 다르지만 MeshGroup TF ID가 동일하다.");
+			//					return true;
+			//				}
+			//			}
+			//			else if(a._savedObj is apBone && obj is apBone)
+			//			{
+			//				if((a._savedObj as apBone)._uniqueID == (obj as apBone)._uniqueID)
+			//				{
+			//					//Debug.Log("찾음 : 레퍼런스는 다르지만 Bone ID가 동일하다.");
+			//					return true;
+			//				}
+			//			}
+			//		}
+			//		return false;
 					
-					//return (CATEGORY)a._savedKey == category && a._savedObj == obj;
-				}
-				else
-				{
-					return (CATEGORY)a._savedKey == category;
-				}
-			});
+			//		//return (CATEGORY)a._savedKey == category && a._savedObj == obj;
+			//	}
+			//	else
+			//	{
+			//		return (CATEGORY)a._savedKey == category;
+			//	}
+			//});
+
+			//변경 v1.5.0
+			s_FindTargetUnit_Category = category;
+			s_FindTargetUnit_Object = obj;
+			apEditorHierarchyUnit unit = _units_All.Find(s_FindTargetUnit_Func);
+			
 
 			if (objName == null)
 			{
@@ -1148,6 +1155,55 @@ namespace AnyPortrait
 				unit.SetAvailable(isAvailable);
 			}
 			return unit;
+		}
+
+		private static CATEGORY s_FindTargetUnit_Category = CATEGORY.MainName;
+		private static object s_FindTargetUnit_Object = null;
+		private static Predicate<apEditorHierarchyUnit> s_FindTargetUnit_Func = FUNC_FindTargetUnit;
+		private static bool FUNC_FindTargetUnit(apEditorHierarchyUnit a)
+		{
+			if (s_FindTargetUnit_Object != null)
+			{
+				if ((CATEGORY)a._savedKey == s_FindTargetUnit_Category)
+				{
+					if (a._savedObj == s_FindTargetUnit_Object)
+					{
+						return true;
+					}
+
+					if(a._savedObj is apTransform_Mesh && s_FindTargetUnit_Object is apTransform_Mesh)
+					{
+						if((a._savedObj as apTransform_Mesh)._transformUniqueID == (s_FindTargetUnit_Object as apTransform_Mesh)._transformUniqueID)
+						{
+							//Debug.Log("찾음 : 레퍼런스는 다르지만 Mesh TF ID가 동일하다.");
+							return true;
+						}
+					}
+					else if(a._savedObj is apTransform_MeshGroup && s_FindTargetUnit_Object is apTransform_MeshGroup)
+					{
+						if((a._savedObj as apTransform_MeshGroup)._transformUniqueID == (s_FindTargetUnit_Object as apTransform_MeshGroup)._transformUniqueID)
+						{
+							//Debug.Log("찾음 : 레퍼런스는 다르지만 MeshGroup TF ID가 동일하다.");
+							return true;
+						}
+					}
+					else if(a._savedObj is apBone && s_FindTargetUnit_Object is apBone)
+					{
+						if((a._savedObj as apBone)._uniqueID == (s_FindTargetUnit_Object as apBone)._uniqueID)
+						{
+							//Debug.Log("찾음 : 레퍼런스는 다르지만 Bone ID가 동일하다.");
+							return true;
+						}
+					}
+				}
+				return false;
+					
+				//return (CATEGORY)a._savedKey == category && a._savedObj == obj;
+			}
+			else
+			{
+				return (CATEGORY)a._savedKey == s_FindTargetUnit_Category;
+			}
 		}
 
 
@@ -2165,11 +2221,8 @@ namespace AnyPortrait
 
 			CATEGORY category = (CATEGORY)savedKey;
 
-			apTransform_Mesh meshTransform = null;
-			apTransform_MeshGroup meshGroupTransform = null;
-			apBone bone = null;
-
-			bool isMeshTransform = false;
+			
+			
 
 			bool isVisibleDefault = false;
 
@@ -2185,74 +2238,95 @@ namespace AnyPortrait
 				isAlt = Event.current.alt;
 			}
 			
-			
-			
-			switch (category)
-			{
-				case CATEGORY.Mesh_Item:
-					{
-						meshTransform = savedObj as apTransform_Mesh;
-						isVisibleDefault = meshTransform._isVisible_Default;
-						isMeshTransform = true;
-					}
-					break;
-
-				case CATEGORY.MeshGroup_Item:
-					{
-						meshGroupTransform = savedObj as apTransform_MeshGroup;
-						isVisibleDefault = meshGroupTransform._isVisible_Default;
-						isMeshTransform = false;
-					}
-					break;
-
-				case CATEGORY.Bone_Item:
-					{
-						bone = savedObj as apBone;
-						isVisibleDefault = bone.IsVisibleInGUI;
-					}
-					break;
-				default:
-					return;
-			}
-			if (meshTransform == null && meshGroupTransform == null && bone == null)
-			{
-				//?? 뭘 선택했나염..
-				return;
-			}
 
 
+			//현재 탭 (Category)에 따라서 처리가 달라진다.
 			if (category == CATEGORY.Mesh_Item || category == CATEGORY.MeshGroup_Item)
 			{
+				//Mesh TF / MeshGroup TF의 Visible (Tmp / Default)를 변경
+				apTransform_Mesh meshTransform = null;
+				apTransform_MeshGroup meshGroupTransform = null;
+
+				if(category == CATEGORY.Mesh_Item)
+				{
+					meshTransform = savedObj as apTransform_Mesh;
+					if(meshTransform != null)
+					{
+						isVisibleDefault = meshTransform._isVisible_Default;
+					}
+				}
+				else if(category == CATEGORY.MeshGroup_Item)
+				{
+					meshGroupTransform = savedObj as apTransform_MeshGroup;
+					if(meshGroupTransform != null)
+					{
+						isVisibleDefault = meshGroupTransform._isVisible_Default;
+					}
+				}
+
+				//선택된게 없다면 종료
+				if(meshTransform == null && meshGroupTransform == null)
+				{
+					return;
+				}
+
+				//[v1.5.0 추가]
+				//다중 선택된 상태에서, 선택한 버튼이 다중 선택한 객체에 포함되어 있다면 다같이 처리를 한다.
+				//값이 복합적으로 있다면, 선택한 대상의 다음 값을 공유한다.
+				//단, Ctrl 키를 눌렀다면 다중 선택에 의한 처리는 하지 않는다.
+				//현재 선택중인 객체들
+				List<apTransform_Mesh> selectedMeshTFs = Editor.Select.MeshTFs_All;
+				List<apTransform_MeshGroup> selectedMeshGroupTFs = Editor.Select.MeshGroupTFs_All;
+
+				int nSelectedMeshTFs = selectedMeshTFs != null ? selectedMeshTFs.Count : 0;
+				int nSelectedMeshGroupTFs = selectedMeshGroupTFs != null ? selectedMeshGroupTFs.Count : 0;
+
+				//현재 버튼을 누른 대상 TF가 선택된 리스트에 포함되어 있는가
+				//- 포함되어 있다면 Ctrl 버튼을 누르지 않는 한 동시에 변경이 된다.
+				//- 포함되어 있지 않다면 1개만 처리를 한다.
+				bool isInMultipleSelected = false;//다중 편집 여부
+
+				//다중 선택은 ModMesh가 될 수 있는 대상이 2개 이상 선택 되어야 한다.
+				if(nSelectedMeshTFs + nSelectedMeshGroupTFs > 1)
+				{
+					if(meshTransform != null && nSelectedMeshTFs > 0)
+					{
+						if(selectedMeshTFs.Contains(meshTransform))
+						{
+							//단일 또는 다중 선택된 리스트에 포함되어 있다.
+							isInMultipleSelected = true;
+						}
+					}
+					else if(meshGroupTransform != null && nSelectedMeshGroupTFs > 0)
+					{
+						if(selectedMeshGroupTFs.Contains(meshGroupTransform))
+						{
+							//단일 또는 다중 선택된 리스트에 포함되어 있다.
+							isInMultipleSelected = true;
+						}
+					}
+				}
+
 				if (isPrefixButton)
 				{
-					//Prefix : TmpWorkVisible을 토글한다.
+					//Prefix : TmpWorkVisible을 토글한다. (Show / Hide 뿐만 아니라, 현재 상태와 같음/다름으로 설정한다.)
 					apRenderUnit linkedRenderUnit = null;
 
-					if (meshTransform != null)
-					{
-						linkedRenderUnit = meshTransform._linkedRenderUnit;
-					}
-					else if (meshGroupTransform != null)
-					{
-						linkedRenderUnit = meshGroupTransform._linkedRenderUnit;
-					}
+					if (meshTransform != null)				{ linkedRenderUnit = meshTransform._linkedRenderUnit; }
+					else if (meshGroupTransform != null)	{ linkedRenderUnit = meshGroupTransform._linkedRenderUnit; }
 
 					if (linkedRenderUnit != null)
 					{
 						bool isTmpWorkToShow = false;
-						//Editor.Select.MeshGroup.
+
 						if (linkedRenderUnit._isVisible_WithoutParent == linkedRenderUnit._isVisibleCalculated)
 						{
+							//Visible 값과 실제 Visible 상태가 같다면 > 다르게 표현한다.
 
 							//TmpWork가 꺼져있다. (실제 Visible과 값이 같다)
 							if (linkedRenderUnit._isVisible_WithoutParent)
 							{
-								//Debug.Log("Visible Type 1");
-
-								//Show -> Hide
-								//이전
-								//linkedRenderUnit._isVisibleWorkToggle_Show2Hide = true;
-								//linkedRenderUnit._isVisibleWorkToggle_Hide2Show = false;
+								//계산된게 Show라면 Hide로 강제한다.
 
 								//변경 21.1.28 : Show(None) -> Hide
 								linkedRenderUnit._workVisible_Tmp = apRenderUnit.WORK_VISIBLE_TYPE.ToHide;
@@ -2261,12 +2335,7 @@ namespace AnyPortrait
 							}
 							else
 							{
-								//Debug.Log("Visible Type 2");
-
-								//Hide -> Show
-								//이전
-								//linkedRenderUnit._isVisibleWorkToggle_Show2Hide = false;
-								//linkedRenderUnit._isVisibleWorkToggle_Hide2Show = true;
+								//계산된게 Hide라면 Show로 강제한다.
 
 								//변경 21.1.28 : Hide(None) -> Show
 								linkedRenderUnit._workVisible_Tmp = apRenderUnit.WORK_VISIBLE_TYPE.ToShow;
@@ -2276,13 +2345,9 @@ namespace AnyPortrait
 						}
 						else
 						{
+							//Visible 값과 실제 Visible 상태가 다르다 > 같도록 표현한다.
 							//TmpWork가 켜져있다. 꺼야한다. (같은 값으로 바꾼다)
-							//이전
-							//linkedRenderUnit._isVisibleWorkToggle_Show2Hide = false;
-							//linkedRenderUnit._isVisibleWorkToggle_Hide2Show = false;
-
-							//Debug.Log("Visible Type 3 : " + linkedRenderUnit._workVisible_Rule);
-
+							
 							//변경 21.1.28 : Show/Hide -> None
 							if(linkedRenderUnit._workVisible_Rule == apRenderUnit.WORK_VISIBLE_TYPE.None)
 							{
@@ -2308,15 +2373,31 @@ namespace AnyPortrait
 
 						if (isCtrl)
 						{
-							//Ctrl을 눌렀으면 반대로 행동
-							//Debug.Log("TmpWork를 다른 RenderUnit에 반대로 적용 : Show : " + !isTmpWorkToShow);
+							//Ctrl을 눌렀으면 반대로 행동 (이 함수에 "모든 RenderUnit의 Visible을 저장"하는 코드가 포함되어 있다.)
 							Editor.Controller.SetMeshGroupTmpWorkVisibleAll(Editor.Select.MeshGroup, !isTmpWorkToShow, linkedRenderUnit);
 						}
 						else
 						{
-							//Render Unit의 Visibility를 저장하자
-							Editor.VisiblityController.Save_RenderUnit(Editor.Select.MeshGroup, linkedRenderUnit);
+							//Ctrl을 누르지 않았을 때
+							//선택된 객체들에 이 Render Unit들이 포함되어 있다면 같이 동작하도록 하자
+							if(isInMultipleSelected)
+							{
+								//선택된 객체들을 모두 변경한다면 (v1.5.0)
+								Editor.Controller.SetMeshGroupTmpWorkVisibleTargetTFs(	Editor.Select.MeshGroup,
+																						selectedMeshTFs,
+																						selectedMeshGroupTFs,
+																						isTmpWorkToShow,
+																						linkedRenderUnit);
+							}
+							else
+							{
+								//단일 변경이라면
+								//Render Unit의 Visibility만 저장하자
+								Editor.VisiblityController.Save_RenderUnit(Editor.Select.MeshGroup, linkedRenderUnit);
+							}
 						}
+						
+						
 					}
 
 					Editor.Controller.CheckTmpWorkVisible(Editor.Select.MeshGroup);//TmpWorkVisible이 변경되었다면 이 함수 호출
@@ -2332,14 +2413,12 @@ namespace AnyPortrait
 					//Setting : isVisibleDefault를 토글한다.
 					//Modifier 선택중 + ParamSetGroup을 선택하고 있다. : ModMesh의 isVisible을 변경한다.
 
-
 					//v1.4.2 : Visibility를 전환할 때, 모달(FFD 등)이 켜져있으면 확인하자
 					bool isExecutable = Editor.CheckModalAndExecutable();
 					if(!isExecutable)
 					{
 						return;
 					}
-
 
 					bool isModVisibleSetting = Editor.Select.SelectionType == apSelection.SELECTION_TYPE.MeshGroup
 													&& Editor.Select.Modifier != null
@@ -2357,22 +2436,67 @@ namespace AnyPortrait
 															false, 
 															true,
 															apEditorUtil.UNDO_STRUCT.ValueOnly);
-
-						if (meshTransform != null)
+						
+						//Default 값을 변경한다.
+						//[v1.5.0 변경]
+						//- 선택된 객체들에 대상이 포함되어 있다면, 일괄적으로 next 값을 적용한다.
+						//- 그렇지 않은 경우, 단순히 그걸 토글한다.
+						bool nextDefaultVisible = false;
+						if(meshTransform != null)
 						{
-							meshTransform._isVisible_Default = !meshTransform._isVisible_Default;
+							nextDefaultVisible = !meshTransform._isVisible_Default;
 						}
-						else if (meshGroupTransform != null)
+						else if(meshGroupTransform != null)
 						{
-							meshGroupTransform._isVisible_Default = !meshGroupTransform._isVisible_Default;
+							nextDefaultVisible = !meshGroupTransform._isVisible_Default;
 						}
 
+						if(isInMultipleSelected)
+						{
+							//선택된 모든 객체의 Default 값을 변경한다.
+							if(nSelectedMeshTFs > 0)
+							{
+								apTransform_Mesh curMeshTF = null;
+								for (int iMeshTF = 0; iMeshTF < nSelectedMeshTFs; iMeshTF++)
+								{
+									curMeshTF = selectedMeshTFs[iMeshTF];
+									if(curMeshTF != null)
+									{
+										curMeshTF._isVisible_Default = nextDefaultVisible;
+									}
+								}
+							}
+							if(nSelectedMeshGroupTFs > 0)
+							{
+								apTransform_MeshGroup curMeshGroupTF = null;
+								for (int iMeshGroupTF = 0; iMeshGroupTF < nSelectedMeshGroupTFs; iMeshGroupTF++)
+								{
+									curMeshGroupTF = selectedMeshGroupTFs[iMeshGroupTF];
+									if(curMeshGroupTF != null)
+									{
+										curMeshGroupTF._isVisible_Default = nextDefaultVisible;
+									}
+								}
+							}
+						}
+						else
+						{
+							//1개의 객체의 Default 값을 변경한다.							
+							if (meshTransform != null)
+							{
+								meshTransform._isVisible_Default = nextDefaultVisible;
+							}
+							else if (meshGroupTransform != null)
+							{
+								meshGroupTransform._isVisible_Default = nextDefaultVisible;
+							}
+						}
+						
 						Editor.Select.MeshGroup.RefreshForce();
 						Editor.RefreshControllerAndHierarchy(false);
 					}
 					else if (isModVisibleSetting)
 					{
-
 						//Mod Visible을 조절한다.
 						//가능한지 여부 체크
 						apModifierBase curModifier = Editor.Select.Modifier;
@@ -2412,8 +2536,6 @@ namespace AnyPortrait
 						//색상을 지원하고 Color Option도 켜진 상태라면
 						if (isColorSupported && isColorEnabled)
 						{
-							//apEditorUtil.SetRecord(apUndoGroupData.ACTION.Modifier_SettingChanged, Editor.Select.MeshGroup, savedObj, false, Editor);
-
 							//MeshGroup이 아닌 Modifier를 저장할것
 							apEditorUtil.SetRecord_Modifier(apUndoGroupData.ACTION.Modifier_SettingChanged,
 															Editor,
@@ -2428,85 +2550,171 @@ namespace AnyPortrait
 							//ModMesh가 있는지 확인
 							//없으면 -> 추가 후 받아온다.
 							//ModMesh의 isVisible 값을 지정한다.
-
 							apModifiedMesh targetModMesh = null;
 
-
-							if (meshTransform != null)
+							//[v1.5.0]
+							//다중 선택시 + 선택된 대상의 값을 변경시, 해당된 모든 객체의 ModMesh의 값을 일괄 변경한다.
+							//그렇지 않은 경우엔 단일 대상의 ModMesh의 값을 변경하고, 해당 객체를 선택한다.
+							if(isInMultipleSelected)
 							{
-								Editor.Select.SelectMeshTF(meshTransform, apSelection.MULTI_SELECT.Main);
-							}
-							else
-							{
-								Editor.Select.SelectMeshGroupTF(meshGroupTransform, apSelection.MULTI_SELECT.Main);
-							}
+								// [ 다중 선택된 객체들의 Visiblity를 일괄 변경 ]
+								//1. 변경될 Show/Hide 값을 구하기 위해서 기존의 ModMesh를 찾는다. (선택된 상태이므로 "선택된 ModMesh"에서 찾을 수 있다.)
+								//> ModMesh가 있다면 Visibility의 반대값, 없다면 Defalut의 반대값이 다음 값이다.
 
-							
+								//2. 객체들에 대해 ModMesh가 다 생성되어있는지 모르므로, ModMesh 생성을 시도한다.
+								//> 리깅된 자식 메시 그룹의 메시는 ModMesh의 대상이 되지 않는데, 여기선 경고 메시지를 보여주진 않는다.
 
-							Editor.Select.AutoSelectModMeshOrModBone();
+								//3. ModMesh 리스트들에 값을 할당한다.
 
-							targetModMesh = Editor.Select.ModMesh_Main;
+								//1. 기존의 ModMesh 찾아서 다음값 정하기
+								bool nextVisiblity = false;
+								List<apModifiedMesh> selectedModMeshes = Editor.Select.ModMeshes_All;
 
-							if (targetModMesh == null)
-							{
-								//ModMesh가 등록이 안되어있다면
-								//추가를 시도한다.
-
-								//추가 v1.4.2 : 리깅이 된 자식 메시 그룹의 메시는 ModMesh의 대상이 되면 안된다.
-								if(Editor.Select.Modifier != null)
-								{
+								apModifiedMesh existTargetModMesh = null;
+								int nSelectedModMeshes = selectedModMeshes != null ? selectedModMeshes.Count : 0;
+								if(nSelectedModMeshes > 0)
+								{	
 									if(meshTransform != null)
 									{
-										if(Editor.Select.Modifier.ModifierType == apModifierBase.MODIFIER_TYPE.TF
-											&& meshTransform.IsRiggedChildMeshTF(Editor.Select.MeshGroup))
+										existTargetModMesh = selectedModMeshes.Find(delegate(apModifiedMesh a)
 										{
-											//"자식 메시 그룹의 메시 + 리깅됨" 조건에 의해 이건 TF 모디파이어에는 추가할 수 없다.
-											//안내 메시지
-											EditorUtility.DisplayDialog(	Editor.GetText(TEXT.DLG_RiggedChildMeshUnableToMod_Title),
-																			Editor.GetText(TEXT.DLG_RiggedChildMeshUnableToMod_Body),
-																			Editor.GetText(TEXT.Okay));
-
-											return;
-										}
+											return a._isMeshTransform && a._transform_Mesh == meshTransform;
+										});
+									}
+									else if(meshGroupTransform != null)
+									{
+										existTargetModMesh = selectedModMeshes.Find(delegate(apModifiedMesh a)
+										{
+											return !a._isMeshTransform && a._transform_MeshGroup == meshGroupTransform;
+										});
 									}
 								}
 
-								Editor.Controller.AddModMesh_WithSubMeshOrSubMeshGroup();
-
-								//여기서 주의 : "현재 ParamSet"의 ModMesh가 아니라 "모든 ParamSet"의 ModMesh에 대해서 처리를 해야한다.
-								List<apModifierParamSet> paramSets = Editor.Select.SubEditedParamSetGroup._paramSetList;
-								for (int i = 0; i < paramSets.Count; i++)
+								if(existTargetModMesh != null)
 								{
-									apModifierParamSet paramSet = paramSets[i];
-									apModifiedMesh addedMesh = paramSet._meshData.Find(delegate (apModifiedMesh a)
+									//기존의 ModMesh가 있다면 값을 전환 (토글)
+									nextVisiblity = !existTargetModMesh._isVisible;
+								}
+								else
+								{
+									//기존의 ModMesh가 없다면 Default 값의 반대로 하자
+									if(meshTransform != null)
 									{
-										if (isMeshTransform)
-										{
-											return a._transform_Mesh == meshTransform;
-										}
-										else
-										{
-											return a._transform_MeshGroup == meshGroupTransform;
-										}
-									});
-									if (addedMesh != null)
-									{
-										addedMesh._isVisible = !isVisibleDefault;
+										nextVisiblity = !meshTransform._isVisible_Default;
 									}
+									else if(meshGroupTransform != null)
+									{
+										nextVisiblity = !meshGroupTransform._isVisible_Default;
+									}
+								}
+
+								//2. 객체들에 대해 ModMesh가 다 생성되어있는지 모르므로, ModMesh 생성을 시도한다.
+								//> 리깅된 자식 메시 그룹의 메시는 ModMesh의 대상이 되지 않는데, 여기선 경고 메시지를 보여주진 않는다.
+								//Editor.Controller.AddModMesh_WithSubMeshOrSubMeshGroup(false);
+								Editor.Controller.AddModMeshesBones_WithMultipleSelected(	false,//false : Undo 안함
+																							true,//true : ModMesh를 생성한다.
+																							false//false : ModBone은 생성하지 않는다.
+																							);
+
+								//Mod Mesh 추가 후의 다시 새로운 리스트를 통해서 값을 설정하자
+								selectedModMeshes = Editor.Select.ModMeshes_All;
+
+								nSelectedModMeshes = selectedModMeshes != null ? selectedModMeshes.Count : 0;
+								if(nSelectedModMeshes > 0)
+								{
+									apModifiedMesh curModMesh = null;
+									for (int iModMesh = 0; iModMesh < nSelectedModMeshes; iModMesh++)
+									{
+										curModMesh = selectedModMeshes[iModMesh];
+										curModMesh._isVisible = nextVisiblity;
+									}
+								}
+							}
+							else
+							{
+								// [ 단일 객체의 Visibility를 일괄 변경 (기존 방식) ]
+								if (meshTransform != null)
+								{
+									Editor.Select.SelectMeshTF(meshTransform, apSelection.MULTI_SELECT.Main);
+								}
+								else
+								{
+									Editor.Select.SelectMeshGroupTF(meshGroupTransform, apSelection.MULTI_SELECT.Main);
 								}
 
 								targetModMesh = Editor.Select.ModMesh_Main;
+
 								if (targetModMesh == null)
 								{
-									return;
-								}
-								targetModMesh._isVisible = !isVisibleDefault;
+									// [ Mod Mesh가 없는 경우 ]
+									//ModMesh가 등록이 안되어있다면 추가를 하고
+									//Visiblity는 Default의 반대 값으로 토글한다.
 
-							}
-							else
-							{
-								//Visible을 변경한다.
-								targetModMesh._isVisible = !targetModMesh._isVisible;
+									//추가 v1.4.2 : 리깅이 된 자식 메시 그룹의 메시는 ModMesh의 대상이 되면 안된다.
+									if(Editor.Select.Modifier != null)
+									{
+										if(meshTransform != null)
+										{
+											if(Editor.Select.Modifier.ModifierType == apModifierBase.MODIFIER_TYPE.TF
+												&& meshTransform.IsRiggedChildMeshTF(Editor.Select.MeshGroup))
+											{
+												//"자식 메시 그룹의 메시 + 리깅됨" 조건에 의해 이건 TF 모디파이어에는 추가할 수 없다.
+												//안내 메시지
+												EditorUtility.DisplayDialog(	Editor.GetText(TEXT.DLG_RiggedChildMeshUnableToMod_Title),
+																				Editor.GetText(TEXT.DLG_RiggedChildMeshUnableToMod_Body),
+																				Editor.GetText(TEXT.Okay));
+
+												return;
+											}
+										}
+									}
+
+									//Mod Mesh를 추가한다.
+									Editor.Controller.AddModMesh_WithSubMeshOrSubMeshGroup(false);
+
+									// [v1.5.0 삭제]
+									// - 모든 Key에서의 초기값을 설정하는 것은 다중 선택과 사용자 경험이 다르게 된다.
+									// - 그러므로, 새로 만든 Mod Mesh라 하더라도 현재의 ParamSet에서만 값을 변경하자.
+									// //여기서 주의 : "현재 ParamSet"의 ModMesh가 아니라 "모든 ParamSet"의 ModMesh에 대해서 처리를 해야한다.
+									// List<apModifierParamSet> paramSets = null;
+									// if(Editor.Select.SubEditedParamSetGroup != null)
+									// {
+									// 	paramSets = Editor.Select.SubEditedParamSetGroup._paramSetList;
+									// }
+
+									// int nParamSets = paramSets != null ? paramSets.Count : 0;
+									// for (int i = 0; i < nParamSets; i++)
+									// {
+									// 	apModifierParamSet paramSet = paramSets[i];
+									// 	apModifiedMesh addedMesh = paramSet._meshData.Find(delegate (apModifiedMesh a)
+									// 	{
+									// 		if (isMeshTransform)
+									// 		{
+									// 			return a._transform_Mesh == meshTransform;
+									// 		}
+									// 		else
+									// 		{
+									// 			return a._transform_MeshGroup == meshGroupTransform;
+									// 		}
+									// 	});
+									// 	if (addedMesh != null)
+									// 	{
+									// 		addedMesh._isVisible = !isVisibleDefault;
+									// 	}
+									// }
+
+									targetModMesh = Editor.Select.ModMesh_Main;
+									if (targetModMesh != null)
+									{
+										targetModMesh._isVisible = !isVisibleDefault;
+									}
+								}
+								else
+								{
+									// [ 이미 Mod Mesh가 생성된 경우 ]
+									//Visible을 변경한다.
+									targetModMesh._isVisible = !targetModMesh._isVisible;
+								}
 							}
 
 							Editor.Select.MeshGroup.RefreshForce();
@@ -2519,11 +2727,43 @@ namespace AnyPortrait
 			}
 			else if(category == CATEGORY.Bone_Item)
 			{
+				apBone bone = savedObj as apBone;
+				if(bone == null)
+				{
+					return;
+				}
+				isVisibleDefault = bone.IsVisibleInGUI;
+
+				//[v1.5.0 추가]
+				//다중 선택된 상태에서, 선택한 버튼이 다중 선택한 객체에 포함되어 있다면
+				//다같이 처리를 한다.
+				//값이 복합적으로 있다면, 선택한 대상의 다음 값을 공유한다.
+				//단, Ctrl 키를 눌렀다면 다중 선택에 의한 처리는 하지 않는다.
+				//현재 선택중인 객체들
+				List<apBone> selectedBones = Editor.Select.Bones_All;
+				int nSelectedBones = selectedBones != null ? selectedBones.Count : 0;
+
+				//현재 버튼을 누른 대상 TF가 선택된 리스트에 포함되어 있는가
+				//- 포함되어 있다면 Ctrl 버튼을 누르지 않는 한 동시에 변경이 된다.
+				//- 포함되어 있지 않다면 1개만 처리를 한다.
+				bool isInMultipleSelected = false;//다중 편집 여부
+
+				//다중 선택은 ModMesh가 될 수 있는 대상이 2개 이상 선택 되어야 한다.
+				if(nSelectedBones > 1)
+				{
+					if(selectedBones.Contains(bone))
+					{
+						isInMultipleSelected = true;
+					}
+				}
+
+
 				if(isPrefixButton)
 				{
 					//Bone의 GUI Visible을 토글한다.
 					if(isCtrl)
 					{
+						// Ctrl 키를 누르면 현재 값과 반대 값을 전체에 적용한다.
 						Editor.Select.MeshGroup.SetBoneGUIVisibleAll(isVisibleDefault, bone);
 
 						//이 함수가 추가되면 일괄적으로 저장을 해야한다.
@@ -2531,11 +2771,29 @@ namespace AnyPortrait
 					}
 					else
 					{
-						//bone.SetGUIVisible(!isVisibleDefault);//이전
-						bone.SetGUIVisible_Tmp_ByCheckRule(!isVisibleDefault, isAlt);//Alt를 누른 상태로 Visible을 바꾸면 자식 본에도 적용된다.
+						if(isInMultipleSelected)
+						{
+							// 다중 선택이라면, 선택된 값을 선택된 본들에 일괄 적용한다.
+							apBone curBone = null;
+							for (int iBone = 0; iBone < nSelectedBones; iBone++)
+							{
+								curBone = selectedBones[iBone];
+								
+								//Alt를 누른 상태로 Visible을 바꾸면 자식 본에도 적용된다.
+								curBone.SetGUIVisible_Tmp_ByCheckRule(!isVisibleDefault, isAlt);
+							}
 
-						//Visible Controller에도 반영해야 한다. (20.4.13)
-						Editor.VisiblityController.Save_Bone(Editor.Select.MeshGroup, bone);
+							//일괄적으로 저장을 해야한다.
+							Editor.VisiblityController.Save_AllBones(Editor.Select.MeshGroup);
+						}
+						else
+						{
+							// 대상 본만 변경한다.
+							bone.SetGUIVisible_Tmp_ByCheckRule(!isVisibleDefault, isAlt);//Alt를 누른 상태로 Visible을 바꾸면 자식 본에도 적용된다.
+
+							//Visible Controller에도 반영해야 한다. (20.4.13)
+							Editor.VisiblityController.Save_Bone(Editor.Select.MeshGroup, bone);
+						}
 					}
 					
 					Editor.Controller.CheckTmpWorkVisible(Editor.Select.MeshGroup);//TmpWorkVisible이 변경되었다면 이 함수 호출
@@ -2824,18 +3082,29 @@ namespace AnyPortrait
 									apModifiedMesh modMesh = null;
 									if (meshTransform != null)
 									{
-										modMesh = linkedParamSet._meshData.Find(delegate (apModifiedMesh a)
-										{
-											return a._transform_Mesh == meshTransform;
-										});
+										//이전 (GC 발생)
+										//modMesh = linkedParamSet._meshData.Find(delegate (apModifiedMesh a)
+										//{
+										//	return a._transform_Mesh == meshTransform;
+										//});
+
+										//변경 v1.5.0
+										s_FindModMesh_MeshTF = meshTransform;
+										modMesh = linkedParamSet._meshData.Find(s_FindModMeshByMeshTF_Func);
 									}
 									else if(meshGroupTransform != null)
 									{
-										modMesh = linkedParamSet._meshData.Find(delegate (apModifiedMesh a)
-										{
-											return a._transform_MeshGroup == meshGroupTransform;
-										});
+										//이전 (GC 발생)
+										//modMesh = linkedParamSet._meshData.Find(delegate (apModifiedMesh a)
+										//{
+										//	return a._transform_MeshGroup == meshGroupTransform;
+										//});
+
+										//변경 v1.5.0
+										s_FindModMesh_MeshGroupTF = meshGroupTransform;
+										modMesh = linkedParamSet._meshData.Find(s_FindModMeshByMeshGroupTF_Func);
 									}
+
 									
 									//if (linkedRenderUnit._isVisible_WithoutParent != meshTransform._isVisible_Default)
 									if (modMesh != null)
@@ -2866,7 +3135,19 @@ namespace AnyPortrait
 		}
 
 
+		private static apTransform_Mesh s_FindModMesh_MeshTF = null;
+		private static Predicate<apModifiedMesh> s_FindModMeshByMeshTF_Func = FUNC_FindModMeshByMeshTF;
+		private static bool FUNC_FindModMeshByMeshTF(apModifiedMesh a)
+		{
+			return a._transform_Mesh == s_FindModMesh_MeshTF;
+		}
 
+		private static apTransform_MeshGroup s_FindModMesh_MeshGroupTF = null;
+		private static Predicate<apModifiedMesh> s_FindModMeshByMeshGroupTF_Func = FUNC_FindModMeshByMeshGroupTF;
+		private static bool FUNC_FindModMeshByMeshGroupTF(apModifiedMesh a)
+		{
+			return a._transform_MeshGroup == s_FindModMesh_MeshGroupTF;
+		}
 
 
 		private void OnRefreshVisiblePrefix(apEditorHierarchyUnit unit)
@@ -2993,9 +3274,9 @@ namespace AnyPortrait
 				string objName = null;
 
 				//미리 선택된 객체들의 리스트와 개수를 여기서 받아오자
-				List<apTransform_Mesh> selectedMeshTFs = Editor.Select.GetSubSeletedMeshTFs(false);
-				List<apTransform_MeshGroup> selectedMeshGroupTFs = Editor.Select.GetSubSeletedMeshGroupTFs(false);
-				List<apBone> selectedBones = Editor.Select.GetSubSeletedBones(false);
+				List<apTransform_Mesh> selectedMeshTFs = Editor.Select.GetSubSelectedMeshTFs(false);
+				List<apTransform_MeshGroup> selectedMeshGroupTFs = Editor.Select.GetSubSelectedMeshGroupTFs(false);
+				List<apBone> selectedBones = Editor.Select.GetSubSelectedBones(false);
 
 				int nSelectedMeshTFs = selectedMeshTFs != null ? selectedMeshTFs.Count : 0;
 				int nSelectedMeshGroupTFs = selectedMeshGroupTFs != null ? selectedMeshGroupTFs.Count : 0;
@@ -3194,14 +3475,14 @@ namespace AnyPortrait
 			}
 
 			//미리 현재 선택된 TF들을 가져온다.
-			List<apTransform_Mesh> selectedMeshTFs = Editor.Select.GetSubSeletedMeshTFs(false);
-			List<apTransform_MeshGroup> selectedMeshGroupTFs = Editor.Select.GetSubSeletedMeshGroupTFs(false);
+			List<apTransform_Mesh> selectedMeshTFs = Editor.Select.GetSubSelectedMeshTFs(false);
+			List<apTransform_MeshGroup> selectedMeshGroupTFs = Editor.Select.GetSubSelectedMeshGroupTFs(false);
 			int nSelectedMeshTFs = selectedMeshTFs != null ? selectedMeshTFs.Count : 0;
 			int nSelectedMeshGroupTFs = selectedMeshGroupTFs != null ? selectedMeshGroupTFs.Count : 0;
 			int nSelectedTotal = nSelectedMeshTFs + nSelectedMeshGroupTFs;
 
 			//선택된 본들도 가져온다.
-			List<apBone> selectedBones = Editor.Select.GetSubSeletedBones(false);
+			List<apBone> selectedBones = Editor.Select.GetSubSelectedBones(false);
 			int nSelectedBones = selectedBones != null ? selectedBones.Count : 0;
 
 
@@ -3899,7 +4180,7 @@ namespace AnyPortrait
 			}
 
 			//메뉴를 선택하면 변경이 될 것이므로 Dirty
-			apEditorUtil.SetEditorDirty();
+			apEditorUtil.SetDirty(_editor);
 			Editor.RefreshControllerAndHierarchy(false);
 		}
 
@@ -3952,8 +4233,8 @@ namespace AnyPortrait
 				//선택된 모든 RenderUnit을 대상으로 이동시키도록 하자
 				List<apRenderUnit> selectedRenderUnits = new List<apRenderUnit>();
 
-				List<apTransform_Mesh> selectedMeshTFs = Editor.Select.GetSubSeletedMeshTFs(false);
-				List<apTransform_MeshGroup> selectedMeshGroupTFs = Editor.Select.GetSubSeletedMeshGroupTFs(false);
+				List<apTransform_Mesh> selectedMeshTFs = Editor.Select.GetSubSelectedMeshTFs(false);
+				List<apTransform_MeshGroup> selectedMeshGroupTFs = Editor.Select.GetSubSelectedMeshGroupTFs(false);
 
 				int nMeshTFs = selectedMeshTFs != null ? selectedMeshTFs.Count : 0;
 				int nMeshGroupTFs = selectedMeshGroupTFs != null ? selectedMeshGroupTFs.Count : 0;
@@ -4094,7 +4375,7 @@ namespace AnyPortrait
 			{
 				//선택된 객체를 우클릭해서 위아래로 이동시키고자 했다면
 				//선택된 모든 본들을 대상으로 이동시키자
-				List<apBone> selectedBones = Editor.Select.GetSubSeletedBones(false);
+				List<apBone> selectedBones = Editor.Select.GetSubSelectedBones(false);
 				int nSelectedBones = selectedBones != null ? selectedBones.Count : 0;
 
 				List<apBone> movingBones = new List<apBone>();//유효한것만 넣어서 이걸 이동시키자

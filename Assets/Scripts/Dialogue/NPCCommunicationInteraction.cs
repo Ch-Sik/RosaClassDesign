@@ -44,12 +44,16 @@ public class NPCCommunicationInteraction : MonoBehaviour
     [Button]
     public void StartCommunication()
     {
+        ID = decision.GetID();
+
         //ID가 없는 경우 리턴
         if (!CommunicationManager.Instance.HaveCommunicationID(ID))
+        {
+            Debug.LogWarning("해당하는 ID의 대화가 없음");
             return;
+        }
 
         isGo = true;
-        ID = decision.GetID();
 
         InputManager.Instance.SetMoveInputState(PlayerMoveState.NO_MOVE);
         InputManager.Instance.SetUiInputState(UiState.DIALOG);

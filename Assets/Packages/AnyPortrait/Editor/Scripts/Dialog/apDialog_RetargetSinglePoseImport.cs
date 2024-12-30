@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -248,7 +248,7 @@ namespace AnyPortrait
 
 						_editor._bonePose_BaseFolderName = apUtil.ConvertEscapeToPlainText(relativePath);//변경 21.7.3 : 이스케이프 문자 삭제
 						
-						apEditorUtil.SetEditorDirty();
+						//apEditorUtil.SetEditorDirty();
 
 						_editor.SaveEditorPref();
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -122,6 +122,8 @@ namespace AnyPortrait
 
 
 		public string[] _captureProcessorNames = new string[] { "Version 1 (Legacy)", "Version 2" };
+		public string[] _IKMethodNames = new string[] { "FABRIK", "CCD (Legacy)" };
+
 
 
 		// Show Window
@@ -461,7 +463,22 @@ namespace AnyPortrait
 			}
 
 
+			GUILayout.Space(10);
+			apEditorUtil.GUI_DelimeterBoxH(_width);//구분선
+			GUILayout.Space(10);
 
+			//[v1.5.0] IK 방식 (업데이트)
+			apPortrait.IK_METHOD nextIKMethod = (apPortrait.IK_METHOD)EditorGUILayout.Popup(_editor.GetText(TEXT.IKMethod), (int)_targetPortrait._IKMethod, _IKMethodNames);
+			if(nextIKMethod != _targetPortrait._IKMethod)
+			{
+				apEditorUtil.SetRecord_Portrait(apUndoGroupData.ACTION.Portrait_SettingChanged,
+													_editor,
+													_targetPortrait,
+													false,
+													apEditorUtil.UNDO_STRUCT.ValueOnly);
+
+				_targetPortrait._IKMethod = nextIKMethod;
+			}
 
 
 			GUILayout.Space(10);
@@ -590,6 +607,7 @@ namespace AnyPortrait
 
 			//캡쳐 옵션 v1.4.6
 			apEditor.CAPTURE_PROCESSOR prevCaptureProcessor = _editor._captureProcessor;
+			apPortrait.IK_METHOD prevIKMethod = _editor._option_IKMethod;
 
 
 
@@ -722,7 +740,7 @@ namespace AnyPortrait
 						_editor._backupOption_BaseFolderName = apUtil.ConvertEscapeToPlainText(relativePath);//변경 21.7.3 : 이스케이프 문자 삭제
 
 						//Debug.Log("상대 경로 [" + relativePath + "]");
-						apEditorUtil.SetEditorDirty();
+						//apEditorUtil.SetEditorDirty();//삭제
 
 					}
 				}
@@ -761,7 +779,7 @@ namespace AnyPortrait
 
 					_editor._bonePose_BaseFolderName = apUtil.ConvertEscapeToPlainText(relativePath);//이스케이프 문자 삭제
 
-					apEditorUtil.SetEditorDirty();
+					//apEditorUtil.SetEditorDirty();
 
 				}
 			}
@@ -926,7 +944,7 @@ namespace AnyPortrait
 
 				EditorPrefs.SetBool("AnyPortrait_ShowCustomHierarchyIcon", isCustomHierarchyIcon);
 				EditorPrefs.SetBool("AnyPortrait_ShowCustomIconLeft", isIconDrawLeft);
-				apEditorUtil.SetEditorDirty();
+				//apEditorUtil.SetEditorDirty();
 
 				apCustomHierarchy.CheckEventOptions();
 			}
@@ -954,6 +972,16 @@ namespace AnyPortrait
 			EditorGUILayout.LabelField(_editor.GetUIWord(UIWORD.Capture));
 			GUILayout.Space(10);
 			_editor._captureProcessor = (apEditor.CAPTURE_PROCESSOR)Layout_Popup(UIWORD.Processor, (int)_editor._captureProcessor, _captureProcessorNames, (int)apEditor.DefaultCaptureProcessor);
+
+			GUILayout.Space(10);
+			apEditorUtil.GUI_DelimeterBoxH(_width);//구분선
+			GUILayout.Space(10);
+
+
+			//v1.5.0 : 에디터 내의 IK 방식
+			EditorGUILayout.LabelField(_editor.GetText(TEXT.IKMethodOfGizmo));
+			GUILayout.Space(10);
+			_editor._option_IKMethod = (apPortrait.IK_METHOD)Layout_Popup(UIWORD.Processor, (int)_editor._option_IKMethod, _IKMethodNames, (int)apEditor.DefaultIKMethod);
 
 			GUILayout.Space(10);
 			apEditorUtil.GUI_DelimeterBoxH(_width);//구분선
@@ -1072,6 +1100,10 @@ namespace AnyPortrait
 			bool prevIsObjMovableWithoutClickGizmo = _editor._option_ObjMovableWithoutClickGizmo;
 			_editor._option_ObjMovableWithoutClickGizmo = Layout_Toggle_AdvOpt(TEXT.Setting_ObjectMovableWithoutClickingGizmoUI, _editor._option_ObjMovableWithoutClickGizmo, apEditor.DefaultObjMovableWithoutClickGizmo);
 
+			bool prevNewCPModBlended = _editor._option_NewControlParamModMeshBoneBlended;
+			_editor._option_NewControlParamModMeshBoneBlended = Layout_Toggle_AdvOpt(TEXT.Setting_ControlParamBlendedKey, _editor._option_NewControlParamModMeshBoneBlended, apEditor.DefaultNewControlParamModMeshBoneBlended);
+
+
 			GUILayout.Space(10);
 
 			//선택 잠금에 대해서 > 이거를 다른 메뉴로 치환한다. 21.2.13 > 그냥 여기도 두자. 두군데 있으면 좋지 뭐
@@ -1174,6 +1206,7 @@ namespace AnyPortrait
 				prevEditorUI_TimelineDefaultColor != _editor._animUIOption_DefaultTimelineColor ||
 
 				prevCaptureProcessor != _editor._captureProcessor ||
+				prevIKMethod != _editor._option_IKMethod ||
 
 				prevBoneGUIOption_RenderType != _editor._boneGUIOption_RenderType ||
 				prevBoneGUIOption_SizeRatio_Index != _editor._boneGUIOption_SizeRatio_Index ||
@@ -1193,13 +1226,14 @@ namespace AnyPortrait
 								||
 								prevIsCheckSRPOption != _editor._option_CheckSRPWhenBake
 #endif
+				|| prevNewCPModBlended != _editor._option_NewControlParamModMeshBoneBlended
 
 					)
 			{
 				bool isLanguageChanged = (prevLanguage != _editor._language);
 
 				_editor.SaveEditorPref();
-				apEditorUtil.SetEditorDirty();
+				//apEditorUtil.SetEditorDirty();
 
 				//apGL.SetToneColor(_editor._colorOption_OnionToneColor);
 
@@ -1639,6 +1673,10 @@ namespace AnyPortrait
 				SavePref_Int(sw, "SelectedTimelineColor", (int)_editor._animUIOption_SelectedTimelineGUIType);
 				SavePref_Int(sw, "TimelineDefaultColor", (int)_editor._animUIOption_DefaultTimelineColor);
 
+
+				//IK 옵션
+				SavePref_Int(sw, "EditorIKMethod", (int)_editor._option_IKMethod);
+
 				//고급 옵션들
 				SavePref_Bool(sw, "StartScreenOnStartUp", _editor._startScreenOption_IsShowStartup);
 				SavePref_Bool(sw, "CheckLiveVersion", _editor._isCheckLiveVersion_Option);
@@ -1655,6 +1693,9 @@ namespace AnyPortrait
 				SavePref_Bool(sw, "TurnOffVisibPresetWhenSelectObj", _editor._option_TurnOffVisibilityPresetWhenSelectObject);
 				SavePref_Bool(sw, "AutoScrollWhenSelect", _editor._option_AutoScrollWhenObjectSelected);
 				SavePref_Bool(sw, "ObjMovableWithoutClickGizmo", _editor._option_ObjMovableWithoutClickGizmo);
+				SavePref_Bool(sw, "NewControlParamModMeshBoneBlended", _editor._option_NewControlParamModMeshBoneBlended);
+				
+				
 
 				//고급-선택잠금 세부 옵션
 				SavePref_Bool(sw, "SelectionLock_Morph", _editor._isSelectionLockOption_Morph);
@@ -1908,6 +1949,9 @@ namespace AnyPortrait
 							else if(string.Equals(strKey, "CustomHierarchyIcon"))		{ EditorPrefs.SetBool("AnyPortrait_ShowCustomHierarchyIcon", LoadPref_Bool(strValue)); }
 							else if(string.Equals(strKey, "CustomHierarchyIconLeft"))	{ EditorPrefs.SetBool("AnyPortrait_ShowCustomIconLeft", LoadPref_Bool(strValue)); }
 
+							//IK 옵션
+							else if(string.Equals(strKey, "EditorIKMethod"))					{ _editor._option_IKMethod = (apPortrait.IK_METHOD)LoadPref_Int(strValue); }
+
 							//고급 옵션들
 							else if(string.Equals(strKey, "StartScreenOnStartUp"))				{ _editor._startScreenOption_IsShowStartup = LoadPref_Bool(strValue); }
 							else if(string.Equals(strKey, "CheckLiveVersion"))					{ _editor._isCheckLiveVersion_Option = LoadPref_Bool(strValue); }
@@ -1924,6 +1968,9 @@ namespace AnyPortrait
 							else if(string.Equals(strKey, "TurnOffVisibPresetWhenSelectObj"))	{ _editor._option_TurnOffVisibilityPresetWhenSelectObject = LoadPref_Bool(strValue); }
 							else if(string.Equals(strKey, "AutoScrollWhenSelect"))				{ _editor._option_AutoScrollWhenObjectSelected = LoadPref_Bool(strValue); }
 							else if(string.Equals(strKey, "ObjMovableWithoutClickGizmo"))		{ _editor._option_ObjMovableWithoutClickGizmo = LoadPref_Bool(strValue); }
+							else if(string.Equals(strKey, "NewControlParamModMeshBoneBlended"))		{ _editor._option_NewControlParamModMeshBoneBlended = LoadPref_Bool(strValue); }
+							
+							
 
 							//고급-선택잠금 세부 옵션
 							else if(string.Equals(strKey, "SelectionLock_Morph"))					{ _editor._isSelectionLockOption_Morph = LoadPref_Bool(strValue); }

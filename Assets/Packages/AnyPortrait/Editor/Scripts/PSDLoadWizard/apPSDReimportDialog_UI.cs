@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -397,8 +397,7 @@ namespace AnyPortrait
 									MakeRemappingList();
 								}
 							}
-
-							apEditorUtil.SetEditorDirty();
+							apEditorUtil.SetDirty(_editor);
 						}
 					}
 					catch (Exception ex)
@@ -701,7 +700,7 @@ namespace AnyPortrait
 					//경로에 관한 FileInfo 리스트도 다시 갱신한다.
 					RefreshPSDFileInfo();
 
-					apEditorUtil.SetEditorDirty();
+					apEditorUtil.SetDirty(_editor);
 
 					GUI.FocusControl(null);
 				}

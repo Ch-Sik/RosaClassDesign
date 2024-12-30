@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -726,6 +726,13 @@ namespace AnyPortrait
 			{
 				_glScreenClippingSize = screenSize;
 				//_ScreenSize
+
+				//TODO : 이게 버그? > 체크할 것
+				if(IsNotReady())
+				{
+					//Debug.LogError("SetClippingSizeToAllMaterial Error");
+					return;
+				}
 
 				_mat_Color.SetVector(_propertyID__ScreenSize, _glScreenClippingSize);
 				for (int i = 0; i < 4; i++)
@@ -6725,6 +6732,8 @@ namespace AnyPortrait
 				
 				RenderTexture.active = null;
 
+				//Pass 0 : 일반 렌더링
+				//Pass 1 : 클리핑 마스크 (Render Texture) 렌더링
 				for (int iPass = 0; iPass < 2; iPass++)
 				{
 					bool isRenderTexture = false;
@@ -6752,11 +6761,9 @@ namespace AnyPortrait
 					//_matBatch.SetClippingSize(_glScreenClippingSize);
 					//GL.Begin(GL.TRIANGLES);
 
-
 					//------------------------------------------
 					for (int i = 0; i < nIndexBuffers; i += 3)
 					{
-
 						if (i + 2 >= nIndexBuffers) { break; }
 
 						index_0 = mesh._indexBuffer[i + 0];
@@ -6812,35 +6819,18 @@ namespace AnyPortrait
 								break;
 						}
 
-
-						//이전
-						//posGL_0 = World2GL(rVert0._pos_World);
-						//posGL_1 = World2GL(rVert1._pos_World);
-						//posGL_2 = World2GL(rVert2._pos_World);
-
-						//pos_0.x = posGL_0.x;
-						//pos_0.y = posGL_0.y;
-						//pos_0.z = rVert0._vertex._zDepth * 0.5f;
-
-						//pos_1.x = posGL_1.x;
-						//pos_1.y = posGL_1.y;
-						//pos_1.z = rVert1._vertex._zDepth * 0.5f;
-
-						//pos_2.x = posGL_2.x;
-						//pos_2.y = posGL_2.y;
-						//pos_2.z = rVert2._vertex._zDepth * 0.5f;
-
 						//변경 v1.4.4 : Ref 이요
 						World2GL_Vec3(ref pos_0, ref rVert0._pos_World);
 						World2GL_Vec3(ref pos_1, ref rVert1._pos_World);
 						World2GL_Vec3(ref pos_2, ref rVert2._pos_World);
-
 						
-						
-						uv_0 = mesh._vertexData[index_0]._uv;
-						uv_1 = mesh._vertexData[index_1]._uv;
-						uv_2 = mesh._vertexData[index_2]._uv;
+						// uv_0 = mesh._vertexData[index_0]._uv;
+						// uv_1 = mesh._vertexData[index_1]._uv;
+						// uv_2 = mesh._vertexData[index_2]._uv;
 
+						uv_0 = rVert0._vertex._uv;
+						uv_1 = rVert1._vertex._uv;
+						uv_2 = rVert2._vertex._uv;
 						
 						GL.Color(vColor0); GL.TexCoord(uv_0); GL.Vertex(pos_0); // 0
 						GL.Color(vColor1); GL.TexCoord(uv_1); GL.Vertex(pos_1); // 1
@@ -6877,6 +6867,10 @@ namespace AnyPortrait
 				
 				apTransform_Mesh.ClipMeshSet clipMeshSet = null;
 
+				apTransform_Mesh clipMeshTF = null;
+				apRenderUnit clipRenderUnit = null;
+				apMesh clipMesh = null;
+				
 				for (int iClip = 0; iClip < nClipMeshes; iClip++)
 				{
 					clipMeshSet = childClippedSet[iClip];
@@ -6884,18 +6878,14 @@ namespace AnyPortrait
 					{
 						continue;
 					}
-					apMesh clipMesh = clipMeshSet._meshTransform._mesh;
-					apRenderUnit clipRenderUnit = clipMeshSet._renderUnit;
+					clipMeshTF = clipMeshSet._meshTransform;					
+					clipMesh = clipMeshTF._mesh;
+					clipRenderUnit = clipMeshTF._linkedRenderUnit;//이 부분이 v1.5.0에서 변경됨
 
 					if (clipMesh == null || clipRenderUnit == null) { continue; }
-					if (clipRenderUnit._meshTransform == null) { continue; }
 					if (!clipRenderUnit._isVisible) { continue; }
-
-					if (clipMesh._indexBuffer.Count < 3)
-					{
-						continue;
-					}
-
+					if (clipMesh._indexBuffer.Count < 3) { continue; }
+					
 					//추가 12.04 : Extra 옵션 적용
 					apTextureData childTextureData = clipMesh.LinkedTextureData;
 					if (clipRenderUnit.IsExtraTextureChanged)
@@ -6962,7 +6952,6 @@ namespace AnyPortrait
 						rVert1 = clipRenderUnit._renderVerts[clipIndex_1];
 						rVert2 = clipRenderUnit._renderVerts[clipIndex_2];
 
-
 						vColor0 = Color.black;
 						vColor1 = Color.black;
 						vColor2 = Color.black;
@@ -6990,34 +6979,17 @@ namespace AnyPortrait
 						}
 
 
-						//이전
-						//posGL_0 = World2GL(rVert0._pos_World);
-						//posGL_1 = World2GL(rVert1._pos_World);
-						//posGL_2 = World2GL(rVert2._pos_World);
-
-						//pos_0.x = posGL_0.x;
-						//pos_0.y = posGL_0.y;
-						//pos_0.z = rVert0._vertex._zDepth * 0.5f;
-
-						//pos_1.x = posGL_1.x;
-						//pos_1.y = posGL_1.y;
-						//pos_1.z = rVert1._vertex._zDepth * 0.5f;
-
-						//pos_2.x = posGL_2.x;
-						//pos_2.y = posGL_2.y;
-						//pos_2.z = rVert2._vertex._zDepth * 0.5f;
-
 						//변경 v1.4.4 : Ref 이용
 						World2GL_Vec3(ref pos_0, ref rVert0._pos_World);
 						World2GL_Vec3(ref pos_1, ref rVert1._pos_World);
 						World2GL_Vec3(ref pos_2, ref rVert2._pos_World);
 
-						
-
-						uv_0 = clipMesh._vertexData[clipIndex_0]._uv;
-						uv_1 = clipMesh._vertexData[clipIndex_1]._uv;
-						uv_2 = clipMesh._vertexData[clipIndex_2]._uv;
-
+						// uv_0 = clipMesh._vertexData[clipIndex_0]._uv;
+						// uv_1 = clipMesh._vertexData[clipIndex_1]._uv;
+						// uv_2 = clipMesh._vertexData[clipIndex_2]._uv;
+						uv_0 = rVert0._vertex._uv;
+						uv_1 = rVert1._vertex._uv;
+						uv_2 = rVert2._vertex._uv;
 
 						GL.Color(vColor0);	GL.TexCoord(uv_0);	GL.Vertex(pos_0); // 0
 						GL.Color(vColor1);	GL.TexCoord(uv_1);	GL.Vertex(pos_1); // 1
@@ -7027,8 +6999,6 @@ namespace AnyPortrait
 						GL.Color(vColor2);	GL.TexCoord(uv_2);	GL.Vertex(pos_2); // 2
 						GL.Color(vColor1);	GL.TexCoord(uv_1);	GL.Vertex(pos_1); // 1
 						GL.Color(vColor0);	GL.TexCoord(uv_0);	GL.Vertex(pos_0); // 0
-
-
 					}
 					//------------------------------------------------
 					
@@ -7421,6 +7391,12 @@ namespace AnyPortrait
 
 				//3. Child를 렌더링하자. MaskedTexture를 직접 이용
 				apTransform_Mesh.ClipMeshSet clipMeshSet = null;
+
+				apTransform_Mesh clipMeshTF = null;
+				apRenderUnit clipRenderUnit = null;
+				apMesh clipMesh = null;
+
+
 				for (int iClip = 0; iClip < nClipMeshes; iClip++)
 				{
 					clipMeshSet = childClippedSet[iClip];
@@ -7428,8 +7404,9 @@ namespace AnyPortrait
 					{
 						continue;
 					}
-					apMesh clipMesh = clipMeshSet._meshTransform._mesh;
-					apRenderUnit clipRenderUnit = clipMeshSet._renderUnit;
+					clipMeshTF = clipMeshSet._meshTransform;
+					clipMesh = clipMeshTF._mesh;
+					clipRenderUnit = clipMeshTF._linkedRenderUnit;
 
 					if (clipMesh == null || clipRenderUnit == null)		{ continue; }
 					if (clipRenderUnit._meshTransform == null)			{ continue; }
@@ -8867,7 +8844,7 @@ namespace AnyPortrait
 		}
 
 
-		public static void DrawSelectedBonePost(apBone bone, bool isBoneIKUsing)
+		public static void DrawSelectedBonePost(apBone bone, apPortrait portrait, bool isBoneIKUsing)
 		{
 			if (bone == null)
 			{
@@ -9002,11 +8979,6 @@ namespace AnyPortrait
 				}
 			}
 
-
-
-
-			
-
 			////if(isFliped_Y)
 			//if(isParentFlipped_Y)
 			//{
@@ -9058,10 +9030,18 @@ namespace AnyPortrait
 				//BeginBatch_ColoredPolygon();//이전				
 				_matBatch.BeginPass_Color(GL.TRIANGLES);//변경 21.5.18
 
+				
 
 				DrawBoldLine(posW_Start, posW_Start + new Vector2(unitVector_Lower.x, unitVector_Lower.y), 3, Color.magenta, false);
 				DrawBoldLine(posW_Start, posW_Start + new Vector2(unitVector_Upper.x, unitVector_Upper.y), 3, Color.magenta, false);
-				DrawBoldLine(posW_Start, posW_Start + new Vector2(unitVector_Pref.x, unitVector_Pref.y), 3, Color.green, false);
+				
+				//Prefer를 그릴지 여부
+				//FABRIK + KeepCurrent를 제외하곤 Prefer를 그리자
+				if(portrait._IKMethod == apPortrait.IK_METHOD.CCD || bone._IKInitPoseType != apBone.IK_START_POSE.KeepCurrent)
+				{
+					DrawBoldLine(posW_Start, posW_Start + new Vector2(unitVector_Pref.x, unitVector_Pref.y), 3, Color.green, false);
+				}
+				
 				
 				//삭제 21.5.18
 				//EndBatch();

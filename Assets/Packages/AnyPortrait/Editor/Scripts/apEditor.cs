@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -58,7 +58,7 @@ namespace AnyPortrait
 		//--------------------------------------------------------------
 
 
-		[MenuItem("Window/AnyPortrait/2D Editor", false, 10), ExecuteInEditMode]
+		[MenuItem("Window/AnyPortrait/Open Editor", false, 720), ExecuteInEditMode]
 		public static apEditor ShowWindow()
 		{
 			if (s_window != null)
@@ -100,10 +100,6 @@ namespace AnyPortrait
 			{
 				//첫 실행 이후엔 다시 에디터를 껐다 켜도 이 구문은 실행되지 않는다.
 				//에디터를 꺼도 curTool와 s_window가 동일하기 때문 > OnDisable에서 Init이 호출되고, OnEnable에서 s_window에 할당이 되버렸다..
-
-
-
-				Debug.ClearDeveloperConsole();
 				s_window = curTool;
 				//s_window.position = new Rect(0, 0, 200, 200);
 				s_window.Init(true);
@@ -162,7 +158,7 @@ namespace AnyPortrait
 			}
 
 			//에디터를 끌때 EditorDirty를 수행한다.
-			apEditorUtil.SetEditorDirty();
+			apEditorUtil.SetAllSceneDirty();//v1.5.0//씬 전체 Dirty
 			EditorUtility.ClearProgressBar();
 
 			//비동기 로딩 초기화
@@ -1081,6 +1077,11 @@ namespace AnyPortrait
 				_projectSettingData.Load();
 			}
 
+			//v1.5.0
+			if(_memUtil == null)
+			{
+				_memUtil = new apEditorMemUtil();
+			}
 
 
 			_mat_Color = null;
@@ -1346,14 +1347,18 @@ namespace AnyPortrait
 			//- GC를 자주 호출한다고 GC Spike가 완화되지는 않는다.
 			//- Unity의 GC는 낮은 메모리 레벨에서 바로 호출되며, 데모씬의 Hierarchy 정도면 거의 5초 이내마다 한번씩 호출된다. (호출 컷이 너무 낮다)
 			//- GC Spike는 해제되는 메모리 크기보단, 그냥 호출 그 자체의 비용이 커서 문제.
-			_tMemGC += tDelta;
-			if (_tMemGC > 30.0f)
-			{
-				//System.GC.AddMemoryPressure(1024 * 200);//200MB 정도 압박을 줘보자				
-				System.GC.Collect();
 
-				_tMemGC = 0.0f;
-			}
+			//삭제 v1.5.0 : 업데이트 도중엔 GC 안하고 유니티 내부 GC를 이용하기로 결정 (메모리 수집 방식에 따라 속도 차이가 있다.)
+			//대신 apEditorMemUtil을 이용하여 메뉴 전환시 GC 체크
+			//_tMemGC += tDelta;
+			//if (_tMemGC > 30.0f)
+			//{
+			//	//System.GC.AddMemoryPressure(1024 * 200);//200MB 정도 압박을 줘보자				
+			//	System.GC.Collect();
+			//	Debug.LogError("GC 자동 실행 (30초 간격)");
+
+			//	_tMemGC = 0.0f;
+			//}
 
 			if (_isRepaintable)
 			{
@@ -2988,12 +2993,19 @@ namespace AnyPortrait
 				}
 				else
 				{
-					Debug.LogError("Exception : " + ex);
+#if UNITY_2022_1_OR_NEWER
+					UnityEngine.Debug.LogException(ex);
+#else
+					UnityEngine.Debug.LogError("Exception : " + ex);
+#endif
+					
+					
 				}
 
 			}
 
 
+			
 
 			//UnityEngine.Profiling.Profiler.EndSample();
 
@@ -3020,7 +3032,7 @@ namespace AnyPortrait
 							apDialog_PortraitSetting.ShowDialog(this, _portrait);
 							break;
 
-							//삭제 v1.4.6
+						//삭제 v1.4.6
 						//case DIALOG_SHOW_CALL.Capture:
 						//	{
 						//		if (apVersion.I.IsDemo)//(구형) 캡쳐 도구 제한
@@ -3042,6 +3054,10 @@ namespace AnyPortrait
 						//	}
 
 						//	break;
+
+						case DIALOG_SHOW_CALL.Close:
+							CloseEditor();
+							break;
 
 					}
 
@@ -3091,19 +3107,45 @@ namespace AnyPortrait
 			Texture2D imbTabFolded = ImageSet.Get(apImageSet.PRESET.ToolBtn_TabFolded);
 
 
-			//EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Height(height - 10));//이전
-			EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Height(height));//변경 21.1.20 (v1.3.0)
 
-			GUILayout.Space(5);
-
-			
 			int paddingY_Height24 = ((height - 2) - 24) / 2;
 			int paddingY_Height20 = ((height - 2) - 20) / 2;
 			int height_Btn = height - 8;//기존엔 height - 14
 
+			//EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Height(height - 10));//이전
+
+			EditorGUILayout.BeginHorizontal(apGUILOFactory.I.Height(height));
+
+			GUILayout.Space(5);
+			
+
+			//v1.5.1 : 닫기 버튼
+			if(_guiContent_TopBtn_CloseEditor == null)
+			{
+				_guiContent_TopBtn_CloseEditor = apGUIContentWrapper.Make(ImageSet.Get(apImageSet.PRESET.ToolBtn_CloseEditor), apStringFactory.I.CloseEditor);
+			}
+
+
+			int btnSize_Close = height_Btn - 6;
+			EditorGUILayout.BeginVertical(apGUILOFactory.I.Width(height_Btn), apGUILOFactory.I.Height(height_Btn));
+
+			GUILayout.Space(3);
+
+			if (GUILayout.Button(_guiContent_TopBtn_CloseEditor.Content, apGUIStyleWrapper.I.Button_VerticalMargin0, apGUILOFactory.I.Width(btnSize_Close), apGUILOFactory.I.Height(btnSize_Close)))
+			{
+				_dialogShowCall = DIALOG_SHOW_CALL.Close;
+			}
+
+			EditorGUILayout.EndVertical();
+			
+			
+			GUILayout.Space(5);
+			
+
+
 			if (_portrait == null)
 			{
-				GUILayout.Space(15);
+				GUILayout.Space(5);
 				EditorGUILayout.BeginVertical(apGUILOFactory.I.Width(250));
 				
 				//삭제 21.1.20
@@ -4341,7 +4383,6 @@ namespace AnyPortrait
 			}
 
 			EditorGUILayout.EndHorizontal();
-			GUILayout.Space(5);
 
 		}
 
@@ -4421,6 +4462,7 @@ namespace AnyPortrait
 
 			if (_portrait == null)
 			{
+				// [ 아직 Portrait를 선택하지 않은 경우 ]
 				bool isRefresh = false;
 				if (GUILayout.Button(_guiContent_MainLeftUpper_MakeNewPortrait.Content, apGUILOFactory.I.Height(45)))
 				{
@@ -4545,11 +4587,14 @@ namespace AnyPortrait
 
 					_isPortraitListLoaded = true;
 				}
-				return 85;
+				return 85;//종료 : Height 리턴
 			}
 
+
+			// [ Portrait를 선택한 경우 ]
 			if (_tabLeft == TAB_LEFT.Hierarchy)
 			{
+				// [ Hierarchy 탭 ]
 				int filterIconSize = (width / 8) - 2;
 				int filterIconWidth = filterIconSize + 3;
 
@@ -4616,6 +4661,7 @@ namespace AnyPortrait
 			}
 			else
 			{
+				// [ Controller 탭 ]
 				return Controller.GUI_Controller_Upper(width);
 			}
 		}
@@ -4869,7 +4915,7 @@ namespace AnyPortrait
 
 
 
-			//클릭 후 GUIFocust를 릴리즈하자
+			//클릭 후 GUIFocus를 릴리즈하자
 			Controller.GUI_Input_CheckClickInCenter();
 
 
@@ -5135,7 +5181,7 @@ namespace AnyPortrait
 								break;
 
 							case MESH_EDIT_MODE.Modify:
-								Controller.GUI_Input_Modify(deltaTime, isIgnoredMouseUpEvent);
+								Controller.GUI_Input_Mesh_Modify(deltaTime, isIgnoredMouseUpEvent);
 								break;
 
 							case MESH_EDIT_MODE.MakeMesh:
@@ -5234,6 +5280,26 @@ namespace AnyPortrait
 									//변경 : 업데이트 가능한 상태에서만 업데이트를 한다.
 									if (isMeshGroupUpdatable)
 									{
+										//v1.5.0 디버그했는데 이게 문제가 아니었다.
+										
+										//if(!rigIK
+										//	&& _meshGroupEditMode == MESHGROUP_EDIT_MODE.Setting)
+										//{
+										//	Debug.LogError("에러 상황");
+										//}
+										//if(_meshGroupEditMode == MESHGROUP_EDIT_MODE.Setting)
+										//{
+										//	bool rigIK = isUpdate_BoneIKMatrix && isUpdate_BoneIKRigging;
+										//	if(rigIK)
+										//	{
+										//		Debug.Log("정상");
+										//	}
+										//	else
+										//	{
+										//		Debug.LogError("에러 상황 : " + isUpdate_BoneIKMatrix + " / " + isUpdate_BoneIKRigging);
+										//	}
+										//}
+
 										//Profiler.BeginSample("MeshGroup Update");
 										//1. Render Unit을 돌면서 렌더링을 한다.
 										Select.MeshGroup.SetBoneIKEnabled(isUpdate_BoneIKMatrix, isUpdate_BoneIKRigging);
@@ -5913,9 +5979,9 @@ namespace AnyPortrait
 						{
 							//변경 20.5.29
 							_tmpSelectedMainMeshTF = Select.MeshTF_Main;
-							_tmpSelectedSubMeshTFs = Select.GetSubSeletedMeshTFs(true);
+							_tmpSelectedSubMeshTFs = Select.GetSubSelectedMeshTFs(true);
 							_tmpSelectedMainBone = Select.Bone;
-							_tmpSelectedSubBones = Select.GetSubSeletedBones(true);
+							_tmpSelectedSubBones = Select.GetSubSelectedBones(true);
 
 
 							//Onion - Behind인 경우
@@ -6143,9 +6209,9 @@ namespace AnyPortrait
 
 							//변경 20.5.29
 							_tmpSelectedMainMeshTF = Select.MeshTF_Main;
-							_tmpSelectedSubMeshTFs = Select.GetSubSeletedMeshTFs(true);
+							_tmpSelectedSubMeshTFs = Select.GetSubSelectedMeshTFs(true);
 							_tmpSelectedMainBone = Select.Bone;
-							_tmpSelectedSubBones = Select.GetSubSeletedBones(true);
+							_tmpSelectedSubBones = Select.GetSubSelectedBones(true);
 
 
 							// Onion - Behind 경우
@@ -6775,8 +6841,8 @@ namespace AnyPortrait
 
 
 					//여러개 편집을 지원한다.
-					List<apTransform_Mesh> selectedMeshTFs = Select.GetSubSeletedMeshTFs(false);
-					List<apTransform_MeshGroup> selectedMeshGroupTFs = Select.GetSubSeletedMeshGroupTFs(false);
+					List<apTransform_Mesh> selectedMeshTFs = Select.GetSubSelectedMeshTFs(false);
+					List<apTransform_MeshGroup> selectedMeshGroupTFs = Select.GetSubSelectedMeshGroupTFs(false);
 
 					if (selectedType == RIGHT_LOWER_SELECTED_TYPE.MeshTF
 						|| selectedType == RIGHT_LOWER_SELECTED_TYPE.MeshGroupTF)
@@ -6879,7 +6945,7 @@ namespace AnyPortrait
 					else
 					{
 						//본도 여러개 이동이 가능하다.
-						List<apBone> selectedBones = Select.GetSubSeletedBones(false);
+						List<apBone> selectedBones = Select.GetSubSelectedBones(false);
 						int nSelectedBones = selectedBones != null ? selectedBones.Count : 0;
 
 						apEditorUtil.SetRecord_MeshGroup(	apUndoGroupData.ACTION.MeshGroup_DepthChanged, 
@@ -6917,8 +6983,8 @@ namespace AnyPortrait
 														apStringFactory.I.RemoveSubMeshMeshGroup))//"Remove Sub Mesh / Mesh Group"
 				{
 					//변경 22.8.21 [v1.4.2] : 다중 선택된 경우 처리가 달라져야 한다.
-					List<apTransform_Mesh> selectedMeshTFs = Select.GetSubSeletedMeshTFs(false);
-					List<apTransform_MeshGroup> selectedMeshGroupTFs = Select.GetSubSeletedMeshGroupTFs(false);
+					List<apTransform_Mesh> selectedMeshTFs = Select.GetSubSelectedMeshTFs(false);
+					List<apTransform_MeshGroup> selectedMeshGroupTFs = Select.GetSubSelectedMeshGroupTFs(false);
 					int nSubSelectedMeshTFs_All = selectedMeshTFs != null ? selectedMeshTFs.Count : 0;
 					int nSubSelectedMeshGroupTFs_All = selectedMeshGroupTFs != null ? selectedMeshGroupTFs.Count : 0;
 
@@ -7342,6 +7408,9 @@ namespace AnyPortrait
 			savedMeshGroup.SetDirtyToReset();
 			//savedMeshGroup.RefreshForce();//이 코드를 하면 메시의 클리핑 설정들이 갱신되지 않는다.
 			savedMeshGroup.RefreshForce(true, 0.0f, apUtil.LinkRefresh.Set_MeshGroup_ExceptAnimModifiers(savedMeshGroup));
+			
+			savedMeshGroup.SortRenderUnits(true, apMeshGroup.DEPTH_ASSIGN.AssignDepth);
+			
 
 			//마지막으로 추가된 것을 선택하자.
 			if(finalAdded_MeshTF != null)
@@ -7378,7 +7447,10 @@ namespace AnyPortrait
 			//추가 / 삭제시 요청한다.
 			OnAnyObjectAddedOrRemoved();
 			ResetHierarchyAll();
+
 			RefreshControllerAndHierarchy(false);
+
+
 			SetRepaint();
 		}
 

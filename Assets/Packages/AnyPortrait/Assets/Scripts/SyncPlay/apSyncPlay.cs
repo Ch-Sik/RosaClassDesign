@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -157,10 +157,17 @@ namespace AnyPortrait
 				for (int iSrc = 0; iSrc < nSrcAnimClips; iSrc++)
 				{
 					srcAnimClip = animClips[iSrc];
-					dstAnimClip = targetAnimClips.Find(delegate(apAnimClip a)
-					{
-						return string.Equals(srcAnimClip._name, a._name);
-					});
+
+					//이전 (GC 발생)
+					//dstAnimClip = targetAnimClips.Find(delegate(apAnimClip a)
+					//{
+					//	return string.Equals(srcAnimClip._name, a._name);
+					//});
+
+					//변경 v1.5.0
+					s_FindAnimClip_Name = srcAnimClip._name;
+					dstAnimClip = targetAnimClips.Find(s_FindAnimClipByName_Func);
+
 
 					apSyncSet_AnimClip newSyncSet = new apSyncSet_AnimClip(srcAnimClip, dstAnimClip);
 					_syncSet_AnimClip.Add(newSyncSet);
@@ -195,11 +202,15 @@ namespace AnyPortrait
 				for (int iSrc = 0; iSrc < nSrcAnimClips; iSrc++)
 				{
 					srcAnimClip = controlParams[iSrc];
-					dstAnimClip = targetControlParams.Find(delegate(apControlParam a)
-					{
-						return string.Equals(srcAnimClip._keyName, a._keyName)
-								&& srcAnimClip._valueType == a._valueType;//타입도 같아야 한다.
-					});
+					//dstAnimClip = targetControlParams.Find(delegate(apControlParam a)
+					//{
+					//	return string.Equals(srcAnimClip._keyName, a._keyName)
+					//			&& srcAnimClip._valueType == a._valueType;//타입도 같아야 한다.
+					//});
+
+					s_FindControlParam_Name = srcAnimClip._keyName;
+					s_FindControlParam_Type = srcAnimClip._valueType;
+					dstAnimClip = targetControlParams.Find(s_FindControlParamByName_Func);
 
 					apSyncSet_ControlParam newSyncSet = new apSyncSet_ControlParam(srcAnimClip, dstAnimClip);
 					_sync_ControlParam.Add(newSyncSet);
@@ -410,154 +421,22 @@ namespace AnyPortrait
 			}
 		}
 
-		#region [미사용 코드] 잘못짬
-		//private bool FindSyncBone(	apSyncSet_Bone parentSyncSet, 
-		//							apOptBone targetSyncBone, 
-		//							apOptBone selfParentBone, 
-		//							List<apOptBone> selfRootBones, 
-		//							SYNC_BONE_OPTION syncBoneOption,
-		//							SyncBoneUnitPerRootUnit resultUnit)
-		//{
-		//	//거꾸로 계산
-		//	//Self의 루트들을 기준으로 이름이 같은걸 찾자
-
-		//	//<1> 루트부터 같아야 하는 경우
-		//	//[루트 본에 대해서]
-		//	//1. 타겟의 루트 본을 하나 선택하고 이름이 같은 "루트 본" 있는지 확인한다.
-		//	//2-1. 이름이 같은 본이 현재 본 중에 있다면 연결
-		//	//2-2. 이름이 같은 본이 없다면 더 찾지 않는다. (다른 루트본으로 넘어감)
-		//	//3. 이 자식 본에 대해서 재귀적으로 호출한다.
-
-		//	//[자식 본에 대해서]
-		//	//1. 자식 본 중 하나를 선택하고, 연결된 부모 본의 자식들 중에서 같은게 있는지 확인한다.
-		//	//2-1. 이름이 같은 자식 본이 있다면 연결
-		//	//2-2. 이름이 같은 본이 없다면 종료
-		//	//3. 재귀적으로 계속 호출한다.
+		private static string s_FindAnimClip_Name = null;
+		private static Predicate<apAnimClip> s_FindAnimClipByName_Func = FUNC_FindAnimClipByName;
+		private static bool FUNC_FindAnimClipByName(apAnimClip a)
+		{
+			return string.Equals(s_FindAnimClip_Name, a._name);
+		}
 
 
-		//	//<2> 루트가 같지 않아도 되는 경우
-		//	//[루트 본에 대해서]
-		//	//1. 타겟의 루트 본을 하나 선택하고 이름이 같은 "루트 본" 있는지 확인한다.
-		//	//2-1. 이름이 같은 본이 현재 본 중에 있다면 연결하고 <연결된 후 자식 본 찾기> 단계로 넘어간다.
-		//	//2-2. 이름이 같은 본이 없다면 <연결되지 않은 상태로 자식 본 찾기> 단계로 넘어간다.
-
-		//	//[연결되지 않은 상태로 자식 본에서 찾기]
-		//	//1. 자식 본들 중 하나를 선택하고 이름이 같은게 있는지 확인한다.
-		//	//2-1. 이름이 같은 "루트 본"이 있다면 연결하고 <연결된 후 자식 본 찾기> 단계로 넘어간다.
-		//	//2-2. 이름이 같은 "루트 본"이 없다면 다음 자식 본에 대해서 반복한다.
-
-		//	if(targetSyncBone == null)
-		//	{
-		//		return false;
-		//	}
-
-
-		//	apOptBone findBone = null;
-
-		//	if(parentSyncSet == null)
-		//	{
-		//		//[새로 찾는 경우]
-
-		//		//이름이 같은 본인의 루트 본이 있는가
-		//		findBone = selfRootBones.Find(delegate(apOptBone a)
-		//		{
-		//			return string.Equals(targetSyncBone._name, a._name);
-		//		});
-
-		//		if(findBone != null)
-		//		{
-		//			//찾았다 > 새로운 SyncSet을 만들고, 자식으로 넘어간다.
-		//			apSyncSet_Bone newSyncSet = new apSyncSet_Bone(findBone, targetSyncBone);
-
-		//			resultUnit._sync_Bone_All.Add(newSyncSet);
-		//			resultUnit._sync_Bone_Root.Add(newSyncSet);//루트에도 추가
-
-		//			//자식 본에 대해서도 반복
-		//			int nSyncChildBones = targetSyncBone._childBones != null ? targetSyncBone._childBones.Length : 0;
-		//			for (int iChild = 0; iChild < nSyncChildBones; iChild++)
-		//			{
-		//				FindSyncBone(newSyncSet, targetSyncBone._childBones[iChild], findBone, selfRootBones, syncBoneOption, resultUnit);
-		//			}
-		//		}
-		//		else
-		//		{
-		//			//찾지 못했다면 옵션에 따라서 다르다
-		//			if(syncBoneOption == SYNC_BONE_OPTION.MatchFromRoot)
-		//			{
-		//				//루트부터 같아야 하는 경우 : 루트가 달랐으므로 처리 종료
-		//				return false;
-		//			}
-		//			else
-		//			{
-		//				//루트가 달라도 되는 경우 : Sync 본의 자식 본과 본체의 Root 본들이 같은지 검사하자
-		//				bool isAnySyncBone = false;
-
-		//				int nSyncChildBones = targetSyncBone._childBones != null ? targetSyncBone._childBones.Length : 0;
-		//				for (int iChild = 0; iChild < nSyncChildBones; iChild++)
-		//				{
-		//					if(FindSyncBone(null, targetSyncBone._childBones[iChild], null, selfRootBones, syncBoneOption, resultUnit))
-		//					{
-		//						isAnySyncBone = true;
-		//					}
-		//				}
-		//				return isAnySyncBone;
-		//			}
-		//		}
-		//	}
-		//	else
-		//	{
-		//		//[부모로 부터 이어서 찾는 경우]
-		//		if(selfParentBone == null)
-		//		{
-		//			//부모 본이 없다면 종료
-		//			return false;
-		//		}
-		//		int nSelfChildBones = selfParentBone._childBones != null ? selfParentBone._childBones.Length : 0;
-		//		if(nSelfChildBones == 0)
-		//		{
-		//			//새로 연결할 자식 본이 없어도 종료
-		//			return false;
-		//		}
-
-		//		bool isAnySyncBone = false;
-
-		//		apOptBone selfChildBone = null;
-		//		for (int iSelfChildBone = 0; iSelfChildBone < nSelfChildBones; iSelfChildBone++)
-		//		{
-		//			selfChildBone = selfParentBone._childBones[iSelfChildBone];
-		//			if(string.Equals(targetSyncBone._name, selfChildBone._name))
-		//			{
-		//				//동일한 이름의 자식 본을 찾았다.
-		//				//SyncSet 생성 후 부모에 연결
-		//				apSyncSet_Bone newSyncSet = new apSyncSet_Bone(selfChildBone, targetSyncBone);
-		//				newSyncSet.SetParent(parentSyncSet);
-
-		//				resultUnit._sync_Bone_All.Add(newSyncSet);
-
-		//				//자식 본에 대해서 재귀 호출 후 Break;
-		//				int nSyncChildBones = targetSyncBone._childBones != null ? targetSyncBone._childBones.Length : 0;
-		//				for (int iTargetChild = 0; iTargetChild < nSyncChildBones; iTargetChild++)
-		//				{
-		//					if(FindSyncBone(newSyncSet, targetSyncBone._childBones[iTargetChild], selfChildBone, selfRootBones, syncBoneOption, resultUnit))
-		//					{
-		//						isAnySyncBone = true;
-		//					}
-		//					else if(syncBoneOption == SYNC_BONE_OPTION.MatchFromSubBones)
-		//					{
-		//						//Sync의 자식본과 
-		//					}
-
-		//				}
-
-		//				break;
-		//			}
-		//		}
-
-		//		//재귀 처리 종료
-		//	}
-		//} 
-		#endregion
-
+		private static string s_FindControlParam_Name = null;
+		private static apControlParam.TYPE s_FindControlParam_Type = apControlParam.TYPE.Int;
+		private static Predicate<apControlParam> s_FindControlParamByName_Func = FUNC_FindControlParamByName;
+		private static bool FUNC_FindControlParamByName(apControlParam a)
+		{
+			return string.Equals(s_FindControlParam_Name, a._keyName)
+					&& s_FindControlParam_Type == a._valueType;//타입도 같아야 한다.
+		}
 
 		private void FindSyncBone_FirstLoop(	apOptBone curRootBone_Self,
 												List<apOptBone> rootBones_Target,
@@ -579,10 +458,16 @@ namespace AnyPortrait
 			}
 
 			//타겟 루트 본 중에서 이름이 같은걸 찾자
-			apOptBone findSyncRootBone = rootBones_Target.Find(delegate(apOptBone a)
-			{
-				return string.Equals(curRootBone_Self._name, a._name);
-			});
+			//이전 (GC 발생)
+			//apOptBone findSyncRootBone = rootBones_Target.Find(delegate(apOptBone a)
+			//{
+			//	return string.Equals(curRootBone_Self._name, a._name);
+			//});
+
+			//변경 v1.5.0
+			s_FindBone_Name = curRootBone_Self._name;
+			apOptBone findSyncRootBone = rootBones_Target.Find(s_FindBoneByName_Func);
+
 
 			if (findSyncRootBone != null)
 			{
@@ -674,6 +559,13 @@ namespace AnyPortrait
 
 				}
 			}
+		}
+
+		private static string s_FindBone_Name = null;
+		private static Predicate<apOptBone> s_FindBoneByName_Func = FUNC_FindBoneByName;
+		private static bool FUNC_FindBoneByName(apOptBone a)
+		{
+			return string.Equals(s_FindBone_Name, a._name);
 		}
 
 		private void FindSyncBone_LinkContinuous(	apSyncSet_Bone parentSyncSet,

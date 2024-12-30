@@ -30,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 431060034737850338}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -3.16442, y: 0.37867004, z: -0.4317065}
   m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -50,8 +50,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useGravity: 0
   speedScale: 1
+  useRandomRotation: 0
+  randomRotationRange: 30
+  blockingLayers:
+    serializedVersion: 2
+    m_Bits: 656384
+  canDestroyMushroom: 0
   rigidbody: {fileID: 3905194349331104663}
   collider: {fileID: 8302385115658067482}
+  animator: {fileID: 0}
 --- !u!58 &8302385115658067482
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -179,4 +186,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+  attackEnabled: 1
+  isUseIgnoreDuration: 0
   ignoreDuration: 2

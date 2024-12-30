@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -192,11 +192,25 @@ namespace AnyPortrait
 			{
 				return false;
 			}
-			return _meshData.Exists(delegate (apModifiedMesh a)
-			{
-				return a._isMeshTransform && a._transform_Mesh == meshTransform;
-			});
+			//return _meshData.Exists(delegate (apModifiedMesh a)
+			//{
+			//	return a._isMeshTransform && a._transform_Mesh == meshTransform;
+			//});
+
+			s_CheckContainTF_MeshTF = meshTransform;
+			return _meshData.Exists(s_CheckContainTF_MeshTF_Func);
 		}
+
+
+
+		private static apTransform_Mesh s_CheckContainTF_MeshTF = null;
+		private static Predicate<apModifiedMesh> s_CheckContainTF_MeshTF_Func = FUNC_CheckContainTF_MeshTF;
+		private static bool FUNC_CheckContainTF_MeshTF(apModifiedMesh a)
+		{
+			return a._isMeshTransform && a._transform_Mesh == s_CheckContainTF_MeshTF;
+		}
+
+
 
 		public bool IsContainMeshGroupTransform(apTransform_MeshGroup meshGroupTransform)
 		{
@@ -204,11 +218,26 @@ namespace AnyPortrait
 			{
 				return false;
 			}
-			return _meshData.Exists(delegate (apModifiedMesh a)
-			{
-				return !a._isMeshTransform && a._transform_MeshGroup == meshGroupTransform;
-			});
+			//return _meshData.Exists(delegate (apModifiedMesh a)
+			//{
+			//	return !a._isMeshTransform && a._transform_MeshGroup == meshGroupTransform;
+			//});
+
+			//변경 v1.5.0
+			s_CheckContainTF_MeshGroupTF = meshGroupTransform;
+			return _meshData.Exists(s_CheckContainTF_MeshGroupTF_Func);
 		}
+
+
+		private static apTransform_MeshGroup s_CheckContainTF_MeshGroupTF = null;
+		private static Predicate<apModifiedMesh> s_CheckContainTF_MeshGroupTF_Func = FUNC_CheckContainTF_MeshGroupTF;
+		private static bool FUNC_CheckContainTF_MeshGroupTF(apModifiedMesh a)
+		{
+			return !a._isMeshTransform && a._transform_MeshGroup == s_CheckContainTF_MeshGroupTF;
+		}
+
+
+
 
 		public bool IsContainBone(apBone bone)
 		{
@@ -216,10 +245,21 @@ namespace AnyPortrait
 			{
 				return false;
 			}
-			return _boneData.Exists(delegate (apModifiedBone a)
-			{
-				return a._bone == bone;
-			});
+			//return _boneData.Exists(delegate (apModifiedBone a)
+			//{
+			//	return a._bone == bone;
+			//});
+
+			//변경
+			s_CheckContain_Bone = bone;
+			return _boneData.Exists(s_CheckContain_Bone_Func);
+		}
+
+		private static apBone s_CheckContain_Bone = null;
+		private static Predicate<apModifiedBone> s_CheckContain_Bone_Func = FUNC_CheckContain_Bone;
+		private static bool FUNC_CheckContain_Bone(apModifiedBone a)
+		{
+			return a._bone == s_CheckContain_Bone;
 		}
 	}
 }

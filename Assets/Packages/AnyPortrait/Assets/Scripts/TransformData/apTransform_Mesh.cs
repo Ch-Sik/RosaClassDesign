@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -154,14 +154,14 @@ namespace AnyPortrait
 		[Serializable]
 		public class ClipMeshSet
 		{
-			[SerializeField]
-			public int _transformID = -1;
+			[SerializeField] public int _transformID = -1;//이건 저장한다.
 
 			[NonSerialized]
 			public apTransform_Mesh _meshTransform = null;
 
-			[NonSerialized]
-			public apRenderUnit _renderUnit = null;
+			//삭제 v1.5.0 : MeshTF에서 참조를 하도록 한다.
+			// [NonSerialized]
+			// public apRenderUnit _renderUnit = null;
 
 			/// <summary>
 			/// 백업용 생성자
@@ -175,14 +175,14 @@ namespace AnyPortrait
 			{
 				_transformID = transformID;
 				_meshTransform = null;
-				_renderUnit = null;
+				//_renderUnit = null;//삭제 v1.5.0
 			}
 
-			public ClipMeshSet(apTransform_Mesh meshTransform, apRenderUnit renderUnit)
+			public ClipMeshSet(apTransform_Mesh meshTransform)
 			{
 				_transformID = meshTransform._transformUniqueID;
 				_meshTransform = meshTransform;
-				_renderUnit = renderUnit;
+				//_renderUnit = renderUnit;//삭제 v1.5.0
 			}
 		}
 
@@ -229,7 +229,8 @@ namespace AnyPortrait
 				Int = 1,
 				Vector = 2,
 				Texture = 3,
-				Color = 4
+				Color = 4,
+				Keyword = 5,//추가 v1.5.1
 			}
 
 			[SerializeField]
@@ -248,6 +249,9 @@ namespace AnyPortrait
 			public Color _value_Color = new Color(0, 0, 0, 1);
 
 			[SerializeField]
+			public bool _value_Keyword = true;
+
+			[SerializeField]
 			public Texture _value_Texture = null;
 
 			public CustomMaterialProperty()
@@ -264,6 +268,7 @@ namespace AnyPortrait
 				_value_Vector = Vector4.zero;
 				_value_Color = new Color(0, 0, 0, 1);
 				_value_Texture = null;
+				_value_Keyword = true;
 			}
 
 			public void CopyFromSrc(CustomMaterialProperty src)
@@ -275,6 +280,7 @@ namespace AnyPortrait
 				_value_Vector = src._value_Vector;
 				_value_Color = src._value_Color;
 				_value_Texture = src._value_Texture;
+				_value_Keyword = src._value_Keyword;
 			}
 		}
 
@@ -650,105 +656,107 @@ namespace AnyPortrait
 		}
 
 
-		private class RenderUnitTransformMeshSet
-		{
-			public apTransform_Mesh _meshTransform = null;
-			public apRenderUnit _renderUnit = null;
-			public RenderUnitTransformMeshSet(apTransform_Mesh meshTransform, apRenderUnit renderUnit)
-			{
-				_meshTransform = meshTransform;
-				_renderUnit = renderUnit;
-			}
-		}
+		//삭제 v1.5.0 : ClipMeshSet에서 MeshTF만 저장하기로 하면서 이 클래스가 필요 없어졌다.
+		// private class RenderUnitTransformMeshSet
+		// {
+		// 	public apTransform_Mesh _meshTransform = null;
+		// 	public apRenderUnit _renderUnit = null;
+		// 	public RenderUnitTransformMeshSet(apTransform_Mesh meshTransform, apRenderUnit renderUnit)
+		// 	{
+		// 		_meshTransform = meshTransform;
+		// 		_renderUnit = renderUnit;
+		// 	}
+		// }
 		public void SortClipMeshTransforms()
 		{
 			if (_isClipping_Parent)
 			{
-				List<RenderUnitTransformMeshSet> childList = new List<RenderUnitTransformMeshSet>();
-				//for (int i = 0; i < _clipChildMeshTransforms.Count; i++)
-				//{
-				//	if (_clipChildMeshTransforms[i] != null)
-				//	{
-				//		if (!childList.Exists(delegate (RenderUnitTransformMeshSet a)
-				//		{
-				//			return a._meshTransform == _clipChildMeshTransforms[i];
-				//		}))
-				//		{
-				//			childList.Add(
-				//				new RenderUnitTransformMeshSet(_clipChildMeshTransforms[i],
-				//												_clipChildRenderUnits[i]));
-				//		}
-				//	}
-				//}
-				for (int i = 0; i < _clipChildMeshes.Count; i++)
+				//이전
+				//List<RenderUnitTransformMeshSet> childList = new List<RenderUnitTransformMeshSet>();
+
+				//변경 v1.5.0 : RenderUnit 없이 MeshTF 만으로 Sort를 한다.
+				List<apTransform_Mesh> sortedChildMeshTFs = new List<apTransform_Mesh>();
+
+				int nClipMeshes = _clipChildMeshes != null ? _clipChildMeshes.Count : 0;
+				if(nClipMeshes > 0)
 				{
-					if (_clipChildMeshes[i]._meshTransform != null)
+					ClipMeshSet clipMeshSet = null;
+					for (int i = 0; i < nClipMeshes; i++)
 					{
-						if (!childList.Exists(delegate (RenderUnitTransformMeshSet a)
+						clipMeshSet = _clipChildMeshes[i];
+						if(clipMeshSet._meshTransform == null)
 						{
-							return a._meshTransform == _clipChildMeshes[i]._meshTransform;
-						}))
+							continue;
+						}
+						//이전
+						// if (!childList.Exists(delegate (RenderUnitTransformMeshSet a)
+						// {
+						// 	return a._meshTransform == clipMeshSet._meshTransform;
+						// }))
+						// {
+						// 	childList.Add(
+						// 		new RenderUnitTransformMeshSet(clipMeshSet._meshTransform,
+						// 										clipMeshSet._renderUnit));
+						// }
+						//변경 v1.5.0
+						if(!sortedChildMeshTFs.Contains(clipMeshSet._meshTransform))
 						{
-							childList.Add(
-								new RenderUnitTransformMeshSet(_clipChildMeshes[i]._meshTransform,
-																_clipChildMeshes[i]._renderUnit));
+							sortedChildMeshTFs.Add(clipMeshSet._meshTransform);
 						}
 					}
 				}
 
-				childList.Sort(delegate (RenderUnitTransformMeshSet a, RenderUnitTransformMeshSet b)
-				{
-				//Depth의 오름차순
-				return a._meshTransform._depth - b._meshTransform._depth;
-				});
+				int nSortedChildMeshTFs = sortedChildMeshTFs.Count;
 
-				if (childList.Count == 0)
+				if (nSortedChildMeshTFs > 1)
 				{
-					_clipChildMeshes.Clear();
+					//이전
+					// childList.Sort(delegate (RenderUnitTransformMeshSet a, RenderUnitTransformMeshSet b)
+					// {
+					// 	//Depth의 오름차순
+					// 	return a._meshTransform._depth - b._meshTransform._depth;
+					// });
+					//변경 v1.5.0 : MeshTF 리스트로 변경
+					sortedChildMeshTFs.Sort(delegate (apTransform_Mesh a, apTransform_Mesh b)
+					{
+						//Depth의 오름차순
+						return a._depth - b._depth;
+					});
+				}
+				
 
-					//for (int i = 0; i < 3; i++)
-					//{
-					//	_clipChildMeshTransforms[i] = null;
-					//	_clipChildMeshTransformIDs[i] = -1;
-					//	_clipChildRenderUnits[i] = null;
-					//}
+				_clipChildMeshes.Clear();
+				if (nSortedChildMeshTFs == 0)
+				{
+					//Child가 없다면 Parent가 아니게 된다.
 					_isClipping_Parent = false;
 				}
 				else
 				{
-					_clipChildMeshes.Clear();
+					//이전
+					// RenderUnitTransformMeshSet childRenderUnitMeshSet = null;
 
+					// //리스트 순서대로 다시 재배치하자
+					// for (int i = 0; i < childList.Count; i++)
+					// {
+					// 	childRenderUnitMeshSet = childList[i];
+					// 	_clipChildMeshes.Add(new ClipMeshSet(childRenderUnitMeshSet._meshTransform, childRenderUnitMeshSet._renderUnit));
+					// 	childRenderUnitMeshSet._meshTransform._clipParentMeshTransform = this;
+					// 	childRenderUnitMeshSet._meshTransform._clipIndexFromParent = i;
+					// 	childRenderUnitMeshSet._meshTransform._isClipping_Child = true;
+					// }
+
+					//변경 v1.5.0 : MeshTF만으로 Child 구성하기
+					apTransform_Mesh curMeshTF = null;
 					//리스트 순서대로 다시 재배치하자
-					for (int i = 0; i < childList.Count; i++)
+					for (int i = 0; i < nSortedChildMeshTFs; i++)
 					{
-						_clipChildMeshes.Add(new ClipMeshSet(childList[i]._meshTransform, childList[i]._renderUnit));
-						childList[i]._meshTransform._clipParentMeshTransform = this;
-						childList[i]._meshTransform._clipIndexFromParent = i;
-						childList[i]._meshTransform._isClipping_Child = true;
-					}
-
-					#region [미사용 코드]
-					//이전 코드
-					//for (int i = 0; i < 3; i++)
-					//{
-					//	if (i < childList.Count)
-					//	{
-					//		_clipChildMeshTransforms[i] = childList[i]._meshTransform;
-					//		_clipChildMeshTransformIDs[i] = childList[i]._meshTransform._transformUniqueID;
-					//		_clipChildRenderUnits[i] = childList[i]._renderUnit;
-
-					//		_clipChildMeshTransforms[i]._isClipping_Child = true;
-					//		_clipChildMeshTransforms[i]._clipIndexFromParent = i;
-					//		_clipChildMeshTransforms[i]._clipParentMeshTransform = this;
-					//	}
-					//	else
-					//	{
-					//		_clipChildMeshTransforms[i] = null;
-					//		_clipChildMeshTransformIDs[i] = -1;
-					//		_clipChildRenderUnits[i] = null;
-					//	}
-					//} 
-					#endregion
+						curMeshTF = sortedChildMeshTFs[i];
+						_clipChildMeshes.Add(new ClipMeshSet(curMeshTF));
+						curMeshTF._clipParentMeshTransform = this;
+						curMeshTF._clipIndexFromParent = i;
+						curMeshTF._isClipping_Child = true;
+					}					
 				}
 			}
 		}
@@ -771,19 +779,25 @@ namespace AnyPortrait
 			//return nID;
 		}
 
-		public void AddClippedChildMesh(apTransform_Mesh meshTransform, apRenderUnit renderUnit)
+		public void AddClippedChildMesh(apTransform_Mesh meshTransform)
 		{
 			_isClipping_Parent = true;
 
-			ClipMeshSet existClipMeshSet = _clipChildMeshes.Find(delegate (ClipMeshSet a)
-			{
-				return a._meshTransform == meshTransform;
-			});
+			//이전 (GC 발생)
+			//ClipMeshSet existClipMeshSet = _clipChildMeshes.Find(delegate (ClipMeshSet a)
+			//{
+			//	return a._meshTransform == meshTransform;
+			//});
+
+			//변경 v1.5.0
+			s_FindClipMeshSet_MeshTF = meshTransform;
+			ClipMeshSet existClipMeshSet = _clipChildMeshes.Find(s_FindClipMeshSet_Func);
 			
 			if(existClipMeshSet != null)
 			{
-				//이미 등록된 Clipped Mesh라면
-				existClipMeshSet._renderUnit = renderUnit;//렌더 유닛은 갱신
+				//[ 이미 등록된 Clipped Mesh라면 ]
+
+				//existClipMeshSet._renderUnit = renderUnit;//렌더 유닛은 갱신 > 삭제 v1.5.0
 
 				SortClipMeshTransforms();//Clipped Mesh들을 Sorting한다.
 				return;
@@ -791,13 +805,21 @@ namespace AnyPortrait
 
 			//새로 추가한다.
 			int clippIndex = _clipChildMeshes.Count;
-			_clipChildMeshes.Add(new ClipMeshSet(meshTransform, renderUnit));
+			_clipChildMeshes.Add(new ClipMeshSet(meshTransform));
 
 			meshTransform._isClipping_Child = true;
 			meshTransform._clipIndexFromParent = clippIndex;
 
 			SortClipMeshTransforms();
 		}
+
+		private static apTransform_Mesh s_FindClipMeshSet_MeshTF = null;
+		private static Predicate<ClipMeshSet> s_FindClipMeshSet_Func = FUNC_FindClipMeshSet;
+		private static bool FUNC_FindClipMeshSet(ClipMeshSet a)
+		{
+			return a._meshTransform == s_FindClipMeshSet_MeshTF;
+		}
+
 
 		// Get / Set
 		//--------------------------------------------

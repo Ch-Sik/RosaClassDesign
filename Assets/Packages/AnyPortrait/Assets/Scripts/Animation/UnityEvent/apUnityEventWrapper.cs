@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -113,10 +113,16 @@ namespace AnyPortrait
 					//1. 이미 생성된 이벤트(New) 중에 중복되는게 있는지 확인
 					if(newUnityEvents.Count > 0)
 					{
-						findUnityEvent = newUnityEvents.Find(delegate(apUnityEvent a)
-						{
-							return a.IsWrappableEvent(curAnimEvent);
-						});
+						//이전 (GC 발생)
+						//findUnityEvent = newUnityEvents.Find(delegate(apUnityEvent a)
+						//{
+						//	return a.IsWrappableEvent(curAnimEvent);
+						//});
+
+						//변경 v1.5.0
+						s_FindEvent_AnimEvent = curAnimEvent;
+						findUnityEvent = newUnityEvents.Find(s_FindEvent_Func);
+
 					}
 
 					//이미 추가되어 있다면 패스
@@ -129,10 +135,15 @@ namespace AnyPortrait
 					//2. 기존의 이벤트 중에 연결될만한게 있는지 확인 (유지)
 					if(findUnityEvent == null && nPrevUnityEvent > 0)
 					{
-						findUnityEvent = _unityEvents.Find(delegate(apUnityEvent a)
-						{
-							return a.IsWrappableEvent(curAnimEvent);
-						});
+						//이전 (GC 발생)
+						//findUnityEvent = _unityEvents.Find(delegate(apUnityEvent a)
+						//{
+						//	return a.IsWrappableEvent(curAnimEvent);
+						//});
+
+						//변경 v1.5.0
+						s_FindEvent_AnimEvent = curAnimEvent;
+						findUnityEvent = _unityEvents.Find(s_FindEvent_Func);
 					}
 
 					
@@ -266,10 +277,15 @@ namespace AnyPortrait
 						//Debug.Log("전체 검색 : " + curAnimEvent._cachedUnityEventID);
 						//빠른 검색이 실패라면
 						//전체 리스트에서 찾아야 한다.
-						linkableUnityEvent = _unityEvents.Find(delegate(apUnityEvent a)
-						{
-							return a.IsWrappableEvent(curAnimEvent);
-						});
+						//이전 (GC 발생)
+						//linkableUnityEvent = _unityEvents.Find(delegate(apUnityEvent a)
+						//{
+						//	return a.IsWrappableEvent(curAnimEvent);
+						//});
+
+						//변경 v1.5.0
+						s_FindEvent_AnimEvent = curAnimEvent;
+						linkableUnityEvent = _unityEvents.Find(s_FindEvent_Func);
 					}
 
 					//연결하자
@@ -289,6 +305,13 @@ namespace AnyPortrait
 					}
 				}
 			}
+		}
+
+		private static apAnimEvent s_FindEvent_AnimEvent = null;
+		private static Predicate<apUnityEvent> s_FindEvent_Func = FUNC_FindEvent;
+		private static bool FUNC_FindEvent(apUnityEvent a)
+		{
+			return a.IsWrappableEvent(s_FindEvent_AnimEvent);
 		}
 
 	}

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -11,7 +11,6 @@
 *	In that case, the act could be subject to legal sanctions.
 */
 
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
@@ -59,8 +58,10 @@ namespace AnyPortrait
 		private bool _isChildMeshGroupObjectSelected_Gizmo_Bone = false;
 
 		//애니메이션의 경우, ControlParam도 선택한다.
-		//단 이건 다중 선택은 안된다.
+		//단 이건 다중 선택은 안된다. > 다중 선택 지원 [v1.5.0]
 		private apControlParam _controlParam_Anim = null;
+		private List<apControlParam> _controlParam_Anim_Sub = new List<apControlParam>();
+		private List<apControlParam> _controlParam_Anim_All = new List<apControlParam>();
 
 		
 
@@ -68,6 +69,8 @@ namespace AnyPortrait
 		private int _nMeshTF = 0;
 		private int _nMeshGroupTF = 0;
 		private int _nBone = 0;
+		private int _nControlParamAnim = 0;//v1.5.0 추가
+		
 		
 
 		//TimelineLayer도 선택한다.
@@ -352,10 +355,15 @@ namespace AnyPortrait
 			_isChildMeshGroupObjectSelected_Gizmo_TF = false;
 			_isChildMeshGroupObjectSelected_Gizmo_Bone = false;
 
+			//v1.5.0
+			if (_controlParam_Anim_Sub == null) { _controlParam_Anim_Sub = new List<apControlParam>(); }
+			if (_controlParam_Anim_All == null) { _controlParam_Anim_All = new List<apControlParam>(); }
+
 
 			_nMeshTF = 0;
 			_nMeshGroupTF = 0;
 			_nBone = 0;
+			_nControlParamAnim = 0;
 
 			//애니메이션 타임라인 레이어도 여기에서 선택된다.
 			_timeline = null;//모든 타임라인 레이어는 동일한 타임라인의 아래에 들어가야 한다.
@@ -417,9 +425,14 @@ namespace AnyPortrait
 			_isChildMeshGroupObjectSelected_Gizmo_TF = false;
 			_isChildMeshGroupObjectSelected_Gizmo_Bone = false;
 
+			//v1.5.0
+			_controlParam_Anim_Sub.Clear();
+			_controlParam_Anim_All.Clear();
+
 			_nMeshTF = 0;
 			_nMeshGroupTF = 0;
 			_nBone = 0;
+			_nControlParamAnim = 0;
 
 			_timeline = null;
 			_timelineLayer = null;
@@ -478,6 +491,11 @@ namespace AnyPortrait
 		public void ClearControlParam()
 		{
 			_controlParam_Anim = null;
+
+			//v1.5.0
+			_controlParam_Anim_Sub.Clear();
+			_controlParam_Anim_All.Clear();
+			_nControlParamAnim = 0;
 		}
 
 		public void ClearTimelineLayers()
@@ -549,9 +567,24 @@ namespace AnyPortrait
 		public apSelection.SUB_SELECTED_RESULT IsSelected(apControlParam controlParam_Anim)
 		{
 			if (controlParam_Anim == null)	{ return apSelection.SUB_SELECTED_RESULT.None; }
-			if (_controlParam_Anim == null)	{ return apSelection.SUB_SELECTED_RESULT.None; }	//선택 안됨
-			if (_controlParam_Anim == controlParam_Anim)	{ return apSelection.SUB_SELECTED_RESULT.Main; }    //메인으로 선택된 상태
-			//ControlParamAnim은 메인밖에 없다.
+
+			//이전
+			//if (_controlParam_Anim == null)	{ return apSelection.SUB_SELECTED_RESULT.None; }	//선택 안됨
+			//if (_controlParam_Anim == controlParam_Anim)	{ return apSelection.SUB_SELECTED_RESULT.Main; }    //메인으로 선택된 상태
+			////ControlParamAnim은 메인밖에 없다.
+			
+			//변경 v1.5.0 : 다중 선택을 지원한다.
+			if(_controlParam_Anim != null && _controlParam_Anim == controlParam_Anim)
+			{
+				//메인으로 선택됨
+				return apSelection.SUB_SELECTED_RESULT.Main;
+			}
+
+			if(_controlParam_Anim_Sub.Count > 0 && _controlParam_Anim_Sub.Contains(controlParam_Anim))
+			{
+				//Sub로서 선택됨
+				return apSelection.SUB_SELECTED_RESULT.Added;
+			}
 
 			return apSelection.SUB_SELECTED_RESULT.None;
 		}
@@ -572,7 +605,12 @@ namespace AnyPortrait
 			if (targetObj is apTransform_Mesh)			{ return _meshTF_List_All.Contains((targetObj as apTransform_Mesh)); }
 			if (targetObj is apTransform_MeshGroup)		{ return _meshGroupTF_List_All.Contains((targetObj as apTransform_MeshGroup)); }
 			if (targetObj is apBone)					{ return _bone_List_All.Contains((targetObj as apBone)); }
-			if (targetObj is apControlParam)			{ return _controlParam_Anim == targetObj; }
+
+			//이전
+			//if (targetObj is apControlParam)			{ return _controlParam_Anim == targetObj; }
+
+			//변경 v1.5.0
+			if (targetObj is apControlParam)			{ return _controlParam_Anim_All.Contains(targetObj as apControlParam); }
 
 			return false;
 		}
@@ -868,12 +906,74 @@ namespace AnyPortrait
 		}
 
 		//애니메이션인 경우) 컨트롤 파라미터 선택
-		//다중 선택은 지원되지 않는다.
-		public bool SelectControlParamForAnim(apControlParam controlParam)
+		//다중 선택은 지원되지 않는다. > 다중 선택을 지원한다. v1.5.0
+		public bool SelectControlParamForAnim(apControlParam controlParam, apSelection.MULTI_SELECT multiSelect)
 		{
 			apControlParam prevControlParam = _controlParam_Anim;
 
-			_controlParam_Anim = controlParam;
+			if(multiSelect == apSelection.MULTI_SELECT.Main || //메인으로서 단순 선택이거나
+				_controlParam_Anim == null || //기존에 선택된게 없거나
+				controlParam == null//null이 입력된 경우 (선택 취소를 요청함)
+				)
+			{
+				//단일 선택을 처리한다.
+				_controlParam_Anim = controlParam;
+
+				_controlParam_Anim_All.Clear();
+				_controlParam_Anim_Sub.Clear();
+
+				if(controlParam != null)
+				{
+					_controlParam_Anim_All.Add(controlParam);//All에도 추가
+				}
+			}
+			else if(multiSelect == apSelection.MULTI_SELECT.AddOrSubtract)
+			{
+				//다중 선택
+				//일단 추가를 한다.
+				if(controlParam != null)
+				{	
+					if(!_controlParam_Anim_All.Contains(controlParam))
+					{
+						//없다면 > 추가
+						_controlParam_Anim_All.Add(controlParam);
+					}
+					else
+					{
+						//있다면 > 삭제
+						_controlParam_Anim_All.Remove(controlParam);
+
+						//이게 메인으로 선택된 거였다면 리스트에서 다음거를 선택한다.
+						if(_controlParam_Anim == controlParam)
+						{
+							_controlParam_Anim = null;
+							if(_controlParam_Anim_All.Count > 0)
+							{
+								//남은 리스트 중에서 첫번째를 메인으로 대체 선택
+								_controlParam_Anim = _controlParam_Anim_All[0];
+							}
+						}
+					}
+				}
+
+				//All > Sub 동기화
+				_controlParam_Anim_Sub.Clear();
+
+				apControlParam curCP = null;
+				for (int i = 0; i < _controlParam_Anim_All.Count; i++)
+				{
+					curCP = _controlParam_Anim_All[i];
+
+					//All중에서 메인이 아닌 걸 Sub로 넣기
+					if(curCP != _controlParam_Anim)
+					{
+						_controlParam_Anim_Sub.Add(curCP);
+					}
+				}
+			}
+
+			//개수 갱신
+			_nControlParamAnim = _controlParam_Anim_All.Count;
 
 			return prevControlParam != _controlParam_Anim;
 		}
@@ -1760,14 +1860,14 @@ namespace AnyPortrait
 					//타임라인의 타입이 "컨트롤 파라미터"인 경우
 					if(_timelineLayer._linkedControlParam != null)
 					{
-						SelectControlParamForAnim(_timelineLayer._linkedControlParam);
+						SelectControlParamForAnim(_timelineLayer._linkedControlParam, apSelection.MULTI_SELECT.Main);
 					}
 				}
 			}
 
 			
 			//여기서 서브만 검사하자
-			apSelection.MULTI_SELECT multiSelect = apSelection.MULTI_SELECT.Main;
+			//apSelection.MULTI_SELECT multiSelect = apSelection.MULTI_SELECT.Main;
 			apAnimTimelineLayer curTimelineLayer = null;
 
 			for (int iTL = 0; iTL < _nTimelineLayers; iTL++)
@@ -1784,7 +1884,7 @@ namespace AnyPortrait
 
 				
 				//multiSelect = (curTimelineLayer == _timelineLayer) ? apSelection.MULTI_SELECT.Main : apSelection.MULTI_SELECT.AddOrSubtract;
-				multiSelect = apSelection.MULTI_SELECT.AddOrSubtract;
+				//multiSelect = apSelection.MULTI_SELECT.AddOrSubtract;
 
 				if(parentTimeline._linkType == apAnimClip.LINK_TYPE.AnimatedModifier)
 				{
@@ -1796,7 +1896,8 @@ namespace AnyPortrait
 							if(curTimelineLayer._linkedMeshTransform != null)
 							{
 								//MeshTF 선택
-								Select(curTimelineLayer._linkedMeshTransform, null, null, multiSelect, apSelection.TF_BONE_SELECT.Exclusive);
+								Select(	curTimelineLayer._linkedMeshTransform, null, null,
+										apSelection.MULTI_SELECT.AddOrSubtract, apSelection.TF_BONE_SELECT.Exclusive);
 							}
 							break;
 
@@ -1804,7 +1905,8 @@ namespace AnyPortrait
 							if(curTimelineLayer._linkedMeshGroupTransform != null)
 							{
 								//MeshGroupTF 선택
-								Select(null, curTimelineLayer._linkedMeshGroupTransform, null, multiSelect, apSelection.TF_BONE_SELECT.Exclusive);
+								Select(	null, curTimelineLayer._linkedMeshGroupTransform, null,
+										apSelection.MULTI_SELECT.AddOrSubtract, apSelection.TF_BONE_SELECT.Exclusive);
 							}
 							break;
 
@@ -1812,7 +1914,8 @@ namespace AnyPortrait
 							if(curTimelineLayer._linkedBone != null)
 							{
 								//Bone 선택
-								Select(null, null, curTimelineLayer._linkedBone, multiSelect, apSelection.TF_BONE_SELECT.Exclusive);
+								Select(	null, null, curTimelineLayer._linkedBone,
+										apSelection.MULTI_SELECT.AddOrSubtract, apSelection.TF_BONE_SELECT.Exclusive);
 							}
 							break;
 					}
@@ -1822,7 +1925,7 @@ namespace AnyPortrait
 					//타임라인의 타입이 "컨트롤 파라미터"인 경우
 					if(curTimelineLayer._linkedControlParam != null)
 					{
-						SelectControlParamForAnim(curTimelineLayer._linkedControlParam);
+						SelectControlParamForAnim(curTimelineLayer._linkedControlParam, apSelection.MULTI_SELECT.AddOrSubtract);
 					}
 				}
 			}
@@ -1976,13 +2079,35 @@ namespace AnyPortrait
 			{
 				if(_controlParam_Anim != null)
 				{
-					targetLayer = _timeline.GetTimelineLayer(_controlParam_Anim);
-					if(targetLayer != null)
+					//이전 : 컨트롤 파라미터의 Main만 체크
+					//targetLayer = _timeline.GetTimelineLayer(_controlParam_Anim);
+					//if(targetLayer != null)
+					//{
+					//	//적당한 레이어가 있다.
+					//	_timelineLayers_All.Add(targetLayer);
+					//	//컨트롤 파라미터의 경우 자동으로 메인으로 선택된다.
+					//	_timelineLayer = targetLayer;
+					//}
+
+					//변경 v1.5.0 : 전체 선택 가능
+					apControlParam curCP = null;
+					if(_nControlParamAnim > 0)
 					{
-						//적당한 레이어가 있다.
-						_timelineLayers_All.Add(targetLayer);
-						//컨트롤 파라미터의 경우 자동으로 메인으로 선택된다.
-						_timelineLayer = targetLayer;
+						for (int i = 0; i < _nControlParamAnim; i++)
+						{
+							curCP = _controlParam_Anim_All[i];
+							targetLayer = _timeline.GetTimelineLayer(curCP);
+							if(targetLayer == null)
+							{
+								continue;
+							}
+
+							_timelineLayers_All.Add(targetLayer);
+
+							//메인/서브 판단 후
+							if(curCP == selectedMainObject) { _timelineLayer = targetLayer; }//메인
+							else							{ _timelineLayers_Sub.Add(targetLayer); }//서브
+						}
 					}
 				}
 			}
@@ -3078,11 +3203,13 @@ namespace AnyPortrait
 		public List<apTransform_Mesh> SubMeshTFs			{ get { return _meshTF_List_Sub; } }
 		public List<apTransform_MeshGroup> SubMeshGroupTFs	{ get { return _meshGroupTF_List_Sub; } }
 		public List<apBone> SubBones						{ get { return _bone_List_Sub; } }
+		public List<apControlParam> SubControlParamsForAnim { get { return _controlParam_Anim_Sub; } }
 
 		//선택된 모든(메인+서브) 객체들
 		public List<apTransform_Mesh> AllMeshTFs			{ get { return _meshTF_List_All; } }
 		public List<apTransform_MeshGroup> AllMeshGroupTFs	{ get { return _meshGroupTF_List_All; } }
 		public List<apBone> AllBones						{ get { return _bone_List_All; } }
+		public List<apControlParam> AllControlParamsForAnim { get { return _controlParam_Anim_All; } }
 
 		//기즈모 편집용 객체들
 		public apTransform_Mesh GizmoMeshTF
@@ -3141,6 +3268,7 @@ namespace AnyPortrait
 		public int NumMeshTF		{ get { return _nMeshTF; } }
 		public int NumMeshGroupTF	{ get { return _nMeshGroupTF; } }
 		public int NumBone			{ get { return _nBone; } }
+		public int NumControlParam	{ get { return _nControlParamAnim; } }
 		
 		public int NumGizmoMeshTF		{ get { return _meshTF_List_Gizmo.Count; } }
 		public int NumGizmoMeshGroupTF	{ get { return _meshGroupTF_List_Gizmo.Count; } }

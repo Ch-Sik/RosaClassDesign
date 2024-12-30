@@ -223,6 +223,7 @@ namespace AnyPortrait
 		public override void SetTRSAsResult(	bool isMove, Vector2 pos, 
 												bool isRotate, float angle, 
 												bool isScale, Vector2 scale,
+												bool isLookAt, Vector2 lookTargetPos, float lookAtWeight, //추가 v1.5.0
 												bool isIKAngle, float IKAngle_World, float IKAngle_Delta, float IKWeight)
 		{
 
@@ -233,13 +234,45 @@ namespace AnyPortrait
 				//_mtx_Skew.SetAngleToStep1ForIK(IKAngle_Delta, IKWeight);
 			}
 
+			//회전만 하는 경우와 TRS를 모두 해야하는 경우가 나뉜다.
+			if(isRotate)
+			{
+
+			}
+
 			if (isMove || isRotate || isScale)
 			{
 				//Skew 방식에서는 MakeMatrix를 먼저하고 행렬을 조작한다.
-				_mtx_Skew.SetTRSAsPostResult(isMove, pos,
-												isRotate, angle,
-												isScale, scale);
+				if(isRotate && !isMove && !isScale)
+				{
+					//오직 Rotate만 했다면
+					_mtx_Skew.SetAngleToStep1ForIK(angle, 1.0f);
+				}
+				else
+				{
+					//그 외에는 일반적인 TRS
+					_mtx_Skew.SetTRSAsPostResult(	isMove, pos,
+													isRotate, angle,
+													isScale, scale);
+				}
+				
+
+				//Debug.Log("Skew TRS : " + (isMove ? "Move / " : "") + (isRotate ? "Rotate / " : "") + (isScale ? "Scale" : ""));
 			}
+
+			//v1.5.0 : LookAt 요청을 더 한다.
+			if(isLookAt && lookAtWeight > 0.0f)
+			{
+				//계산은 Step 1에서 한다.
+				Vector2 targetPos = ConvertForIK(lookTargetPos);
+				Vector2 startPos = ConvertForIK(_mtx_Skew._pos);
+				float lookAtAngle = apUtil.AngleTo180(Mathf.Atan2(targetPos.y - startPos.y, targetPos.x - startPos.x) * Mathf.Rad2Deg - 90.0f);
+				float weightedNextAngle = apUtil.AngleSlerp(_mtx_Skew._angleDeg_Step1, lookAtAngle, lookAtWeight);
+
+				//Skew 방식에 맞게 한번 더 회전한다.
+				_mtx_Skew.SetAngleToStep1ForIK(weightedNextAngle, 1.0f);
+			}
+			
 		}
 
 

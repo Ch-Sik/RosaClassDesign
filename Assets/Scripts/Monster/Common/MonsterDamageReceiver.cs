@@ -30,8 +30,8 @@ public class MonsterDamageReceiver : DamageReceiver
 
     [Tooltip("슈퍼아머 여부와 별개로 데미지를 입지 않음 옵션")]
     [SerializeField] private bool isInvincible;
-    [Tooltip("플레이어 공격에 피격된 후 잠시 플레이어와의 충돌 무시하는 시간 길이")]
-    [SerializeField] private float ignoreDuration = 0.1f;
+    // [Tooltip("플레이어 공격에 피격된 후 잠시 플레이어와의 충돌 무시하는 시간 길이")]
+    // [SerializeField] private float ignoreDuration = 0.1f;
 
 
     [Title("넉백 관련 옵션")]
@@ -111,6 +111,18 @@ public class MonsterDamageReceiver : DamageReceiver
         // 그래야 Die로 인한 밝기 변경이 Blink에 의해 덮어씌워지지 않음.
         BlinkEffect();
 
+        // 피격되었을 시 플레이어를 공격하지 않도록 잠시 공격 꺼놓음
+        // Debug.Log("플레이어와 충돌 무시 수행");
+        ToggleAttackComponent(false);
+        StartCoroutine(RestoreCollisionWithPlayer());
+
+        IEnumerator RestoreCollisionWithPlayer()
+        {
+            yield return new WaitForSeconds(0.1f);
+            // Debug.Log("플레이어와 충돌 복구됨");
+            ToggleAttackComponent(true);        // 플레이어를 공격 활성화
+        }
+
         // 무적이 아닐 경우, 데미지 입고 사망 여부 판단
         if(!isInvincible)
         {
@@ -141,21 +153,6 @@ public class MonsterDamageReceiver : DamageReceiver
                 yield return 0;     // 다음프레임까지 대기
                 blackboard.Set(BBK.isHitt, false);
             }
-
-            // 잠시 플레이어와 충돌 무시
-            // Debug.Log("플레이어와 충돌 무시 수행");
-            ToggleCollisionWithPlayerBody(false);
-            ToggleCollisionWithPlayerFeet(false);
-            StartCoroutine(RestoreCollisionWithPlayer());
-
-            IEnumerator RestoreCollisionWithPlayer()
-            {
-                yield return new WaitForSeconds(ignoreDuration);
-                // Debug.Log("플레이어와 충돌 복구됨");
-                ToggleCollisionWithPlayerBody(true);        // 플레이어를 공격 활성화
-                yield return new WaitForFixedUpdate();      // trigger event가 한 번 수행될 때까지 대기
-                ToggleCollisionWithPlayerFeet(true);        // 플레이어로부터 피격 활성화
-            }
         }
         // 슈퍼아머일 경우
         else
@@ -168,47 +165,12 @@ public class MonsterDamageReceiver : DamageReceiver
         }
     }
 
-    private void ToggleCollisionWithPlayerBody(bool value)
+    private void ToggleAttackComponent(bool value)
     {
-        int playerLayerMask = LayerMask.GetMask("Player");
-
         // 충돌
         if(monsterAttackComponent != null)
         {
             monsterAttackComponent.attackEnabled = value;
-        }
-
-        Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
-        // Debug.Log($"col {colliders.Length}개에 대해 플레이어 레이어마스크 예외 {value}로 설정");
-        foreach(var col in colliders)
-        {
-            if(value == true)
-            {
-                col.excludeLayers &= ~playerLayerMask;
-            }
-            else
-            {
-                col.excludeLayers |= playerLayerMask;
-            }
-        }
-    }
-
-    // 플레이어의 발 (= 공격판정)과의 충돌 활성화/비활성화
-    private void ToggleCollisionWithPlayerFeet(bool value)
-    {
-        int footLayerMask = LayerMask.GetMask("GroundCheck");
-
-        Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
-        foreach(var col in colliders)
-        {
-            if(value == true)
-            {
-                col.excludeLayers &= ~footLayerMask;
-            }
-            else
-            {
-                col.excludeLayers |= footLayerMask;
-            }
         }
     }
 
@@ -250,7 +212,8 @@ public class MonsterDamageReceiver : DamageReceiver
 
         // 딱히 추가로 수정할 필요 없어보여서 수치들을 하드코딩했는데 필요하다면 필드값으로 빼낼 것
         const float timePerBlink = 0.2f;
-        int blinkCount = Mathf.Max(2, Mathf.CeilToInt(ignoreDuration / timePerBlink));
+        // int blinkCount = Mathf.Max(2, Mathf.CeilToInt(ignoreDuration / timePerBlink));
+        int blinkCount = 2;
         Color blinkColor = Color.gray * reactionBrightness;
         blinkColor.a = 1;
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -516,10 +516,16 @@ namespace AnyPortrait
 
 			apOptCalculatedResultParamSubList targetSubList = null;
 
-			apOptCalculatedResultParamSubList existSubList = _subParamKeyValueList.Find(delegate (apOptCalculatedResultParamSubList a)
-			{
-				return a._keyParamSetGroup == paramSetGroup;
-			});
+			//이전 (GC 발생)
+			//apOptCalculatedResultParamSubList existSubList = _subParamKeyValueList.Find(delegate (apOptCalculatedResultParamSubList a)
+			//{
+			//	return a._keyParamSetGroup == paramSetGroup;
+			//});
+
+			//변경 v1.5.0
+			s_FindPKV_ParamSetGroup = paramSetGroup;
+			apOptCalculatedResultParamSubList existSubList = _subParamKeyValueList.Find(s_FindPKVByParamSetGroup_Func);
+
 
 			//같이 묶여서 작업할 SubList가 있는가
 			if (existSubList != null)
@@ -573,6 +579,12 @@ namespace AnyPortrait
 		}
 
 
+		private static apOptParamSetGroup s_FindPKV_ParamSetGroup = null;
+		private static Predicate<apOptCalculatedResultParamSubList> s_FindPKVByParamSetGroup_Func = FUNC_FindPKVByParamSetGroup;
+		private static bool FUNC_FindPKVByParamSetGroup(apOptCalculatedResultParamSubList a)
+		{
+			return a._keyParamSetGroup == s_FindPKV_ParamSetGroup;
+		}
 
 		
 
@@ -792,7 +804,7 @@ namespace AnyPortrait
 			//_linkedAnimPlayMapping를 이용해서 "재생 중인 애니메이션의 SubList"만 계산
 			int iSubList = 0;
 			apAnimPlayMapping.LiveUnit curUnit = null;
-			
+			apOptCalculatedResultParamSubList curSubList = null;
 			for (int i = 0; i < _linkedAnimPlayMapping._nAnimClips; i++)
 			{
 				curUnit = _linkedAnimPlayMapping._liveUnits_Sorted[i];
@@ -804,14 +816,15 @@ namespace AnyPortrait
 				}
 				iSubList = curUnit._animIndex;//현재 재생중인 AnimClip에 해당하는 SubList의 인덱스
 
-				if(_subParamKeyValueList_AnimSync[iSubList] == null)
+				curSubList = _subParamKeyValueList_AnimSync[iSubList];
+				if(curSubList == null)
 				{
 					//이게 Null이라는 것은, 이 AnimClip에 대한 TimelineLayer와 Mod는 없다는 것
 					continue;
 				}
 
 				//이제 SubList의 키프레임들을 계산하자. Anim전용 Calculate 함수를 이용할 것
-				isResult = _subParamKeyValueList_AnimSync[iSubList].Calculate_AnimMod();
+				isResult = curSubList.Calculate_AnimMod();
 				
 
 				if(isResult)
@@ -859,11 +872,25 @@ namespace AnyPortrait
 
 		public OptParamKeyValueSet GetParamKeyValue(apOptParamSet paramSet)
 		{
-			return _paramKeyValues.Find(delegate (OptParamKeyValueSet a)
-			{
-				return a._paramSet == paramSet;
-			});
+			//이전 (GC 발생)
+			//return _paramKeyValues.Find(delegate (OptParamKeyValueSet a)
+			//{
+			//	return a._paramSet == paramSet;
+			//});
+
+			//변경 v1.5.0
+			s_FindPKV_ParamSet = paramSet;
+			return _paramKeyValues.Find(s_FindPKV_Func);
 		}
+
+
+		private static apOptParamSet s_FindPKV_ParamSet = null;
+		private static Predicate<OptParamKeyValueSet> s_FindPKV_Func = FUNC_FindPKVByParamSet;
+		private static bool FUNC_FindPKVByParamSet(OptParamKeyValueSet a)
+		{
+			return a._paramSet == s_FindPKV_ParamSet;
+		}
+
 	}
 
 }

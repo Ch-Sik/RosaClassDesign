@@ -67,6 +67,8 @@ namespace AnyPortrait
 			_pos.x = fPos;
 			_isRealPoint = isRealPoint;
 
+			if(_refParams == null) { _refParams = new List<apOptCalculatedResultParam.OptParamKeyValueSet>(); }
+			if(_refWeights == null) { _refWeights = new List<float>(); }
 			_refParams.Clear();
 			_refWeights.Clear();
 			_nRefParams = 0;
@@ -80,6 +82,8 @@ namespace AnyPortrait
 			_iPos = iPos;
 			_isRealPoint = isRealPoint;
 
+			if(_refParams == null) { _refParams = new List<apOptCalculatedResultParam.OptParamKeyValueSet>(); }
+			if(_refWeights == null) { _refWeights = new List<float>(); }
 			_refParams.Clear();
 			_refWeights.Clear();
 			_nRefParams = 0;
@@ -92,8 +96,24 @@ namespace AnyPortrait
 		//-----------------------------------------
 		public void AddPoint(apOptCalculatedResultParam.OptParamKeyValueSet point, float weight)
 		{
-			_refParams.Add(point);
-			_refWeights.Add(weight);
+			//이전
+			// _refParams.Add(point);
+			// _refWeights.Add(weight);
+
+			//변경 v1.5.0
+			int iRef = _refParams.IndexOf(point);
+			if(iRef >= 0)
+			{
+				//이미 있는 값이다.
+				_refWeights[iRef] = _refWeights[iRef] + weight;
+			}
+			else
+			{
+				//새로운 값이다.
+				_refParams.Add(point);
+				_refWeights.Add(weight);
+			}
+
 			_nRefParams = _refParams.Count;
 		}
 
@@ -104,6 +124,31 @@ namespace AnyPortrait
 				AddPoint(lerpPoint._refParams[i], lerpPoint._refWeights[i] * weight);
 			}
 		}
+
+		public void NormalizeWeights()
+		{
+			_nRefParams = _refParams.Count;
+			if(_nRefParams == 0)
+			{
+				return;
+			}
+			float totalWeights = 0.0f;
+			for (int i = 0; i < _nRefParams; i++)
+			{
+				totalWeights += _refWeights[i];
+			}
+
+			if(totalWeights > 0.0f)
+			{
+				for (int i = 0; i < _nRefParams; i++)
+				{
+					_refWeights[i] /= totalWeights;
+				}				
+			}
+		}
+
+
+
 
 		public void CalculateITPWeight(ref float totalWeight)//v1.4.7 : totalWeight 추가
 		{

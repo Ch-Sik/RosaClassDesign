@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -29,6 +29,8 @@ namespace AnyPortrait
 	{
 		// Members
 		//----------------------------------------------------
+		private apSelection _parentSelection = null;
+
 		public const int CURVE__PREV = 0;
 		public const int CURVE__MID = 1;
 		public const int CURVE__NEXT = 2;
@@ -186,8 +188,9 @@ namespace AnyPortrait
 
 		// Init
 		//----------------------------------------------------
-		public apTimelineCommonCurve()
+		public apTimelineCommonCurve(apSelection parentSelection)
 		{
+			_parentSelection = parentSelection;
 			Clear();
 		}
 
@@ -717,7 +720,7 @@ namespace AnyPortrait
 				return;
 			}
 
-			apEditorUtil.SetEditorDirty();
+			
 			
 			List<CurveSet> curveSetList = _curveSetsArr[iCurveType];
 			apAnimCurve animCurve_Prev = _syncAnimCurveArr[iCurveType, KEY_A];
@@ -754,6 +757,12 @@ namespace AnyPortrait
 				prevCurve.Refresh();
 				nextCurve.Refresh();
 			}
+
+			if(_parentSelection != null)
+			{
+				apEditorUtil.SetDirty(_parentSelection._editor);
+			}
+			
 
 			_isAnyChangedRequest = false;
 			

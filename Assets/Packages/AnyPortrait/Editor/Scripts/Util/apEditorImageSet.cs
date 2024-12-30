@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -49,6 +49,7 @@ namespace AnyPortrait
 			ToolBtn_TabOpen,
 			ToolBtn_TabFolded,
 			ToolBtn_MaterialLibrary,
+			ToolBtn_CloseEditor,
 
 			Gizmo_OriginNone,
 			Gizmo_OriginAxis,
@@ -335,6 +336,7 @@ namespace AnyPortrait
 			Anim_KeyframeMove,
 			Anim_KeyframeCopy,
 			Anim_AutoKey,
+			Anim_RescaleFrames,
 
 			Anim_ValueMode,
 			Anim_CurveMode,
@@ -342,6 +344,8 @@ namespace AnyPortrait
 			Anim_AutoScroll,
 
 			Anim_HideLayer,
+			Anim_UnhideLayers,
+			Anim_UnhideLayers_OFF,
 			Anim_SortABC,
 			Anim_SortDepth,
 			Anim_SortRegOrder,
@@ -596,6 +600,7 @@ namespace AnyPortrait
 			MaterialSet_VR,
 			MaterialSet_URP,
 			MaterialSet_Mergeable,
+			MaterialSet_Selected,
 
 			RestoreTmpVisibility_ON,
 			RestoreTmpVisibility_OFF,
@@ -625,6 +630,7 @@ namespace AnyPortrait
 			SyncSettingToFile12px,
 
 			Unity_Transform,
+			Controller_Snapshot,
 
 			
 		}
@@ -740,7 +746,7 @@ namespace AnyPortrait
 			CheckImageAndLoad(PRESET.ToolBtn_TabOpen,	"ButtonIcon_TabOpen", true);
 			CheckImageAndLoad(PRESET.ToolBtn_TabFolded,	"ButtonIcon_TabFolded", true);
 			CheckImageAndLoad(PRESET.ToolBtn_MaterialLibrary,	"ButtonIcon_MaterialLibrary", true);
-			
+			CheckImageAndLoad(PRESET.ToolBtn_CloseEditor, "ButtonIcon_CloseEditor", true);
 
 			CheckImageAndLoad(PRESET.Gizmo_OriginNone, "Gizmo_Origin_None");
 			CheckImageAndLoad(PRESET.Gizmo_OriginAxis, "Gizmo_Origin_Axis");
@@ -1040,6 +1046,8 @@ namespace AnyPortrait
 			CheckImageAndLoad(PRESET.Anim_KeyframeCopy, "Anim_KeyFrameCopy");
 
 			CheckImageAndLoad(PRESET.Anim_AutoKey, "Anim_AutoKey");
+			CheckImageAndLoad(PRESET.Anim_RescaleFrames, "Anim_RescaleFrames");
+			
 			
 
 			CheckImageAndLoad(PRESET.Anim_ValueMode, "Anim_ValueMode", true);
@@ -1048,6 +1056,9 @@ namespace AnyPortrait
 			CheckImageAndLoad(PRESET.Anim_AutoScroll, "Anim_AutoScroll");
 
 			CheckImageAndLoad(PRESET.Anim_HideLayer, "Anim_HideLayer", true);
+			CheckImageAndLoad(PRESET.Anim_UnhideLayers, "Anim_UnhideLayers");
+			CheckImageAndLoad(PRESET.Anim_UnhideLayers_OFF, "Anim_UnhideLayers_OFF");
+			
 			CheckImageAndLoad(PRESET.Anim_SortABC, "Anim_SortABC");
 			CheckImageAndLoad(PRESET.Anim_SortDepth, "Anim_SortDepth");
 			CheckImageAndLoad(PRESET.Anim_SortRegOrder, "Anim_SortRegOrder");
@@ -1310,7 +1321,7 @@ namespace AnyPortrait
 			CheckImageAndLoad(PRESET.MaterialSet_VR,				"MaterialSet_VR");
 			CheckImageAndLoad(PRESET.MaterialSet_URP,				"MaterialSet_URP");
 			CheckImageAndLoad(PRESET.MaterialSet_Mergeable,			"MaterialSet_Mergeable");
-			
+			CheckImageAndLoad(PRESET.MaterialSet_Selected,			"MaterialSet_Selected");
 			
 
 			CheckImageAndLoad(PRESET.RestoreTmpVisibility_ON,	"RestoreTmpVisibility_ON");
@@ -1341,6 +1352,8 @@ namespace AnyPortrait
 			CheckImageAndLoad(PRESET.SyncSettingToFile12px,		"SyncSettingToFile12px");
 
 			CheckImageAndLoad(PRESET.Unity_Transform,		"Unity_Transform");
+			CheckImageAndLoad(PRESET.Controller_Snapshot,	"Controller_Snapshot");
+			
 			
 			
 			if(!_isAllLoaded)

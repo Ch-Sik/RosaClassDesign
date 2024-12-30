@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -1067,7 +1067,7 @@ namespace AnyPortrait
 						return a._frameIndex - b._frameIndex;
 					});
 
-					apEditorUtil.SetEditorDirty();
+					apEditorUtil.SetDirty(_editor);
 				}
 			}
 			EditorGUILayout.EndHorizontal();

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -16,7 +16,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using AnyPortrait;
-using System.Runtime.InteropServices;
+//using System.Runtime.InteropServices;
 
 namespace AnyPortrait
 {
@@ -83,5 +83,11 @@ namespace AnyPortrait
 			}
 			return _arrMatrix3x3;
 		}
+
+		// Static Delegate Functions
+		//---------------------------------------------------------------
+		//파라미터들
+		
+
 	}
 }

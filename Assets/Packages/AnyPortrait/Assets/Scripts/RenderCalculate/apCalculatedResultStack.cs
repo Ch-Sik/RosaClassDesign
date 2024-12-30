@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -313,10 +313,18 @@ namespace AnyPortrait
 				{
 					//Bone 타입이다.
 					//Modifier + ResultParam Pair로 저장해야한다.
-					BoneAndModParamPair modParamPair = _resultParams_BoneTransform.Find(delegate (BoneAndModParamPair a)
-					{
-						return a._keyBone == resultParam._targetBone;
-					});
+					
+					//이전 (GC 발생)
+					//BoneAndModParamPair modParamPair = _resultParams_BoneTransform.Find(delegate (BoneAndModParamPair a)
+					//{
+					//	return a._keyBone == resultParam._targetBone;
+					//});
+
+					//변경 v1.5.0
+					s_FindBoneModParamPair_Bone = resultParam._targetBone;
+					BoneAndModParamPair modParamPair = _resultParams_BoneTransform.Find(s_FindBoneModParamPair_Func);
+
+
 					if (modParamPair == null)
 					{
 						modParamPair = new BoneAndModParamPair(resultParam._targetBone);
@@ -406,49 +414,14 @@ namespace AnyPortrait
 					}
 				}
 			}
+		}
 
-			//else
-			//{
-			//	Debug.LogError("apCalculatedResultStack / AddCalculatedResultParam : 알수없는 Result Type : " + resultParam._calculatedValueType);
-			//}
-			#region [미사용 코드] 변경되기 전의 Caculated Value
-			//switch (resultParam._calculatedValueType)
-			//{
-			//	case apCalculatedResultParam.CALCULATED_VALUE_TYPE.VertexPos:
-			//		{
 
-			//		}
-			//		break;
-
-			//	case apCalculatedResultParam.CALCULATED_VALUE_TYPE.TransformMatrix:
-			//		if(!_resultParams_Transform.Contains(resultParam))
-			//		{
-			//			_resultParams_Transform.Add(resultParam);
-			//			_isAnyTransformation = true;
-			//		}
-			//		break;
-
-			//	case apCalculatedResultParam.CALCULATED_VALUE_TYPE.MeshGroup_Color:
-			//		if(!_resultParams_MeshColor.Contains(resultParam))
-			//		{
-			//			_resultParams_MeshColor.Add(resultParam);
-			//			_isAnyMeshColor = true;
-			//		}
-			//		break;
-
-			//	case apCalculatedResultParam.CALCULATED_VALUE_TYPE.Vertex_World:
-			//		if(!_resultParams_VertWorld.Contains(resultParam))
-			//		{
-			//			_resultParams_VertWorld.Add(resultParam);
-			//			_isAnyVertWorld = true;
-			//		}
-			//		break;
-
-			//	default:
-			//		Debug.LogError("apCalculatedResultStack / AddCalculatedResultParam : 알수없는 Result Type : " + resultParam._calculatedValueType);
-			//		break;
-			//} 
-			#endregion
+		private static apBone s_FindBoneModParamPair_Bone = null;
+		private static Predicate<BoneAndModParamPair> s_FindBoneModParamPair_Func = FUNC_FindBoneModParamPair;
+		private static bool FUNC_FindBoneModParamPair(BoneAndModParamPair a)
+		{
+			return a._keyBone == s_FindBoneModParamPair_Bone;
 		}
 
 		public void RemoveCalculatedResultParam(apCalculatedResultParam resultParam)
@@ -488,15 +461,6 @@ namespace AnyPortrait
 			_isAnyVertWorld = (_resultParams_VertWorld.Count != 0);
 			_isAnyBoneTransform = (_resultParams_BoneTransform.Count != 0);
 			_isAnyExtra = (_resultParams_Extra.Count != 0);
-			//Debug.LogError("[" + _tmpID + "] <<Remove Result Params>>");
-
-			//if(prevBoneTransform && !_isAnyBoneTransform)
-			//{
-			//	Debug.LogError("[" + _parentRenderUnit.Name + "] Bone Param Cleared (Remove)");
-			//}
-			
-
-			
 		}
 
 		public void ClearResultParams()
@@ -523,11 +487,6 @@ namespace AnyPortrait
 			_isAnyVertWorld = false;
 			_isAnyBoneTransform = false;
 			_isAnyExtra = false;
-
-			//if(prevBoneTransform && !_isAnyBoneTransform)
-			//{
-			//	Debug.LogError("[" + _parentRenderUnit.Name + "] Bone Param Cleared");
-			//}
 		}
 
 
@@ -745,13 +704,6 @@ namespace AnyPortrait
 					{
 						_result_VertLocal = new Vector2[_nResultVerts];
 					}
-					//이전
-					//for (int i = 0; i < nVerts; i++)
-					//{
-					//	_result_VertLocal[i] = Vector2.zero;
-					//}
-
-					//변경 22.3.22 : 이걸로 바꿔보자 [v1.4.0]
 					Array.Clear(_result_VertLocal, 0, _nResultVerts);
 				}
 
@@ -889,24 +841,59 @@ namespace AnyPortrait
 
 				int nResultParams_VertLocal = _resultParams_VertLocal.Count;
 
+				//bool isDebug = _parentRenderUnit.Name.Contains("Debug");
+
+				//if(isDebug)
+				//{
+				//	Debug.Log("--------");
+				//}
+
+				//v1.5.0 : 다중 편집시 
+				//편집 중인 Morph 모디파이어 외에는 다른 Morph 모디파이어는 동작하지 않는다.
+				//해당 Modifier를 발견하지 못했을 경우에만 기존 처리 계속함
+				apModifierBase exEditModifier = null;
+				if(_parentRenderUnit._exCalculateMode == apRenderUnit.EX_CALCULATE.Enabled_Edit)
+				{
+					//배타적 편집 중일땐
+					//편집에 해당하는 모디파이어만 허용된다.
+					for (int iParam = 0; iParam < nResultParams_VertLocal; iParam++)
+					{
+						resultParam = _resultParams_VertLocal[iParam];
+						curWeight_Transform = resultParam.ModifierWeight_Transform;
+
+						if (!resultParam._isMainCalculated // 변경 22.5.11 [v1.4.0]
+							|| curWeight_Transform <= 0.001f
+						)
+						{
+							continue;
+						}
+
+						linkedModifier = resultParam._linkedModifier;//추가 22.5.7
+						if(linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit)
+						{
+							//이 모디파이어만 실행되어야 한다.
+							exEditModifier = linkedModifier;
+							break;
+						}
+					}
+				}
+
 				for (int iParam = 0; iParam < nResultParams_VertLocal; iParam++)
 				{
 					resultParam = _resultParams_VertLocal[iParam];
 
 					curWeight_Transform = resultParam.ModifierWeight_Transform;
 
-					if (
-						//!resultParam.IsModifierAvailable // 이전						
-						!resultParam._isMainCalculated // 변경 22.5.11 [v1.4.0]
+					if (!resultParam._isMainCalculated // 변경 22.5.11 [v1.4.0]
 						|| curWeight_Transform <= 0.001f
 						)
 					{
-						//Debug.LogError("실행 불가 : RenderUnit : " + _parentRenderUnit.Name + " > Modifier : " + resultParam._linkedModifier.DisplayName);
-						//Debug.LogError("실행 불가 : Available : " + resultParam.IsModifierAvailable + " / Weight : " + curWeight_Transform);
 						continue;
 					}
 
 					linkedModifier = resultParam._linkedModifier;//추가 22.5.7
+
+					
 
 					//추가 Ex Edit 3.22
 					if (linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Disabled_Force)
@@ -922,14 +909,39 @@ namespace AnyPortrait
 							//무조건 실행
 							isRunnable = true;
 							break;
+
 						case apRenderUnit.EX_CALCULATE.Enabled_Edit:
-							//편집 중인 것만 실행하려면
-							if (linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run
-								|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit
+							//편집 중인 것만 실행하려면							
+
+							//이전
+							//if (linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run
+							//	|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit
+							//	|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Background)
+							//{
+							//	isRunnable = true;
+							//}
+
+							//변경 v1.5.0
+							//- 편집되는 모디파이어만 있다면 그것만 실행한다.
+							//- Background는 항상 실행한다.
+							//- 그 외에는 Ex 규칙을 따른다.
+							if(linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit
 								|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Background)
 							{
+								//편집 중인 모디파이어 or Background(예:리깅)은 실행된다.
 								isRunnable = true;
 							}
+							else if(linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run)
+							{
+								//"다른 모디파이어"의 경우
+								if(exEditModifier == null)
+								{
+									//편집 대상 모디파이어가 발견되지 않는 경우에만 실행한다. (이 부분이 v1.5.0에서 개선됨)
+									isRunnable = true;
+								}
+							}
+							
+							
 							break;
 						case apRenderUnit.EX_CALCULATE.Disabled_ExRun:
 							//편집되지 않지만, 그외의 것이 실행되려면 (또는 무시하고 실행하는 것만)
@@ -949,7 +961,12 @@ namespace AnyPortrait
 						continue;
 					}
 
-
+					//if(isDebug)
+					//{
+					//	Debug.Log("[" + _parentRenderUnit.Name + "] (" + iParam + ") Mode : " + _parentRenderUnit._exCalculateMode 
+					//		+ " / Modifier : " + linkedModifier.DisplayName + " (" + linkedModifier._editorExclusiveActiveMod + ")"
+					//		+ " / Blend : " + resultParam.ModifierBlendMethod);
+					//}
 
 					//추가 22.5.7 [1.4.0] 버텍스가 없는 경우 패스
 					if (_nResultVerts > 0)
@@ -1027,13 +1044,44 @@ namespace AnyPortrait
 
 				int nResultParams_Transform = _resultParams_Transform.Count;
 
+
+				//v1.5.0 : 다중 편집시 
+				//편집 중인 TF 모디파이어 외에는 다른 TF 모디파이어는 동작하지 않는다.
+				//해당 Modifier를 발견하지 못했을 경우에만 기존 처리 계속함
+				apModifierBase exEditModifier = null;
+				if(_parentRenderUnit._exCalculateMode == apRenderUnit.EX_CALCULATE.Enabled_Edit)
+				{
+					//배타적 편집 중일땐
+					//편집에 해당하는 모디파이어만 허용된다.
+					for (int iParam = 0; iParam < nResultParams_Transform; iParam++)
+					{
+						resultParam = _resultParams_Transform[iParam];
+						curWeight_Transform = resultParam.ModifierWeight_Transform;
+
+						if (!resultParam._isMainCalculated // 변경 22.5.11 [v1.4.0]
+							|| curWeight_Transform <= 0.001f
+						)
+						{
+							continue;
+						}
+
+						linkedModifier = resultParam._linkedModifier;//추가 22.5.7
+						if(linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit)
+						{
+							//이 모디파이어만 실행되어야 한다.
+							exEditModifier = linkedModifier;
+							break;
+						}
+					}
+				}
+
+
 				for (int iParam = 0; iParam < nResultParams_Transform; iParam++)
 				{
 					resultParam = _resultParams_Transform[iParam];
 					curWeight_Transform = resultParam.ModifierWeight_Transform;
 
-					if (//!resultParam.IsModifierAvailable //이전 
-						!resultParam._isMainCalculated // 변경 22.5.11 [v1.4.0]
+					if (!resultParam._isMainCalculated // 변경 22.5.11 [v1.4.0]
 						|| curWeight_Transform <= 0.001f)
 					{
 						continue;
@@ -1060,12 +1108,35 @@ namespace AnyPortrait
 
 						case apRenderUnit.EX_CALCULATE.Enabled_Edit:
 							//편집 중인 것만 실행하려면
-							if (linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run
-								|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit
+
+							//이전
+							//if (linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run
+							//	|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit
+							//	|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Background)
+							//{
+							//	isRunnable = true;
+							//}
+
+							//변경 v1.5.0
+							//- 편집되는 모디파이어만 있다면 그것만 실행한다.
+							//- Background는 항상 실행한다.
+							//- 그 외에는 Ex 규칙을 따른다.
+							if(linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit
 								|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Background)
 							{
+								//편집 중인 모디파이어 or Background(예:리깅)은 실행된다.
 								isRunnable = true;
 							}
+							else if(linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run)
+							{
+								//"다른 모디파이어"의 경우
+								if(exEditModifier == null)
+								{
+									//편집 대상 모디파이어가 발견되지 않는 경우에만 실행한다. (이 부분이 v1.5.0에서 개선됨)
+									isRunnable = true;
+								}
+							}
+
 							break;
 
 						case apRenderUnit.EX_CALCULATE.Disabled_ExRun:
@@ -1257,8 +1328,50 @@ namespace AnyPortrait
 					_result_BoneTransform.SetIdentity();
 					
 					int nModPairs = modParamPairs.Count;
-					
 
+
+					//v1.5.0 : 다중 편집시 
+					//편집 중인 TF-Bone 모디파이어 외에는 다른 TF 모디파이어는 동작하지 않는다.
+					//해당 Modifier를 발견하지 못했을 경우에만 기존 처리 계속함
+					apModifierBase exEditModifier = null;
+					
+					if (targetBone._exCalculateMode == apBone.EX_CALCULATE.Enabled_Edit)
+					{
+						bool isExEditModFind = false;
+						for (int iModParamPair = 0; iModParamPair < nModPairs; iModParamPair++)
+						{
+							modParamPair = modParamPairs[iModParamPair];
+							int nResultPairParams = modParamPair._resultParams.Count;
+
+							for (int iParam = 0; iParam < nResultPairParams; iParam++)
+							{
+								resultParam = modParamPair._resultParams[iParam];
+								curWeight_Transform = resultParam.ModifierWeight_Transform;
+
+								if (!resultParam._isMainCalculated // 변경 22.5.11
+									|| curWeight_Transform <= 0.001f)
+								{
+									continue;
+								}
+
+								//코드 개선 21.2.15
+								linkedModifier = resultParam._linkedModifier;//22.5.7
+								if(linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit)
+								{
+									exEditModifier = linkedModifier;
+									isExEditModFind = true;
+									break;
+								}
+							}
+
+							if(isExEditModFind)
+							{
+								break;
+							}
+						}
+					}
+
+					
 					for (int iModParamPair = 0; iModParamPair < nModPairs; iModParamPair++)
 					{
 						modParamPair = modParamPairs[iModParamPair];
@@ -1284,6 +1397,8 @@ namespace AnyPortrait
 								continue;
 							}
 
+							
+
 							bool isRunnable = false;
 							switch (targetBone._exCalculateMode)
 							{
@@ -1294,12 +1409,34 @@ namespace AnyPortrait
 
 								case apBone.EX_CALCULATE.Enabled_Edit:
 									//편집 중인 것만 실행하려면
-									if (linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run
-										|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit
-										|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Background
-										|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Disabled_ExceptColor)//색상은 이것도 추가
+									//이전
+									//if (linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run
+									//	|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit
+									//	|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Background
+									//	//|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Disabled_ExceptColor/?<이거 버그다.
+									//	)
+									//{
+									//	isRunnable = true;
+									//}
+
+									//변경 v1.5.0
+									//- 편집되는 모디파이어만 있다면 그것만 실행한다.
+									//- Background는 항상 실행한다.
+									//- 그 외에는 Ex 규칙을 따른다.
+									if(linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Edit
+										|| linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Background)
 									{
+										//편집 중인 모디파이어 or Background(예:리깅)은 실행된다.
 										isRunnable = true;
+									}
+									else if(linkedModifier._editorExclusiveActiveMod == apModifierBase.MOD_EDITOR_ACTIVE.Enabled_Run)
+									{
+										//"다른 모디파이어"의 경우
+										if(exEditModifier == null)
+										{
+											//편집 대상 모디파이어가 발견되지 않는 경우에만 실행된다.
+											isRunnable = true;
+										}
 									}
 									break;
 
@@ -1314,6 +1451,9 @@ namespace AnyPortrait
 									}
 									break;
 							}
+
+							
+							
 
 							if (!isRunnable)
 							{

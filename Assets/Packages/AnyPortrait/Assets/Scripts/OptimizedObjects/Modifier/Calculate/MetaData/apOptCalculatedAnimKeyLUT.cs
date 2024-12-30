@@ -99,22 +99,25 @@ namespace AnyPortrait
 		//이 함수는 SubList의 MakeMetaData에서 만들자
 		public void MakeLUT(apOptCalculatedResultParamSubList subList)
 		{
-			if(subList._subParamKeyValues.Count == 0)
+			int nPKVs = subList._subParamKeyValues != null ? subList._subParamKeyValues.Count : 0;
+
+			if(nPKVs == 0)
 			{
 				//만약 키프레임들이 없다면
 				_isLUTAvailable = false;
 				return;
 			}
-			
-
-
 
 			//일단 subList의 ParamSetValue를 모두 넣자
 			List<LUTUnit> unitList = new List<LUTUnit>();
 
 			apOptCalculatedResultParam.OptParamKeyValueSet curParamKeyValueSet = null;
 			apAnimKeyframe curKeyframe = null;
-			for (int i = 0; i < subList._subParamKeyValues.Count; i++)
+
+			//유효성 체크 로직 추가 [v1.5.0] > Bake에서 검출을 완료했으므로 다시 생략
+			//List<apAnimKeyframe> validKeyframes = new List<apAnimKeyframe>();
+
+			for (int i = 0; i < nPKVs; i++)
 			{
 				curParamKeyValueSet = subList._subParamKeyValues[i];
 				curKeyframe = curParamKeyValueSet._paramSet.SyncKeyframe;
@@ -125,32 +128,62 @@ namespace AnyPortrait
 					continue;
 				}
 
+				//if(validKeyframes.Contains(curKeyframe))
+				//{
+				//	Debug.LogError("중복된 키프레임 발견");
+				//	continue;
+				//}
+
 				LUTUnit newUnit = new LUTUnit(curKeyframe, curParamKeyValueSet, i);
 				unitList.Add(newUnit);
+
+				//validKeyframes.Add(curKeyframe);
 			}
 
-			//정렬을 한다. (키프레임 위치에 따라 오름차순)
-			unitList.Sort(delegate (LUTUnit a, LUTUnit b)
+			if(unitList.Count == 0)
 			{
-				return a._keyframe_Cur._frameIndex - b._keyframe_Cur._frameIndex;
-			});
+				//유효한 키프레임이 없었다.
+				_isLUTAvailable = false;
+				return;
+			}
+
+			int nUnitList = unitList.Count;
+
+
+			if (nUnitList > 1)
+			{
+				//2개 이상인 경우
+				//정렬을 한다. (키프레임 위치에 따라 오름차순)
+				unitList.Sort(delegate (LUTUnit a, LUTUnit b)
+				{
+					return a._keyframe_Cur._frameIndex - b._keyframe_Cur._frameIndex;
+				});
+			}
+			
+
+			//Debug.Log(">> Unit 개수 : " + unitList.Count);
 
 			//일단 앞뒤로 연결을 하자.
 			LUTUnit curUnit = null;
 			LUTUnit nextUnit = null;
-			for (int i = 0; i < unitList.Count - 1; i++)
-			{
-				curUnit = unitList[i];
-				nextUnit = unitList[i + 1];
 
-				curUnit.SetNextKeyframe(nextUnit._keyframe_Cur, nextUnit._paramKeyValueSet_Cur, nextUnit._iParamKeyValueSet_Cur);
+			if (nUnitList > 1)
+			{
+				for (int i = 0; i < nUnitList - 1; i++)
+				{
+					curUnit = unitList[i];
+					nextUnit = unitList[i + 1];
+
+					curUnit.SetNextKeyframe(nextUnit._keyframe_Cur, nextUnit._paramKeyValueSet_Cur, nextUnit._iParamKeyValueSet_Cur);
+				}
 			}
+			
 
 			
 			if (_isLoop)
 			{
 				//루프라면 Last > First로 묶기
-				curUnit = unitList[unitList.Count - 1];
+				curUnit = unitList[nUnitList - 1];
 				nextUnit = unitList[0];
 
 				curUnit.SetNextKeyframe(nextUnit._keyframe_Cur, nextUnit._paramKeyValueSet_Cur, nextUnit._iParamKeyValueSet_Cur);
@@ -158,7 +191,7 @@ namespace AnyPortrait
 			else
 			{
 				//루프가 아니면 Last 혼자서 Prev~Next 처리
-				curUnit = unitList[unitList.Count - 1];
+				curUnit = unitList[nUnitList - 1];
 				curUnit.SetNextKeyframe(curUnit._keyframe_Cur, curUnit._paramKeyValueSet_Cur, curUnit._iParamKeyValueSet_Cur);
 			}
 
@@ -168,25 +201,28 @@ namespace AnyPortrait
 			int iLUT_End = 0;
 
 			//일단 마지막 전 LUT Unit까지 체크
-			for (int i = 0; i < unitList.Count - 1; i++)
+			if(nUnitList > 1)
 			{
-				curUnit = unitList[i];
-				iLUT_Start = curUnit._keyframe_Cur._frameIndex - _startFrame;
-				iLUT_End = curUnit._keyframe_Next._frameIndex - _startFrame;
-
-				for (int iLUT = iLUT_Start; iLUT < iLUT_End; iLUT++)
+				for (int i = 0; i < nUnitList - 1; i++)
 				{
-					if (iLUT < 0 || iLUT >= _lutLength)
-					{
-						continue;
-					}
+					curUnit = unitList[i];
+					iLUT_Start = curUnit._keyframe_Cur._frameIndex - _startFrame;
+					iLUT_End = curUnit._keyframe_Next._frameIndex - _startFrame;
 
-					_LUT[iLUT] = curUnit;
+					for (int iLUT = iLUT_Start; iLUT < iLUT_End; iLUT++)
+					{
+						if (iLUT < 0 || iLUT >= _lutLength)
+						{
+							continue;
+						}
+
+						_LUT[iLUT] = curUnit;
+					}
 				}
 			}
 
 			//이제 "<~첫 키프레임" / "마지막 키프레임~>"을 계산하자
-			LUTUnit lastUnit = unitList[unitList.Count - 1];
+			LUTUnit lastUnit = unitList[nUnitList - 1];
 			LUTUnit firstUnit = unitList[0];
 
 			int iListFirstLUT = firstUnit._keyframe_Cur._frameIndex - _startFrame;

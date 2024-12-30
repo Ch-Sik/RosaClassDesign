@@ -1,4 +1,4 @@
-﻿/*
+/*
 *	Copyright (c) RainyRizzle Inc. All rights reserved
 *	Contact to : www.rainyrizzle.com , contactrainyrizzle@gmail.com
 *
@@ -296,10 +296,17 @@ namespace AnyPortrait
 			request.PlayNew(newPlayUnit, blendTime);
 
 			//이때, 만약 PlayQueued 타입이며 newPlayUnit을 타겟으로 하는게 있으면 처리할 때 무력화시켜야 한다.
-			apAnimPlayRequest overlapQueuedRequest = _requests_Live.Find(delegate (apAnimPlayRequest a)
-			{
-				return a != request && a.RequestType == apAnimPlayRequest.REQUEST_TYPE.Queued && a._nextPlayUnit == newPlayUnit;
-			});
+			//이전 (GC 발생)
+			//apAnimPlayRequest overlapQueuedRequest = _requests_Live.Find(delegate (apAnimPlayRequest a)
+			//{
+			//	return a != request && a.RequestType == apAnimPlayRequest.REQUEST_TYPE.Queued && a._nextPlayUnit == newPlayUnit;
+			//});
+
+			//변경 (v1.5.0)
+			s_FindAnimPlayRequest_Request = request;
+			s_FindAnimPlayRequest_PlayUnit = newPlayUnit;
+			apAnimPlayRequest overlapQueuedRequest = _requests_Live.Find(s_FindAnimPlayRequestByRequestAndPlayUnit_Func);
+
 			if(overlapQueuedRequest != null)
 			{
 				//Debug.Log("겹치는 Queue Request를 그냥 바로 삭제");
@@ -333,6 +340,15 @@ namespace AnyPortrait
 			return newPlayUnit;
 		}
 
+		private static apAnimPlayRequest s_FindAnimPlayRequest_Request = null;
+		private static apAnimPlayUnit s_FindAnimPlayRequest_PlayUnit = null;
+		private static Predicate<apAnimPlayRequest> s_FindAnimPlayRequestByRequestAndPlayUnit_Func = FUNC_FindAnimPlayRequestByRequstAndPlayUnit;
+		private static bool FUNC_FindAnimPlayRequestByRequstAndPlayUnit(apAnimPlayRequest a)
+		{
+			return a != s_FindAnimPlayRequest_Request
+				&& a.RequestType == apAnimPlayRequest.REQUEST_TYPE.Queued
+				&& a._nextPlayUnit == s_FindAnimPlayRequest_PlayUnit;
+		}
 		
 
 		//AnimClip을 PlayUnit에 담아서 재생한다.
@@ -556,10 +572,19 @@ namespace AnyPortrait
 			request.PlayNewAt(newPlayUnit, frame, blendTime);//<<수정됨
 
 			//이때, 만약 PlayQueued 타입이며 newPlayUnit을 타겟으로 하는게 있으면 처리할 때 무력화시켜야 한다.
-			apAnimPlayRequest overlapQueuedRequest = _requests_Live.Find(delegate (apAnimPlayRequest a)
-			{
-				return a != request && a.RequestType == apAnimPlayRequest.REQUEST_TYPE.Queued && a._nextPlayUnit == newPlayUnit;
-			});
+
+			//이전 (GC 발생)
+			//apAnimPlayRequest overlapQueuedRequest = _requests_Live.Find(delegate (apAnimPlayRequest a)
+			//{
+			//	return a != request && a.RequestType == apAnimPlayRequest.REQUEST_TYPE.Queued && a._nextPlayUnit == newPlayUnit;
+			//});
+
+
+			//변경 (v1.5.0)
+			s_FindAnimPlayRequest_Request = request;
+			s_FindAnimPlayRequest_PlayUnit = newPlayUnit;
+			apAnimPlayRequest overlapQueuedRequest = _requests_Live.Find(s_FindAnimPlayRequestByRequestAndPlayUnit_Func);
+
 			if(overlapQueuedRequest != null)
 			{
 				PushRequest(overlapQueuedRequest);
@@ -1063,11 +1088,24 @@ namespace AnyPortrait
 			{
 				return null;
 			}
-			return _animPlayUnits.Find(delegate (apAnimPlayUnit a)
-			{
-				return a.LinkKey == linkKey;
-			});
+			//이전 (GC 발생)
+			//return _animPlayUnits.Find(delegate (apAnimPlayUnit a)
+			//{
+			//	return a.LinkKey == linkKey;
+			//});
+
+			//변경 v1.5.0
+			s_FindPlayUnit_LinkKey = linkKey;
+			return _animPlayUnits.Find(s_FindPlayUnitByLinkKey_Func);
 		}
+
+		private static int s_FindPlayUnit_LinkKey = -1;
+		private static Predicate<apAnimPlayUnit> s_FindPlayUnitByLinkKey_Func = FUNC_FindPlayUnitByLinkKey;
+		private static bool FUNC_FindPlayUnitByLinkKey(apAnimPlayUnit a)
+		{
+			return a.LinkKey == s_FindPlayUnit_LinkKey;
+		}
+
 
 		// Update
 		//----------------------------------------------
@@ -1759,19 +1797,45 @@ namespace AnyPortrait
 		//-----------------------------------------------------------------
 		public apAnimPlayUnit GetPlayUnit(string animClipName)
 		{
-			return _animPlayUnits.Find(delegate (apAnimPlayUnit a)
-			{
-				return (a._linkedAnimClip != null) && string.Equals(a._linkedAnimClip._name, animClipName);
-			});
+			//이전 (GC 발생)
+			//return _animPlayUnits.Find(delegate (apAnimPlayUnit a)
+			//{
+			//	return (a._linkedAnimClip != null) && string.Equals(a._linkedAnimClip._name, animClipName);
+			//});
+
+			//변경 v1.5.0
+			s_GetPlayUnit_AnimClipName = animClipName;
+			return _animPlayUnits.Find(s_GetPlayUnitByAnimClipName_Func);
 		}
+
+		private static string s_GetPlayUnit_AnimClipName = null;
+		private static Predicate<apAnimPlayUnit> s_GetPlayUnitByAnimClipName_Func = FUNC_GetPlayUnitByAnimClipName;
+		private static bool FUNC_GetPlayUnitByAnimClipName(apAnimPlayUnit a)
+		{
+			return (a._linkedAnimClip != null) && string.Equals(a._linkedAnimClip._name, s_GetPlayUnit_AnimClipName);
+		}
+
 
 		public apAnimPlayUnit GetPlayUnit(apAnimClip animClip)
 		{
-			return _animPlayUnits.Find(delegate (apAnimPlayUnit a)
-			{
-				return (a._linkedAnimClip == animClip);
-			});
+			//이전 (GC 발생)
+			//return _animPlayUnits.Find(delegate (apAnimPlayUnit a)
+			//{
+			//	return (a._linkedAnimClip == animClip);
+			//});
+
+			//변경 v1.5.0
+			s_GetPlayUnit_AnimClip = animClip;
+			return _animPlayUnits.Find(s_GetPlayUnitByAnimClip_Func);
 		}
+
+		private static apAnimClip s_GetPlayUnit_AnimClip = null;
+		private static Predicate<apAnimPlayUnit> s_GetPlayUnitByAnimClip_Func = FUNC_GetPlayUnit_AnimClip;
+		private static bool FUNC_GetPlayUnit_AnimClip(apAnimPlayUnit a)
+		{
+			return a._linkedAnimClip == s_GetPlayUnit_AnimClip;
+		}
+
 
 
 		//디버그용
