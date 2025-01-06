@@ -13,15 +13,13 @@ public class TitleScreenUI : MonoBehaviour
     {
         
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void OnClickStartButton(string sceneName)
     {
         SceneManager.LoadScene(sceneName);
+    }
+
+    public void OnClickOptionButton()
+    {
+        
     }
 }

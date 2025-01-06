@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using UnityEngine.Video;
 
 public class SaveLoadManager : MonoBehaviour
 {
@@ -42,6 +43,7 @@ public class SaveLoadManager : MonoBehaviour
     [FoldoutGroup("Paths"), ReadOnly] public string flagPathName = "Flag";
     [FoldoutGroup("Paths"), ReadOnly] public string mapPathName = "Maps";
     [FoldoutGroup("Paths"), ReadOnly] public string playerPathName = "Player";
+    [FoldoutGroup("Paths"), ReadOnly] public string optionPathName = "Option";
 
 
     private void Start()
@@ -85,6 +87,7 @@ public class SaveLoadManager : MonoBehaviour
         MakeDirectory(GetPath(flagPathName));
         MakeDirectory(GetPath(mapPathName));
         MakeDirectory(GetPath(playerPathName));
+        MakeDirectory(GetPath(optionPathName));
     }
     #endregion
 
@@ -196,6 +199,43 @@ public class SaveLoadManager : MonoBehaviour
         MapManager.Instance.OpenSceneBySceneNameWithPosition(Data.lastScene, Data.lastPos);
     }
     #endregion
+
+    #region Option
+    public void SaveOptionData()
+    {
+        OptionUI option = FindObjectOfType<OptionUI>();
+
+        if (option == null)
+            return;
+
+        SaveOptionData(option.currentOption);
+    }
+
+    public void SaveOptionData(OptionSetting option)
+    {
+        OptionSaveData Data = new OptionSaveData(option);
+
+        string filePath = GetPath(optionPathName) + "/option.json";
+        string json = JsonUtility.ToJson(Data);
+        File.WriteAllText(filePath, json);
+    }
+
+    public OptionSetting LoadOptionData()
+    {
+        string filePath = GetPath(optionPathName) + "/option.json";
+        if (!File.Exists(filePath))
+        {
+            //초기 파일 생성
+            //Debug.LogError($"[Player Data] {filePath}를 찾을 수 없다.");
+            return null;
+        }
+
+        string json = File.ReadAllText(filePath);
+        OptionSaveData Data = JsonUtility.FromJson<OptionSaveData>(json);
+
+        return Data.GetOptionSetting();
+    }
+    #endregion
 }
 
 [Serializable]
@@ -246,4 +286,35 @@ public class PlayerSaveData
 {
     public string lastScene;
     public Vector2 lastPos;
+}
+
+[Serializable]
+public class OptionSaveData
+{
+    public int Window;
+    public int Resolution;
+    public float VOL;
+    public float BGM;
+    public float SFX;
+
+    public OptionSaveData(OptionSetting option)
+    {
+        Window = option.window;
+        Resolution = option.resolution;
+        VOL = option.vol;
+        BGM = option.bgm;
+        SFX = option.sfx;
+    }
+
+    public OptionSetting GetOptionSetting()
+    {
+        return new OptionSetting()
+        {
+            window = this.Window,
+            resolution = this.Resolution,
+            vol = this.VOL,
+            bgm = this.BGM,
+            sfx = this.SFX
+        };
+    }
 }
