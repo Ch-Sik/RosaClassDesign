@@ -56,7 +56,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 656384
   canDestroyMushroom: 0
-  onWallHit: 4
+  onWallHit: 5
+  useLifetime: 1
+  lifetime: 3
   rigidbody: {fileID: 7916833494928794093}
   collider: {fileID: 5169987012387767840}
   animator: {fileID: 0}

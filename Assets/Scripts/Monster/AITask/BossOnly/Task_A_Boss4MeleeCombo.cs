@@ -47,7 +47,12 @@ public class Task_A_Boss4MeleeCombo : Task_A_Melee
             // forwardDist만큼 전진
             seq.Append(rigidbody.DOMoveX(
                 rigidbody.position.x + GetCurrentDir().toFloat() * atk.forwardDist,
-                activeDuration));
+                atk.activeDuration));
+            // 공격 사이 딜레이에는 이펙트 끄기
+            seq.AppendCallback(()=>
+            {
+                atk.attackColliderAndVFX.SetActive(false);
+            });
             // 공격 사이 딜레이
             seq.AppendInterval(atk.recoveryDuration);
         }
