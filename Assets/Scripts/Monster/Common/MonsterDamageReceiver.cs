@@ -104,6 +104,9 @@ public class MonsterDamageReceiver : DamageReceiver
     /// </summary>
     public override void GetHitt(int damage, float attackAngle)
     {
+        // 디버깅용
+        Debug.Log("GetHitt 호출");
+
         // 이미 죽어있을 경우 피격 무시
         if (!isAlive) return;
 

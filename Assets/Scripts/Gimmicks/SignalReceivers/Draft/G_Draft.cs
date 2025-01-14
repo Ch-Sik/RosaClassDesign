@@ -46,15 +46,20 @@ public class G_Draft : GimmickSignalReceiver
     {
         isActivated = false;
         ToggleParticles(false);
-        // TODO: 파티클 자연스럽게 멈추도록 수정하기
     }
 
     private void ToggleParticles(bool value)
     {
-        for(int i=0; i<particles.Length; i++)
-        {
-            particles[i].SetActive(value);
-        }
+        if(value == true)
+            for(int i=0; i<particles.Length; i++)
+            {
+                particles[i].GetComponent<ParticleSystem>().Play();
+            }
+        else
+            for(int i=0; i<particles.Length; i++)
+            {
+                particles[i].GetComponent<ParticleSystem>().Stop();
+            }
     }
 
     public override void ImmediateOnAct()

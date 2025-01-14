@@ -40,7 +40,7 @@ public class Task_A_Boss4OrbAttack : Task_A_Base
         var seq = DOTween.Sequence();
         for(int i=0; i<Orbs.Length; i++)
         {
-            seq.Insert(0, Orbs[i].transform.DOMove(muzzles[i].position, 1f));
+            seq.Insert(0, Orbs[i].transform.DOMove(muzzles[i].position, startupDuration - 0.1f));
         }
     }
 

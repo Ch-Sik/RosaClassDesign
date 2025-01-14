@@ -10,7 +10,7 @@ public class Task_A_Boss4BlinkAttack : Task_A_Base
     [SerializeField] float blinkDelay;
 
     [Tooltip("사라지는 이펙트")]
-    [SerializeField] GameObject blinkVFX;
+    [SerializeField] GameObject blinkVFX = null;
 
     [Tooltip("몬스터 본체의 비주얼")]
     [SerializeField] GameObject bodyVisual;
@@ -24,6 +24,8 @@ public class Task_A_Boss4BlinkAttack : Task_A_Base
     [Tooltip("공격 이펙트 & 판정 히트박스")]
     [SerializeField] GameObject attackColliderAndVFX;
 
+    float startHeight;  // 패턴 시작할 때의 높이 == 지면에 발디디고 있을 때의 높이 저장
+
     [Task]
     private void BlinkAttack()
     {
@@ -32,27 +34,35 @@ public class Task_A_Boss4BlinkAttack : Task_A_Base
 
     protected override void OnStartupBegin()
     {
+        startHeight = transform.position.y;
         DOTween.Sequence()
             .AppendInterval(blinkDelay)
             .AppendCallback(()=>
             {
                 // 이펙트 남겨두고 비주얼은 사라지기, 충돌판정 끄기
-                blinkVFX?.SetActive(true);
+                if(blinkVFX != null)
+                    blinkVFX?.SetActive(true);
                 bodyVisual?.SetActive(false);
                 bodyCollider.enabled = false;
             })
             .AppendInterval(1f)
             .AppendCallback(()=>{
-                blinkVFX?.SetActive(false);      // 약 1초 후에 점멸 이펙트 끄기.
+                if(blinkVFX != null)
+                    blinkVFX?.SetActive(false);      // 약 1초 후에 점멸 이펙트 끄기.
             });
     }
 
     protected override void OnActiveBegin()
     {
-        // 대상 머리 위로 순간이동
         GameObject enemy;
         blackboard.TryGet(BBK.Enemy, out enemy);
-        Vector3 newPosition = enemy.transform.position + Vector3.up * jumpHeight;
+
+        // 순간이동 전에 대상(플레이어) 바라보기
+        LookAt2D(enemy.transform.position);
+
+        // 대상 머리 위로 순간이동
+        Vector3 newPosition = enemy.transform.position;
+        newPosition.y = startHeight + jumpHeight;
         transform.position = newPosition;
 
         // 공격 & 몸통 충돌 판정 켜기
@@ -62,7 +72,8 @@ public class Task_A_Boss4BlinkAttack : Task_A_Base
             .AppendInterval(0.1f)       // 공격 판정 켜고 잠시 기다려서 '벽에 충돌하여 튕겨나오는 모습' 보이지 않도록 함.
             .AppendCallback(()=>
             {
-                blinkVFX?.SetActive(true);           // 점멸 이펙트 켜기
+                if(blinkVFX != null)
+                    blinkVFX?.SetActive(true);           // 점멸 이펙트 켜기
                 bodyVisual?.SetActive(true);
             });
         
@@ -72,6 +83,7 @@ public class Task_A_Boss4BlinkAttack : Task_A_Base
     protected override void OnRecoveryBegin()
     {
         attackColliderAndVFX.SetActive(false);
-        blinkVFX?.SetActive(false);
+        if(blinkVFX != null)
+            blinkVFX?.SetActive(false);
     }
 }
