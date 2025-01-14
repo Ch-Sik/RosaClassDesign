@@ -6,11 +6,12 @@ using UnityEngine.UI;
 
 public class ScrollbarUI : MonoBehaviour
 {
-    OptionUI option;
+    public OptionUI option;
 
     public Scrollbar bar;
     public TextMeshProUGUI value;
 
+    public void Start() { SetValue(bar.value); }
     public void SetValue(float var) { bar.value = var; OnValueChanged(); }
     public float GetValue() { return bar.value; }
     public string GetValueAsString() { return ((int)(bar.value * 100)).ToString(); }

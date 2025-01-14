@@ -7,7 +7,6 @@ using System.Linq;
 using Com.LuisPedroFonseca.ProCamera2D;
 using TMPro;
 using Sirenix.OdinInspector;
-using UnityEditor.SearchService;
 
 
 public class MapManager : MonoBehaviour

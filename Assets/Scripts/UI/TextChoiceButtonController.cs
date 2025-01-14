@@ -1,7 +1,6 @@
 using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class TextChoiceButtonController : MonoBehaviour
@@ -14,7 +13,6 @@ public class TextChoiceButtonController : MonoBehaviour
     public TextChoiceButtonUI choiceBtn;
     public int index;
     public List<TextChoiceButtonUI> btns;
-
 
     public void Choice(int index)
     {
@@ -35,7 +33,10 @@ public class TextChoiceButtonController : MonoBehaviour
                 btns[i].state = false;
             }
             else
+            {
                 index = i;
+                btns[i].state = true;
+            }
         choiceBtn.SetEnable();
 
         option.OnChoiceButtonChanged(this);

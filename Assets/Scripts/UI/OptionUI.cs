@@ -18,28 +18,15 @@ public class OptionUI : MonoBehaviour
     public ScrollbarUI BGM;
     public ScrollbarUI SFX;
 
+    public Vector2Int[] resolutions = new Vector2Int[3];
+    public FullScreenMode[] screenModes = new FullScreenMode[2];
+
     private void Start()
     {
-        //Load();
+        Load();
     }
 
-    [Button]
-    public void SetDefault()
-    {
-        currentOption = defaultOption.MakeCopy();
-        SetByCurrentOption();
-    }
-
-    #region Save/Load
-    public void SetByCurrentOption()
-    {
-        SetWindow();
-        SetResolution();
-        SetMasterVolume();
-        SetBGM();
-        SetSFX();
-    }
-
+    #region Environment
     public void Apply()
     {
         SetByCurrentOption();
@@ -52,15 +39,49 @@ public class OptionUI : MonoBehaviour
         SetByCurrentOption();
     }
 
+    public void SetDefault()
+    {
+        currentOption = defaultOption.MakeCopy();
+        SetByCurrentOption();
+    }
+
     public void Default()
     {
         currentOption = defaultOption.MakeCopy();
         SetByCurrentOption();
     }
 
+    public void SetByCurrentOption()
+    {
+        SetWindow();
+        SetResolution();
+        SetMasterVolume();
+        SetBGM();
+        SetSFX();
+        SetScreenEnvironmentByCurrentOption();
+        SetSoundEnvironmentByCurrentOption();
+    }
+
+    public void SetScreenEnvironmentByCurrentOption()
+    {
+        Vector2Int resolution = resolutions[Resolution.index];
+        FullScreenMode mode = screenModes[Window.index];
+        Screen.SetResolution(resolution.x, resolution.y, mode);
+    }
+
+    public void SetSoundEnvironmentByCurrentOption()
+    {
+        
+    }
+
+    #endregion
+
+    #region Save/Load
+
     public void Save()
     {
         SaveLoadManager.Instance.SaveOptionData(currentOption);
+        savedOption = currentOption.MakeCopy();
     }
 
     public void Load()
@@ -85,15 +106,6 @@ public class OptionUI : MonoBehaviour
     #endregion
 
     #region Display
-
-    public void OnChoiceButtonChanged(TextChoiceButtonController cont)
-    {
-        if (cont == Window)
-            currentOption.window = Window.index;
-        else if (cont == Resolution)
-            currentOption.resolution = Resolution.index;
-    }
-
     public void SetWindow() { Window.Choice(currentOption.window); }
 
     public void SetResolution() { Resolution.Choice(currentOption.resolution); }
@@ -101,16 +113,6 @@ public class OptionUI : MonoBehaviour
     #endregion
 
     #region Sound
-
-    public void OnScrollChanged(ScrollbarUI scro)
-    {
-        if (scro == MasterVolume)
-            currentOption.vol = scro.GetValue();
-        else if (scro == BGM)
-            currentOption.bgm = scro.GetValue();
-        else if (scro == SFX)
-            currentOption.sfx = scro.GetValue();
-    }
 
     public void SetMasterVolume() { MasterVolume.SetValue(currentOption.vol); }
 
@@ -121,19 +123,40 @@ public class OptionUI : MonoBehaviour
     #endregion
 
     #region UI Set
-    [Button]
-    public void Open() { UI.SetActive(true); }
+    public void Open() { Load(); UI.SetActive(true); }
 
-    [Button]
     public void Close() {  UI.SetActive(false); }
 
-    [Button]
     public void OpenClose()
     {
         if (UI.activeSelf)
             Close();
         else
             Open();
+    }
+    #endregion
+
+    #region Event
+    public void OnChoiceButtonChanged(TextChoiceButtonController cont)
+    {
+        if (cont == Window)
+            currentOption.window = Window.index;
+        else if (cont == Resolution)
+            currentOption.resolution = Resolution.index;
+
+        SetScreenEnvironmentByCurrentOption();
+    }
+
+    public void OnScrollChanged(ScrollbarUI scro)
+    {
+        if (scro == MasterVolume)
+            currentOption.vol = scro.GetValue();
+        else if (scro == BGM)
+            currentOption.bgm = scro.GetValue();
+        else if (scro == SFX)
+            currentOption.sfx = scro.GetValue();
+
+        SetSoundEnvironmentByCurrentOption();
     }
     #endregion
 }
