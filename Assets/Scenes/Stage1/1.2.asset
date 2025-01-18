@@ -13,15 +13,24 @@ MonoBehaviour:
   m_Name: 1.2
   m_EditorClassIdentifier: 
   scene:
-    m_SceneAsset: {fileID: 102900000, guid: 08567caf492d4ad438efe043abe9dc97, type: 3}
-    m_SceneName: 1.3
+    m_SceneAsset: {fileID: 102900000, guid: 01d542ad4d34bff4da717f8a89b76cb8, type: 3}
+    m_SceneName: 1.2
   flagName: 
   flagIndex: 0
   title: 
   subTitle: 
-  size: {x: 0, y: 0}
-  offset: {x: 0, y: 0}
+  size: {x: 179, y: 89}
+  offset: {x: 4, y: -12}
   topPorts: []
   botPorts: []
-  rigPorts: []
+  rigPorts:
+  - flag: 
+    index: 0
+    direction: 2
+    ports:
+    - {x: 182, y: 31}
+    - {x: 182, y: 32}
+    - {x: 182, y: 33}
+    - {x: 182, y: 34}
+    connectedPorts: []
   lefPorts: []

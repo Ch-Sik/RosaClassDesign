@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: 1.6
   m_EditorClassIdentifier: 
   scene:
-    m_SceneAsset: {fileID: 102900000, guid: 08567caf492d4ad438efe043abe9dc97, type: 3}
-    m_SceneName: 1.3
+    m_SceneAsset: {fileID: 102900000, guid: 6637763dfa14fb44893528944fec200a, type: 3}
+    m_SceneName: 1.6 UnUsed
   flagName: 
   flagIndex: 0
   title: Test-4
   subTitle: 
-  size: {x: 201, y: 51}
-  offset: {x: 3, y: -22}
+  size: {x: 99, y: 51}
+  offset: {x: 105, y: -22}
   topPorts: []
   botPorts: []
   rigPorts:
@@ -32,26 +32,16 @@ MonoBehaviour:
     - {x: 203, y: 18}
     - {x: 203, y: 19}
     - {x: 203, y: 20}
-    connectedPorts:
-    - flag: 
-      flagIndex: 0
-      scene:
-        m_SceneAsset: {fileID: 102900000, guid: 39e96d2e06660524f836a5ddc95004d5, type: 3}
-        m_SceneName: 1-11
-      index: 0
+    connectedPorts: []
   lefPorts:
   - flag: 
     index: 0
     direction: 3
     ports:
-    - {x: 3, y: -3}
-    - {x: 3, y: -2}
-    - {x: 3, y: -1}
-    - {x: 3, y: 0}
-    connectedPorts:
-    - flag: 
-      flagIndex: 0
-      scene:
-        m_SceneAsset: {fileID: 102900000, guid: d7fa286c80b0e4b4e89bb36d98e5fbf4, type: 3}
-        m_SceneName: 1-9
-      index: 0
+    - {x: 105, y: -10}
+    - {x: 105, y: -9}
+    - {x: 105, y: -8}
+    - {x: 105, y: -7}
+    - {x: 105, y: -6}
+    - {x: 105, y: -5}
+    connectedPorts: []

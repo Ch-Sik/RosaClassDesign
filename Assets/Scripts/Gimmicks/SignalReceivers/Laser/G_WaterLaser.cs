@@ -150,6 +150,16 @@ public class G_WaterLaser : GimmickSignalReceiver
         InactivateLaser();
     }
 
+    public override void ImmediateOffAct()
+    {
+        ActivateLaser();
+    }
+
+    public override void ImmediateOnAct()
+    {
+        InactivateLaser();
+    }
+
     private void OnDrawGizmos()
     {
         if (!showGizmos)

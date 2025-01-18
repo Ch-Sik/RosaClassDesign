@@ -85161,6 +85161,7 @@ MonoBehaviour:
   useAutoCinematic: 1
   type: 3
   waitDelay: 0
+  startDelay: 0
   showGizmos: 0
   points:
   - {fileID: 895749043}
@@ -85170,6 +85171,11 @@ MonoBehaviour:
   onWait: 0
   isReverse: 0
   curReverseState: 0
+  breachHeight: 3
+  breachUpTime: 1
+  breachDownTime: 0.7
+  timeBetweenDown: 1
+  timeBetweenBreach: 1
   cinematicsSettings: []
 --- !u!1001 &701276116
 PrefabInstance:
@@ -96241,7 +96247,7 @@ PrefabInstance:
     - target: {fileID: 5377027198806411859, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
       propertyPath: roomData
       value: 
-      objectReference: {fileID: 11400000, guid: 718e6c02cd873c2429b31fe153b7e935, type: 2}
+      objectReference: {fileID: 11400000, guid: 22d2b2bdfc05d324c8718faf5cb36e11, type: 2}
     - target: {fileID: 6453849821675664641, guid: bc65e2a75147816448ad7c438d09abc5, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -98720,7 +98726,7 @@ SpriteRenderer:
   m_Size: {x: 25.6, y: 6.4}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!4 &1706008551
