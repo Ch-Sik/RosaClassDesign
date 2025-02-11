@@ -7,6 +7,8 @@ using System.Linq;
 using Com.LuisPedroFonseca.ProCamera2D;
 using TMPro;
 using Sirenix.OdinInspector;
+using UnityEngine.UI;
+using DG.Tweening;
 
 
 public class MapManager : MonoBehaviour
@@ -45,6 +47,8 @@ public class MapManager : MonoBehaviour
     public TextMeshProUGUI position;
     [ShowInInspector] private Dictionary<string, SORoom> rooms;
 
+    public Image fadePanel;
+
     private void Update()
     {
         position.text = $"{player.position.x.ToString("F1")} , {player.position.y.ToString("F1")}";
@@ -66,7 +70,8 @@ public class MapManager : MonoBehaviour
     private void Init(SORoom startRoom)
     {
         Enter(startRoom);
-        
+
+        currentRoom = startRoom;
         LoadScene();
 
         startPoint.GetComponent<SpriteRenderer>().enabled = false;
@@ -116,9 +121,15 @@ public class MapManager : MonoBehaviour
         oldRooms = new List<SORoom>(newRooms);
         */
 
-
-        OpenScene(currentRoom);
-        Invoke("MoveStartPoint", 0.3f);
+        Sequence seq = DOTween.Sequence()
+        .Append(fadePanel.DOFade(1, 0.5f))
+        .AppendCallback(() =>
+        {
+            OpenScene(currentRoom);
+            Invoke("MoveStartPoint", 0.3f);
+        })
+        .AppendInterval(1)
+        .Append(fadePanel.DOFade(0, 0.5f));
     }
 
     public void MoveStartPoint()
@@ -164,23 +175,24 @@ public class MapManager : MonoBehaviour
 
         SORoom oldRoom = currentRoom;
 
-        //        currentRoom = ports[0].room;     //flag
-        currentRoom = GetRoomSOtoConnectedPorts(ports);
+        Sequence seq = DOTween.Sequence()
+        .Append(fadePanel.DOFade(1, 0.5f))
+        .AppendCallback(() =>
+        {
+            //        currentRoom = ports[0].room;     //flag
+            currentRoom = GetRoomSOtoConnectedPorts(ports);
+            player.SetParent(transform);
 
-        player.SetParent(transform);
+            CloseScene(oldRoom);
+            //        Vector2Int position = ports[0].room.(direction, ports[0].index).ports[0];
+            //        Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
+            Vector2Int position = currentRoom.GetRoomPort(direction, ports[0].index).ports[0];
+            Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
 
-        CloseScene(oldRoom);
-        //        Vector2Int position = ports[0].room.(direction, ports[0].index).ports[0];
-        //        Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
-        Vector2Int position = currentRoom.GetRoomPort(direction, ports[0].index).ports[0];
-        Vector3 destination = new Vector3(position.x, position.y) + GetMargin(direction);
-
-        Debug.Log($"Scene : {currentRoom.scene.SceneName}");
-        Debug.Log($"position :  {position}, detination : {destination}");
-
-        Debug.Log($"{oldRoom.name}에서 {currentRoom.name}으로 이동, {direction}, {destination}");
-
-        StartCoroutine(OpenScene(currentRoom, destination));
+            StartCoroutine(OpenScene(currentRoom, destination));
+        })
+        .AppendInterval(1)
+        .Append(fadePanel.DOFade(0, 0.5f));
     }
 
     //포트 충돌 엔터
@@ -343,7 +355,6 @@ public class MapManager : MonoBehaviour
                 PlayerRef.Instance.movement.wallClimbEnabled = true;
 
             chapter.text = room.scene.SceneName;
-            LoadScene();
         }
 
         /*
